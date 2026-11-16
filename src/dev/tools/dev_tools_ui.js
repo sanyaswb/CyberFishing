@@ -878,9 +878,10 @@ export class DevToolsUI {
     for (const element of this.#filterMarks) element.classList.remove("devtools__row--match", "devtools__section--match",
       "devtools__page--match", "devtools__row--current-match");
     this.#filterMarks.clear();
-    // TK-328: «Змінені» always filters (never reveal-in-place). Inside «Конфіг» it shows all changed config rows without
-    // sections; outside «Конфіг» a CONFIG.* change stays in the specialized module that owns it instead of surfacing the
-    // duplicate «Конфіг» tree above it.
+    // TK-328: «Змінені» always filters (never reveal-in-place). Inside «Конфіг» it shows all changed parameters across
+    // the panel as a flat list without sections (deduplicated by canonical path so skipped CONFIG.debug /
+    // CONFIG.locations.map / catalog edits also appear once); outside «Конфіг» a CONFIG.* change stays in the
+    // specialized module that owns it instead of surfacing the duplicate «Конфіг» tree above it.
     const revealing = active && !changedOnly && this.#searchMode === "reveal";
     const configPage = this.#pages.get("config") ?? null;
     const inConfig = changedOnly && this.#activePage === "config" && configPage !== null;
@@ -902,19 +903,41 @@ export class DevToolsUI {
         if (query && !text.includes(query)) continue;
         if (changedOnly && !row.classList.contains("devtools__row--changed")) continue;
         const rowPage = this.#pageOf(row);
-        if (inConfig && rowPage !== configPage) continue;
-        candidateRows.push({ row, rowPage });
-        if (specializedChangedPaths && rowPage !== configPage) {
-          const configPath = this.#rowConfigPath.get(row);
-          if (configPath) specializedChangedPaths.add(configPath);
+        const configPath = this.#rowConfigPath.get(row) ?? "";
+        candidateRows.push({ row, rowPage, configPath });
+        if (specializedChangedPaths && rowPage !== configPage && configPath) {
+          specializedChangedPaths.add(configPath);
         }
       }
-      for (const { row, rowPage } of candidateRows) {
-        if (specializedChangedPaths && rowPage === configPage) {
-          const configPath = this.#rowConfigPath.get(row);
-          if (configPath && specializedChangedPaths.has(configPath)) continue;
+      const selected = [];
+      if (inConfig) {
+        const byPath = new Map();
+        const priorityOf = (entry) => (entry.rowPage === configPage ? 2
+          : entry.row.dataset?.devtoolsPath?.startsWith("CONFIG.") ? 1 : 0);
+        for (const entry of candidateRows) {
+          if (!entry.configPath) {
+            selected.push(entry.row);
+            continue;
+          }
+          const existing = byPath.get(entry.configPath);
+          if (!existing) {
+            byPath.set(entry.configPath, entry);
+            selected.push(entry.row);
+          } else if (priorityOf(entry) > priorityOf(existing)) {
+            selected[selected.indexOf(existing.row)] = entry.row;
+            byPath.set(entry.configPath, entry);
+          }
         }
-        found += 1;
+      } else {
+        for (const { row, rowPage, configPath } of candidateRows) {
+          if (specializedChangedPaths && rowPage === configPage && configPath && specializedChangedPaths.has(configPath)) {
+            continue;
+          }
+          selected.push(row);
+        }
+      }
+      found = selected.length;
+      for (const row of selected) {
         this.#mark(row, "devtools__row--match");
         this.#matches.push(row);
         for (let node = row.parentNode; node && node !== this.#body; node = node.parentNode) {

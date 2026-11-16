@@ -1246,6 +1246,8 @@ function choiceRow(options, value, path) {
       canvas: { rain: { gravityPx: 400, durationSec: [120, 240] } },
       weather: { storm: { gustChanceMult: 1.5 } },
       casting: { basePower: 10 },
+      locations: { map: { test: { weather: { rain: { chancePerCheck: 0.1 } } } } },
+      debug: { waveTestBackground: false },
     };
     const config = JSON.parse(JSON.stringify(baseConfig));
     const overrides = new Set();
@@ -1298,8 +1300,16 @@ function choiceRow(options, value, path) {
     const configSection = ui.createSection("НАЛАШТУВАННЯ (CONFIG)", pages.get("config"), false, () => {}, ["CONFIG"]);
     tree.render(config, configSection, ["CONFIG"]);
 
+    const gameDebugSection = ui.createSection("DEBUG", pages.get("game"), false, () => {}, ["CONFIG", "debug"]);
+    tree.render(config.debug, gameDebugSection, ["CONFIG", "debug"]);
+
     const sceneSection = ui.createSection("ПОГОДА", pages.get("scene"), false, () => {}, ["WEATHER"]);
     const rainGroup = ui.createSection("ДОЩ", sceneSection, false, () => {}, ["WEATHER", "rain"]);
+    const chancePath = ["CONFIG", "locations", "map", "test", "weather", "rain", "chancePerCheck"];
+    ui.createInputRow("Дощ: шанс перевірки", config.locations.map.test.weather.rain.chancePerCheck, rainGroup, "number",
+      (next) => edits.update(chancePath, next), ["WEATHER", "chances", "rainChance"], chancePath,
+      { isChanged: () => edits.isOverridden(chancePath), onReset: () => edits.resetParameter(chancePath) });
+    tree.render(config.locations.map.test.weather.rain, rainGroup, ["CONFIG", "locations", "map", "test", "weather", "rain"]);
     const rainTree = ui.createSection("Вигляд (загальний)", rainGroup, false, () => {}, ["WEATHER", "rain", "look"]);
     tree.render(config.canvas.rain, rainTree, ["CONFIG", "canvas", "rain"]);
     const gustPath = ["CONFIG", "weather", "storm", "gustChanceMult"];
@@ -1314,7 +1324,7 @@ function choiceRow(options, value, path) {
       onReset: () => edits.resetParameter(gustPath),
     });
 
-    // Change a numberList, a CONFIG.* parameter rendered in Sцеna, and an event row wired via bindingPath.
+    // Change a numberList, a CONFIG.* parameter rendered in Scene, and an event row wired via bindingPath.
     edits.update(["CONFIG", "canvas", "rain", "durationSec"], [60, 180]);
     edits.update(["CONFIG", "canvas", "rain", "gravityPx"], 500);
     edits.update(gustPath, 2.2);
@@ -1323,6 +1333,7 @@ function choiceRow(options, value, path) {
       byClass("devtools__row--match", page).filter(predicate);
     const configPage = pages.get("config");
     const scenePage = pages.get("scene");
+    const gamePage = pages.get("game");
     const durationInScene = byClass("devtools__row", scenePage).find((row) => row.children[0]?.dataset?.devtoolsKey === "durationSec");
     assert.equal(durationInScene.classList.contains("devtools__row--changed"), true, "numberList marks changed values");
     assert.equal(byClass("devtools__reset", durationInScene).length, 1, "numberList gets a reset button");
@@ -1341,21 +1352,42 @@ function choiceRow(options, value, path) {
     assert.equal(rowsOn(scenePage).length, 3);
     assert.equal(rowsOn(configPage).length, 0);
 
-    // A CONFIG-only parameter (not present in specialized sections) still surfaces in Конфіг when changed.
+    // Also change parameters skipped by ConfigModule (locations.map.* in Scene, debug.* in Game) + a Config-only one.
     edits.update(["CONFIG", "casting", "basePower"], 15);
+    edits.update(chancePath, 0.35);
+    edits.update(["CONFIG", "debug", "waveTestBackground"], true);
     ui.refreshFilter();
     assert.equal(configPage.classList.contains("devtools__page--match"), true);
     assert.deepEqual(rowsOn(configPage).map((row) => row.children[0]?.dataset?.devtoolsKey), ["basePower"]);
-    assert.equal(rowsOn(scenePage).length, 3);
+    assert.equal(rowsOn(scenePage).length, 5);
+    assert.deepEqual(rowsOn(gamePage).map((row) => row.children[0]?.dataset?.devtoolsKey), ["waveTestBackground"]);
 
-    // Entering Конфіг with «Змінені» active flattens sections and includes ALL changed Config parameters (only Конфіг).
+    // Entering Конфіг with «Змінені» active flattens sections and includes ALL unique changed parameters across the
+    // panel (both ConfigModule rows and skipped CONFIG.locations.map / CONFIG.debug rows from other pages, deduplicated).
     ui.selectPage("config", { remember: true });
     assert.equal(ui.body.classList.contains("devtools__body--flat-sections"), true, "Config uses flat sections mode");
-    assert.equal(scenePage.classList.contains("devtools__page--match"), false, "Scene hides when filtering inside Config");
-    assert.equal(configPage.classList.contains("devtools__page--match"), true);
+    const allMatchedKeys = byClass("devtools__row--match", ui.body)
+      .map((row) => row.children[0]?.dataset?.devtoolsKey)
+      .sort();
+    assert.deepEqual(allMatchedKeys, [
+      "basePower",
+      "chancePerCheck",
+      "durationSec",
+      "gravityPx",
+      "gustChanceMult",
+      "waveTestBackground",
+    ]);
     assert.deepEqual(
       rowsOn(configPage).map((row) => row.children[0]?.dataset?.devtoolsKey).sort(),
       ["basePower", "durationSec", "gravityPx", "gustChanceMult"],
+    );
+    assert.deepEqual(
+      rowsOn(scenePage).map((row) => row.children[0]?.dataset?.devtoolsKey),
+      ["chancePerCheck"],
+    );
+    assert.deepEqual(
+      rowsOn(gamePage).map((row) => row.children[0]?.dataset?.devtoolsKey),
+      ["waveTestBackground"],
     );
 
     // Switching back to Scene restores specialized ownership and drops flat mode.
@@ -1368,7 +1400,7 @@ function choiceRow(options, value, path) {
     byClass("devtools__reset", durationInScene)[0].click();
     assert.equal(durationInScene.classList.contains("devtools__row--changed"), false);
     ui.refreshFilter();
-    assert.equal(rowsOn(scenePage).length, 2);
+    assert.equal(rowsOn(scenePage).length, 4);
 
     filter.click();
     assert.equal(ui.body.classList.contains("devtools__body--filtered"), false);

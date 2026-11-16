@@ -193,6 +193,7 @@
 .devtools__body--filtered :is(.devtools__row, .devtools__pages, .devtools__empty, .devtools__alert, .devtools__export):not(.devtools__row--match),
 .devtools__body--filtered .devtools__section:not(.devtools__section--match) { display: none; }
 /* TK-328: inside «Конфіг» with «Змінені» active, changed parameters render as a flat list without sections. */
+.devtools__body--flat-sections { gap: 0; }
 .devtools__body--flat-sections .devtools__page--match { gap: 0; }
 .devtools__body--flat-sections .devtools__page--match::before,
 .devtools__body--flat-sections .devtools__section-title,

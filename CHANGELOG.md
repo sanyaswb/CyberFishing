@@ -2,6 +2,10 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.51.19 - Include cross-section changes inside DevTools «Конфіг» flat filter (TK-328.1)
+
+- DevTools «Змінені» inside «Конфіг»: includes changed parameters owned by other sections (location weather under `CONFIG.locations.map.*`, `CONFIG.debug.*`, database catalogs) alongside `ConfigModule`, deduplicated into one continuous flat list without section or page headers.
+
 ## v0.51.18 - DevTools «Змінені» filter by owning module and flat «Конфіг» (TK-328)
 
 - DevTools «Змінені»: outside «Конфіг», edited parameters show under the specialized module where they were changed (e.g., «Сцена» instead of surfacing the duplicate «Конфіг» tree above it); inside «Конфіг», «Змінені» shows only «Конфіг» changes as a flat list without sections; numeric lists (`numberList`) and custom weather/debug config rows now track changed state and resets.
@@ -37,7 +41,3 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 ## v0.51.10 - Fiery ash during an emission (spec 179 stage C, TK-323)
 
 - During an emission glowing embers of different sizes float through the air, smoother and slower than rain: they drift with the wind, rise slowly, wander, flicker and cool from yellow to red; their number follows the emission's strength. DevTools «ПОГОДА» → «Вигляд попелу».
-
-## v0.51.9 - Emission background after the map's phases (TK-322.1)
-
-- The emission's background now loads after every time-of-day phase of the current map, low copy first and the full picture right after, like the other backgrounds; an emission waits for the full picture.
