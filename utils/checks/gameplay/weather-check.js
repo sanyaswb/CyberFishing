@@ -1640,6 +1640,11 @@ const step = (model, seconds, clock = null, dt = 0.1) => {
     assert.ok(all.includes(path), `«Всі» shows ${path}`);
   }
   assert.ok(sections.some(([, at]) => at === "WEATHER.start"), "«Всі» shows the location's start and thresholds");
+  // TK-337 (owner): the radiation is its own section under the emission.
+  assert.ok(sections.some(([, at]) => at === "WEATHER.radiation") && sections.some(([, at]) => at === "WEATHER.radiation.config"),
+    "«РАДІАЦІЯ» holds the location's radiation");
+  assert.ok(!sections.some(([, at]) => at === "WEATHER.emission.radiationConfig"), "and «ВИКИД» no longer does");
+  assert.ok(all.includes("CONFIG.locations.map.test.weather.radiation"), "the radiation tree is drawn");
   assert.ok(parameterPaths.has("WEATHER.emission.screenEnabled"), "the emission screen's own switch shows (it had no control)");
   general.dispose();
 

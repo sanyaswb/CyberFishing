@@ -2,6 +2,10 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.51.30 - Radiation as its own weather section (TK-337)
+
+- DevTools «ПОГОДА»: «РАДІАЦІЯ» under «ВИКИД» holds the manual radiation and the location's radiation levels; «ВИКИД» keeps the event, the freeze and the screen.
+
 ## v0.51.29 - Fog by the hour and after rain (spec 180 D17, TK-336)
 
 - Fog lives in game time and comes likelier at 4–7 (×4) and 19–24 (×3) on the test location; every rain that ends raises its chance (+0.5, up to ×4) until a fog starts. Outside the windows fog stays possible, rarer.
@@ -42,7 +46,3 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 ## v0.51.21 - Immediate Weather DevTools redraw inside drill-in sections (TK-330)
 
 - Weather DevTools: clicking «Викид: пік зараз», toggles, or action buttons inside drilled-in «Стан і керування» (or any drilled weather subsection) now refreshes the visible drill-in immediately via `DevToolsUI.preserveDrill`; `EmissionModel.force` also clears manual intensity hold when entering an active phase.
-
-## v0.51.20 - Pink pulse on active DevTools «Змінені» button (TK-329)
-
-- DevTools: while the «Змінені» filter is active, its button background pulses smoothly in pink so developers and testers immediately see why untouched parameters are hidden.

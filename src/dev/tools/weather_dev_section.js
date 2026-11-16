@@ -21,7 +21,7 @@ import {
 //   «manual» switches); under the rain's and the ash's sliders, collapsed, their look at strength 100 for the selected
 //   location (or the general one) — each slider stands at the real value within its range (D16). The action buttons
 //   (events now, emission parts, a gust, a strike, «↺ Автоматична погода») come last.
-// - Sections by element: ДОЩ, ШТОРМ, ВІТЕР, ТУМАН, ВИКИД, ПОПІЛ, ВОДА, ПОЧАТОК І ПОРОГИ — general and location parts by
+// - Sections by element: ДОЩ, ШТОРМ, ВІТЕР, ТУМАН, ВИКИД, РАДІАЦІЯ (TK-337), ПОПІЛ, ВОДА, ПОЧАТОК І ПОРОГИ — general and location parts by
 //   the selector; a section with edits not in the code is marked «· змінено» and has «↺ Скинути розділ до коду» (D8).
 // - «Збереження» (spec 175, spec 180 stage D, TK-332): the file holds the level the selector shows — «Загальні»: the
 //   general rain, ash, storm and wind settings; a location: its weather; «Всі»: both.
@@ -247,6 +247,7 @@ export class WeatherDevSection {
       this.#renderWind(content, mode);
       if (mode.location) this.#renderFog(content, mode);
       this.#renderEmission(content, mode);
+      this.#renderRadiation(content, mode);
       this.#renderAsh(content, mode);
       this.#renderWater(content, mode);
       if (mode.location) this.#renderStart(content, mode);
@@ -420,20 +421,10 @@ export class WeatherDevSection {
     const emission = this.#weather.getEmissionModel?.() ?? null;
     const parts = [];
     if (mode.general) parts.push(["emission", "screen"]);
-    if (mode.location) parts.push(this.#locationParts(mode.location, "emission"), this.#locationParts(mode.location, "radiation"));
+    if (mode.location) parts.push(this.#locationParts(mode.location, "emission"));
     this.#elementSection("ВИКИД", "emission", content, parts, (section) => {
       if (emission) {
         const snapshot = emission.snapshot;
-        if (snapshot.radiationForced) this.#radiation = Math.round(snapshot.radiation * 100);
-        this.#ui.createSwitcherRow("Радіація вручну", snapshot.radiationForced, section, (on) => {
-          emission.setRadiationOverride(on ? this.#radiation / 100 : null);
-          this.#fill();
-        }, ["WEATHER", "emission", "radiationHold"]);
-        this.#ui.createRangeRow("радіація, %", this.#radiation, section, (value) => {
-          this.#radiation = clamp(value, 0, 100);
-          emission.setRadiationOverride(this.#radiation / 100);
-          this.#ui.syncValue?.(["WEATHER", "emission", "radiationHold"], true);
-        }, ["WEATHER", "emission", "radiation"]);
         this.#ui.createSwitcherRow("заморозити викид", snapshot.frozen === true, section, (frozen) => {
           emission.setFrozen(frozen);
           this.#fill();
@@ -460,8 +451,31 @@ export class WeatherDevSection {
       const weather = this.#locationWeather(mode.location);
       this.#tree(weather?.emission, this.#group("Подія викиду (локація)", section, ["WEATHER", "emission", "event"]),
         this.#locationParts(mode.location, "emission"));
-      this.#tree(weather?.radiation, this.#group("Радіація (локація)", section, ["WEATHER", "emission", "radiationConfig"]),
-        this.#locationParts(mode.location, "radiation"));
+    });
+  }
+
+  // TK-337 (owner): the radiation in its own section under the emission — set by hand now, and the location's levels.
+  #renderRadiation(content, mode) {
+    const emission = this.#weather.getEmissionModel?.() ?? null;
+    if (!emission && !mode.location) return;
+    const parts = mode.location ? [this.#locationParts(mode.location, "radiation")] : [];
+    this.#elementSection("РАДІАЦІЯ", "radiation", content, parts, (section) => {
+      if (emission) {
+        const snapshot = emission.snapshot;
+        if (snapshot.radiationForced) this.#radiation = Math.round(snapshot.radiation * 100);
+        this.#ui.createSwitcherRow("Радіація вручну", snapshot.radiationForced, section, (on) => {
+          emission.setRadiationOverride(on ? this.#radiation / 100 : null);
+          this.#fill();
+        }, ["WEATHER", "radiation", "hold"]);
+        this.#ui.createRangeRow("радіація, %", this.#radiation, section, (value) => {
+          this.#radiation = clamp(value, 0, 100);
+          emission.setRadiationOverride(this.#radiation / 100);
+          this.#ui.syncValue?.(["WEATHER", "radiation", "hold"], true);
+        }, ["WEATHER", "radiation", "level"]);
+      }
+      if (!mode.location) return;
+      this.#tree(this.#locationWeather(mode.location)?.radiation, this.#group("Радіація (локація)", section,
+        ["WEATHER", "radiation", "config"]), this.#locationParts(mode.location, "radiation"));
     });
   }
 
