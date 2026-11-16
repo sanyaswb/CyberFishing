@@ -1408,5 +1408,65 @@ function choiceRow(options, value, path) {
     ui.dispose();
   }
 
+  // --- TK-330: clicking «Викид: пік зараз» inside drilled-in «Стан і керування» updates the switch immediately ---
+  {
+    const { WeatherDevSection } = runtime.importModule("src/dev/tools/weather_dev_section.js");
+    const { EmissionModel } = runtime.importModule("src/game/domain/weather/emission_model.js");
+    const { SeededRng } = runtime.importModule("src/engine/random/seeded_rng.js");
+    const emissionSettings = {
+      emission: { durationSec: [300, 300], peakAtShare: [0.25, 0.25], peakShare: [0.4, 0.4], peakStrength: [1, 1] },
+      radiation: { base: 0, emissionPeak: 1 },
+    };
+    const emission = new EmissionModel({ rng: new SeededRng(3), getSettings: () => emissionSettings });
+    const weatherModel = {
+      snapshot: { events: {}, strikeSerial: 0, strikeVariant: 0, strikeDistance: 0 },
+      start() {}, stop() {}, hold() {}, releaseAll() {}, strike() {},
+    };
+    const ui = new DevToolsUI(() => {}, {}, null, null, null, document.body, createElement("div"));
+    const pages = ui.createPages([{ id: "scene", title: "Сцена", icon: "map" }], "scene", () => {});
+    const scenePage = pages.get("scene");
+    const createSection = (label, parent, path, options = {}) => ui.createSection(label, parent, false, () => {}, path, options);
+    // Match real SceneModule depth: СЦЕНА WebGL (0) -> ПОГОДА (1) -> Стан і керування (2, drill-in).
+    const sceneLayerContent = createSection("СЦЕНА WebGL", scenePage, ["SCENE_LAYER"]);
+    const section = new WeatherDevSection({
+      ui,
+      weather: { locationId: "test", getModel: () => weatherModel, getEmissionModel: () => emission, getWind: () => null },
+      config: () => emissionSettings,
+      createSection,
+      renderConfigTree() {},
+    });
+    section.render(sceneLayerContent);
+
+    const weatherContent = byClass("devtools__section-content", sceneLayerContent)[0];
+    const controlsSection = byClass("devtools__section", weatherContent)
+      .find((el) => el.dataset.devtoolsPath === "WEATHER.controls");
+    assert.equal(controlsSection.classList.contains("devtools__section--drill"), true,
+      "Стан і керування opens as drill-in under СЦЕНА WebGL -> ПОГОДА");
+    controlsSection.children[0].click();
+    assert.equal(scenePage.classList.contains("devtools__page--drilled"), true);
+
+    const visibleEmissionSwitch = () => byClass("devtools__row", byClass("devtools__drill", scenePage)[0])
+      .find((row) => row.dataset.devtoolsPath === "WEATHER.controls.emission")
+      ?.children[1]?.children[0];
+    const visiblePeakBtn = () => byClass("devtools__row", byClass("devtools__drill", scenePage)[0])
+      .find((row) => row.dataset.devtoolsPath === "WEATHER.emission.peak")
+      ?.children[0];
+
+    assert.equal(visibleEmissionSwitch().checked, false, "emission switch starts OFF");
+    emission.holdIntensity(0);
+    assert.equal(emission.snapshot.phase, "idle");
+
+    visiblePeakBtn().click();
+    assert.equal(emission.snapshot.phase, "peak", "force('peak') clears zero hold and enters peak");
+    assert.equal(scenePage.classList.contains("devtools__page--drilled"), true, "stays inside Стан і керування drill-in");
+    assert.equal(visibleEmissionSwitch().checked, true, "visible emission switch immediately updates to ON");
+
+    // Crumbs back to ПОГОДА leave the drill cleanly on the rebuilt DOM.
+    byClass("devtools__crumb", scenePage).find((crumb) => crumb.textContent === "ПОГОДА").click();
+    assert.equal(scenePage.classList.contains("devtools__page--drilled"), false);
+    section.dispose();
+    ui.dispose();
+  }
+
   console.log("DevTools controls passed: number field steps, modifiers, typed values, rejected text, external values and held buttons; list picker search, keyboard, unknown ids; segmented options; export command notice.");
 })().catch((error) => { console.error(error); process.exitCode = 1; });

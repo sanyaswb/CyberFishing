@@ -1515,6 +1515,10 @@ const step = (model, seconds, phase = "day", dt = 0.1) => {
     "a held emission shows its peak at the held strength");
   emission.holdIntensity(null);
   assert.deepEqual([emission.snapshot.phase, emission.snapshot.intensity], ["idle", 0], "released: its own course");
+  emission.holdIntensity(0);
+  emission.force("peak");
+  assert.deepEqual([emission.snapshot.phase, emission.snapshot.intensityHeld], ["peak", false],
+    "TK-330: force('peak') releases a zero manual hold and enters peak");
 
   const { WeatherDevSection } = require("../../../src/dev/tools/weather_dev_section.js");
   const sections = [];

@@ -95,6 +95,7 @@ export class EmissionModel {
     if (phase === "idle") {
       if (this.#active) this.#end(emission);
     } else {
+      this.#intensityHold = null;
       if (phase === "onset" || !this.#active) this.#begin(emission);
       if (phase === "peak") this.#elapsedSec = this.#timeline.peakStartSec;
       if (phase === "fade") this.#elapsedSec = this.#timeline.peakEndSec + 1e-3;

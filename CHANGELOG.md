@@ -2,6 +2,10 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.51.21 - Immediate Weather DevTools redraw inside drill-in sections (TK-330)
+
+- Weather DevTools: clicking «Викид: пік зараз», toggles, or action buttons inside drilled-in «Стан і керування» (or any drilled weather subsection) now refreshes the visible drill-in immediately via `DevToolsUI.preserveDrill`; `EmissionModel.force` also clears manual intensity hold when entering an active phase.
+
 ## v0.51.20 - Pink pulse on active DevTools «Змінені» button (TK-329)
 
 - DevTools: while the «Змінені» filter is active, its button background pulses smoothly in pink so developers and testers immediately see why untouched parameters are hidden.
@@ -37,7 +41,3 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 ## v0.51.12 - Irregular blur pulses and a swaying vignette (TK-324.1)
 
 - Emission screen: the blur comes in sharp, glitch-like pulses of random strength and an ever-changing rhythm that quickens toward the peak; the darkening has smoother edges and sways like a swell, closing in deeper than it opens out.
-
-## v0.51.11 - Emission darkening and blur, no cast without a gas mask (spec 179 stage E, TK-324)
-
-- Without a gas mask an emission darkens the screen from the edges inward and blurs it in pulses that quicken toward the peak — the HUD and windows too, DevTools stays sharp (CONFIG.emission.screen.includeHud off: the world only). A cast during an emission opens the inventory with «У вас немає протигазу»; a fight already on goes on.

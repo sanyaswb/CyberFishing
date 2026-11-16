@@ -36,8 +36,17 @@ rule as something the next change can follow.
 | R20 | Every `data-devtools-path` / `devtoolsPath` emitted by an overlay or UI link must be validated by automated checks against the live `CONFIG` object or mounted `DevTools` control index so it resolves to an exact leaf control (never a missing path or ancestor section fallback). | I-20 |
 | R21 | Layout overrides in container or media queries (phone, adaptive) come after every base rule of the same selector in the file; a base rule added later must go above them. A check parses the stylesheet and fails when a base rule of an overridden selector follows the query. | I-21 |
 | R22 | Each switch of a manual control holds only its own process; never one shared freeze or a switch that sets another process. A check flips every switch in every order and asserts the others keep their course. | I-22 |
+| R23 | A DevTools section that redraws its container while a child drill-in (`depth >= MAX_INLINE_SECTION_DEPTH`) may be open must wrap the rebuild in `DevToolsUI.preserveDrill`, and UI tests of nested modules must mount at the real production section depth (e.g. `СЦЕНА WebGL` -> `ПОГОДА`). | I-23 |
 
 <a id="i-20"></a>
+
+## I-23 · 2026-11-16 · v0.51.16–0.51.20: clicking «Викид: пік зараз» left the «Викид» switch OFF until reopening the panel (TK-330)
+
+- **Seen:** the owner in DevTools (`dev.html`): inside «ПОГОДА» → «Стан і керування», clicking «Викид: пік зараз» left the «Викид» switch OFF on screen; after closing the panel/section and opening it again, the switch was ON.
+- **Cause:** with `СЦЕНА WebGL` (`depth 0`) → `ПОГОДА` (`depth 1`), every subsection inside `ПОГОДА` (`Стан і керування`, element sections, `Збереження`) sits at `depth 2 >= MAX_INLINE_SECTION_DEPTH` (`src/dev/tools/dev_tools_ui.js:17`). Clicking «Стан і керування» triggers `focusSection()`, moving its `content` out of `ПОГОДА` into `page > .devtools__drill` under `.devtools__page--drilled`. `WeatherDevSection.#fill()` (`src/dev/tools/weather_dev_section.js:210`) then called `replaceChildren()` on the hidden `ПОГОДА` container, leaving the stale old `content` visible in `.devtools__drill`. In addition, `EmissionModel.force()` (`src/game/domain/weather/emission_model.js:91`) did not clear `#intensityHold = 0` when starting an active phase.
+- **Fix (v0.51.21):** added `DevToolsUI.preserveDrill(container, rebuild)` (`#leaveDrill()` before freeing/replacing bindings, then re-focusing the rebuilt drill section by `devtoolsPath`), wrapped `WeatherDevSection.#fill()` in it, and cleared `#intensityHold` in `EmissionModel.force` for non-idle phases.
+- **Rule R23:** wrap dynamic parent-section redraws in `DevToolsUI.preserveDrill`, and test modules at real production section depth (`СЦЕНА WebGL` → `ПОГОДА`).
+- **Check:** `utils/checks/tooling/devtools-controls-check.js` (TK-330) and `utils/checks/gameplay/weather-check.js` (zero-hold `force('peak')`); both fail on v0.51.20.
 
 ## I-22 · 2026-11-15 · v0.51.5–0.51.13: switching the storm off left the rain on for good (spec 180, TK-325)
 

@@ -210,26 +210,30 @@ export class WeatherDevSection {
   #fill() {
     const content = this.#content;
     if (!content) return;
-    this.#ui.releaseValueBindings?.(content);
-    content.replaceChildren();
-    this.#savingSection.clear();
-    this.#renderSelector(content);
-    const model = this.#weather.getModel();
-    if (!model) {
-      this.#ui.createInfoRow("стан", "погода не створена", content);
-      return;
-    }
-    this.#renderControls(model, content);
-    const mode = this.#mode();
-    this.#renderRain(content, mode);
-    this.#renderStorm(content, mode);
-    this.#renderWind(content, mode);
-    if (mode.location) this.#renderFog(content, mode);
-    this.#renderEmission(content, mode);
-    this.#renderAsh(content, mode);
-    this.#renderWater(content, mode);
-    if (mode.location) this.#renderStart(content, mode);
-    this.#savingSection.render(this.#createSection("Збереження", content, ["WEATHER", "saving"]));
+    const rebuild = () => {
+      this.#ui.releaseValueBindings?.(content);
+      content.replaceChildren();
+      this.#savingSection.clear();
+      this.#renderSelector(content);
+      const model = this.#weather.getModel();
+      if (!model) {
+        this.#ui.createInfoRow("стан", "погода не створена", content);
+        return;
+      }
+      this.#renderControls(model, content);
+      const mode = this.#mode();
+      this.#renderRain(content, mode);
+      this.#renderStorm(content, mode);
+      this.#renderWind(content, mode);
+      if (mode.location) this.#renderFog(content, mode);
+      this.#renderEmission(content, mode);
+      this.#renderAsh(content, mode);
+      this.#renderWater(content, mode);
+      if (mode.location) this.#renderStart(content, mode);
+      this.#savingSection.render(this.#createSection("Збереження", content, ["WEATHER", "saving"]));
+    };
+    if (typeof this.#ui.preserveDrill === "function") this.#ui.preserveDrill(content, rebuild);
+    else rebuild();
   }
 
   // TK-327.1: «Загальні» and every location as buttons on top (all visible, one press).
@@ -678,6 +682,7 @@ export class WeatherDevSection {
         }
         this.#fill();
       }, ["WEATHER", "controls", "emission"]);
+      if (snapshot.intensityHeld) this.#levels.emission = Math.round(snapshot.intensity * 100);
       this.#ui.createRangeRow("Викид: сила, %", this.#levels.emission, controls, (value) => {
         this.#levels.emission = clamp(value, 0, 100);
         emission.holdIntensity(this.#levels.emission / 100);

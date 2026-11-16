@@ -292,6 +292,27 @@ export class DevToolsUI {
     this.#body.scrollTop = 0;
   }
 
+  // TK-330: when a parent section redraws its own content (e.g. WeatherDevSection.#fill), return any open drill-in back
+  // into that parent so bindings release cleanly, then re-open the rebuilt drill-in (or refresh an active filter).
+  preserveDrill(container, rebuild) {
+    const drillSection = this.#drill && container?.contains(this.#drill.section) ? this.#drill.section : null;
+    const drillPath = drillSection?.dataset?.devtoolsPath || "";
+    const scrollTop = drillSection ? this.#body.scrollTop : 0;
+    if (drillSection) this.#leaveDrill();
+    rebuild();
+    if (this.#searchQuery.length > 0 || this.#changedOnly) {
+      this.refreshFilter();
+      return;
+    }
+    if (!drillPath) return;
+    const target = this.#connectedElements(this.#pathSections.get(drillPath))
+      .find((el) => container.contains(el) && el.classList?.contains("devtools__section--drill"));
+    if (target) {
+      this.focusSection(target);
+      this.#body.scrollTop = scrollTop;
+    }
+  }
+
   #crumb(text, onClick) {
     const button = document.createElement("button");
     button.type = "button";
