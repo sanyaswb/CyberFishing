@@ -652,7 +652,7 @@ function checkLocationMapConfigChanges() {
     },
     createNavigation(pages){for(const [label,click] of pages) navigationButtons.set(label,click);},
     createButtonRow(label,parent,click,navigation,iconUrl,path,options={}){navigationButtons.set(label,click);if(options.badge)buttonBadges.set(label,options.badge);},
-    createSwitcherRow(key,value,parent,change,path){if(path){const id=path.join('.');switches.set(id,change);controlParents.set(id,parent);controlCounts.set(id,(controlCounts.get(id)||0)+1);}},
+    createSwitcherRow(key,value,parent,change,path){if(path){const id=path.join('.');switches.set(id,change);controlParents.set(id,[...(controlParents.get(id)||[]),parent]);}},
     // Spec 174 B1: the config tree adds its rows through addParameter (one description per row).
     addParameter(parent,{control,value,onCommit,path,bindingPath,requires}){if(control==='switch')this.createSwitcherRow('',value,parent,onCommit,path,bindingPath,{requires});}},
     {get:(target,key)=>target[key] || (()=>{})});
@@ -679,14 +679,22 @@ function checkLocationMapConfigChanges() {
   tools.toggle();
   const overlaySection = sections.find(section => section.path?.join('.') === 'OVERLAY');
   const page = id => pageHosts.get(id);
+  // Spec 180 stage E (TK-334): «Конфіг» shows every CONFIG key as in the code, debug too — a raw copy beside the module
+  // that owns a control. The owning pages keep exactly one writable control per path (relocation rule below).
+  const pageOf = node => { while (node && !node.page) node = node.parent; return node?.page; };
+  const owners = id => (controlParents.get(id) || []).filter(parent => pageOf(parent) !== 'config');
+  for (const [id, parents] of controlParents) controlCounts.set(id, owners(id).length);
+  const controlParent = id => owners(id)[0];
+  assert.ok((controlParents.get('CONFIG.debug.overlay') || []).some(parent => pageOf(parent) === 'config'),
+    '«Конфіг» also shows CONFIG.debug.overlay (the raw view, spec 180 D6)');
   assert.deepEqual([...pageHosts.keys()], ['game','config','data','location','scene','diagnostics','service','panel'],
     'seven modules on the rail, in order (spec 174 C2, Q1), then the panel settings (TK-312)');
   assert.equal(overlaySection?.parent, page('diagnostics'), 'Overlay is a root section of «Діагностика»');
-  assert.equal(controlParents.get('CONFIG.debug.overlay'), overlaySection, 'overlay enable keeps its canonical path in Overlay');
+  assert.equal(controlParent('CONFIG.debug.overlay'), overlaySection, 'overlay enable keeps its canonical path in Overlay');
   const inventorySection = sections.find(section => section.path?.join('.') === 'DEBUG_INVENTORY');
-  assert.equal(controlParents.get('CONFIG.debug.inventory.showEffectiveStats'), inventorySection,
+  assert.equal(controlParent('CONFIG.debug.inventory.showEffectiveStats'), inventorySection,
     'inventory diagnostics live in the combined Inventory section');
-  assert.equal(controlParents.get('CONFIG.debug.inventorySplit.enabled')?.parent, inventorySection,
+  assert.equal(controlParent('CONFIG.debug.inventorySplit.enabled')?.parent, inventorySection,
     'inventory split controls live under Inventory without changing their runtime paths');
   const rootsOf = id => sections.filter(section => section.parent === page(id)).map(section => section.path?.join('.'));
   assert.deepEqual(rootsOf('game'), ['ITEM_SHOP','CONFIG.debug'], '«Гра»: the shop first, then DEBUG');

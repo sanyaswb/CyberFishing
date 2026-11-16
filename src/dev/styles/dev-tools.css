@@ -729,6 +729,11 @@
 .devtools__input--text {
   width: 110px;
 }
+/* Spec 180 stage E: a key the game identifies data by — shown in «Конфіг», not edited. */
+.devtools__input--readonly {
+  opacity: 0.6;
+  cursor: default;
+}
 
 /* A 0..100 slider row (spec 129 Revision 2): the slider takes the control width, the number follows it. */
 /* Spec 174 B1: the slider and its value as one control (RangeField). */

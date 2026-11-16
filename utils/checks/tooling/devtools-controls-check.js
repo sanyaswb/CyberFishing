@@ -2666,6 +2666,67 @@ function choiceRow(options, value, path) {
   tools.dispose();
 }
 
+// --- Spec 180 stage E (TK-334): «Конфіг» shows every CONFIG key of the code ---------------------------------------------
+{
+  const rawUi = new DevToolsUI(() => {}, {}, null, null, null, document.body, createElement("div"));
+  const host = createElement("div");
+  rawUi.body.appendChild(host);
+  const written = [];
+  const { ConfigTreeRenderer } = runtime.importModule("src/dev/tools/config/config_tree_renderer.js");
+  const { ConfigModule } = runtime.importModule("src/dev/tools/modules/config_module.js");
+  const tree = new ConfigTreeRenderer({
+    ui: rawUi, schema, aliases: { getAliasesForParent: () => [] },
+    edits: { update: (path, value) => written.push([path.join("."), value]), isOverridden: () => false, resetParameter() {},
+      read: () => undefined },
+    createSection: (label, parent, path, options) => rawUi.createSection(label, parent, true, null, path, options),
+  });
+  const rowAt = (path) => byClass("devtools__row", host).find((row) => row.dataset.devtoolsPath === path);
+  const inputOf = (path) => byClass("devtools__input", rowAt(path))[0];
+  const data = { keys: ["Space", "KeyS"], hold: [], reelId: null, id: "feed_500", name: "Корм", amount: 2 };
+  // Before stage E a text list, an empty list and a null value had no row at all.
+  tree.render(data, host, ["CONFIG", "t"]);
+  for (const path of ["CONFIG.t.keys", "CONFIG.t.hold", "CONFIG.t.reelId", "CONFIG.t.amount"]) assert.ok(rowAt(path), `${path} has a row`);
+  assert.ok(!rowAt("CONFIG.t.id") && !rowAt("CONFIG.t.name"), "outside «Конфіг» the identifying keys stay hidden");
+  assert.equal(inputOf("CONFIG.t.keys").value, "Space, KeyS", "a text list reads as commas");
+  inputOf("CONFIG.t.keys").value = "Space, KeyA ,";
+  inputOf("CONFIG.t.keys").fire("change");
+  assert.equal(JSON.stringify(written.at(-1)), JSON.stringify(["CONFIG.t.keys", ["Space", "KeyA"]]), "and writes a text list");
+  inputOf("CONFIG.t.hold").value = "KeyH";
+  inputOf("CONFIG.t.hold").fire("change");
+  assert.equal(JSON.stringify(written.at(-1)), JSON.stringify(["CONFIG.t.hold", ["KeyH"]]), "an empty list takes texts");
+  assert.equal(inputOf("CONFIG.t.reelId").value, "null", "null shows as null");
+  inputOf("CONFIG.t.reelId").value = "uuid-reel";
+  inputOf("CONFIG.t.reelId").fire("change");
+  inputOf("CONFIG.t.reelId").value = "";
+  inputOf("CONFIG.t.reelId").fire("change");
+  assert.equal(JSON.stringify(written.slice(-2)), JSON.stringify([["CONFIG.t.reelId", "uuid-reel"], ["CONFIG.t.reelId", null]]),
+    "a nullable value writes a text, an empty field null");
+  // raw («Конфіг»): the identifying keys show, read-only.
+  host.replaceChildren();
+  written.length = 0;
+  tree.render(data, host, ["CONFIG", "t"], { raw: true });
+  const idInput = inputOf("CONFIG.t.id");
+  assert.ok(idInput && idInput.readOnly === true && idInput.value === "feed_500", "«Конфіг» shows id read-only");
+  assert.ok(inputOf("CONFIG.t.name")?.readOnly === true, "and name");
+  idInput.value = "other";
+  idInput.fire("change");
+  assert.equal(written.length, 0, "a read-only key never writes");
+  // ConfigModule: CONFIG.debug in the code's order, the catalogs stay in «Бази».
+  host.replaceChildren();
+  const config = { liveBait: { a: 1 }, casting: { b: 2 }, debug: { seed: 0 }, locations: { map: { test: {} }, baseResolution: 1 },
+    spawns: { fishes: {}, c: 3 } };
+  new ConfigModule({ config }).mount(host, {
+    createSection: (label, parent, path, options) => rawUi.createSection(label, parent, true, null, path, options), tree });
+  const sectionPaths = byClass("devtools__section", host).map((section) => section.dataset.devtoolsPath);
+  assert.equal(JSON.stringify(sectionPaths.filter((path) => path.split(".").length === 2)),
+    JSON.stringify(["CONFIG.liveBait", "CONFIG.casting", "CONFIG.debug", "CONFIG.locations", "CONFIG.spawns"]),
+    "every CONFIG group in the code's order, debug too");
+  assert.ok(rowAt("CONFIG.debug.seed"), "debug's parameters are in «Конфіг»");
+  assert.ok(!sectionPaths.includes("CONFIG.locations.map") && !sectionPaths.includes("CONFIG.spawns.fishes"),
+    "the catalogs merged into CONFIG stay in «Бази»");
+  rawUi.dispose?.();
+}
+
 // --- TK-285: the command after a file export ------------------------------------------------------------------------
 (async () => {
   const { ExportCommandNotice } = runtime.importModule(

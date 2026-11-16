@@ -785,6 +785,7 @@ export class DevToolsUI {
 
   // Spec 174 B1: one parameter row from one description, the way every module adds a parameter.
   //   control: "switch" | "number" | "text" | "numberList" | "range" | "segments" | "choice" | "color" (TK-320)
+  //   | "stringList" | "nullable" | "readonly" (spec 180 stage E: text lists, a value that may be null, a shown-only key)
   //   label, value, onCommit(next); path (shown, revealed and highlighted), bindingPath (synced by syncValue; null: none);
   //   requires: [{ path, isEnabled() }] (spec 131, TK-292); options (segments, choice); swatch (a label colour).
   // The label sits beside the control; a list (choice) puts its field under the label (TK-293).
@@ -809,6 +810,9 @@ export class DevToolsUI {
       const commit = guard.commit;
       if (control === "number") field = new NumberField({ value, onCommit: commit, ariaLabel, documentRef: document });
       else if (control === "numberList") field = TextField.numberList({ value, onCommit: commit, ariaLabel, documentRef: document });
+      else if (control === "stringList") field = TextField.stringList({ value, onCommit: commit, ariaLabel, documentRef: document });
+      else if (control === "nullable") field = TextField.nullable({ value, onCommit: commit, ariaLabel, documentRef: document });
+      else if (control === "readonly") field = new TextField({ value, readOnly: true, ariaLabel, documentRef: document });
       else if (control === "segments") field = new SegmentedControl({ options, value, onCommit: commit, ariaLabel, documentRef: document });
       else if (control === "choice") field = new ChoiceField({ options, value, onCommit: commit, ariaLabel, documentRef: document });
       else if (control === "color") field = new ColorField({ value, onCommit: commit, ariaLabel, documentRef: document });

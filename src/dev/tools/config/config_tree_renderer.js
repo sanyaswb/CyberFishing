@@ -39,8 +39,10 @@ export class ConfigTreeRenderer {
     return this.#shouldSkipKey(path, key, options);
   }
 
-  // options: { visibilityPolicy, applyHookedFishLegacySkips, groupedDebug, inlineSections } — inlineSections (spec 180,
-  // TK-327.1): nested objects open in place under their parent instead of inside (drill-in) at any depth.
+  // options: { visibilityPolicy, applyHookedFishLegacySkips, groupedDebug, inlineSections, raw } — inlineSections (spec
+  // 180, TK-327.1): nested objects open in place under their parent instead of inside (drill-in) at any depth; raw (spec
+  // 180 stage E, «Конфіг»): every key of the code — CONFIG.debug too, and the keys data is identified by (EXCLUDED_KEYS)
+  // shown read-only. Text lists, empty lists and null values have rows everywhere (they had none).
   render(obj, parentElement, path, options = {}) {
     for (const key in obj) {
       if (this.#shouldSkipKey(path, key, options)) continue;
@@ -61,6 +63,8 @@ export class ConfigTreeRenderer {
             isChanged: () => this.#edits.isOverridden(currentPath),
             onReset: () => this.#edits.resetParameter(currentPath),
           });
+        } else if (value.length === 0 || typeof value[0] === "string") {
+          this.#listRow("stringList", key, value, parentElement, currentPath);
         } else if (value.length > 0 && typeof value[0] === "object") {
           this.#createSection(key, parentElement, currentPath, { inline: options.inlineSections === true, render: (content) => {
             value.forEach((item, index) => {
@@ -69,8 +73,12 @@ export class ConfigTreeRenderer {
             });
           } });
         }
-      } else if (value !== null && typeof value === "object") {
+      } else if (value === null) {
+        this.#listRow("nullable", key, value, parentElement, currentPath);
+      } else if (typeof value === "object") {
         this.section(key, parentElement, currentPath, value, options, options.inlineSections === true ? { inline: true } : {});
+      } else if (options.raw && EXCLUDED_KEYS.includes(key) && SCALAR_TYPES.has(typeof value)) {
+        this.#ui.addParameter(parentElement, { control: "readonly", label: key, value, path: currentPath, bindingPath: currentPath });
       } else if (SCALAR_TYPES.has(typeof value)) {
         this.renderScalar({ key, value, parentElement, displayPath: currentPath, canonicalPath: currentPath });
       }
@@ -138,6 +146,21 @@ export class ConfigTreeRenderer {
   }
 
   // The label of a key (spec 174 C3: a changed value is marked by its row, not by a "*" in its label).
+  // A row of an edited value without a control of its own type: a text list or a value that may be null.
+  #listRow(control, key, value, parentElement, currentPath) {
+    this.#ui.addParameter(parentElement, {
+      control,
+      label: this.#formatKey(key, currentPath),
+      value,
+      onCommit: (next) => this.#edits.update(currentPath, next),
+      path: currentPath,
+      bindingPath: currentPath,
+      requires: this.#prerequisites(currentPath),
+      isChanged: () => this.#edits.isOverridden(currentPath),
+      onReset: () => this.#edits.resetParameter(currentPath),
+    });
+  }
+
   #formatKey(key, path) {
     return path.join(".") === "CONFIG.debug.timeAccelerationEnabled" ? "Прискорення часу" : key;
   }
@@ -155,8 +178,8 @@ export class ConfigTreeRenderer {
   #shouldSkipKey(path, key, options) {
     if (options.groupedDebug && path.join(".") === "CONFIG.debug" &&
       (key.startsWith("overlay") || key === "inventory" || key === "inventorySplit")) return true;
-    if (!options.visibilityPolicy && EXCLUDED_KEYS.includes(key)) return true;
-    if (path[0] === "CONFIG" && path.length === 1 && key === "debug") return true;
+    if (!options.visibilityPolicy && !options.raw && EXCLUDED_KEYS.includes(key)) return true;
+    if (!options.raw && path[0] === "CONFIG" && path.length === 1 && key === "debug") return true;
     if (options.applyHookedFishLegacySkips !== false && path[0] === "HOOKED_FISH") {
       if (HOOKED_FISH_LEGACY_KEYS.has(key)) return true;
       if (path[1] === "physics" && HOOKED_FISH_PHYSICS_COMPATIBILITY_KEYS.has(key)) return true;
