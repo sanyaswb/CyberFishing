@@ -74,6 +74,29 @@ function fakePixi() {
   const apps = [];
   const textures = [];
   const canvasTextures = [];
+  // TK-356.1: Pixi 8.22's mask contract (vendor/pixi/8.22.0: Container's `set mask`, StencilMask init / reset): taking a
+  // display-object mask turns its includeInBuild and measurable off (it is drawn only into the stencil); dropping or
+  // replacing it turns them back on — a mask still assigned elsewhere would then be drawn as content. maskedBy counts
+  // the containers that hold it.
+  const maskable = (Class) => Object.defineProperty(Class.prototype, "mask", {
+    configurable: true,
+    get() { return this._maskTarget ?? null; },
+    set(next) {
+      const current = this._maskTarget ?? null;
+      if (current === next) return;
+      if (current) {
+        current.includeInBuild = true;
+        current.measurable = true;
+        current.maskedBy = Math.max(0, (current.maskedBy ?? 1) - 1);
+      }
+      this._maskTarget = next ?? null;
+      if (next && typeof next === "object") {
+        next.includeInBuild = false;
+        next.measurable = false;
+        next.maskedBy = (next.maskedBy ?? 0) + 1;
+      }
+    },
+  });
   class Container {
     constructor() { this.children = []; this.visible = true; }
 
@@ -137,13 +160,14 @@ function fakePixi() {
   }
   // Records its path and paint calls as [name, ...args]; clear() empties the record.
   class Graphics {
-    constructor() { this.ops = []; this.mask = null; this.visible = true; }
+    constructor() { this.ops = []; this.visible = true; this.includeInBuild = true; this.measurable = true; }
 
     clear() { this.ops = []; return this; }
   }
   for (const name of ["rect", "ellipse", "circle", "moveTo", "lineTo", "closePath", "fill", "stroke", "quadraticCurveTo"]) {
     Graphics.prototype[name] = function record(...args) { this.ops.push([name, ...args]); return this; };
   }
+  for (const Class of [Container, Sprite, Graphics]) maskable(Class);
   class DisplacementFilter {
     constructor({ sprite, scale }) {
       this.sprite = sprite;
@@ -244,6 +268,7 @@ function fakePixi() {
       });
     }
   }
+  maskable(ParticleContainer);
   class Application {
     constructor() {
       this.initCall = deferred();
@@ -740,7 +765,8 @@ async function checkStarfall() {
   assert.equal(canvasTextures.length, 2, "a streak and the bolide's glow, drawn once in code");
   const stage = new pixi.Container();
   stars.mount(stage);
-  const [container, bolideLayer, starMask] = stage.children;
+  const [starLayer, starMask] = stage.children;
+  const [container, bolideLayer] = starLayer.children;
   assert.equal(container.blendMode, "add", "the stars glow additively");
   assert.equal(bolideLayer.blendMode, "add", "the bolide too, in front of the stars");
   const settings = JSON.parse(JSON.stringify(CONFIG.canvas.starfall));
@@ -792,9 +818,11 @@ async function checkStarfall() {
   assert.ok(full.brightBelow <= 2, `a star that leaves the sky fades (${full.brightBelow} bright below it)`);
   assert.equal(stars.status.pool, Math.min(96, Math.ceil(settings.perMinute[1] / 60 * settings.lifeSec[1] * 2) + 4),
     "a pool sized by the settings");
-  // TK-356: both star layers share the sky zone mask.
-  assert(container.mask === starMask && bolideLayer.mask === starMask,
-    "TK-356: ordinary stars and the bolide share the sky zone mask");
+  // TK-356, TK-356.1: one layer (the stars and the bolide) takes the sky zones' mask once: one stencil pass, and the mask
+  // belongs to one effect, so it is never drawn as content.
+  assert(starLayer.mask === starMask && container.mask === null && bolideLayer.mask === null && starMask.maskedBy === 1,
+    "TK-356.1: one masked layer holds the stars and the bolide");
+  assert.equal(starMask.includeInBuild, false, "the mask is drawn only into the stencil, never as content");
   assert.deepEqual(starMask.ops, [["rect", sky.x, sky.y, sky.width, sky.height], ["fill", 0xffffff]],
     "TK-356: sky mask outlines the sky zones");
   // TK-355: perMinute is the whole sky's; a phone screen showing a third of the sky gets about a third of the stars.
@@ -857,8 +885,11 @@ async function checkStarfall() {
   frame(world(1, [sky]));
   assert.equal(starMask.ops, opsBefore, "TK-356: unchanged sky zones keep the mask without redrawing");
   frame({ ...world(1, [sky]), skyZoned: false });
-  assert(container.mask === null && bolideLayer.mask === null && starMask.ops.length === 0,
-    "TK-356: skyZoned false drops and clears the mask");
+  assert(starLayer.mask === null && starMask.ops.length === 0, "TK-356: skyZoned false drops and clears the mask");
+  assert.equal(starMask.includeInBuild, true, "dropped, Pixi builds the mask again: it is empty, so nothing shows");
+  frame(world(1, [sky]));
+  assert(starLayer.mask === starMask && starMask.includeInBuild === false && starMask.ops.length === 2,
+    "zoned again: the mask returns, out of the build");
   stars.dispose();
   assert.equal(canvasTextures[0].destroyed, true, "dispose frees the streak");
   assert.equal(canvasTextures[1].destroyed, true, "and the glow");
@@ -1404,8 +1435,9 @@ async function checkSceneWater(compose, clock, water, metrics) {
   assert.equal(await wet.layer.whenReady(), true);
   // Spec 172 D4: the rain's rings sit right after the water's mask, its drops after the rod. Spec 182: the falling stars
   // (and their sky mask) right over the background, under the water.
-  const [, stars, bolide, , waterContainer, mapSprite, waterMask, rings] = app.stage.children;
-  assert(bolide.children?.length === 2, "the bolide's layer right after the stars");
+  const [, starLayer, starMask, waterContainer, mapSprite, waterMask, rings] = app.stage.children;
+  const [stars, bolide] = starLayer.children;
+  assert(bolide.children?.length === 2 && starMask.ops !== undefined, "the bolide in the stars' layer, then its mask");
   assert(stars instanceof wet.pixi.ParticleContainer && stars.blendMode === "add", "the starfall lies right over the background");
   assert(waterMask.ops !== undefined && rings instanceof wet.pixi.ParticleContainer,
     "the rain's rings are mounted right after the water's mask");
@@ -1447,7 +1479,7 @@ async function checkSceneWater(compose, clock, water, metrics) {
   const lowTexture = lowWet.textures.find((tex) => tex.resource.id === "day");
   if (lowTexture) lowTexture.width = 640;
   lowWet.layer.render(frame);
-  const lowFilter = lowWet.apps[0].stage.children[4].filters[0];
+  const lowFilter = lowWet.apps[0].stage.children[3].filters[0];
   assert(Math.abs(lowFilter.scale.x - 2 * 8 * artScale) < 1e-9, "TK-183: low background copy does not stretch waves");
 
   assert.equal(map.updates, 1, "each step uploads the map once");
@@ -1490,7 +1522,7 @@ async function checkSceneWater(compose, clock, water, metrics) {
   regions[0].y = 300;
   // TK-066: two zones with a gap. A mask of the zones clips the filtered copy, and the waves stop in the gap, so the art
   // between the zones stays still; a camera move only redraws the mask; one zone again drops the mask.
-  const zoneMask = app.stage.children[6];
+  const zoneMask = app.stage.children[5];
   const two = [{ x: -100, y: 100, width: 1600, height: 200 }, { x: -100, y: 500, width: 1600, height: 200 }];
   frame.world.clipRegions = list(two);
   clock.now += 40;

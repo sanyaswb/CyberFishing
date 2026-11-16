@@ -4,17 +4,21 @@
 //   life. One streak texture (a bright head fading to a clear tail) is drawn once in code; each star is a particle
 //   anchored at its head, rotated along its flight and stretched to its tail's length.
 // - How many: perMinute [at strength 0, at 1] over the whole sky (TK-355, like the rain: the sky zones whole, or the
-//   background's top third), × the share of it on screen, so a narrow phone screen shows fewer at the same density, at the night's strength (world.weather.starfall,
-//   StarfallNight: rises and falls through the night). Stars start at random moments (an accumulator of the rate, so
-//   the count follows the strength without a fixed rhythm) at a random point of a visible sky zone (world.skyRegions,
-//   picked by area; with the switch off — the background's top third). When skyZoned is true, one shared Graphics mask
-//   (on both the stars' ParticleContainer and the bolide's Container) clips tails and glow cleanly at the sky zone edges
-//   and redraws only when the sky rectangles change; stars leaving the zone also fade out smoothly inside it.
+//   background's top third) × the share of it on screen, so a narrow phone screen shows fewer at the same density, at
+//   the night's strength (world.weather.starfall, StarfallNight: rises and falls through the night). Stars start at
+//   random moments (an accumulator of the rate, so the count follows the strength without a fixed rhythm) at a random
+//   point of a visible sky zone (world.skyRegions, picked by area; with the switch off — the background's top third).
+// - TK-356, TK-356.1: with sky zones one Graphics mask on ONE layer (#layer: the stars' ParticleContainer and the
+//   bolide's Container) clips tails and glow at the zones' edges — one stencil pass a frame, and the mask belongs to one
+//   effect (Pixi 8 turns a mask's includeInBuild back on when any container drops it, so a mask shared by two layers
+//   could be drawn as content). It is redrawn only when the sky rectangles change. A star whose head leaves the zone
+//   still starts its fade there, so it does not fly on unseen behind the mask. With the switch off there is no mask:
+//   the stars may cross the land.
 // - Stage D (TK-353), the bolide: when the night's bolideSerial changes (StarfallNight: at most one a night, at any
 //   moment, quiet stretches too) one big star falls: a long tail (bolide.lengthPx), wider, brighter, slower and longer
-//   than the others (bolide.lifeSec), with a glowing head (bolide.glowPx) that flickers a little; it starts in a visible
-//   sky zone (none on screen: it is skipped) and fades like the others. Two sprites of its own (the streak and a glow
-//   drawn once), additive, in front of the ordinary stars.
+//   than the others (bolide.lifeSec), with a glowing head (bolide.glowPx) that flickers a little; it starts in a
+//   visible sky zone (none on screen: it is skipped) and fades like the others. Two sprites of its own (the streak and a
+//   glow drawn once), additive, in front of the ordinary stars, in the same masked layer.
 // Drawing (docs/rendering.md 16, 22, 23): one ParticleContainer, one texture, additive blend, no filter; a fixed pool
 // sized by the settings (it grows only when they grow); unused particles have alpha 0. Frames only while a star flies.
 const STREAK_W = 64;
@@ -27,6 +31,11 @@ const DYNAMIC = Object.freeze({ position: true, vertex: true, rotation: true, co
 const clamp01 = (value) => (value <= 0 ? 0 : value >= 1 ? 1 : value);
 const number = (value, fallback) => (Number.isFinite(Number(value)) ? Number(value) : fallback);
 const pairAt = (pair, index, fallback) => number(Array.isArray(pair) ? pair[index] : undefined, fallback);
+// A value between a [min, max] pair's ends at share 0…1.
+const between = (pair, low, high, share) => {
+  const start = pairAt(pair, 0, low);
+  return start + (pairAt(pair, 1, high) - start) * share;
+};
 const parseColor = (text) => (/^#[0-9a-f]{6}$/iu.test(text) ? Number.parseInt(text.slice(1), 16) : 0xffffff);
 
 export class PixiStarfallRenderer {
@@ -34,6 +43,8 @@ export class PixiStarfallRenderer {
   #random;
   #streak;
   #glow;
+  // TK-356.1: the stars and the bolide in one layer, masked once.
+  #layer;
   #container;
   #bolideContainer;
   #bolideTail;
@@ -85,13 +96,15 @@ export class PixiStarfallRenderer {
     this.#bolideHead = new pixi.Sprite(this.#glow);
     this.#bolideHead.anchor.set(0.5, 0.5);
     this.#bolideContainer.addChild(this.#bolideTail, this.#bolideHead);
+    this.#layer = new pixi.Container();
+    this.#layer.addChild(this.#container, this.#bolideContainer);
     this.#mask = new pixi.Graphics();
   }
 
   // Right over the background's sky, under the water and everything in the world (rendering.md 14).
   mount(stage) {
-    stage.addChild(this.#container);
-    stage.addChild(this.#bolideContainer);
+    stage.addChild(this.#layer);
+    // The mask lives in the scene for its transform (Pixi does not draw a mask itself).
     stage.addChild(this.#mask);
   }
 
@@ -110,7 +123,10 @@ export class PixiStarfallRenderer {
     if (world) this.#bolideSerial = serial;
     if (!world || settings?.enabled !== true) { this.#clear(); return this.#hide(); }
     const strength = clamp01(number(world.weather?.starfall, 0));
-    if (strength <= 0 && this.#count === 0 && !this.#bolide.alive && !bolideDue) { this.#spawnDebt = 0; return this.#hide(); }
+    if (strength <= 0 && this.#count === 0 && !this.#bolide.alive && !bolideDue) {
+      this.#spawnDebt = 0;
+      return this.#hide();
+    }
     this.#prepareZones(world, viewWidth, viewHeight);
     if (bolideDue && this.#zoneCount > 0) this.#spawnBolide(settings);
     const bolideFlying = this.#updateBolide(elapsed, settings);
@@ -184,13 +200,14 @@ export class PixiStarfallRenderer {
     const offset = zone * 4;
     this.#x[index] = this.#zoneRects[offset] + random() * this.#zoneRects[offset + 2];
     this.#y[index] = this.#zoneRects[offset + 1] + random() * this.#zoneRects[offset + 3];
-    const angle = (number(settings.angleDeg, 35) + number(settings.angleJitterDeg, 12) * (2 * random() - 1)) * Math.PI / 180;
+    const jitter = number(settings.angleJitterDeg, 12) * (2 * random() - 1);
+    const angle = (number(settings.angleDeg, 35) + jitter) * Math.PI / 180;
     const side = random() < 0.5 ? -1 : 1;
-    const speed = pairAt(settings.speedPx, 0, 500) + (pairAt(settings.speedPx, 1, 900) - pairAt(settings.speedPx, 0, 500)) * random();
+    const speed = between(settings.speedPx, 500, 900, random());
     this.#vx[index] = side * Math.cos(angle) * speed;
     this.#vy[index] = Math.sin(angle) * speed;
-    this.#length[index] = pairAt(settings.lengthPx, 0, 60) + (pairAt(settings.lengthPx, 1, 140) - pairAt(settings.lengthPx, 0, 60)) * random();
-    this.#life[index] = pairAt(settings.lifeSec, 0, 0.4) + (pairAt(settings.lifeSec, 1, 0.9) - pairAt(settings.lifeSec, 0, 0.4)) * random();
+    this.#length[index] = between(settings.lengthPx, 60, 140, random());
+    this.#life[index] = between(settings.lifeSec, 0.4, 0.9, random());
     this.#age[index] = 0;
     this.#alive[index] = 1;
   }
@@ -207,15 +224,12 @@ export class PixiStarfallRenderer {
     bolide.x = this.#zoneRects[offset] + random() * this.#zoneRects[offset + 2];
     bolide.y = this.#zoneRects[offset + 1] + random() * this.#zoneRects[offset + 3] * 0.5;
     const angle = number(look.angleDeg, 22) * Math.PI / 180;
-    const slow = pairAt(look.speedPx, 0, 250);
-    const speed = slow + (pairAt(look.speedPx, 1, 400) - slow) * random();
+    const speed = between(look.speedPx, 250, 400, random());
     const side = random() < 0.5 ? -1 : 1;
     bolide.vx = side * Math.cos(angle) * speed;
     bolide.vy = Math.sin(angle) * speed;
-    const short = pairAt(look.lengthPx, 0, 300);
-    bolide.length = short + (pairAt(look.lengthPx, 1, 500) - short) * random();
-    const brief = pairAt(look.lifeSec, 0, 2.2);
-    bolide.life = brief + (pairAt(look.lifeSec, 1, 3.2) - brief) * random();
+    bolide.length = between(look.lengthPx, 300, 500, random());
+    bolide.life = between(look.lifeSec, 2.2, 3.2, random());
     bolide.age = 0;
     bolide.phase = random() * Math.PI * 2;
     bolide.alive = true;
@@ -234,7 +248,9 @@ export class PixiStarfallRenderer {
     if (bolide.age >= bolide.life) { bolide.alive = false; this.#bolideContainer.visible = false; return true; }
     bolide.x += bolide.vx * elapsed;
     bolide.y += bolide.vy * elapsed;
-    if (bolide.age < bolide.life * (1 - fade) && !this.#insideZone(bolide.x, bolide.y)) bolide.age = bolide.life * (1 - fade);
+    if (bolide.age < bolide.life * (1 - fade) && !this.#insideZone(bolide.x, bolide.y)) {
+      bolide.age = bolide.life * (1 - fade);
+    }
     const share = bolide.age / bolide.life;
     const flare = Math.min(1, share / 0.05);
     const envelope = share > 1 - fade ? (1 - share) / Math.max(1e-6, fade) : 1;
@@ -298,16 +314,11 @@ export class PixiStarfallRenderer {
     this.#updateMask(zoned, regions);
   }
 
-  // Clips both the ordinary stars and the bolide to the sky zones, redrawing only when their rectangles change.
+  // Clips the stars' layer (the stars and the bolide) to the sky zones, redrawing only when their rectangles change.
   #updateMask(zoned, regions) {
     if (!zoned) {
       // An unassigned mask is drawn again (Pixi resets includeInBuild), so it is emptied too.
-      if (this.#container.mask || this.#bolideContainer.mask) {
-        this.#container.mask = null;
-        this.#bolideContainer.mask = null;
-        this.#mask.clear();
-        this.#maskRects.length = 0;
-      }
+      if (this.#layer.mask) { this.#layer.mask = null; this.#mask.clear(); this.#maskRects.length = 0; }
       return;
     }
     const count = regions ? regions.count : 0;
@@ -323,20 +334,21 @@ export class PixiStarfallRenderer {
       this.#mask.clear();
       for (let index = 0; index < count; index += 1) {
         const region = regions.getAt(index), offset = index * 4;
-        rects[offset] = region.x; rects[offset + 1] = region.y; rects[offset + 2] = region.width; rects[offset + 3] = region.height;
+        rects[offset] = region.x; rects[offset + 1] = region.y;
+        rects[offset + 2] = region.width; rects[offset + 3] = region.height;
         this.#mask.rect(region.x, region.y, region.width, region.height);
       }
       if (count > 0) this.#mask.fill(0xffffff);
     }
-    if (this.#container.mask !== this.#mask) this.#container.mask = this.#mask;
-    if (this.#bolideContainer.mask !== this.#mask) this.#bolideContainer.mask = this.#mask;
+    if (this.#layer.mask !== this.#mask) this.#layer.mask = this.#mask;
   }
 
   #insideZone(x, y) {
     for (let zone = 0; zone < this.#zoneCount; zone += 1) {
       const offset = zone * 4;
       const left = this.#zoneRects[offset], top = this.#zoneRects[offset + 1];
-      if (x >= left && y >= top && x <= left + this.#zoneRects[offset + 2] && y <= top + this.#zoneRects[offset + 3]) return true;
+      const right = left + this.#zoneRects[offset + 2], bottom = top + this.#zoneRects[offset + 3];
+      if (x >= left && y >= top && x <= right && y <= bottom) return true;
     }
     return false;
   }

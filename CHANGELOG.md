@@ -2,6 +2,10 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.51.53 - Starfall mask on one layer (TK-356.1)
+
+- The falling stars and the bolide share one layer under one sky mask: one stencil pass a frame instead of two, and the mask can no longer show up as a white shape when it is taken off one of them. The scene checks now model Pixi masks.
+
 ## v0.51.52 - Clip falling stars and bolide to the sky zones (TK-356)
 
 - Ordinary falling stars and the bolide now share a Pixi Graphics sky mask so tails and glow cut off cleanly at the sky zone boundary and never spill onto the world below; the mask redraws only when sky rectangles change and is removed when sky zones are off.
@@ -40,7 +44,3 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 ## v0.51.44 - Separate rain and ash zones (TK-349)
 
 - The zone editor gets «Попіл»: the emission's ash (dust) flies only in its own zones, apart from the rain's; embers start inside a visible ash zone and fade out when they drift out; the switch `enableAshZones` off — ash over the whole screen.
-
-## v0.51.43 - Radiation hiss denser at the edges (TK-338.1)
-
-- The radiation's hiss is denser at the screen's edges and weaker in the middle, like a vignette; DevTools «РАДІАЦІЯ» → «Шипіння (загальне)» → «По краях»: the middle's share (1 — even over the whole screen), the calm middle's radius and the transition.
