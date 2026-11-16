@@ -1,5 +1,8 @@
 import { SceneLayerDevSection } from "../scene_layer_dev_section.js";
 import { WeatherDevSection } from "../weather_dev_section.js";
+import { GENERAL_WEATHER_PART_IDS, GENERAL_WEATHER_PARTS } from "../../weather/weather_export_format.js";
+
+const readPath = (object, path) => path.reduce((value, key) => value?.[key], object) ?? null;
 
 // «СЦЕНА WebGL» with «ПОГОДА» inside it (TK-291) as a panel module (spec 174 B3, moved from DevTools). Without a
 // scene section the weather section stands in the panel on its own. A redraw disposes the previous weather section.
@@ -70,13 +73,15 @@ export class SceneModule {
       renderConfigTree: (value, section, path, options) => tree.render(value, section, path, options),
       updateConfig: (path, value) => edits.update(path, value),
       files: this.#files,
-      getBaseRain: () => base?.canvas?.rain ?? null,
+      // Spec 180 stage D (TK-332): the general weather parts as in the code (status, export hashes, import templates).
+      getBaseGeneral: () => (base ? Object.fromEntries(GENERAL_WEATHER_PART_IDS.map((part) =>
+        [part, readPath(base, GENERAL_WEATHER_PARTS[part].configPath)])) : null),
       getBaseLocationWeather: (id) => base?.locations?.map?.[id]?.weather ?? null,
-      // Spec 175 TK-286: drops the session's overrides of rain look and the location's weather.
-      resetWeather: this.#configRuntime ? (id) => {
-        edits.resetOverrideTree(["canvas", "rain"]);
-        edits.resetOverrideTree(["locations", "map", id, "weather"]);
-        console.log(`[DevTools] Погоду ${id} скинуто до коду`);
+      // Spec 175 TK-286, spec 180 stage D: drops the session's overrides of the general parts and / or a location's weather.
+      resetWeather: this.#configRuntime ? ({ general, locationId }) => {
+        if (general) for (const part of GENERAL_WEATHER_PART_IDS) edits.resetOverrideTree([...GENERAL_WEATHER_PARTS[part].configPath]);
+        if (locationId) edits.resetOverrideTree(["locations", "map", locationId, "weather"]);
+        console.log(`[DevTools] Погоду ${[general ? "загальні" : null, locationId].filter(Boolean).join(" і ")} скинуто до коду`);
       } : null,
       gameVersion: this.#gameVersion,
     });

@@ -1,6 +1,7 @@
 // Release notes, newest first (unshift with every patch). DEV only: no production code reads them, and in the start's
 // bundle they cost 13 KB gzip (spec 160). dev.html publishes them with the version: window.CYBER_FISHING_PROJECT_VERSION.notes.
 export const PROJECT_RELEASE_NOTES = Object.freeze([
+  "Spec 180 D (TK-332): weather saving exports and applies the general settings (rain, ash, storm, wind) and/or a location — file format v2 by the selector, v1 still reads; ranges shared with the config schema.",
   "TK-331: DevTools «Панель» enables adaptiveWidth («Адаптивна ширина (ПК)») by default.",
   "TK-330: Weather DevTools «Викид: пік зараз» and section controls now refresh the open drill-in view immediately instead of behind it; force('peak') clears zero intensity hold.",
   "TK-329: DevTools «Змінені» filter button pulses with a smooth pink background while active.",

@@ -1,7 +1,8 @@
 "use strict";
-// Spec 175 (TK-286): weather export/import/reset in DevTools «🌧 ПОГОДА» and `npm run apply:weather` moving changed
-// modules (global rain_settings.js and/or locations/weather/<id>.js) safely into the code. Every file write runs in a
-// scratch directory; production modules are only read.
+// Spec 175 (TK-286), spec 180 stage D (TK-332): weather export/import/reset in DevTools «ПОГОДА» and
+// `npm run apply:weather` moving changed modules safely into the code — the general settings (rain, ash, storm, wind)
+// and/or a location's weather (format v2; v1 = rain + a location still applies). Every file write runs in a scratch
+// directory; production modules are only read.
 const assert = require("node:assert/strict");
 const fs = require("node:fs");
 const os = require("node:os");
@@ -13,36 +14,70 @@ const { TestDocument } = require("../../testing/keepnet/test_document");
 
 const root = path.resolve(__dirname, "../../..");
 const load = (file) => import(pathToFileURL(path.join(root, file)).href);
+const clone = (value) => JSON.parse(JSON.stringify(value));
+const tick = () => new Promise((resolve) => setTimeout(resolve, 0));
 
 (async () => {
   const format = await load("src/dev/weather/weather_export_format.js");
-  const { RAIN_SETTINGS } = await load(format.RAIN_SETTINGS_MODULE);
-  const { WEATHER } = await load(format.locationWeatherModulePath("test"));
   const { CONFIG } = await load("src/game/config/runtime/game_config.js");
   const { MAP_DB } = await load("src/game/config/databases/location_catalog.js");
+  const { WEATHER } = await load(format.locationWeatherModulePath("test"));
+  const PARTS = format.GENERAL_WEATHER_PART_IDS;
+  assert.deepEqual([...PARTS], ["rain", "ash", "storm", "wind"], "the general parts are rain, ash, storm and wind");
 
-  assert.equal(CONFIG.canvas.rain, RAIN_SETTINGS, "CONFIG.canvas.rain reads the rain data module");
+  // 0. Every general part is its data module, fed into CONFIG; committed modules are canonical.
+  const real = {}, realText = {};
+  for (const part of PARTS) {
+    const spec = format.GENERAL_WEATHER_PARTS[part];
+    real[part] = (await load(spec.module))[spec.exportName];
+    realText[part] = fs.readFileSync(path.join(root, spec.module), "utf8");
+    assert.equal(spec.configPath.reduce((value, key) => value?.[key], CONFIG), real[part], `CONFIG.${spec.configPath.join(".")} reads ${spec.module}`);
+    assert.equal(format.generalModuleSource(part, real[part]), realText[part], `committed ${spec.module} is canonical`);
+  }
   assert.equal(MAP_DB.test.weather, WEATHER, "location catalog joins the location weather data module");
-  const realRain = fs.readFileSync(path.join(root, format.RAIN_SETTINGS_MODULE), "utf8");
   const realLocation = fs.readFileSync(path.join(root, format.locationWeatherModulePath("test")), "utf8");
-  assert.equal(format.rainModuleSource(RAIN_SETTINGS), realRain, "committed rain_settings.js is canonical");
   assert.equal(format.locationWeatherModuleSource("test", WEATHER), realLocation, "committed test.js weather is canonical");
 
   // Hash & noise stability.
-  const baseRainHash = await format.rainHash(RAIN_SETTINGS, sha256);
+  const baseHashes = {};
+  for (const part of PARTS) baseHashes[part] = await format.generalPartHash(real[part], sha256);
   const baseWeatherHash = await format.locationWeatherHash(WEATHER, sha256);
-  const shuffledRain = Object.fromEntries(Object.entries(RAIN_SETTINGS).reverse());
-  const shuffledWeather = Object.fromEntries(Object.entries(WEATHER).reverse());
-  assert.equal(await format.rainHash(shuffledRain, sha256), baseRainHash, "rain hash ignores key order");
-  assert.equal(await format.locationWeatherHash(shuffledWeather, sha256), baseWeatherHash, "location weather hash ignores key order");
-  const cleanedRain = format.canonicalRain({ ...RAIN_SETTINGS, widthPx: 0.1 + 0.2, opacity: 11.700000000000001 });
-  assert.equal(cleanedRain.widthPx, 0.3);
-  assert.equal(cleanedRain.opacity, 11.7);
+  const shuffledStorm = Object.fromEntries(Object.entries(real.storm).reverse());
+  assert.equal(await format.generalPartHash(shuffledStorm, sha256), baseHashes.storm, "general hash ignores key order");
+  assert.equal(await format.locationWeatherHash(Object.fromEntries(Object.entries(WEATHER).reverse()), sha256), baseWeatherHash,
+    "location weather hash ignores key order");
+  const cleanedRain = format.canonicalGeneralPart({ ...real.rain, opacity: 0.1 + 0.2 });
+  assert.equal(cleanedRain.opacity, 0.3);
 
-  // 1. CLI applier in scratch dir: partial updates (rain-only, location-only, both), unchanged, cancel, conflicts, validation.
+  // File builders: v2 by levels, v1 for the legacy reader.
+  const v2 = (general, locationWeather, extra = {}) => JSON.stringify({
+    ...format.buildWeatherFile({
+      general,
+      generalBaseHashes: general ? baseHashes : null,
+      locationId: locationWeather ? "test" : null,
+      locationWeather,
+      locationWeatherBaseHash: locationWeather ? baseWeatherHash : null,
+      gameVersion: "0.51.23",
+      exportedAt: "2026-11-16T10:15:00.000Z",
+    }),
+    ...extra,
+  });
+  const v1 = (rain, locationWeather, extra = {}) => JSON.stringify({
+    format: format.WEATHER_FILE_FORMAT, formatVersion: 1, gameVersion: "0.50.93", locationId: "test",
+    exportedAt: "2026-11-13T10:15:00.000Z", baseHashes: { rain: baseHashes.rain, locationWeather: baseWeatherHash },
+    rain, locationWeather, ...extra,
+  });
+  const generalOnly = JSON.parse(v2(real, null));
+  assert.equal(generalOnly.locationId, undefined, "a general-only file has no location");
+  assert.deepEqual(Object.keys(generalOnly.general), [...PARTS]);
+  assert.deepEqual(format.validateWeatherFile(generalOnly, { generalTemplates: real }), []);
+  assert.deepEqual(format.validateWeatherFile(JSON.parse(v1(real.rain, WEATHER)), { generalTemplates: real, locationWeatherTemplate: WEATHER }), [],
+    "a v1 file (rain + location) is still valid");
+
+  // 1. CLI applier in a scratch dir.
   const scratch = fs.mkdtempSync(path.join(os.tmpdir(), "cyber-fishing-apply-weather-"));
   try {
-    const rainTarget = path.join(scratch, "rain_settings.js");
+    const target = (part) => path.join(scratch, path.basename(format.GENERAL_WEATHER_PARTS[part].module));
     const locTarget = path.join(scratch, "test.js");
     const backups = path.join(scratch, "backups");
     const dirtySet = new Set();
@@ -51,152 +86,157 @@ const load = (file) => import(pathToFileURL(path.join(root, file)).href);
     const applier = new WeatherFileApplier({
       format,
       locations: { map: { test: {}, pond: {} } },
-      rainModulePath: rainTarget,
+      generalModulePath: target,
       locationModulePath: (id) => path.join(scratch, `${id}.js`),
-      readRain: async (file) => { reads++; return (await import(`${pathToFileURL(file).href}?r=${reads}`)).RAIN_SETTINGS; },
+      readGeneral: async (file, part) => { reads++; return (await import(`${pathToFileURL(file).href}?r=${reads}`))[format.GENERAL_WEATHER_PARTS[part].exportName]; },
       readLocationWeather: async (file) => { reads++; return (await import(`${pathToFileURL(file).href}?w=${reads}`)).WEATHER; },
-      isDirty: (target) => dirtySet.has(target),
+      isDirty: (file) => dirtySet.has(file),
       confirm: async () => { asked++; return answer; },
       backupDir: backups,
       runChecks: () => { checks++; },
       log: (msg) => logs.push(msg),
-      now: () => new Date("2026-11-13T10:15:30Z"),
+      now: () => new Date("2026-11-16T10:15:30Z"),
     });
     const resetTargets = () => {
-      fs.writeFileSync(rainTarget, realRain);
+      for (const part of PARTS) fs.writeFileSync(target(part), realText[part]);
       fs.writeFileSync(locTarget, realLocation);
+      fs.rmSync(backups, { recursive: true, force: true });
     };
-    const exported = (rain, locationWeather, extra = {}) => JSON.stringify({
-      ...format.buildWeatherFile({
-        locationId: "test",
-        rain,
-        locationWeather,
-        rainBaseHash: baseRainHash,
-        locationWeatherBaseHash: baseWeatherHash,
-        gameVersion: "0.50.93",
-        exportedAt: "2026-11-13T10:15:00.000Z",
-      }),
-      ...extra,
-    });
+    const text = (part) => fs.readFileSync(target(part), "utf8");
+    const written = async (file, name, tag) => (await import(`${pathToFileURL(file).href}?after=${tag}`))[name];
 
-    const rainOnly = JSON.parse(JSON.stringify(RAIN_SETTINGS));
-    rainOnly.opacity = 0.55;
-    rainOnly.rings.ripple.strength = 0.4;
-
-    const locOnly = JSON.parse(JSON.stringify(WEATHER));
-    locOnly.fog.chancePerCheck = 0.25;
-    locOnly.rain.chancePerCheck = 0.04;
-
-    // Rain-only update leaves location weather untouched (even if location target has uncommitted edits).
+    // Defect of format v1 (TK-332): the storm, wind and ash settings could not reach the code. A general file now
+    // writes only the changed module — here the storm — and leaves the others and the location alone.
+    const storm = { ...clone(real), storm: { ...clone(real.storm), windMinStrength: 0.55 } };
     resetTargets();
-    dirtySet.add(locTarget);
-    assert.equal(await applier.apply(exported(rainOnly, WEATHER)), "applied");
+    dirtySet.add(locTarget); // the location is not in the file: its uncommitted edits do not matter
+    assert.equal(await applier.apply(v2(storm, null)), "applied");
     assert.equal(asked, 1);
     assert.equal(checks, 1);
-    assert.equal(fs.readFileSync(locTarget, "utf8"), realLocation, "unchanged location weather is not touched");
-    assert.equal(fs.readdirSync(backups).length, 1, "only changed module is backed up");
-    const writtenRain = (await import(`${pathToFileURL(rainTarget).href}?after=rain`)).RAIN_SETTINGS;
-    assert.equal(writtenRain.opacity, 0.55);
-    assert.equal(writtenRain.rings.ripple.strength, 0.4);
-    assert(logs.some((line) => line.includes("opacity: 0.4 -> 0.55")), "diff logs the changed field");
     dirtySet.clear();
+    assert.equal((await written(target("storm"), "STORM_SETTINGS", "storm")).windMinStrength, 0.55);
+    for (const part of ["rain", "ash", "wind"]) assert.equal(text(part), realText[part], `unchanged ${part} module is not touched`);
+    assert.equal(fs.readFileSync(locTarget, "utf8"), realLocation, "a general file never touches the location");
+    assert.equal(fs.readdirSync(backups).length, 1, "only the changed module is backed up");
+    assert(fs.readdirSync(backups)[0].endsWith("-storm_settings.js"));
+    assert(logs.some((line) => line.includes("windMinStrength: 0.7 -> 0.55")), "diff logs the changed field");
 
-    // Location-only update leaves rain_settings.js untouched.
+    // Wind and ash together; the location-only file; both levels in one file.
+    const windAsh = clone(real);
+    windAsh.wind.gust.attackShare = 0.3;
+    windAsh.ash.hotColor = "#ffcc00";
     resetTargets();
-    assert.equal(await applier.apply(exported(RAIN_SETTINGS, locOnly), { yes: true }), "applied");
+    assert.equal(await applier.apply(v2(windAsh, null), { yes: true }), "applied");
     assert.equal(asked, 1, "--yes skips prompt");
-    assert.equal(fs.readFileSync(rainTarget, "utf8"), realRain, "unchanged rain module is not touched");
-    const writtenLoc = (await import(`${pathToFileURL(locTarget).href}?after=loc`)).WEATHER;
-    assert.equal(writtenLoc.fog.chancePerCheck, 0.25);
-    assert.equal(writtenLoc.rain.chancePerCheck, 0.04);
+    assert.equal((await written(target("wind"), "WIND_SETTINGS", "wind")).gust.attackShare, 0.3);
+    assert.equal((await written(target("ash"), "ASH_SETTINGS", "ash")).hotColor, "#ffcc00");
+    assert.equal(fs.readdirSync(backups).length, 2);
 
-    // Combined update rewrites both and backs up both.
+    const locOnly = clone(WEATHER);
+    locOnly.fog.chancePerCheck = 0.25;
     resetTargets();
-    fs.rmSync(backups, { recursive: true, force: true });
-    assert.equal(await applier.apply(exported(rainOnly, locOnly), { yes: true }), "applied");
-    assert.equal(fs.readdirSync(backups).length, 2, "both changed modules are backed up");
+    assert.equal(await applier.apply(v2(null, locOnly), { yes: true }), "applied");
+    for (const part of PARTS) assert.equal(text(part), realText[part], "a location file never touches the general modules");
+    assert.equal((await written(locTarget, "WEATHER", "loc")).fog.chancePerCheck, 0.25);
+
+    resetTargets();
+    assert.equal(await applier.apply(v2(storm, locOnly), { yes: true }), "applied");
+    assert.equal(fs.readdirSync(backups).length, 2, "storm and location backed up");
+
+    // Format v1 still applies: rain + location.
+    const rainV1 = clone(real.rain);
+    rainV1.opacity = 0.55;
+    resetTargets();
+    assert.equal(await applier.apply(v1(rainV1, WEATHER), { yes: true }), "applied");
+    assert.equal((await written(target("rain"), "RAIN_SETTINGS", "rain")).opacity, 0.55);
+    assert.equal(fs.readFileSync(locTarget, "utf8"), realLocation);
+    for (const part of ["ash", "storm", "wind"]) assert.equal(text(part), realText[part]);
 
     // Unchanged & cancelled.
     resetTargets();
-    assert.equal(await applier.apply(exported(RAIN_SETTINGS, WEATHER)), "unchanged");
+    assert.equal(await applier.apply(v2(real, WEATHER)), "unchanged");
     answer = false;
-    assert.equal(await applier.apply(exported(rainOnly, locOnly)), "cancelled");
-    assert.equal(fs.readFileSync(rainTarget, "utf8"), realRain);
-    assert.equal(fs.readFileSync(locTarget, "utf8"), realLocation);
+    assert.equal(await applier.apply(v2(storm, locOnly)), "cancelled");
+    assert.equal(text("storm"), realText.storm);
     answer = true;
 
     // Dirty target refused.
-    dirtySet.add(rainTarget);
-    assert.equal(await applier.apply(exported(rainOnly, WEATHER), { yes: true }), "refused", "dirty rain module refused");
+    dirtySet.add(target("storm"));
+    assert.equal(await applier.apply(v2(storm, null), { yes: true }), "refused", "dirty storm module refused");
     dirtySet.clear();
 
     // Conflict without/with --force.
-    const conflict = exported(rainOnly, WEATHER, { baseHashes: { rain: "0".repeat(64), locationWeather: baseWeatherHash } });
-    assert.equal(await applier.apply(conflict, { yes: true }), "refused", "hash mismatch refused without --force");
-    assert.equal(await applier.apply(conflict, { yes: true, force: true }), "applied", "--force applies over conflict");
+    const stale = JSON.parse(v2(storm, null));
+    stale.baseHashes.general.storm = "0".repeat(64);
+    assert.equal(await applier.apply(JSON.stringify(stale), { yes: true }), "refused", "hash mismatch refused without --force");
+    assert.equal(await applier.apply(JSON.stringify(stale), { yes: true, force: true }), "applied", "--force applies over conflict");
 
-    // Validation failures keep files untouched.
+    // Validation failures keep files untouched; general ranges are the config schema's (weather_settings_ranges.js).
     resetTargets();
     const untouched = () => {
-      assert.equal(fs.readFileSync(rainTarget, "utf8"), realRain);
+      for (const part of PARTS) assert.equal(text(part), realText[part]);
       assert.equal(fs.readFileSync(locTarget, "utf8"), realLocation);
     };
-    const badColor = JSON.parse(JSON.stringify(RAIN_SETTINGS)); badColor.color = "blue";
-    const badRange = JSON.parse(JSON.stringify(RAIN_SETTINGS)); badRange.widthPx = 99;
-    const unknownRainKey = JSON.parse(JSON.stringify(RAIN_SETTINGS)); unknownRainKey.secret = 1;
-    const badDuration = JSON.parse(JSON.stringify(WEATHER)); badDuration.rain.durationSec = [500, 10];
-    const badPhases = JSON.parse(JSON.stringify(WEATHER)); badPhases.fog.phases = ["noon"];
-    const badWindStrength = JSON.parse(JSON.stringify(WEATHER)); badWindStrength.wind.states.light.strength = [0.2, 2.5];
-    const badFloatReturn = JSON.parse(JSON.stringify(WEATHER)); badFloatReturn.wind.float.returnPctRange = [0.6, 0.2];
-    const badLocationUnknownKey = JSON.parse(JSON.stringify(WEATHER)); badLocationUnknownKey.extra = true;
-
-    for (const [text, reason] of [
+    const change = (edit) => { const general = clone(real); edit(general); return general; };
+    const missingPart = JSON.parse(v2(real, null));
+    delete missingPart.general.wind;
+    const unknownPart = JSON.parse(v2(real, null));
+    unknownPart.general.water = {};
+    const badDuration = clone(WEATHER); badDuration.rain.durationSec = [500, 10];
+    const badPhases = clone(WEATHER); badPhases.fog.phases = ["noon"];
+    const movedKey = clone(WEATHER); movedKey.wind.weatherBoost = { rainBonus: 0.2 };
+    for (const [fileText, reason] of [
       ["{bad json", "invalid json"],
-      [exported(RAIN_SETTINGS, WEATHER, { format: "cyber-fishing/zones" }), "wrong format"],
-      [exported(RAIN_SETTINGS, WEATHER, { locationId: "lake" }), "unknown location"],
-      [exported(RAIN_SETTINGS, WEATHER, { locationId: "pond" }), "missing location weather module"],
-      [exported(badColor, WEATHER), "invalid color"],
-      [exported(badRange, WEATHER), "out-of-range rain widthPx"],
-      [exported(unknownRainKey, WEATHER), "unknown rain key"],
-      [exported(RAIN_SETTINGS, badDuration), "reversed duration interval"],
-      [exported(RAIN_SETTINGS, badPhases), "unknown fog phase"],
-      [exported(RAIN_SETTINGS, badWindStrength), "wind strength > 1"],
-      [exported(RAIN_SETTINGS, badFloatReturn), "reversed float returnPctRange"],
-      [exported(RAIN_SETTINGS, badLocationUnknownKey), "unknown location weather key"],
+      [v2(real, null, { format: "cyber-fishing/zones" }), "wrong format"],
+      [v2(real, null, { formatVersion: 3 }), "unknown version"],
+      [JSON.stringify({ format: format.WEATHER_FILE_FORMAT, formatVersion: 2, baseHashes: {} }), "empty file"],
+      [JSON.stringify(missingPart), "v2 general without a part"],
+      [JSON.stringify(unknownPart), "unknown general part"],
+      [v2(change((g) => { g.storm.windMinStrength = 2; }), null), "storm windMinStrength > 1"],
+      [v2(change((g) => { g.wind.gust.deltaRange = [0.3, 0.1]; }), null), "reversed wind gust deltaRange"],
+      [v2(change((g) => { g.wind.secret = 1; }), null), "unknown wind key"],
+      [v2(change((g) => { g.ash.coolColor = "red"; }), null), "invalid ash color"],
+      [v2(change((g) => { g.ash.strength.opacity = [0.5, 1.5]; }), null), "ash opacity > 1"],
+      [v2(change((g) => { g.rain.color = "blue"; }), null), "invalid rain color"],
+      [v2(change((g) => { g.rain.widthPx = 99; }), null), "out-of-range rain widthPx"],
+      [v1({ ...clone(real.rain), secret: 1 }, WEATHER), "v1 unknown rain key"],
+      [v2(null, WEATHER, { locationId: "lake" }), "unknown location"],
+      [v2(null, WEATHER, { locationId: "pond" }), "missing location weather module"],
+      [v2(null, badDuration), "reversed duration interval"],
+      [v2(null, badPhases), "unknown fog phase"],
+      [v2(null, movedKey), "a key that moved to the general wind"],
     ]) {
-      assert.equal(await applier.apply(text, { yes: true }), "refused", reason);
+      assert.equal(await applier.apply(fileText, { yes: true }), "refused", reason);
       untouched();
     }
   } finally {
     fs.rmSync(scratch, { recursive: true, force: true });
   }
 
-  // 2. WeatherDevSection UI saving workflow (status vs code, export + ExportCommandNotice, import, reset to code).
+  // 2. WeatherDevSection «Збереження»: status of both levels, export by the selector, import, reset.
   {
     const doc = new TestDocument();
     const runtime = new SourceRuntime({ globals: { document: doc } });
     const { WeatherDevSection } = runtime.importModule("src/dev/tools/weather_dev_section.js");
 
-    const baseRain = JSON.parse(JSON.stringify(RAIN_SETTINGS));
-    const baseWeather = JSON.parse(JSON.stringify(WEATHER));
-    let liveRain = JSON.parse(JSON.stringify(RAIN_SETTINGS));
-    let liveWeather = JSON.parse(JSON.stringify(WEATHER));
+    const base = clone(real);
+    const baseWeather = clone(WEATHER);
+    let live = clone(real);
+    let liveWeather = clone(WEATHER);
 
-    const sections = new Map();
     const textRows = new Map();
     const buttons = new Map();
+    const parameters = new Map();
     const exportNotices = [];
     let pickedText = null;
     const downloads = [];
-    let resetCalls = 0;
+    const resets = [];
 
     const fakeUi = {
       releaseValueBindings() {},
-      createSection(label, parent, path) {
-        const key = (path || [label]).join(".");
+      createSection(label, parent) {
         const node = doc.createElement("div");
         parent.appendChild(node);
-        sections.set(key, node);
         return node;
       },
       createTextRow(label, value, parent) {
@@ -215,19 +255,10 @@ const load = (file) => import(pathToFileURL(path.join(root, file)).href);
       createSwitcherRow() {},
       createRangeRow() {},
       createSelectRow() {},
-      addParameter() {},
+      addParameter(parent, options) { if (options?.path) parameters.set(options.path.join("."), options); },
       createInputRow() {},
-      createButtonRow(label, parent, onClick) {
-        buttons.set(label, onClick);
-      },
-      showExportCommand(host, options) {
-        exportNotices.push({ host, ...options });
-      },
-    };
-    const fakeFiles = {
-      download: (name, text) => downloads.push({ name, text }),
-      pickFile: async () => pickedText,
-      hashText: (text) => sha256(text),
+      createButtonRow(label, parent, onClick) { buttons.set(label, onClick); },
+      showExportCommand(host, options) { exportNotices.push({ host, ...options }); },
     };
     const model = {
       snapshot: {
@@ -235,78 +266,102 @@ const load = (file) => import(pathToFileURL(path.join(root, file)).href);
         strikeSerial: 0, strikeVariant: 0, strikeDistance: 0.5, frozen: false, events: null,
       },
     };
-    const updates = [];
+    const configPaths = Object.fromEntries(PARTS.map((part) => [`CONFIG.${format.GENERAL_WEATHER_PARTS[part].configPath.join(".")}`, part]));
     const section = new WeatherDevSection({
       ui: fakeUi,
       weather: { locationId: "test", getModel: () => model, getWind: () => null },
       config: () => liveWeather,
-      rainConfig: () => liveRain,
-      createSection: (label, parent, path) => fakeUi.createSection(label, parent, path),
+      locationConfig: () => liveWeather,
+      locationsMap: () => ({ test: { weather: liveWeather } }),
+      rainConfig: () => live.rain,
+      ashConfig: () => live.ash,
+      general: () => ({ ...live, water: null, screen: null, debug: null }),
+      createSection: (label, parent, sectionPath) => fakeUi.createSection(label, parent, sectionPath),
       renderConfigTree() {},
       updateConfig: (pathArg, value) => {
-        updates.push([pathArg.join("."), JSON.parse(JSON.stringify(value))]);
         const key = pathArg.join(".");
-        if (key === "CONFIG.canvas.rain") liveRain = JSON.parse(JSON.stringify(value));
-        if (key === "CONFIG.locations.map.test.weather") liveWeather = JSON.parse(JSON.stringify(value));
+        if (configPaths[key]) live[configPaths[key]] = clone(value);
+        if (key === "CONFIG.locations.map.test.weather") liveWeather = clone(value);
       },
-      files: fakeFiles,
-      getBaseRain: () => baseRain,
+      files: { download: (name, body) => downloads.push({ name, body }), pickFile: async () => pickedText, hashText: (t) => sha256(t) },
+      getBaseGeneral: () => base,
       getBaseLocationWeather: () => baseWeather,
-      resetWeather: () => {
-        resetCalls++;
-        liveRain = JSON.parse(JSON.stringify(baseRain));
-        liveWeather = JSON.parse(JSON.stringify(baseWeather));
+      resetWeather: (request) => {
+        resets.push(request);
+        if (request.general) live = clone(base);
+        if (request.locationId) liveWeather = clone(baseWeather);
       },
-      gameVersion: "0.50.93",
-      now: () => new Date(2026, 10, 13, 12, 34, 0),
+      gameVersion: "0.51.23",
+      now: () => new Date(2026, 10, 16, 12, 34, 0),
     });
+    const status = () => textRows.get("Стан погоди").innerText;
+    const select = (value) => parameters.get("WEATHER.location.id").onCommit(value);
+    const exportNow = async () => { await buttons.get("Експорт погоди")(); await tick(); return JSON.parse(downloads.at(-1).body); };
 
-    const host = doc.createElement("div");
-    section.render(host);
-    assert.equal(textRows.get("Стан погоди").innerText, "Погода збігається з кодом.");
+    section.render(doc.createElement("div"));
+    assert.equal(status(), "Погода збігається з кодом.");
 
-    // Live edit triggers saving status refresh via config-updated.
-    liveRain.opacity = 0.6;
-    doc.fire("config-updated", { detail: { path: ["CONFIG", "canvas", "rain", "opacity"] } });
-    assert.equal(textRows.get("Стан погоди").innerText, "Змінено (ще не в коді): Вигляд дощу.");
+    // The defect (TK-332): a storm edit is a change not in the code — the old status said «збігається з кодом».
+    live.storm.windMinStrength = 0.5;
+    doc.fire("config-updated", { detail: { path: ["CONFIG", "weather", "storm", "windMinStrength"] } });
+    assert.equal(status(), "Змінено (ще не в коді): Шторм. Загальні не ввійдуть в експорт: оберіть «Загальні» або вимкніть «Параметри локації».",
+      "a storm edit shows, and the location view says the export leaves it out");
 
-    // Export writes valid canonical JSON + shows ExportCommandNotice.
-    await buttons.get("Експорт погоди")();
-    // Wait a microtask turn for async #exportWeather.
-    await new Promise((resolve) => setTimeout(resolve, 0));
-    assert.equal(downloads.length, 1);
-    assert.equal(downloads[0].name, "weather-test-v0.50.93-20261113-1234.json");
-    const exportedObj = JSON.parse(downloads[0].text);
-    assert.deepEqual(format.validateWeatherFile(exportedObj, { rainTemplate: baseRain, locationWeatherTemplate: baseWeather }), []);
-    assert.equal(exportedObj.rain.opacity, 0.6);
-    assert.equal(exportNotices.length, 1);
-    assert.equal(exportNotices[0].command, "npm run apply:weather -- weather-test-v0.50.93-20261113-1234.json");
+    // Location view: the file holds the location only.
+    let file = await exportNow();
+    assert.equal(downloads.at(-1).name, "weather-test-v0.51.23-20261116-1234.json");
+    assert.equal(file.general, undefined);
+    assert.equal(file.locationId, "test");
+    assert.deepEqual(format.validateWeatherFile(file, { generalTemplates: base, locationWeatherTemplate: baseWeather }), []);
+    assert.equal(exportNotices.at(-1).command, "npm run apply:weather -- weather-test-v0.51.23-20261116-1234.json");
 
-    // Import wrong location refused without mutating config.
-    pickedText = JSON.stringify({ ...exportedObj, locationId: "pond" });
-    await buttons.get("Імпорт погоди")();
-    await new Promise((resolve) => setTimeout(resolve, 0));
-    assert(textRows.get("Стан погоди").innerText.includes("pond"), "wrong location rejected");
+    // «Загальні»: the general parts only, with the storm edit.
+    select("Загальні");
+    assert.equal(status(), "Змінено (ще не в коді): Шторм.");
+    file = await exportNow();
+    assert.equal(downloads.at(-1).name, "weather-general-v0.51.23-20261116-1234.json");
+    assert.equal(file.locationId, undefined);
+    assert.equal(file.general.storm.windMinStrength, 0.5);
+    assert.equal(file.baseHashes.general.storm, baseHashes.storm, "base hash is the code's, not the edit's");
+    assert.deepEqual(format.validateWeatherFile(file, { generalTemplates: base }), []);
 
-    // Reset restores code state.
+    // A location with «Параметри локації» off: both levels in one file.
+    select("test");
+    parameters.get("WEATHER.location.only").onCommit(false);
+    liveWeather.fog.chancePerCheck = 0.5;
+    doc.fire("config-updated", { detail: { path: ["CONFIG", "locations", "map", "test", "weather", "fog", "chancePerCheck"] } });
+    assert.equal(status(), "Змінено (ще не в коді): Шторм, Параметри локації test.");
+    file = await exportNow();
+    assert.equal(downloads.at(-1).name, "weather-general-test-v0.51.23-20261116-1234.json");
+    assert.equal(file.general.storm.windMinStrength, 0.5);
+    assert.equal(file.locationWeather.fog.chancePerCheck, 0.5);
+    const both = file;
+
+    // Reset drops what the export holds (here both levels).
     buttons.get("Скинути зміни погоди до коду")();
-    assert.equal(resetCalls, 1);
-    assert.equal(liveRain.opacity, 0.4);
-    assert.equal(textRows.get("Стан погоди").innerText, "Погода збігається з кодом.");
+    assert.equal(JSON.stringify(resets.at(-1)), JSON.stringify({ general: true, locationId: "test" }), "sandboxed realm: compare by value");
+    assert.equal(status(), "Погода збігається з кодом.");
 
-    // Import valid tuned file updates live config and status.
-    const importObj = JSON.parse(JSON.stringify(exportedObj));
-    importObj.rain.opacity = 0.7;
-    importObj.locationWeather.fog.chancePerCheck = 0.5;
-    pickedText = JSON.stringify(importObj);
+    // Import of a wrong location is refused; a valid v2 file restores both levels; a v1 file brings rain + location.
+    pickedText = JSON.stringify({ ...both, locationId: "pond" });
     await buttons.get("Імпорт погоди")();
-    await new Promise((resolve) => setTimeout(resolve, 0));
-    assert.equal(liveRain.opacity, 0.7);
+    await tick();
+    assert(status().includes("pond"), "wrong location rejected");
+    pickedText = JSON.stringify(both);
+    await buttons.get("Імпорт погоди")();
+    await tick();
+    assert.equal(live.storm.windMinStrength, 0.5);
     assert.equal(liveWeather.fog.chancePerCheck, 0.5);
-    assert.equal(textRows.get("Стан погоди").innerText, "Змінено (ще не в коді): Вигляд дощу, Параметри локації.");
+    assert.equal(status(), "Змінено (ще не в коді): Шторм, Параметри локації test.");
+    const legacy = JSON.parse(v1({ ...clone(real.rain), opacity: 0.7 }, WEATHER));
+    pickedText = JSON.stringify(legacy);
+    await buttons.get("Імпорт погоди")();
+    await tick();
+    assert.equal(live.rain.opacity, 0.7);
+    assert.equal(liveWeather.fog.chancePerCheck, WEATHER.fog.chancePerCheck);
 
     section.dispose();
   }
 
-  console.log("apply:weather passed: canonical data modules, selective rain/location apply with backup/conflict/validation, and WeatherDevSection saving UI.");
+  console.log("apply:weather passed: canonical general and location modules, format v2 by level (general rain/ash/storm/wind, location, both) and v1, backup/conflict/validation, and WeatherDevSection saving of both levels.");
 })().catch((error) => { console.error(error); process.exitCode = 1; });

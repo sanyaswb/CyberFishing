@@ -6,6 +6,7 @@ import { RarityConfigValidator } from "./rarity_config_validator.js";
 import { InventorySelectorConfigValidator } from "./inventory_selector_config_validator.js";
 import { WATER_PROJECTION_RANGES } from "../../domain/locations/illustrated_depth_profile.js";
 import { validateGridMask } from "../../../engine/geometry/grid_mask.js";
+import { ASH_SETTINGS_RANGES, STORM_SETTINGS_RANGES, WIND_SETTINGS_RANGES } from "./weather_settings_ranges.js";
 
 export class ConfigSchemaValidator {
   static FORBIDDEN_FLAT_FISH_PHYSICS_KEYS = Object.freeze([
@@ -1369,32 +1370,38 @@ export class ConfigSchemaValidator {
     if (!storm || typeof storm !== "object") this.#error("CONFIG.weather.storm", "missing storm settings");
     else {
       this.#requireParameterLabel("weather.storm");
-      for (const [key, min, max] of [["rainChanceMult", 1, 100], ["rainStrengthMult", 1, 10], ["rainDropsShare", 0, 3],
-        ["rainSlantDeg", 0, 60], ["windMinStrength", 0, 1], ["gustChanceMult", 0, 20]]) {
-        this.#requireFiniteNumber(`CONFIG.weather.storm.${key}`, storm[key], { min, max });
-        this.#requireParameterLabel(`weather.storm.${key}`);
-      }
+      this.#requireRangeNumbers("weather.storm", storm, STORM_SETTINGS_RANGES.numbers);
     }
     const wind = weather.wind;
     if (!wind || typeof wind !== "object") { this.#error("CONFIG.weather.wind", "missing wind settings"); return; }
     this.#requireParameterLabel("weather.wind");
-    for (const [key, min, max] of [["rainSlantDeg", 0, 60], ["slantFollowPerSec", 0, 60], ["gustSlantShare", 0, 10],
-      ["gustFollowPerSec", 0, 60], ["ashDriftPx", -500, 500]]) {
-      this.#requireFiniteNumber(`CONFIG.weather.wind.${key}`, wind[key], { min, max });
-      this.#requireParameterLabel(`weather.wind.${key}`);
-    }
+    this.#requireRangeNumbers("weather.wind", wind, WIND_SETTINGS_RANGES.numbers);
     this.#requireParameterLabel("weather.wind.gust");
-    this.#requireFiniteNumber("CONFIG.weather.wind.gust.attackShare", wind.gust?.attackShare, { min: 0.05, max: 0.8 });
-    this.#requireParameterLabel("weather.wind.gust.attackShare");
-    for (const key of ["deltaRange", "durationSec"]) {
-      const pair = wind.gust?.[key];
-      if (!Array.isArray(pair) || pair.length !== 2 || pair[0] > pair[1]) this.#error(`CONFIG.weather.wind.gust.${key}`, "must be [min, max]");
-      this.#requireParameterLabel(`weather.wind.gust.${key}`);
-    }
+    this.#requireRangeNumbers("weather.wind.gust", wind.gust, WIND_SETTINGS_RANGES.gust.numbers);
+    this.#requireRangePairs("weather.wind.gust", wind.gust, WIND_SETTINGS_RANGES.gust.pairs);
     this.#requireParameterLabel("weather.wind.rain");
-    for (const [key, min, max] of [["minStrength", 0, 1], ["bonus", 0, 1], ["gustChanceMult", 0, 20]]) {
-      this.#requireFiniteNumber(`CONFIG.weather.wind.rain.${key}`, wind.rain?.[key], { min, max });
-      this.#requireParameterLabel(`weather.wind.rain.${key}`);
+    this.#requireRangeNumbers("weather.wind.rain", wind.rain, WIND_SETTINGS_RANGES.rain.numbers);
+  }
+
+  // TK-332: rows of weather_settings_ranges.js — each a finite number within [min, max] with a label.
+  #requireRangeNumbers(path, record, rows) {
+    for (const [key, min, max] of rows) {
+      this.#requireFiniteNumber(`CONFIG.${path}.${key}`, record?.[key], { min, max });
+      this.#requireParameterLabel(`${path}.${key}`);
+    }
+  }
+
+  // TK-332: [key, min, max, ordered] rows — a [min, max] pair (min <= max) within the range, with a label.
+  #requireRangePairs(path, record, rows) {
+    for (const [key, min, max] of rows) {
+      const pair = record?.[key];
+      if (!Array.isArray(pair) || pair.length !== 2 || pair[0] > pair[1]) {
+        this.#error(`CONFIG.${path}.${key}`, "must be [min, max] with min <= max");
+        continue;
+      }
+      this.#requireFiniteNumber(`CONFIG.${path}.${key}[0]`, pair[0], { min, max });
+      this.#requireFiniteNumber(`CONFIG.${path}.${key}[1]`, pair[1], { min, max });
+      this.#requireParameterLabel(`${path}.${key}`);
     }
   }
 
@@ -1405,23 +1412,10 @@ export class ConfigSchemaValidator {
     if (!cfg || typeof cfg !== "object") { this.#error(`CONFIG.${path}`, "missing ash config"); return; }
     this.#requireParameterLabel(path);
     this.#requireBooleanWithLabel(`${path}.enabled`, cfg.enabled);
-    for (const [key, min, max] of [["flicker", 0, 1], ["fadeShare", 0, 0.5]]) {
-      this.#requireFiniteNumber(`CONFIG.${path}.${key}`, cfg[key], { min, max });
-      this.#requireParameterLabel(`${path}.${key}`);
-    }
-    this.#validateStrengthRanges(path, cfg.strength, [["maxParticles", 0, 2000], ["opacity", 0, 1],
-      ["riseSpeedPx", -500, 500], ["wanderPx", 0, 500]]);
-    for (const [key, min, max] of [["sizePx", 0, 200], ["lifeSec", 0.1, 60]]) {
-      const pair = cfg[key];
-      if (!Array.isArray(pair) || pair.length !== 2 || pair[0] > pair[1]) {
-        this.#error(`CONFIG.${path}.${key}`, "must be [min, max] with min <= max");
-        continue;
-      }
-      this.#requireFiniteNumber(`CONFIG.${path}.${key}[0]`, pair[0], { min, max });
-      this.#requireFiniteNumber(`CONFIG.${path}.${key}[1]`, pair[1], { min, max });
-      this.#requireParameterLabel(`${path}.${key}`);
-    }
-    for (const key of ["hotColor", "coolColor"]) {
+    this.#requireRangeNumbers(path, cfg, ASH_SETTINGS_RANGES.numbers);
+    this.#validateStrengthRanges(path, cfg.strength, ASH_SETTINGS_RANGES.strength);
+    this.#requireRangePairs(path, cfg, ASH_SETTINGS_RANGES.pairs);
+    for (const key of ASH_SETTINGS_RANGES.colors) {
       this.#requirePattern(`CONFIG.${path}.${key}`, cfg[key], /^#[0-9a-f]{6}$/iu, "must be #rrggbb");
       this.#requireParameterLabel(`${path}.${key}`);
     }

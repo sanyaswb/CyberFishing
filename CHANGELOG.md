@@ -2,6 +2,11 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.51.23 - Weather export and apply for the general settings (spec 180 stage D, TK-332)
+
+- DevTools «ПОГОДА» → «Збереження»: the file holds what the selector shows — «Загальні»: the rain, ash, storm and wind settings of every location; a location: its weather; a location with «Параметри локації» off: both. The status names every changed part of both levels and says when the export would leave some out; reset drops what the export holds.
+- `npm run apply:weather` (file format v2; v1 files still apply) writes only the changed modules among `rain_settings.js`, `ash_settings.js`, `storm_settings.js`, `wind_settings.js` and `locations/weather/<id>.js`, with base hashes, backups and range checks shared with the config schema. Water and the emission screen stay in `game_config.js`.
+
 ## v0.51.22 - Adaptive width on by default in DevTools (TK-331)
 
 - DevTools «Панель»: «Адаптивна ширина (ПК)» (`adaptiveWidth`) is now enabled by default (`PanelSettingsModule` and `DevToolsUI.setPanelOptions`).
@@ -37,7 +42,3 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 ## v0.51.14 - Independent weather events with timelines (spec 180 stage A, TK-325)
 
 - Weather: rain, storm and fog are separate events — each starts by a chance checked every minute and rolls its whole course at the start (length, when its peak comes, how long and how strong); a storm raises the chance and strength of rain but may pass without it, and has its own lightning. DevTools: switching the storm off no longer leaves the rain on.
-
-## v0.51.13 - Vignette and blur switch separately (TK-324.2)
-
-- Emission screen: the darkening (emission.screen.vignette.enabled) and the blur (emission.screen.blur.enabled) switch on and off on their own in DevTools «Конфіг», so each can be measured; without darkening the veil paints no gradient.

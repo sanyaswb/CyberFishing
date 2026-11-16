@@ -1,11 +1,14 @@
 import { DevSavingSection } from "./export/dev_saving_section.js";
 import {
+  GENERAL_WEATHER_PART_IDS,
+  GENERAL_WEATHER_PARTS,
   buildWeatherFile,
+  canonicalGeneralPart,
   canonicalLocationWeather,
-  canonicalRain,
   changedWeatherParts,
+  generalPartHash,
   locationWeatherHash,
-  rainHash,
+  readWeatherFile,
   validateWeatherFile,
   weatherFileName,
 } from "../weather/weather_export_format.js";
@@ -20,7 +23,9 @@ import {
 //   (events now, emission parts, a gust, a strike, «↺ Автоматична погода») come last.
 // - Sections by element: ДОЩ, ШТОРМ, ВІТЕР, ТУМАН, ВИКИД, ПОПІЛ, ВОДА, ПОЧАТОК І ПОРОГИ — general and location parts by
 //   the selector; a section with edits not in the code is marked «· змінено» and has «↺ Скинути розділ до коду» (D8).
-// - «Збереження»: the rain's look and the location's weather (spec 175; the general storm and wind files: stage D).
+// - «Збереження» (spec 175, spec 180 stage D, TK-332): the file holds the level the selector shows — «Загальні»: the
+//   general rain, ash, storm and wind settings; a location: its weather; a location with «Параметри локації» off: both.
+//   The status names every part of both levels that differs from the code, and what an export would leave out.
 // TK-327.1 (owner): only an element's section opens inside (a different section); everything in it — its groups and
 // the trees' nested objects — opens in place under it (inline). The selector is buttons on top (no empty wrapper); each
 // event (rain, storm, fog, emission) has a switch: on starts a random event as the game would, off ends it, and the
@@ -57,7 +62,8 @@ const CHANCES = Object.freeze({
   storm: Object.freeze(["Шторм: шанс перевірки", "stormChance", ["storm", "chancePerCheck"]]),
   fog: Object.freeze(["Туман: шанс перевірки", "fogChance", ["fog", "chancePerCheck"]]),
 });
-const PART_LABELS = Object.freeze({ rain: "Вигляд дощу", locationWeather: "Параметри локації" });
+const PART_LABELS = Object.freeze({ rain: "Дощ", ash: "Попіл", storm: "Шторм", wind: "Вітер", locationWeather: "Параметри локації" });
+const samePath = (path, prefix) => prefix.every((key, index) => path[index] === key);
 
 const percent = (value) => `${Math.round((Number(value) || 0) * 100)}%`;
 const seconds = (value) => `${Math.round(Number(value) || 0)} с`;
@@ -76,7 +82,7 @@ export class WeatherDevSection {
   #renderConfigTree;
   #updateConfig;
   #edits;
-  #getBaseRain;
+  #getBaseGeneral;
   #getBaseLocationWeather;
   #resetWeather;
   #gameVersion;
@@ -93,16 +99,19 @@ export class WeatherDevSection {
     if (!this.#savingSection.hasStatusElement) return;
     const path = event?.detail?.path;
     if (!Array.isArray(path) || path[0] !== "CONFIG") return;
-    const isRain = path[1] === "canvas" && path[2] === "rain";
-    const isLocation = path[1] === "locations" && path[2] === "map" && path[3] === this.#locationId() && path[4] === "weather";
-    if (isRain || isLocation) this.#savingSection.refreshStatus();
+    const rest = path.slice(1);
+    const isGeneral = GENERAL_WEATHER_PART_IDS.some((part) => samePath(rest, GENERAL_WEATHER_PARTS[part].configPath));
+    const isLocation = samePath(rest, ["locations", "map", this.#locationId(), "weather"]);
+    if (isGeneral || isLocation) this.#savingSection.refreshStatus();
   };
 
   // weather: the DEV port { getModel(), getWindModel(), getEmissionModel(), getWind(), setWind(dir | null),
   //   setWindStrength(0…1 | null), triggerWindGust(), holdAsh(0…1 | null), holdWaves(scale | null), requestImage(id),
   //   sessionSeed, locationId }; config: () => the active location's weather; locationConfig(id) / locationsMap();
   //   general: () => { rain, ash, water, storm, wind, screen } (the general settings); edits: { hasOverrides(parts),
-  //   resetTree(parts) } (the «змінено» mark and the section reset).
+  //   resetTree(parts) } (the «змінено» mark and the section reset); getBaseGeneral: () => { rain, ash, storm, wind } as
+  //   in the code, getBaseLocationWeather(id); resetWeather({ general, locationId }) drops the session's edits of the
+  //   general parts (general: true) and / or of that location's weather (spec 180 stage D).
   constructor({
     ui,
     weather,
@@ -117,7 +126,7 @@ export class WeatherDevSection {
     updateConfig = null,
     edits = null,
     files = null,
-    getBaseRain = null,
+    getBaseGeneral = null,
     getBaseLocationWeather = null,
     resetWeather = null,
     gameVersion = "",
@@ -135,7 +144,7 @@ export class WeatherDevSection {
     this.#renderConfigTree = renderConfigTree;
     this.#updateConfig = updateConfig;
     this.#edits = edits;
-    this.#getBaseRain = getBaseRain;
+    this.#getBaseGeneral = getBaseGeneral;
     this.#getBaseLocationWeather = getBaseLocationWeather;
     this.#resetWeather = resetWeather;
     this.#gameVersion = gameVersion;
@@ -153,13 +162,14 @@ export class WeatherDevSection {
         importLabel: "Імпорт погоди",
         resetLabel: "Скинути зміни погоди до коду",
         description:
-          "Експорт погоди завантажує файл вигляду дощу й погоди вибраної локації. У код зміни переносить команда npm run apply:weather -- <файл> (перевірка, конфлікти, підтвердження, бекап); після неї перезавантажте сторінку або скиньте зміни погоди до коду. Імпорт погоди відкриває такий файл тут, щоб продовжити редагування. Без експорту зміни зникають при перезавантаженні.",
+          "Експорт погоди завантажує файл того, що показує вибір нагорі: «Загальні» — дощ, попіл, шторм і вітер для всіх локацій; локація — її погода; локація з вимкненим «Параметри локації» — обидва. У код зміни переносить команда npm run apply:weather -- <файл> (перевірка, конфлікти, підтвердження, бекап); після неї перезавантажте сторінку або скиньте зміни погоди до коду. Імпорт погоди відкриває такий файл тут, щоб продовжити редагування; скидання скидає те саме, що йде в експорт. Вода й екран викиду в експорт не входять. Без експорту зміни зникають при перезавантаженні.",
       },
       readStatus: () => this.#readSavingStatus(),
       buildExport: (hashText) => this.#buildExport(hashText),
       onImport: (file, setStatus) => this.#applyImport(file, setStatus),
       onReset: () => {
-        this.#resetWeather(this.#locationId());
+        const mode = this.#mode();
+        this.#resetWeather({ general: mode.general, locationId: mode.location });
         this.#fill();
       },
     });
@@ -532,54 +542,85 @@ export class WeatherDevSection {
     }
   }
 
+  // The general parts as they run now: { rain, ash, storm, wind } (a part the port lacks is null).
+  #liveGeneral() {
+    const general = this.#general?.() ?? {};
+    const live = {};
+    for (const part of GENERAL_WEATHER_PART_IDS) live[part] = general[part] ?? null;
+    live.rain ??= this.#rainConfig();
+    live.ash ??= this.#ashConfig();
+    return live;
+  }
+
+  // Spec 180 stage D: every part of both levels that differs from the code, and — when the export would leave some of
+  // them out (the selector shows the other level) — where to export them from.
   #readSavingStatus() {
     const id = this.#locationId();
-    const liveRain = this.#rainConfig(), liveWeather = this.#locationWeather(id);
-    const baseRain = this.#getBaseRain?.(), baseWeather = this.#getBaseLocationWeather?.(id);
-    if (!liveRain || !liveWeather || !baseRain || !baseWeather) return "Параметри погоди завантажено.";
-    const changed = changedWeatherParts(baseRain, liveRain, baseWeather, liveWeather);
-    return changed.length
-      ? `Змінено (ще не в коді): ${changed.map((part) => PART_LABELS[part] ?? part).join(", ")}.`
-      : "Погода збігається з кодом.";
+    const baseGeneral = this.#getBaseGeneral?.(), baseWeather = this.#getBaseLocationWeather?.(id);
+    const liveWeather = this.#locationWeather(id);
+    if (!baseGeneral || !baseWeather || !liveWeather) return "Параметри погоди завантажено.";
+    const changed = changedWeatherParts({ baseGeneral, liveGeneral: this.#liveGeneral(),
+      baseLocationWeather: baseWeather, liveLocationWeather: liveWeather });
+    if (!changed.length) return "Погода збігається з кодом.";
+    const labels = changed.map((part) => (part === "locationWeather" ? `${PART_LABELS[part]} ${id}` : PART_LABELS[part]));
+    const mode = this.#mode();
+    const generalLeft = !mode.general && changed.some((part) => part !== "locationWeather");
+    const locationLeft = !mode.location && changed.includes("locationWeather");
+    const hint = generalLeft ? " Загальні не ввійдуть в експорт: оберіть «Загальні» або вимкніть «Параметри локації»."
+      : locationLeft ? ` Погода ${id} не ввійде в експорт: оберіть локацію ${id}.` : "";
+    return `Змінено (ще не в коді): ${labels.join(", ")}.${hint}`;
   }
 
   async #buildExport(hashText) {
-    const id = this.#locationId();
-    const liveRain = this.#rainConfig(), liveWeather = this.#locationWeather(id);
-    if (!liveRain || !liveWeather) return { error: "Немає параметрів погоди для експорту." };
-    const baseRain = this.#getBaseRain?.() ?? liveRain;
-    const baseWeather = this.#getBaseLocationWeather?.(id) ?? liveWeather;
+    const mode = this.#mode();
+    const id = mode.location;
     const moment = this.#now();
+    let general = null, generalBaseHashes = null, liveWeather = null, locationWeatherBaseHash = null;
+    if (mode.general) {
+      general = this.#liveGeneral();
+      if (GENERAL_WEATHER_PART_IDS.some((part) => !general[part])) return { error: "Немає загальних параметрів погоди для експорту." };
+      const base = this.#getBaseGeneral?.() ?? general;
+      generalBaseHashes = {};
+      for (const part of GENERAL_WEATHER_PART_IDS) generalBaseHashes[part] = await generalPartHash(base[part] ?? general[part], hashText);
+    }
+    if (id) {
+      liveWeather = this.#locationWeather(id);
+      if (!liveWeather) return { error: `Немає погоди локації ${id} для експорту.` };
+      locationWeatherBaseHash = await locationWeatherHash(this.#getBaseLocationWeather?.(id) ?? liveWeather, hashText);
+    }
     return {
-      fileName: weatherFileName(id, this.#gameVersion, moment),
+      fileName: weatherFileName({ general: Boolean(general), locationId: id }, this.#gameVersion, moment),
       data: buildWeatherFile({
-        locationId: id,
-        rain: liveRain,
-        locationWeather: liveWeather,
-        rainBaseHash: await rainHash(baseRain, hashText),
-        locationWeatherBaseHash: await locationWeatherHash(baseWeather, hashText),
+        general, generalBaseHashes, locationId: id, locationWeather: liveWeather, locationWeatherBaseHash,
         gameVersion: this.#gameVersion,
         exportedAt: moment.toISOString(),
       }),
     };
   }
 
+  // A v2 file brings its levels; a v1 file the rain and a location. A location must be the one the selector names
+  // (or the game's, with «Загальні»).
   #applyImport(file, setStatus) {
     const id = this.#locationId();
-    if (file?.locationId && file.locationId !== id) {
-      setStatus(`Файл для локації ${file.locationId}; зараз відкрито ${id}.`);
+    const read = readWeatherFile(file);
+    if (read?.locationId && read.locationId !== id) {
+      setStatus(`Файл для локації ${read.locationId}; зараз відкрито ${id}.`);
       return;
     }
     const errors = validateWeatherFile(file, {
-      rainTemplate: this.#getBaseRain?.() ?? this.#rainConfig(),
+      generalTemplates: this.#getBaseGeneral?.() ?? this.#liveGeneral(),
       locationWeatherTemplate: this.#getBaseLocationWeather?.(id) ?? this.#locationWeather(id),
     });
     if (errors.length) {
       setStatus(`Файл не прийнято: ${errors.slice(0, 3).join("; ")}`);
       return;
     }
-    this.#updateConfig?.(["CONFIG", "canvas", "rain"], canonicalRain(file.rain));
-    this.#updateConfig?.(["CONFIG", "locations", "map", id, "weather"], canonicalLocationWeather(file.locationWeather));
+    for (const part of Object.keys(read.general ?? {})) {
+      this.#updateConfig?.(["CONFIG", ...GENERAL_WEATHER_PARTS[part].configPath], canonicalGeneralPart(read.general[part]));
+    }
+    if (read.locationId) {
+      this.#updateConfig?.(["CONFIG", "locations", "map", id, "weather"], canonicalLocationWeather(read.locationWeather));
+    }
     this.#fill();
   }
 
