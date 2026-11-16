@@ -1638,6 +1638,50 @@ const step = (model, seconds, phase = "day", dt = 0.1) => {
   }
 }
 
+// Spec 180 stage F (TK-335): the RANDOMIZER's weather probes run the game's own models on the live settings.
+{
+  const { WeatherModel: Weather } = require("../../../src/game/domain/weather/weather_model.js");
+  const { WindModel: Wind } = require("../../../src/game/domain/weather/wind_model.js");
+  const { timePhaseAt } = require("../../../src/game/domain/time/time_phase.js");
+  const { WeatherEventRandomProbe } = require("../../../src/dev/randomizer/weather_event_random_probe.js");
+  const { WindGustRandomProbe } = require("../../../src/dev/randomizer/wind_gust_random_probe.js");
+  const phases = GAME_CONFIG.spawns.timePhases;
+  assert.equal(timePhaseAt(2, phases), "night", "a range that passes midnight holds 2 o'clock");
+  assert.equal(timePhaseAt(23, phases), "night");
+  assert.equal(timePhaseAt(4, phases), "morning");
+  assert.equal(timePhaseAt(12, phases), "day");
+  let settings = JSON.parse(JSON.stringify(MAP_DB.test.weather));
+  const time = { timeScale: 240, initialHours: 0, phaseAt: (hour) => timePhaseAt(hour, phases) };
+  const probe = (kind, getTime = () => time) => new WeatherEventRandomProbe({ kind, createModel: (options) => new Weather(options),
+    createRng: (seed) => new SeededRng(seed), getSettings: () => settings, getGeneral: () => GAME_CONFIG.weather, getTime });
+  const row = (report, label) => report.rows.find(([name]) => name === label)?.[1];
+  const share = (text) => Number.parseFloat(text) / 100;
+  const storm = probe("storm").run({ count: 60, seed: 7 });
+  assert.equal(JSON.stringify(storm), JSON.stringify(probe("storm").run({ count: 60, seed: 7 })), "a seed repeats the run");
+  assert.ok(row(storm, "змодельовано").startsWith("60 з 60"), "the storm probe collects its events");
+  assert.ok(row(storm, "з блискавками") && storm.histogram.length === 13, "storms report lightning and a histogram");
+  const rain = probe("rain").run({ count: 300, seed: 7 });
+  assert.ok(share(row(rain, "дощить у шторм")) > share(row(rain, "дощить без шторму")),
+    "the storm raises the rain's chance (it rains more often in a storm)");
+  // Fog only in its phases of the day: never in an endless day.
+  const fogInDay = probe("fog", () => ({ ...time, phaseAt: () => "day" })).run({ count: 20, seed: 3 });
+  assert.equal(row(fogInDay, "результат"), "жодної події", "fog waits for its phases");
+  assert.ok(row(probe("fog").run({ count: 20, seed: 3 }), "змодельовано").startsWith("20 з 20"), "and comes in them");
+  // The live settings (DevTools edits) are read; the initial weather is left out.
+  settings.initial = { rain: 1 };
+  settings.rain.chancePerCheck = 0;
+  settings.rain.chanceGrowthPerCheck = 0;
+  const none = probe("rain").run({ count: 5, seed: 1 });
+  assert.equal(row(none, "результат"), "жодної події", "no chance, no rain — and the initial rain is not counted");
+  settings = JSON.parse(JSON.stringify(MAP_DB.test.weather));
+  const gusts = new WindGustRandomProbe({ createWeather: (options) => new Weather(options), createWind: (options) => new Wind(options),
+    createRng: (seed) => new SeededRng(seed), getSettings: () => settings, getGeneral: () => GAME_CONFIG.weather })
+    .run({ count: 400, seed: 7 });
+  assert.ok(row(gusts, "змодельовано").startsWith("400 з 400"), "the gust probe collects gusts");
+  assert.ok(Number.parseFloat(row(gusts, "у шторм")) > Number.parseFloat(row(gusts, "у ясну погоду")),
+    "gusts come more often in a storm than in clear weather");
+}
+
 console.log(
   "weather: independent events and timelines, per-process holds, storm and rain, lightning, fog, derived fields, held wind, the sea state, the live reading and the emission OK",
 );

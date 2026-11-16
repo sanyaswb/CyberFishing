@@ -2727,6 +2727,31 @@ function choiceRow(options, value, path) {
   rawUi.dispose?.();
 }
 
+// --- TK-335: the RANDOMIZER's report is visible right after «Запустити» ------------------------------------------------
+{
+  const randomUi = new DevToolsUI(() => {}, {}, null, null, null, document.body, createElement("div"));
+  const host = createElement("div");
+  randomUi.body.appendChild(host);
+  const { RandomizerModule } = runtime.importModule("src/dev/tools/modules/randomizer_module.js");
+  const runs = [];
+  const probe = { id: "p", label: "Проба", run: (options) => { runs.push(options); return {
+    rows: [["частка часу", "8.3%"], ["подій за годину", "0.30"]], histogram: [["0–1 год", 0.25], ["1–2 год", 0.75]] }; } };
+  new RandomizerModule({ probes: [probe], randomSeed: () => 11 }).mount(host, {
+    // The owner opened «РАНДОМАЙЗЕР»; every other section starts closed, as the panel remembers none.
+    ui: randomUi, createSection: (label, parent, path, options) => randomUi.createSection(label, parent,
+      path?.join(".") === "RANDOMIZER", null, path, options) });
+  byClass("devtools__action", byClass("devtools__row", host).find((row) => row.dataset.devtoolsPath === "RANDOMIZER.run"))[0].click();
+  assert.equal(JSON.stringify(runs), JSON.stringify([{ count: 1000, seed: 11 }]), "«Запустити» runs the probe");
+  const reportRow = byClass("devtools__row", host).find((row) => row.children[0]?.dataset.devtoolsKey === "частка часу");
+  assert.ok(reportRow, "the report has its rows");
+  for (let node = reportRow.parentNode; node && node !== host; node = node.parentNode) {
+    assert.ok(!node.classList?.contains("devtools__section-info") && node.hidden !== true && node.style?.display !== "none",
+      "the report is shown at once — not in a closed section or the hidden «i» description");
+  }
+  const chart = byClass("devtools__section", host).find((section) => section.dataset.devtoolsPath === "RANDOMIZER.histogram");
+  assert.ok(chart && !chart.classList.contains("devtools__section--drill"), "the histogram opens in place");
+}
+
 // --- TK-285: the command after a file export ------------------------------------------------------------------------
 (async () => {
   const { ExportCommandNotice } = runtime.importModule(

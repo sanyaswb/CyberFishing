@@ -1,3 +1,4 @@
+import { timePhaseAt } from "../../domain/time/time_phase.js";
 // Time of day, wind and weather of the location. Spec 172 stage A: the weather is an injected WeatherModel (intensities,
 // fades, storm, lightning, its own rng stream); this system derives the fields the bite chances, the radio, the wind and
 // the float read: isRaining / isFoggy from the intensity thresholds (MAP_DB.<id>.weather.thresholds) and wind.rainMult =
@@ -196,14 +197,7 @@ export class EnvironmentSystem {
   }
 
   #updatePhase(hour) {
-    const phases = this.#spawnConfig.timePhases;
-    for (const [phase, times] of Object.entries(phases)) {
-      const inRange =
-        times.startHour < times.endHour
-          ? hour >= times.startHour && hour < times.endHour
-          : hour >= times.startHour || hour < times.endHour;
-      if (inRange) this.#currentPhase = phase;
-    }
+    this.#currentPhase = timePhaseAt(hour, this.#spawnConfig.timePhases) ?? this.#currentPhase;
   }
 
   #updateWeather(dt) {

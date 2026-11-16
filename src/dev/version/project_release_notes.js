@@ -1,6 +1,7 @@
 // Release notes, newest first (unshift with every patch). DEV only: no production code reads them, and in the start's
 // bundle they cost 13 KB gzip (spec 160). dev.html publishes them with the version: window.CYBER_FISHING_PROJECT_VERSION.notes.
 export const PROJECT_RELEASE_NOTES = Object.freeze([
+  "Spec 180 F (TK-335): RANDOMIZER probes for rain, storm, fog and gusts through the real weather and wind models; the report shows right under «Запустити».",
   "Spec 180 E (TK-334): «Конфіг» shows the whole CONFIG with the code keys — debug, read-only identifying keys, text lists and null values.",
   "TK-333.1: the scene mode switch is the first parameter of «СЦЕНА WebGL», above the weather.",
   "TK-333: weather DevTools selector «Загальні | Всі | locations» (both levels in every section), emission screen switch, section marks and resets update on each edit, WebGL buttons under the weather.",

@@ -24,6 +24,12 @@ import { RandomizerModule } from "./modules/randomizer_module.js";
 import { EmissionRandomProbe } from "../randomizer/emission_random_probe.js";
 import { EmissionModel } from "../../game/domain/weather/emission_model.js";
 import { SeededRng } from "../../engine/random/seeded_rng.js";
+import { WeatherEventRandomProbe } from "../randomizer/weather_event_random_probe.js";
+import { WindGustRandomProbe } from "../randomizer/wind_gust_random_probe.js";
+import { WeatherModel } from "../../game/domain/weather/weather_model.js";
+import { WindModel } from "../../game/domain/weather/wind_model.js";
+import { timePhaseAt } from "../../game/domain/time/time_phase.js";
+import { GAME_TIME_CONFIG } from "../../game/config/raw/time/game_time_config.js";
 
 const SECTION_STATES_KEY = "dev_tools_open_sections";
 const LEGACY_SECTION_STATES_KEY = "dev_tools_sections_state";
@@ -145,12 +151,9 @@ export class DevTools {
           radio ? new RadioModule({ config, radio, files: zoneEditorFiles, gameVersion }) : null] },
       { id: "diagnostics", title: "Діагностика", icon: "bug", empty: "",
         modules: [new OverlaySettingsModule({ config, settingsStore }), this.#activeFish,
-          // TK-321.1: the game's real random run many times in a row (the emission's start first).
-          new RandomizerModule({ probes: [weather ? new EmissionRandomProbe({
-            createModel: (options) => new EmissionModel(options),
-            createRng: (seed) => new SeededRng(seed),
-            getSettings: () => config.locations?.map?.[weather.locationId]?.weather ?? null,
-          }) : null] })] },
+          // TK-321.1: the game's real random run many times in a row (the emission's start first); spec 180 stage F
+          // (TK-335): the weather's events and the wind's gusts on the same settings.
+          new RandomizerModule({ probes: weather ? DevTools.#weatherProbes(config, weather.locationId) : [] })] },
       { id: "service", title: "Сервіс", icon: "wrench", empty: "",
         modules: [new ServiceModule({ configRuntime, configValidation, assetLoadPlanStore,
           redraw: () => this.#populatePanel(), files: zoneEditorFiles, gameVersion }),
@@ -252,6 +255,25 @@ export class DevTools {
   }
 
   // Spec 167: the step-by-step loading section draws itself with the panel's controls.
+  // TK-321.1, spec 180 stage F (TK-335): the RANDOMIZER's probes of the location the game runs — the emission's start,
+  // rain, storm, fog and gusts — through the game's own models, rng, clock pace and phase rule.
+  static #weatherProbes(config, locationId) {
+    const getSettings = () => config.locations?.map?.[locationId]?.weather ?? null;
+    const getGeneral = () => config.weather ?? null;
+    const createRng = (seed) => new SeededRng(seed);
+    const getTime = () => ({ timeScale: config.debug?.timeScale || 1,
+      initialHours: config.debug?.initialTime ?? GAME_TIME_CONFIG.initialHours,
+      phaseAt: (hour) => timePhaseAt(hour, config.spawns?.timePhases) });
+    const createWeather = (options) => new WeatherModel(options);
+    return [
+      new EmissionRandomProbe({ createModel: (options) => new EmissionModel(options), createRng, getSettings }),
+      ...["rain", "storm", "fog"].map((kind) => new WeatherEventRandomProbe({ kind, createModel: createWeather, createRng,
+        getSettings, getGeneral, getTime })),
+      new WindGustRandomProbe({ createWeather, createWind: (options) => new WindModel(options), createRng, getSettings,
+        getGeneral }),
+    ];
+  }
+
   static #loadStepperModule(loadStepper) {
     let section = null;
     return { mount: (host, { ui, createSection }) => {
