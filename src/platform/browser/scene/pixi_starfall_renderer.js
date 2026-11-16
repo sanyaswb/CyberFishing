@@ -7,8 +7,9 @@
 //   background's top third), × the share of it on screen, so a narrow phone screen shows fewer at the same density, at the night's strength (world.weather.starfall,
 //   StarfallNight: rises and falls through the night). Stars start at random moments (an accumulator of the rate, so
 //   the count follows the strength without a fixed rhythm) at a random point of a visible sky zone (world.skyRegions,
-//   picked by area; with the switch off — the background's top third). A star that leaves every sky zone fades out
-//   over its fade share (no mask: soft, like the ash).
+//   picked by area; with the switch off — the background's top third). When skyZoned is true, one shared Graphics mask
+//   (on both the stars' ParticleContainer and the bolide's Container) clips tails and glow cleanly at the sky zone edges
+//   and redraws only when the sky rectangles change; stars leaving the zone also fade out smoothly inside it.
 // - Stage D (TK-353), the bolide: when the night's bolideSerial changes (StarfallNight: at most one a night, at any
 //   moment, quiet stretches too) one big star falls: a long tail (bolide.lengthPx), wider, brighter, slower and longer
 //   than the others (bolide.lifeSec), with a glowing head (bolide.glowPx) that flickers a little; it starts in a visible
@@ -60,6 +61,8 @@ export class PixiStarfallRenderer {
   #zoneCount = 0;
   #zoneArea = 0;
   #wholeArea = 0;
+  #mask;
+  #maskRects = [];
 
   // documentTarget: makes the streak's canvas; random: () => 0…1 (visual only).
   constructor({ pixi, documentTarget, random = Math.random }) {
@@ -82,12 +85,14 @@ export class PixiStarfallRenderer {
     this.#bolideHead = new pixi.Sprite(this.#glow);
     this.#bolideHead.anchor.set(0.5, 0.5);
     this.#bolideContainer.addChild(this.#bolideTail, this.#bolideHead);
+    this.#mask = new pixi.Graphics();
   }
 
   // Right over the background's sky, under the water and everything in the world (rendering.md 14).
   mount(stage) {
     stage.addChild(this.#container);
     stage.addChild(this.#bolideContainer);
+    stage.addChild(this.#mask);
   }
 
   get status() {
@@ -290,6 +295,41 @@ export class PixiStarfallRenderer {
     this.#zoneCount = visible;
     this.#zoneArea = total;
     this.#wholeArea = whole;
+    this.#updateMask(zoned, regions);
+  }
+
+  // Clips both the ordinary stars and the bolide to the sky zones, redrawing only when their rectangles change.
+  #updateMask(zoned, regions) {
+    if (!zoned) {
+      // An unassigned mask is drawn again (Pixi resets includeInBuild), so it is emptied too.
+      if (this.#container.mask || this.#bolideContainer.mask) {
+        this.#container.mask = null;
+        this.#bolideContainer.mask = null;
+        this.#mask.clear();
+        this.#maskRects.length = 0;
+      }
+      return;
+    }
+    const count = regions ? regions.count : 0;
+    const rects = this.#maskRects;
+    let same = rects.length === count * 4;
+    for (let index = 0; same && index < count; index += 1) {
+      const region = regions.getAt(index), offset = index * 4;
+      same = rects[offset] === region.x && rects[offset + 1] === region.y && rects[offset + 2] === region.width &&
+        rects[offset + 3] === region.height;
+    }
+    if (!same) {
+      rects.length = count * 4;
+      this.#mask.clear();
+      for (let index = 0; index < count; index += 1) {
+        const region = regions.getAt(index), offset = index * 4;
+        rects[offset] = region.x; rects[offset + 1] = region.y; rects[offset + 2] = region.width; rects[offset + 3] = region.height;
+        this.#mask.rect(region.x, region.y, region.width, region.height);
+      }
+      if (count > 0) this.#mask.fill(0xffffff);
+    }
+    if (this.#container.mask !== this.#mask) this.#container.mask = this.#mask;
+    if (this.#bolideContainer.mask !== this.#mask) this.#bolideContainer.mask = this.#mask;
   }
 
   #insideZone(x, y) {

@@ -740,7 +740,7 @@ async function checkStarfall() {
   assert.equal(canvasTextures.length, 2, "a streak and the bolide's glow, drawn once in code");
   const stage = new pixi.Container();
   stars.mount(stage);
-  const [container, bolideLayer] = stage.children;
+  const [container, bolideLayer, starMask] = stage.children;
   assert.equal(container.blendMode, "add", "the stars glow additively");
   assert.equal(bolideLayer.blendMode, "add", "the bolide too, in front of the stars");
   const settings = JSON.parse(JSON.stringify(CONFIG.canvas.starfall));
@@ -792,6 +792,11 @@ async function checkStarfall() {
   assert.ok(full.brightBelow <= 2, `a star that leaves the sky fades (${full.brightBelow} bright below it)`);
   assert.equal(stars.status.pool, Math.min(96, Math.ceil(settings.perMinute[1] / 60 * settings.lifeSec[1] * 2) + 4),
     "a pool sized by the settings");
+  // TK-356: both star layers share the sky zone mask.
+  assert(container.mask === starMask && bolideLayer.mask === starMask,
+    "TK-356: ordinary stars and the bolide share the sky zone mask");
+  assert.deepEqual(starMask.ops, [["rect", sky.x, sky.y, sky.width, sky.height], ["fill", 0xffffff]],
+    "TK-356: sky mask outlines the sky zones");
   // TK-355: perMinute is the whole sky's; a phone screen showing a third of the sky gets about a third of the stars.
   const narrowSky = [{ x: -400, y: 0, width: 1200, height: 250 }];
   let narrow = 0;
@@ -806,6 +811,8 @@ async function checkStarfall() {
   }
   assert.ok(narrow > full.spawned / 3 * 0.55 && narrow < full.spawned / 3 * 1.45,
     `a third of the sky on screen: about a third of the stars (${narrow} vs ${full.spawned})`);
+  assert.deepEqual(starMask.ops, [["rect", narrowSky[0].x, narrowSky[0].y, narrowSky[0].width, narrowSky[0].height], ["fill", 0xffffff]],
+    "TK-356: moving or resizing sky zones redraws the mask");
   for (let step = 0; step < 120; step += 1) frame(world(0));
   const weak = run(0.25, 60);
   assert.ok(weak.spawned < full.spawned * 0.5, `a quarter of the strength: fewer stars (${weak.spawned} vs ${full.spawned})`);
@@ -845,6 +852,13 @@ async function checkStarfall() {
   bolides += 1;
   frame(world(0, [{ x: 0, y: 900, width: 100, height: 100 }]));
   assert.equal(stars.status.bolide, false, "no sky on screen: the bolide is skipped");
+  frame(world(1, [sky]));
+  const opsBefore = starMask.ops;
+  frame(world(1, [sky]));
+  assert.equal(starMask.ops, opsBefore, "TK-356: unchanged sky zones keep the mask without redrawing");
+  frame({ ...world(1, [sky]), skyZoned: false });
+  assert(container.mask === null && bolideLayer.mask === null && starMask.ops.length === 0,
+    "TK-356: skyZoned false drops and clears the mask");
   stars.dispose();
   assert.equal(canvasTextures[0].destroyed, true, "dispose frees the streak");
   assert.equal(canvasTextures[1].destroyed, true, "and the glow");
@@ -1389,8 +1403,8 @@ async function checkSceneWater(compose, clock, water, metrics) {
   app.initCall.resolve();
   assert.equal(await wet.layer.whenReady(), true);
   // Spec 172 D4: the rain's rings sit right after the water's mask, its drops after the rod. Spec 182: the falling stars
-  // right over the background, under the water.
-  const [, stars, bolide, waterContainer, mapSprite, waterMask, rings] = app.stage.children;
+  // (and their sky mask) right over the background, under the water.
+  const [, stars, bolide, , waterContainer, mapSprite, waterMask, rings] = app.stage.children;
   assert(bolide.children?.length === 2, "the bolide's layer right after the stars");
   assert(stars instanceof wet.pixi.ParticleContainer && stars.blendMode === "add", "the starfall lies right over the background");
   assert(waterMask.ops !== undefined && rings instanceof wet.pixi.ParticleContainer,
@@ -1433,7 +1447,7 @@ async function checkSceneWater(compose, clock, water, metrics) {
   const lowTexture = lowWet.textures.find((tex) => tex.resource.id === "day");
   if (lowTexture) lowTexture.width = 640;
   lowWet.layer.render(frame);
-  const lowFilter = lowWet.apps[0].stage.children[3].filters[0];
+  const lowFilter = lowWet.apps[0].stage.children[4].filters[0];
   assert(Math.abs(lowFilter.scale.x - 2 * 8 * artScale) < 1e-9, "TK-183: low background copy does not stretch waves");
 
   assert.equal(map.updates, 1, "each step uploads the map once");
@@ -1476,7 +1490,7 @@ async function checkSceneWater(compose, clock, water, metrics) {
   regions[0].y = 300;
   // TK-066: two zones with a gap. A mask of the zones clips the filtered copy, and the waves stop in the gap, so the art
   // between the zones stays still; a camera move only redraws the mask; one zone again drops the mask.
-  const zoneMask = app.stage.children[5];
+  const zoneMask = app.stage.children[6];
   const two = [{ x: -100, y: 100, width: 1600, height: 200 }, { x: -100, y: 500, width: 1600, height: 200 }];
   frame.world.clipRegions = list(two);
   clock.now += 40;
