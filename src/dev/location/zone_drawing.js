@@ -135,7 +135,7 @@ export class ZoneDrawing {
     if (!map || !d) return null;
     const cellPx = map.getCellSize?.() ?? locations.cellSize, design = locations.designCellSize || cellPx;
     // The castable area and the rain (spec 172 D4) may be drawn anywhere on the map; the others inside the castable area.
-    const area = d.category === "castable" || d.category === "rain" || d.category === "ash"
+    const area = d.category === "castable" || d.category === "rain" || d.category === "ash" || d.category === "sky"
       ? { left: 0, top: 0, right: locations.baseResolution.width, bottom: locations.baseResolution.height }
       : map.getCastableBoundsVirtual(cellPx);
     const iMin = Math.ceil(area.left / cellPx - EPSILON), iMax = Math.floor(area.right / cellPx + EPSILON) - 1;

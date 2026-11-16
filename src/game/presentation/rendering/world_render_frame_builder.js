@@ -24,6 +24,7 @@ export class WorldRenderFrameBuilder {
   // The rain zones' bounds in map pixels (not read by anyone; #zoneRects fills bounds as it goes).
   #rainBounds = { left: 0, right: 0, top: 0, bottom: 0, masked: false };
   #ashBounds = { left: 0, right: 0, top: 0, bottom: 0, masked: false };
+  #skyBounds = { left: 0, right: 0, top: 0, bottom: 0, masked: false };
 
   constructor({
     map,
@@ -92,6 +93,7 @@ export class WorldRenderFrameBuilder {
     this.#buildClipRegions(target.clipRegions, target.waterPlane);
     this.#buildRainRegions(target);
     this.#buildAshRegions(target);
+    this.#buildSkyRegions(target);
     if (this.#getWaterMetric) target.waterPlane.metric = this.#getWaterMetric();
     this.#debugBuilder?.buildInto(target, debugEnabled);
     if (target.backgroundHidden) {
@@ -216,6 +218,13 @@ export class WorldRenderFrameBuilder {
     const locations = this.#config.locations || {};
     target.ashZoned = locations.enableAshZones !== false;
     if (target.ashZoned) this.#zoneRects("ash", target.ashRegions, this.#ashBounds);
+  }
+
+  // Spec 182 D1 (TK-350): the sky where stars fall, from zones.sky; with the switch off — the background's top third.
+  #buildSkyRegions(target) {
+    const locations = this.#config.locations || {};
+    target.skyZoned = locations.enableSkyZones !== false;
+    if (target.skyZoned) this.#zoneRects("sky", target.skyRegions, this.#skyBounds);
   }
 
   // A category's zones as screen rectangles (masks as their rectangles); plane receives their bounds in map pixels.

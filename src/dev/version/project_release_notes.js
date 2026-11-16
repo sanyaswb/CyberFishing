@@ -1,6 +1,7 @@
 // Release notes, newest first (unshift with every patch). DEV only: no production code reads them, and in the start's
 // bundle they cost 13 KB gzip (spec 160). dev.html publishes them with the version: window.CYBER_FISHING_PROJECT_VERSION.notes.
 export const PROJECT_RELEASE_NOTES = Object.freeze([
+  "Spec 182 A (TK-350): sky zones (zones.sky) for the starfall in the zone editor and the world frame.",
   "TK-349: ash zones (zones.ash) apart from the rain zones; embers start in them and fade when they leave.",
   "TK-338.1: radiation hiss denser at the edges (radiationGrain.edges: centerShare, clearRadius, feather; 1 — even).",
   "TK-348.1: DevTools ColorField keeps swatch + text on the same row as the label at NumberField height (30/38 px) and closes the colour popup/opacity drawer on a second swatch click.",

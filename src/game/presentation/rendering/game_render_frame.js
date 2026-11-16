@@ -46,6 +46,10 @@ export class GameRenderFrame {
       // CONFIG.locations.enableAshZones is off and the ash covers the whole screen.
       ashRegions: new ReusableRenderList("world.ashRegions", diagnostics),
       ashZoned: false,
+      // Spec 182 D1 (TK-350): the sky where stars fall, zones.sky; skyZoned false: CONFIG.locations.enableSkyZones is
+      // off and the sky is the background's top third.
+      skyRegions: new ReusableRenderList("world.skyRegions", diagnostics),
+      skyZoned: false,
       invalidCastMarker: { visible: false },
     };
     this.casting = {
@@ -122,6 +126,8 @@ export class GameRenderFrame {
     this.world.rainZoned = false;
     this.world.ashRegions.reset();
     this.world.ashZoned = false;
+    this.world.skyRegions.reset();
+    this.world.skyZoned = false;
     this.world.debugImage.visible = false;
     this.world.annotations = null;
     this.world.backgroundHidden = false;

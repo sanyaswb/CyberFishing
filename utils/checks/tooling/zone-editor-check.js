@@ -167,6 +167,19 @@ const { WorldPerspective } = load("src/game/domain/locations/world_perspective.j
   assert.deepEqual([renderFrame.world.ashZoned, renderFrame.world.ashRegions.count], [false, 0],
     'the ash switch off: ash over the whole screen');
   delete cfg.locations.enableAshZones;
+  // Spec 182 D1 (TK-350): the sky where stars fall has its own zones and switch, apart from the rain's and the ash's.
+  zones.sky = [{ x: 0, y: 1, w: 1, h: 1 }];
+  renderFrame.reset(); water.buildInto({ target: renderFrame.world });
+  const skyRect = renderFrame.world.skyRegions.getAt(0);
+  assert(renderFrame.world.skyZoned && renderFrame.world.skyRegions.count === 1, 'sky zones apply while their switch is on');
+  assert.equal(JSON.stringify([skyRect.x, skyRect.y, renderFrame.world.ashRegions.getAt(0).x]), '[0,40,40]',
+    'the sky zone is its own, apart from the ash zone');
+  assert.equal(format.validateZones(format.canonicalZones(zones)).length, 0, 'the sky category exports');
+  cfg.locations.enableSkyZones = false;
+  renderFrame.reset(); water.buildInto({ target: renderFrame.world });
+  assert.deepEqual([renderFrame.world.skyZoned, renderFrame.world.skyRegions.count], [false, 0], 'the sky switch off');
+  delete cfg.locations.enableSkyZones;
+  delete zones.sky;
   delete zones.ash;
   delete zones.rain;
   zones.collisions = [{ x: 0, y: 0, w: 1, h: 1, mask: { enabled: true, cell: [.5, .5], rects: [[0, 0, 1, 2]] } }];

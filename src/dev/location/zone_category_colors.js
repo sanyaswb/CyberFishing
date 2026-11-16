@@ -9,6 +9,8 @@ export const ZONE_CATEGORY_COLORS = Object.freeze({
   rain: "#4da6ff",
   // TK-349: where the emission's ash (dust) flies; its own zones, apart from the rain's.
   ash: "#ff7a3d",
+  // Spec 182 D1 (TK-350): the sky where the starfall's stars fall.
+  sky: "#cfe6ff",
 });
 
 // The gameplay switch of each category (Revision 2): the editor lists, draws and drags a category only while it is on.
@@ -19,4 +21,5 @@ export const ZONE_PHYSICS_KEYS = Object.freeze({
   dynamic: "enableDynamicZones",
   rain: "enableRainZones",
   ash: "enableAshZones",
+  sky: "enableSkyZones",
 });

@@ -19,4 +19,7 @@ export const ZONES = {
   ash: [
     { x: 0, y: 0, w: 64, h: 36 },
   ],
+  sky: [
+    { x: 0, y: 0, w: 64, h: 16 },
+  ],
 };

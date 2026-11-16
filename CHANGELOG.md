@@ -2,6 +2,10 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.51.45 - Sky zone for the starfall (spec 182 stage A, TK-350)
+
+- The zone editor gets «Небо (де падають зорі)»: the sky where the starfall will fall, its own zones and switch `enableSkyZones`; the test location's sky is the top of the location for now. No stars yet (stages B–D).
+
 ## v0.51.44 - Separate rain and ash zones (TK-349)
 
 - The zone editor gets «Попіл»: the emission's ash (dust) flies only in its own zones, apart from the rain's; embers start inside a visible ash zone and fade out when they drift out; the switch `enableAshZones` off — ash over the whole screen.
@@ -38,8 +42,3 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 
 - A drunk vodka shows a round badge with a bottle under the radio: its green fill drains from the top down as the time runs out, turns yellow and red, and the badge fades away at the end; a tap shows the time left.
 - The radio and the statuses share one column under the clock; debuffs get a red outline. The fill is a CSS animation: no per-frame work.
-
-## v0.51.35 - Vodka halves what you see of the emission (spec 181 stage B, TK-342)
-
-- The emission's screen effect gets the full emission strength; the vodka weakens its output: exactly half the darkness and the blur at any phase (before, 50 % at the input showed only 20–30 % outside the peak), the blur keeps the emission's rhythm; the gas mask still shows nothing.
-- The vodka's three shares (darkening, blur, pulse rate) are live in DevTools «Конфіг» → statusEffects → vodka → Модифікатори.
