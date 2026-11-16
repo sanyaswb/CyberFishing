@@ -2,6 +2,10 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.51.18 - DevTools «Змінені» filter by owning module and flat «Конфіг» (TK-328)
+
+- DevTools «Змінені»: outside «Конфіг», edited parameters show under the specialized module where they were changed (e.g., «Сцена» instead of surfacing the duplicate «Конфіг» tree above it); inside «Конфіг», «Змінені» shows only «Конфіг» changes as a flat list without sections; numeric lists (`numberList`) and custom weather/debug config rows now track changed state and resets.
+
 ## v0.51.17 - Weather DevTools: in-place groups, event switches (TK-327.1)
 
 - DevTools «ПОГОДА»: inside a section every group opens in place (only a section opens inside); the location selector is buttons; rain, storm, fog and emission have switches (on starts a random event, off ends it) and the generated course shows on top; ВІТЕР lists what rain and storm do to the wind.
@@ -37,7 +41,3 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 ## v0.51.9 - Emission background after the map's phases (TK-322.1)
 
 - The emission's background now loads after every time-of-day phase of the current map, low copy first and the full picture right after, like the other backgrounds; an emission waits for the full picture.
-
-## v0.51.8 - Emission background and red rain (spec 179 stage B, TK-322)
-
-- Location: during an emission its own background fades in over the day/evening/night picture with the emission's strength (alone at the peak), on the water too; the rain and its rings turn red. The picture loads after the first frame, and an emission waits for it.

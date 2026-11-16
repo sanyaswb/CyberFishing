@@ -50,8 +50,17 @@ export class ConfigTreeRenderer {
 
       if (Array.isArray(value)) {
         if (value.length > 0 && typeof value[0] === "number") {
-          this.#ui.addParameter(parentElement, { control: "numberList", label: this.#formatKey(key, currentPath), value,
-            onCommit: (next) => this.#edits.update(currentPath, next), path: currentPath });
+          this.#ui.addParameter(parentElement, {
+            control: "numberList",
+            label: this.#formatKey(key, currentPath),
+            value,
+            onCommit: (next) => this.#edits.update(currentPath, next),
+            path: currentPath,
+            bindingPath: currentPath,
+            requires: this.#prerequisites(currentPath),
+            isChanged: () => this.#edits.isOverridden(currentPath),
+            onReset: () => this.#edits.resetParameter(currentPath),
+          });
         } else if (value.length > 0 && typeof value[0] === "object") {
           this.#createSection(key, parentElement, currentPath, { inline: options.inlineSections === true, render: (content) => {
             value.forEach((item, index) => {

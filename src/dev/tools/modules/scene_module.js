@@ -60,8 +60,12 @@ export class SceneModule {
         storm: config.weather?.storm ?? null, wind: config.weather?.wind ?? null, screen: config.emission?.screen ?? null,
         debug: config.debug ?? null }),
       // Spec 180 D8: a section's «змінено» mark and its reset to the code.
-      edits: this.#configRuntime ? { hasOverrides: (parts) => edits.hasOverridesUnder(parts),
-        resetTree: (parts) => edits.resetOverrideTree(parts) } : null,
+      edits: this.#configRuntime ? {
+        hasOverrides: (parts) => edits.hasOverridesUnder(parts),
+        resetTree: (parts) => edits.resetOverrideTree(parts),
+        isOverridden: (path) => edits.isOverridden(path),
+        resetParameter: (path) => edits.resetParameter(path),
+      } : null,
       createSection,
       renderConfigTree: (value, section, path, options) => tree.render(value, section, path, options),
       updateConfig: (path, value) => edits.update(path, value),

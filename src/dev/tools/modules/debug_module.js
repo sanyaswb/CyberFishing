@@ -23,11 +23,23 @@ export class DebugModule {
       // The switch binds its own path: config syncs carry "rod" / "tackle", a switch shows only true.
       const priorityPath = ["CONFIG", "locations", "cameraFollowPriority"];
       const switchPath = ["DEBUG_CAMERA", "followsTackle"];
-      ui.createSwitcherRow("Камера тримає рибу (інакше — вудку в кадрі)",
-        this.#config.locations.cameraFollowPriority === "tackle", content, (enabled) => {
+      ui.addParameter(content, {
+        control: "switch",
+        label: "Камера тримає рибу (інакше — вудку в кадрі)",
+        value: this.#config.locations.cameraFollowPriority === "tackle",
+        onCommit: (enabled) => {
           edits.update(priorityPath, enabled ? "tackle" : "rod");
           ui.syncValue(switchPath, enabled);
-        }, switchPath);
+        },
+        path: switchPath,
+        bindingPath: switchPath,
+        configPath: priorityPath,
+        isChanged: () => edits.isOverridden(priorityPath),
+        onReset: () => {
+          edits.resetParameter(priorityPath);
+          ui.syncValue(switchPath, this.#config.locations.cameraFollowPriority === "tackle");
+        },
+      });
     }
     const inventory = createSection("Inventory", content, ["DEBUG_INVENTORY"]);
     if (debug.inventory) tree.render(debug.inventory, inventory, ["CONFIG", "debug", "inventory"]);

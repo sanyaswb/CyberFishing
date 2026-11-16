@@ -282,7 +282,18 @@ export class WeatherDevSection {
       const clamped = clamp(parsed, 0, 1);
       this.#updateConfig?.(cfgPath, clamped);
       this.#ui.syncValue?.(cfgPath, clamped);
-    }, ["WEATHER", "chances", key], cfgPath);
+    }, ["WEATHER", "chances", key], cfgPath, this.#changeTracking(cfgPath));
+  }
+
+  #changeTracking(cfgPath, onAfterReset = null) {
+    if (!this.#edits?.isOverridden || !this.#edits?.resetParameter) return {};
+    return {
+      isChanged: () => this.#edits.isOverridden(cfgPath),
+      onReset: () => {
+        this.#edits.resetParameter(cfgPath);
+        onAfterReset?.();
+      },
+    };
   }
 
   #renderRain(content, mode) {
@@ -348,7 +359,8 @@ export class WeatherDevSection {
       if (typeof value !== "number") continue;
       const cfgPath = ["CONFIG", ...parts];
       this.#ui.addParameter(parent, { control: "number", label, value, path: ["WEATHER", "wind", "events", parts.at(-1), parts[1]],
-        bindingPath: cfgPath, onCommit: (next) => { if (Number.isFinite(Number(next))) this.#updateConfig?.(cfgPath, Number(next)); } });
+        bindingPath: cfgPath, onCommit: (next) => { if (Number.isFinite(Number(next))) this.#updateConfig?.(cfgPath, Number(next)); },
+        ...this.#changeTracking(cfgPath) });
     }
     this.#ui.createInfoRow("Викид", "діє на вітер через свій шторм (ВИКИД → «Подія викиду» → storm)", parent);
   }
@@ -390,9 +402,10 @@ export class WeatherDevSection {
           ["emission", "screen", "vignette"]);
         this.#tree(screen?.blur, this.#group("Розмиття", section, ["WEATHER", "emission", "blur"]), ["emission", "screen", "blur"]);
         if (screen) {
+          const includeHudPath = ["CONFIG", "emission", "screen", "includeHud"];
           this.#ui.addParameter(section, { control: "switch", label: "Розмивати разом з HUD", value: screen.includeHud !== false,
-            onCommit: (on) => this.#updateConfig?.(["CONFIG", "emission", "screen", "includeHud"], on === true),
-            path: ["WEATHER", "emission", "includeHud"], bindingPath: ["CONFIG", "emission", "screen", "includeHud"] });
+            onCommit: (on) => this.#updateConfig?.(includeHudPath, on === true),
+            path: ["WEATHER", "emission", "includeHud"], bindingPath: includeHudPath, ...this.#changeTracking(includeHudPath) });
         }
       }
       if (!mode.location) return;
@@ -423,12 +436,13 @@ export class WeatherDevSection {
     this.#elementSection("ВОДА", "water", content, parts, (section) => {
       if (mode.general) {
         const testOn = this.#general()?.debug?.waveTestBackground === true;
+        const waveTestPath = ["CONFIG", "debug", "waveTestBackground"];
         this.#ui.addParameter(section, { control: "switch", label: "Тестовий фон хвиль (смуги)", value: testOn,
           onCommit: (on) => {
             const id = this.#locationsMap?.()?.[this.#weather.locationId]?.waveTestBackground;
             if (on && id) this.#weather.requestImage?.(id);
-            this.#updateConfig?.(["CONFIG", "debug", "waveTestBackground"], on === true);
-          }, path: ["WEATHER", "water", "testBackground"], bindingPath: ["CONFIG", "debug", "waveTestBackground"] });
+            this.#updateConfig?.(waveTestPath, on === true);
+          }, path: ["WEATHER", "water", "testBackground"], bindingPath: waveTestPath, ...this.#changeTracking(waveTestPath) });
         this.#tree(water, this.#group("Хвилі й стан моря (загальне)", section, ["WEATHER", "water", "waves"]), ["canvas", "water"]);
       }
       if (!mode.location) return;
@@ -476,11 +490,28 @@ export class WeatherDevSection {
 
   // The sliders under an element's strength: each at its real value within its range (D16).
   #renderAt100Sliders(kind, parent) {
+    const selectedId = this.#selected === GENERAL ? null : this.#locationId();
     for (const [key, [min, max, step]] of Object.entries(STRENGTH_LIMITS[kind])) {
       const value = this.#at100(kind, key);
       if (!Number.isFinite(value)) continue;
-      this.#ui.addParameter(parent, { control: "range", label: STRENGTH_LABELS[key] ?? key, value: clamp(value, min, max),
-        min, max, step, onCommit: (next) => this.#setAt100(kind, key, Number(next)), path: ["WEATHER", "controls", `${kind}At100`, key] });
+      const cfgPath = selectedId
+        ? ["CONFIG", ...this.#locationParts(selectedId, "look", kind, key)]
+        : ["CONFIG", "canvas", kind, "strength", key];
+      const sliderPath = ["WEATHER", "controls", `${kind}At100`, key];
+      const syncPath = selectedId ? cfgPath : sliderPath;
+      this.#ui.addParameter(parent, {
+        control: "range",
+        label: STRENGTH_LABELS[key] ?? key,
+        value: clamp(value, min, max),
+        min,
+        max,
+        step,
+        onCommit: (next) => this.#setAt100(kind, key, Number(next)),
+        path: sliderPath,
+        bindingPath: syncPath,
+        configPath: cfgPath,
+        ...this.#changeTracking(cfgPath, () => this.#ui.syncValue?.(syncPath, clamp(this.#at100(kind, key), min, max))),
+      });
     }
   }
 
@@ -489,9 +520,11 @@ export class WeatherDevSection {
     for (const key of Object.keys(STRENGTH_LIMITS[kind])) {
       const value = this.#at100(kind, key);
       if (!Number.isFinite(value)) continue;
+      const cfgPath = ["CONFIG", ...this.#locationParts(id, "look", kind, key)];
       this.#ui.addParameter(parent, { control: "number", label: STRENGTH_LABELS[key] ?? key, value,
         onCommit: (next) => { if (Number.isFinite(Number(next))) this.#setAt100(kind, key, Number(next)); },
-        path: ["WEATHER", kind, "at100", key], bindingPath: ["CONFIG", ...this.#locationParts(id, "look", kind, key)] });
+        path: ["WEATHER", kind, "at100", key], bindingPath: cfgPath,
+        ...this.#changeTracking(cfgPath, () => this.#ui.syncValue?.(cfgPath, this.#at100(kind, key))) });
     }
   }
 
@@ -670,7 +703,7 @@ export class WeatherDevSection {
       const currentPath = ["CONFIG", "locations", "map", this.#weather.locationId, "environment", "current", "speedPxPerSec"];
       this.#ui.addParameter(controls, { control: "range", label: "Течія, px/с", value: clamp(current.speedPxPerSec, 0, 60),
         min: 0, max: 60, step: 0.5, onCommit: (value) => this.#updateConfig?.(currentPath, Number(value)),
-        path: ["WEATHER", "controls", "current"], bindingPath: currentPath });
+        path: ["WEATHER", "controls", "current"], bindingPath: currentPath, ...this.#changeTracking(currentPath) });
     }
     this.#ui.createInputRow("перехід, с", this.#fadeSec, controls, "number", (value) => {
       this.#fadeSec = Math.max(0, Number(value) || 0);

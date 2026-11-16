@@ -192,6 +192,20 @@
 }
 .devtools__body--filtered :is(.devtools__row, .devtools__pages, .devtools__empty, .devtools__alert, .devtools__export):not(.devtools__row--match),
 .devtools__body--filtered .devtools__section:not(.devtools__section--match) { display: none; }
+/* TK-328: inside «Конфіг» with «Змінені» active, changed parameters render as a flat list without sections. */
+.devtools__body--flat-sections .devtools__page--match { gap: 0; }
+.devtools__body--flat-sections .devtools__page--match::before,
+.devtools__body--flat-sections .devtools__section-title,
+.devtools__body--flat-sections .devtools__section-info,
+.devtools__body--flat-sections .devtools__section-info-button { display: none; }
+.devtools__body--flat-sections .devtools__section { margin-top: 0; }
+.devtools__body--flat-sections .devtools__section-content {
+  padding-left: 0;
+  border-left: 0;
+  margin-left: 0;
+  margin-top: 0;
+}
+.devtools__body--flat-sections .devtools__row--match { border-top: 1px solid var(--devtools-line); }
 /* TK-319: the reveal search keeps every row; matches are tinted, the current one outlined. */
 .devtools__body--revealing .devtools__row--match { background: rgba(var(--ui-accent-rgb), 0.1); }
 .devtools__body--revealing .devtools__row--current-match {

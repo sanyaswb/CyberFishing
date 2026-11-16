@@ -50,6 +50,7 @@ export class DevToolsUI {
   #toastTimer = null;
   // Spec 174 C3: search text and descriptions of labels, rows for the filter, change marks.
   #searchText = new WeakMap();
+  #rowConfigPath = new WeakMap();
   #parameterDescriptions = new WeakMap();
   #parameterRows = new Set();
   #changeMarks = new Map();
@@ -244,6 +245,7 @@ export class DevToolsUI {
       else button.removeAttribute("aria-current");
     }
     if (changed) this.#body.scrollTop = this.#pageScroll.get(id) ?? 0;
+    if (changed && this.#changedOnly) this.refreshFilter();
     if (remember) this.#onPageSelect?.(id);
   }
 
@@ -666,9 +668,9 @@ export class DevToolsUI {
 
   // swatch: an optional "#rrggbb" colour square before the label (spec 129: zone category colours).
   createSwitcherRow(labelStr, initialValue, parentElement, onChangeCallback, path = null, bindingPath = path,
-    { swatch = null, requires = [] } = {}) {
+    { swatch = null, requires = [], configPath = null, isChanged = null, onReset = null } = {}) {
     this.addParameter(parentElement, { control: "switch", label: labelStr, value: initialValue, onCommit: onChangeCallback,
-      path, bindingPath, swatch, requires });
+      path, bindingPath, swatch, requires, configPath, isChanged, onReset });
   }
 
   #refreshDependencies() {
@@ -726,10 +728,11 @@ export class DevToolsUI {
   }
 
   // type: "number" | "array" (numbers in one text field) | anything else (text).
-  createInputRow(key, val, parentElement, type, onChangeCallback, path = null, bindingPath = path, { requires = [] } = {}) {
+  createInputRow(key, val, parentElement, type, onChangeCallback, path = null, bindingPath = path,
+    { requires = [], configPath = null, isChanged = null, onReset = null } = {}) {
     const control = type === "number" ? "number" : type === "array" ? "numberList" : "text";
     this.addParameter(parentElement, { control, label: key, value: val, onCommit: onChangeCallback, path, bindingPath,
-      requires });
+      requires, configPath, isChanged, onReset });
   }
 
   // A 0..100 slider with its value beside it (spec 129 Revision 2: grid and depth opacity); onChangeCallback receives
@@ -754,12 +757,14 @@ export class DevToolsUI {
   //   requires: [{ path, isEnabled() }] (spec 131, TK-292); options (segments, choice); swatch (a label colour).
   // The label sits beside the control; a list (choice) puts its field under the label (TK-293).
   //   isChanged(): the value differs from the code (a session override) -> a marker and a reset button (onReset()).
-  addParameter(parentElement, { control, label, value, onCommit, path = null, bindingPath = path, requires = [],
-    options = [], swatch = null, isChanged = null, onReset = null, min = 0, max = 100, step = 1 }) {
+  addParameter(parentElement, { control, label, value, onCommit, path = null, bindingPath = path, configPath = null,
+    requires = [], options = [], swatch = null, isChanged = null, onReset = null, min = 0, max = 100, step = 1 }) {
     const row = document.createElement("div");
     row.className = control === "choice" ? "devtools__row devtools__row--stacked"
       : control === "segments" ? "devtools__row devtools__row--wrap" : "devtools__row";
     this.#assignDevToolsPath(row, path);
+    const canonicalPath = this.#normalizeDevToolsPath(configPath ?? bindingPath ?? path);
+    if (canonicalPath) this.#rowConfigPath.set(row, canonicalPath);
     row.appendChild(this.#createLabelElement(label, path, swatch));
     const ariaLabel = String(label);
     let field;
@@ -779,7 +784,7 @@ export class DevToolsUI {
       if (bindingPath) this.#controlBindings.register(bindingPath, (next) => { guard.remember(next); field.setValue(next); }, row);
     }
     if (control === "range" && bindingPath) this.#controlBindings.register(bindingPath, (next) => field.setValue(next), row);
-    if (isChanged && onReset) this.#addResetButton(row, bindingPath, isChanged, onReset);
+    if (isChanged && onReset) this.#addResetButton(row, bindingPath, isChanged, onReset, configPath);
     row.appendChild(field.element);
     // TK-314.1: the hint comes after the control (a list: between its label and its field), so opening it never moves
     // the control under it; it pushes the rows below down. TK-315: a copy button for the key beside the «i».
@@ -791,7 +796,7 @@ export class DevToolsUI {
 
   // Spec 174 C3: a changed parameter (its value is not the code's) is marked and has a reset beside its control; the
   // mark follows every sync of its path (an edit, an import, a reset).
-  #addResetButton(row, bindingPath, isChanged, onReset) {
+  #addResetButton(row, bindingPath, isChanged, onReset, configPath = null) {
     const button = document.createElement("button");
     button.type = "button";
     button.className = "devtools__reset";
@@ -803,6 +808,7 @@ export class DevToolsUI {
     const refresh = () => row.classList.toggle("devtools__row--changed", isChanged() === true);
     this.#changeMarks.set(row, refresh);
     if (bindingPath) this.#controlBindings.register(bindingPath, () => refresh(), row);
+    if (configPath && configPath !== bindingPath) this.#controlBindings.register(configPath, () => refresh(), row);
     refresh();
   }
 
@@ -872,13 +878,21 @@ export class DevToolsUI {
     for (const element of this.#filterMarks) element.classList.remove("devtools__row--match", "devtools__section--match",
       "devtools__page--match", "devtools__row--current-match");
     this.#filterMarks.clear();
-    const revealing = active && this.#searchMode === "reveal";
+    // TK-328: «Змінені» always filters (never reveal-in-place). Inside «Конфіг» it shows all changed config rows without
+    // sections; outside «Конфіг» a CONFIG.* change stays in the specialized module that owns it instead of surfacing the
+    // duplicate «Конфіг» tree above it.
+    const revealing = active && !changedOnly && this.#searchMode === "reveal";
+    const configPage = this.#pages.get("config") ?? null;
+    const inConfig = changedOnly && this.#activePage === "config" && configPage !== null;
     this.#body.classList.toggle("devtools__body--filtered", active && !revealing);
+    this.#body.classList.toggle("devtools__body--flat-sections", inConfig);
     this.#body.classList.toggle("devtools__body--revealing", revealing);
     this.#matches = [];
     this.#matchIndex = -1;
     let found = 0;
     if (active) {
+      const candidateRows = [];
+      const specializedChangedPaths = changedOnly && !inConfig ? new Set() : null;
       for (const row of this.#parameterRows) {
         if (!this.#body.contains(row)) {
           this.#parameterRows.delete(row);
@@ -887,6 +901,19 @@ export class DevToolsUI {
         const text = this.#searchText.get(row.children[0]) ?? "";
         if (query && !text.includes(query)) continue;
         if (changedOnly && !row.classList.contains("devtools__row--changed")) continue;
+        const rowPage = this.#pageOf(row);
+        if (inConfig && rowPage !== configPage) continue;
+        candidateRows.push({ row, rowPage });
+        if (specializedChangedPaths && rowPage !== configPage) {
+          const configPath = this.#rowConfigPath.get(row);
+          if (configPath) specializedChangedPaths.add(configPath);
+        }
+      }
+      for (const { row, rowPage } of candidateRows) {
+        if (specializedChangedPaths && rowPage === configPage) {
+          const configPath = this.#rowConfigPath.get(row);
+          if (configPath && specializedChangedPaths.has(configPath)) continue;
+        }
         found += 1;
         this.#mark(row, "devtools__row--match");
         this.#matches.push(row);

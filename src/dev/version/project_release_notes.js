@@ -1,6 +1,7 @@
 // Release notes, newest first (unshift with every patch). DEV only: no production code reads them, and in the start's
 // bundle they cost 13 KB gzip (spec 160). dev.html publishes them with the version: window.CYBER_FISHING_PROJECT_VERSION.notes.
 export const PROJECT_RELEASE_NOTES = Object.freeze([
+  "TK-328: DevTools «Змінені» shows changes in their owning section instead of duplicating into «Конфіг», flattens «Конфіг» when entered, and tracks numberList and custom weather/debug config controls.",
   "TK-327.1: weather DevTools — groups open in place, selector buttons, event switches with the generated course, wind by events.",
   "Spec 180 C (TK-327): weather DevTools — selector, controls for every element, sections, section reset.",
   "Spec 180 B (TK-326): general storm and wind settings, strength ranges, water lateral switch, wave test background.",

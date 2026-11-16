@@ -1237,5 +1237,144 @@ function choiceRow(options, value, path) {
     assert.equal(revealUi.revealPath("UNKNOWN.path"), false, "returns false for unknown path");
   }
 
+  // --- TK-328: «Змінені» shows changes in their owning section (without duplicating into «Конфіг») and flattens «Конфіг» when entered ---
+  {
+    const { ConfigTreeRenderer } = runtime.importModule("src/dev/tools/config/config_tree_renderer.js");
+    const { DevConfigEditService } = runtime.importModule("src/dev/tools/config/dev_config_edit_service.js");
+    const { DevToolsParameterAliasRegistry } = runtime.importModule("src/dev/services/dev_tools_parameter_alias_registry.js");
+    const baseConfig = {
+      canvas: { rain: { gravityPx: 400, durationSec: [120, 240] } },
+      weather: { storm: { gustChanceMult: 1.5 } },
+      casting: { basePower: 10 },
+    };
+    const config = JSON.parse(JSON.stringify(baseConfig));
+    const overrides = new Set();
+    const readKey = (obj, parts) => parts.reduce((cur, key) => cur?.[key], obj);
+    const writeKey = (obj, parts, val) => {
+      let cur = obj;
+      for (let i = 0; i < parts.length - 1; i++) cur = cur[parts[i]];
+      cur[parts.at(-1)] = val;
+    };
+    const configRuntime = {
+      overrideStore: { has: (key) => overrides.has(key) },
+      set(path, value) {
+        const parts = path.slice(1);
+        overrides.add(parts.join("."));
+        writeKey(config, parts, value);
+      },
+      reset(path) {
+        const parts = path.slice(1);
+        overrides.delete(parts.join("."));
+        writeKey(config, parts, JSON.parse(JSON.stringify(readKey(baseConfig, parts))));
+      },
+    };
+    const ui = new DevToolsUI(() => {}, config, null, null, null, document.body, createElement("div"));
+    const pages = ui.createPages([
+      { id: "game", title: "Гра", icon: "hook" },
+      { id: "config", title: "Конфіг", icon: "sliders" },
+      { id: "scene", title: "Сцена", icon: "map" },
+    ], "scene", () => {});
+    const aliases = new DevToolsParameterAliasRegistry();
+    const edits = new DevConfigEditService({
+      config,
+      catalogs: {},
+      configRuntime,
+      getHookedFish: () => null,
+      hookedFishSync: { afterEdit() {} },
+      itemStatSync: { afterEdit() {} },
+      debugModulesSource: () => ({}),
+      syncValue: (path, value) => ui.syncValue(path, value),
+      eventTarget: { dispatchEvent() {} },
+      logger: { log() {} },
+      parameterAliases: aliases,
+    });
+    const tree = new ConfigTreeRenderer({
+      ui,
+      edits,
+      aliases,
+      schema: { describe: () => null, prerequisitesOf: () => [] },
+      createSection: (title, parent, path, options = {}) => ui.createSection(title, parent, false, () => {}, path, options),
+    });
+    const configSection = ui.createSection("НАЛАШТУВАННЯ (CONFIG)", pages.get("config"), false, () => {}, ["CONFIG"]);
+    tree.render(config, configSection, ["CONFIG"]);
+
+    const sceneSection = ui.createSection("ПОГОДА", pages.get("scene"), false, () => {}, ["WEATHER"]);
+    const rainGroup = ui.createSection("ДОЩ", sceneSection, false, () => {}, ["WEATHER", "rain"]);
+    const rainTree = ui.createSection("Вигляд (загальний)", rainGroup, false, () => {}, ["WEATHER", "rain", "look"]);
+    tree.render(config.canvas.rain, rainTree, ["CONFIG", "canvas", "rain"]);
+    const gustPath = ["CONFIG", "weather", "storm", "gustChanceMult"];
+    ui.addParameter(sceneSection, {
+      control: "number",
+      label: "Шторм: пориви ×",
+      value: config.weather.storm.gustChanceMult,
+      path: ["WEATHER", "wind", "events", "gustChanceMult", "storm"],
+      bindingPath: gustPath,
+      onCommit: (next) => edits.update(gustPath, next),
+      isChanged: () => edits.isOverridden(gustPath),
+      onReset: () => edits.resetParameter(gustPath),
+    });
+
+    // Change a numberList, a CONFIG.* parameter rendered in Sцеna, and an event row wired via bindingPath.
+    edits.update(["CONFIG", "canvas", "rain", "durationSec"], [60, 180]);
+    edits.update(["CONFIG", "canvas", "rain", "gravityPx"], 500);
+    edits.update(gustPath, 2.2);
+
+    const rowsOn = (page, predicate = () => true) =>
+      byClass("devtools__row--match", page).filter(predicate);
+    const configPage = pages.get("config");
+    const scenePage = pages.get("scene");
+    const durationInScene = byClass("devtools__row", scenePage).find((row) => row.children[0]?.dataset?.devtoolsKey === "durationSec");
+    assert.equal(durationInScene.classList.contains("devtools__row--changed"), true, "numberList marks changed values");
+    assert.equal(byClass("devtools__reset", durationInScene).length, 1, "numberList gets a reset button");
+
+    // Even when reveal mode is preferred for text search, «Змінені» still filters cleanly.
+    ui.setPanelOptions({ searchMode: "reveal" });
+    const panel = ui.body.parentNode;
+    const filter = byClass("devtools__filter", panel)[0];
+    filter.click();
+    assert.equal(ui.body.classList.contains("devtools__body--filtered"), true);
+    assert.equal(ui.body.classList.contains("devtools__body--revealing"), false);
+    assert.equal(ui.body.classList.contains("devtools__body--flat-sections"), false);
+    assert.equal(scenePage.classList.contains("devtools__page--match"), true, "scene shows its changed parameters");
+    assert.equal(configPage.classList.contains("devtools__page--match"), false,
+      "Config does not appear when every changed CONFIG parameter lives in Scene");
+    assert.equal(rowsOn(scenePage).length, 3);
+    assert.equal(rowsOn(configPage).length, 0);
+
+    // A CONFIG-only parameter (not present in specialized sections) still surfaces in Конфіг when changed.
+    edits.update(["CONFIG", "casting", "basePower"], 15);
+    ui.refreshFilter();
+    assert.equal(configPage.classList.contains("devtools__page--match"), true);
+    assert.deepEqual(rowsOn(configPage).map((row) => row.children[0]?.dataset?.devtoolsKey), ["basePower"]);
+    assert.equal(rowsOn(scenePage).length, 3);
+
+    // Entering Конфіг with «Змінені» active flattens sections and includes ALL changed Config parameters (only Конфіг).
+    ui.selectPage("config", { remember: true });
+    assert.equal(ui.body.classList.contains("devtools__body--flat-sections"), true, "Config uses flat sections mode");
+    assert.equal(scenePage.classList.contains("devtools__page--match"), false, "Scene hides when filtering inside Config");
+    assert.equal(configPage.classList.contains("devtools__page--match"), true);
+    assert.deepEqual(
+      rowsOn(configPage).map((row) => row.children[0]?.dataset?.devtoolsKey).sort(),
+      ["basePower", "durationSec", "gravityPx", "gustChanceMult"],
+    );
+
+    // Switching back to Scene restores specialized ownership and drops flat mode.
+    ui.selectPage("scene", { remember: true });
+    assert.equal(ui.body.classList.contains("devtools__body--flat-sections"), false);
+    assert.equal(scenePage.classList.contains("devtools__page--match"), true);
+    assert.deepEqual(rowsOn(configPage).map((row) => row.children[0]?.dataset?.devtoolsKey), ["basePower"]);
+
+    // Resetting numberList clears its changed state and drops it from filtered results.
+    byClass("devtools__reset", durationInScene)[0].click();
+    assert.equal(durationInScene.classList.contains("devtools__row--changed"), false);
+    ui.refreshFilter();
+    assert.equal(rowsOn(scenePage).length, 2);
+
+    filter.click();
+    assert.equal(ui.body.classList.contains("devtools__body--filtered"), false);
+    assert.equal(ui.body.classList.contains("devtools__body--flat-sections"), false);
+    ui.dispose();
+  }
+
   console.log("DevTools controls passed: number field steps, modifiers, typed values, rejected text, external values and held buttons; list picker search, keyboard, unknown ids; segmented options; export command notice.");
 })().catch((error) => { console.error(error); process.exitCode = 1; });
