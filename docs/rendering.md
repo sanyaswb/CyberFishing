@@ -192,6 +192,12 @@ gameplay zones or their enable flags; hiding background also hides its displaced
     `includeInBuild` back on when any of them drops it, so it would be drawn as content; mask the common parent. The
     stencil is the starfall's only extra GPU cost (two small batches inside it): measure on a phone with
     «ПРОДУКТИВНІСТЬ» on a strong starfall over rain.
+    TK-358: the weather renderers share their parts instead of copies — `ScreenZoneSet` (a zone list's visible parts on
+    screen, areas, a point picked by area, the point test; or one fallback rectangle), `ZoneRectMask` (one container's
+    stencil of zone rectangles, redrawn only on a change, released empty), `BackgroundPlacement` (the background's
+    rectangle on screen, shares ↔ points), `SceneColor` / `mixColor` and `regionsBounds` (engine/math); numbers through
+    `engine/math/number_normalization.js` (`clampUnit`, `finiteOr`, `pairValue`, `pairBetween`). A new weather effect
+    reuses them.
     TK-357: the bolide's burst sparks are a third small batch in the same masked layer: one `ParticleContainer` with
     the glow texture and a fixed pool of 32 made once (unused particles alpha 0); the flare reuses the head's sprite
     and the frozen tail its streak — no new texture, filter or allocation during the burst.

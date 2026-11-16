@@ -3,6 +3,8 @@
 // it shows the player that radiation acts on them. Updated once a frame, it reads one number and calls the statuses only
 // when the state changes. The house (spec 179 stage I, owner Q5): inside, the debuff will not act and its badge will hide
 // while its time keeps flowing — wired when the house exists.
+const SOURCE = Object.freeze({ source: "location" });
+
 export class RadiationStatusSource {
   #getEnvironment;
   #statuses;
@@ -21,7 +23,8 @@ export class RadiationStatusSource {
   update() {
     const held = Number(this.#getEnvironment()?.radiation) > 0;
     if (held === this.#held) return;
-    this.#held = held;
-    this.#statuses.hold(this.#statusId, held, { source: "location" });
+    // TK-358: remembered only once the statuses hold it (a description added later in DevTools is picked up then).
+    this.#statuses.hold(this.#statusId, held, SOURCE);
+    this.#held = held ? this.#statuses.has(this.#statusId) : false;
   }
 }

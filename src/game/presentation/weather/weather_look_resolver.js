@@ -3,8 +3,7 @@
 // with the emission). The end at 100 may be overridden per location (MAP_DB.<id>.weather.look.<kind>.<key>). resolve()
 // writes one reused object per kind: every plain value as it is, every strength value mixed by the strength (integer
 // keys rounded), and <key>Cap — the largest the value can get, so the renderers size their pools once, not per frame.
-const clamp01 = (value) => (value <= 0 ? 0 : value >= 1 ? 1 : value);
-const finite = (value, fallback) => (Number.isFinite(Number(value)) ? Number(value) : fallback);
+import { clampUnit, finiteOr } from "../../../engine/math/number_normalization.js";
 const INTEGER_KEYS = Object.freeze(new Set(["maxDrops", "maxParticles", "maxRings"]));
 
 export class WeatherLookResolver {
@@ -24,7 +23,7 @@ export class WeatherLookResolver {
   endAt100(kind, key) {
     const range = this.#getLooks()?.[kind]?.strength?.[key];
     const override = this.#getOverrides()?.[kind]?.[key];
-    return Number.isFinite(Number(override)) ? Number(override) : finite(Array.isArray(range) ? range[1] : NaN, NaN);
+    return Number.isFinite(Number(override)) ? Number(override) : finiteOr(Array.isArray(range) ? range[1] : NaN, NaN);
   }
 
   // kind: "rain" | "ash"; strength 0…1. Returns the reused resolved settings (null without a look).
@@ -40,15 +39,15 @@ export class WeatherLookResolver {
       if (key !== "strength") target[key] = look[key];
     }
     const ranges = look.strength;
-    const level = clamp01(finite(strength, 0));
+    const level = clampUnit(finiteOr(strength, 0));
     if (ranges) {
       const overrides = this.#getOverrides()?.[kind] ?? null;
       for (const key in ranges) {
         const range = ranges[key];
         if (!Array.isArray(range)) continue;
-        const atZero = finite(range[0], 0);
+        const atZero = finiteOr(range[0], 0);
         const override = overrides?.[key];
-        const atFull = Number.isFinite(Number(override)) ? Number(override) : finite(range[1], atZero);
+        const atFull = Number.isFinite(Number(override)) ? Number(override) : finiteOr(range[1], atZero);
         const value = atZero + (atFull - atZero) * level;
         target[key] = INTEGER_KEYS.has(key) ? Math.round(value) : value;
         target[`${key}Cap`] = Math.max(atZero, atFull);

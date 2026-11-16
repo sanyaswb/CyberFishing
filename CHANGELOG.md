@@ -2,6 +2,11 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.51.55 - Weather code review: shared parts, fixed bugs (TK-358)
+
+- The rain, water, ash and starfall share one implementation of their zones on screen, zone masks, background placement and colours; the weather modules use the engine number helpers. The look is unchanged.
+- Fixed: the player statuses are released with the game and a status renewed after that gets its end again; the radiation debuff appears once its description is back; the weather controls no longer duplicate DevTools «СТАТУСИ»; an ash check that compared the wrong embers.
+
 ## v0.51.54 - The bolide can burn out (TK-357)
 
 - A bolide may now burn out before it leaves the sky (never before 20 % of its path): its head flares and is gone, its tail stops where it was and fades smoothly, and sparks fly off the flare, slowing and falling a little. Tunable in DevTools «Конфіг» → canvas → starfall → bolide → burst.
@@ -40,7 +45,3 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 
 - A starfall night is checked once at 21:00; a starfall night plans several periods of random strength (some quiet) that rise and fall smoothly until 5:00, and at most one bolide at a random moment; none during an emission. Settings in the location's weather (`starfall`).
 - DevTools «РАНДОМАЙЗЕР» → «Зорепад»: the share of starfall nights, periods, quiet stretches, the strength by the night's hours and the bolides. Stars on screen come with stage C.
-
-## v0.51.45 - Sky zone for the starfall (spec 182 stage A, TK-350)
-
-- The zone editor gets «Небо (де падають зорі)»: the sky where the starfall will fall, its own zones and switch `enableSkyZones`; the test location's sky is the top of the location for now. No stars yet (stages B–D).

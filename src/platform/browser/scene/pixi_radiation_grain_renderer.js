@@ -11,11 +11,10 @@
 //   Small cells (FRAME × grainPx) and the jump every step hide the cells' borders.
 // Drawing (docs/rendering.md 16, 22, 23): one texture, no filter, no per-frame texture or allocation; nearest sampling
 // keeps the specks crisp at grainPx logical pixels each. The container is hidden (and the scene idle) at zero.
+import { clampUnit, finiteOr } from "../../../engine/math/number_normalization.js";
 const TILE = 128;
 const FRAME = 32;
 
-const clamp01 = (value) => (value <= 0 ? 0 : value >= 1 ? 1 : value);
-const number = (value, fallback) => (Number.isFinite(Number(value)) ? Number(value) : fallback);
 const smooth = (share) => share * share * (3 - 2 * share);
 
 export class PixiRadiationGrainRenderer {
@@ -66,12 +65,12 @@ export class PixiRadiationGrainRenderer {
   // frame's clock; settings: CONFIG.canvas.radiationGrain. Returns whether the scene must present a frame.
   update(world, viewWidth, viewHeight, nowMs, settings) {
     if (!world || settings?.enabled !== true) return this.#hide();
-    const from = clamp01(number(settings.fromRadiation, 0));
-    const radiation = clamp01(number(world.weather?.radiation, 0));
-    const share = radiation <= from ? 0 : clamp01((radiation - from) / Math.max(1e-6, 1 - from));
-    const alpha = clamp01(number(settings.maxOpacity, 0)) * smooth(share);
+    const from = clampUnit(finiteOr(settings.fromRadiation, 0));
+    const radiation = clampUnit(finiteOr(world.weather?.radiation, 0));
+    const share = radiation <= from ? 0 : clampUnit((radiation - from) / Math.max(1e-6, 1 - from));
+    const alpha = clampUnit(finiteOr(settings.maxOpacity, 0)) * smooth(share);
     if (alpha <= 0.001) return this.#hide();
-    const grainPx = Math.max(1, number(settings.grainPx, 2));
+    const grainPx = Math.max(1, finiteOr(settings.grainPx, 2));
     const cellSize = FRAME * grainPx;
     this.#ensureGrid(Math.ceil(viewWidth / cellSize) + 1, Math.ceil(viewHeight / cellSize) + 1);
     let changed = !this.#visible || alpha !== this.#alpha;
@@ -79,7 +78,7 @@ export class PixiRadiationGrainRenderer {
     this.#visible = true;
     this.#alpha = alpha;
     this.#container.alpha = alpha;
-    const stepMs = 1000 / Math.max(1, number(settings.fps, 24));
+    const stepMs = 1000 / Math.max(1, finiteOr(settings.fps, 24));
     // The grain jumps at its own pace only; an opacity change alone redraws the same grain.
     if (this.#nextStepMs === null || nowMs >= this.#nextStepMs) {
       this.#nextStepMs = nowMs + stepMs;
@@ -127,9 +126,9 @@ export class PixiRadiationGrainRenderer {
     const centerX = this.#viewWidth / 2;
     const centerY = this.#viewHeight / 2;
     const halfDiagonal = Math.max(1, Math.hypot(centerX, centerY));
-    const centerShare = clamp01(number(this.#edges?.centerShare, 1));
-    const clearRadius = clamp01(number(this.#edges?.clearRadius, 0));
-    const feather = Math.max(0.01, number(this.#edges?.feather, 0.5));
+    const centerShare = clampUnit(finiteOr(this.#edges?.centerShare, 1));
+    const clearRadius = clampUnit(finiteOr(this.#edges?.clearRadius, 0));
+    const feather = Math.max(0.01, finiteOr(this.#edges?.feather, 0.5));
     const frames = this.#frames;
     for (let row = 0; row < this.#rows; row += 1) {
       for (let column = 0; column < this.#columns; column += 1) {
@@ -140,7 +139,7 @@ export class PixiRadiationGrainRenderer {
         sprite.scale.set(this.#random() < 0.5 ? -grainPx : grainPx, this.#random() < 0.5 ? -grainPx : grainPx);
         const distance = Math.hypot(sprite.x - centerX, sprite.y - centerY) / halfDiagonal;
         sprite.alpha = centerShare >= 1 ? 1
-          : centerShare + (1 - centerShare) * smooth(clamp01((distance - clearRadius) / feather));
+          : centerShare + (1 - centerShare) * smooth(clampUnit((distance - clearRadius) / feather));
       }
     }
   }

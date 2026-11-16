@@ -127,6 +127,8 @@ export class PlayerStatusEffects {
   dispose() {
     if (this.#timer !== null) this.#scheduler.clearTimeout(this.#timer);
     this.#timer = null;
+    // TK-358: no timer is pending any more, so the next apply schedules one again.
+    this.#timerAtMs = Infinity;
     this.#listeners.clear();
   }
 

@@ -31,3 +31,20 @@ export function clampRectangleToArea(rect, width, height, out) {
   out.x = left; out.y = top; out.w = right - left; out.h = bottom - top;
   return out;
 }
+
+// TK-358: the bounding box of a list of screen rectangles ({ count, getAt(i) → { x, y, width, height } }) written into
+// out ({ left, top, right, bottom }); null for no list, no rectangles or an empty box (no allocation).
+export function regionsBounds(regions, out) {
+  if (!regions || regions.count === 0) return null;
+  let left = Infinity, top = Infinity, right = -Infinity, bottom = -Infinity;
+  for (let index = 0; index < regions.count; index += 1) {
+    const region = regions.getAt(index);
+    left = Math.min(left, region.x);
+    top = Math.min(top, region.y);
+    right = Math.max(right, region.x + region.width);
+    bottom = Math.max(bottom, region.y + region.height);
+  }
+  if (!(right > left && bottom > top)) return null;
+  out.left = left; out.top = top; out.right = right; out.bottom = bottom;
+  return out;
+}

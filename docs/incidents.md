@@ -38,6 +38,23 @@ rule as something the next change can follow.
 | R22 | Each switch of a manual control holds only its own process; never one shared freeze or a switch that sets another process. A check flips every switch in every order and asserts the others keep their course. | I-22 |
 | R23 | A DevTools section that redraws its container while a child drill-in (`depth >= MAX_INLINE_SECTION_DEPTH`) may be open must wrap the rebuild in `DevToolsUI.preserveDrill`, and UI tests of nested modules must mount at the real production section depth (e.g. `СЦЕНА WebGL` -> `ПОГОДА`). | I-23 |
 | R24 | A double of `DevToolsUI` that records what a section shows keeps its placement contract (`#insertTreeNode`: rows before nested sections and slots, whatever order they were made in) and asserts the order the user reads. A mark derived from session edits («· змінено», a reset button) follows `config-updated` in place, not only the next redraw. Found by looking at the live panel, which the fake hid. | I-24 |
+| R25 | A check that compares a filtered list with the list it came from keeps each item's own index (map to [value, index] before filtering); comparing by the filtered position mixes items up and can pass or fail by luck. | I-25 |
+
+<a id="i-25"></a>
+
+## I-25 · 2026-11-16 · up to v0.51.54: the ash's «slow and smooth» check compared the wrong embers (TK-358)
+
+- **Seen:** the TK-358 refactor of the ash renderer (one more random number per new ember) made `scene-layer` fail
+  with «slow and smooth: under 6 px per frame (1211.55)» while the embers moved as before.
+- **Cause:** `checkAsh` (`utils/checks/platform/scene-layer-check.js`) filtered the moved embers out of `after` and then
+  compared the filtered list with `before` by the filtered position (`moved.map((…, index) => before[index])`): once an
+  ember earlier in the pool had died, every later one was compared with its neighbour. It passed only while no ember
+  before them died in that frame.
+- **Fix (v0.51.55):** each moved ember keeps its pool index (`after.map((sample, index) => [...sample, index])`) and is
+  compared with its own previous position.
+- **Rule R25:** see the table.
+- **Check:** `scene-layer` (the ash's steps measured per ember; passes on the refactored renderer, as the embers did
+  not change).
 
 <a id="i-24"></a>
 

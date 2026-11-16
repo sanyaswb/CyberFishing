@@ -88,3 +88,14 @@ export function positiveFinite(value) {
   const parsed = Number(value);
   return Number.isFinite(parsed) && parsed > 0 ? parsed : 0;
 }
+
+// TK-358: the value at index of a config pair [a, b] (a finite number, else the fallback).
+export function pairValue(pair, index, fallback) {
+  return finiteOr(Array.isArray(pair) ? pair[index] : undefined, fallback);
+}
+
+// TK-358: a value between a config pair's ends [min, max] at share 0…1 (fallback ends low and high).
+export function pairBetween(pair, low, high, share) {
+  const start = pairValue(pair, 0, low);
+  return start + (pairValue(pair, 1, high) - start) * share;
+}

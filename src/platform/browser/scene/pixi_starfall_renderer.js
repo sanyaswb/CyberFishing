@@ -26,6 +26,12 @@
 //   fading). A bolide that leaves the sky before its moment does not burst (it is clipped and fades as before).
 // Drawing (docs/rendering.md 16, 22, 23): one ParticleContainer, one texture, additive blend, no filter; a fixed pool
 // sized by the settings (it grows only when they grow); unused particles have alpha 0. Frames only while a star flies.
+import { clampUnit, finiteOr, pairBetween, pairValue } from "../../../engine/math/number_normalization.js";
+import { BackgroundPlacement } from "./background_placement.js";
+import { SceneColor } from "./scene_color.js";
+import { ScreenZoneSet } from "./screen_zone_set.js";
+import { ZoneRectMask } from "./zone_rect_mask.js";
+
 const STREAK_W = 64;
 const GLOW = 32;
 const STREAK_H = 8;
@@ -37,15 +43,7 @@ const SPARK_DRAG_PER_SEC = 2.2;
 const SPARK_GRAVITY_PX = 60;
 const DYNAMIC = Object.freeze({ position: true, vertex: true, rotation: true, color: true, uvs: false });
 
-const clamp01 = (value) => (value <= 0 ? 0 : value >= 1 ? 1 : value);
-const number = (value, fallback) => (Number.isFinite(Number(value)) ? Number(value) : fallback);
-const pairAt = (pair, index, fallback) => number(Array.isArray(pair) ? pair[index] : undefined, fallback);
-// A value between a [min, max] pair's ends at share 0…1.
-const between = (pair, low, high, share) => {
-  const start = pairAt(pair, 0, low);
-  return start + (pairAt(pair, 1, high) - start) * share;
-};
-const parseColor = (text) => (/^#[0-9a-f]{6}$/iu.test(text) ? Number.parseInt(text.slice(1), 16) : 0xffffff);
+const NO_REGIONS = Object.freeze({ count: 0, getAt: () => null });
 
 export class PixiStarfallRenderer {
   #pixi;
@@ -61,7 +59,7 @@ export class PixiStarfallRenderer {
   #bolide = { alive: false, x: 0, y: 0, vx: 0, vy: 0, age: 0, life: 1, length: 0, phase: 0,
     // TK-357: the burst — planned (burstAt, s of its life; Infinity: none), then running (burstAge) with the tail's
     // alpha and length frozen at the flare.
-    burstAt: Infinity, bursting: false, burstAge: 0, tailAlpha: 0, tailLength: 0, sparksLeft: 0 };
+    burstAt: Infinity, bursting: false, burstAge: 0, tailAlpha: 0, tailLength: 0, sparksLeft: 0, flashColor: 0xffffff };
   #sparks;
   #sparkParticles = [];
   #sx = new Float32Array(MAX_SPARKS);
@@ -71,9 +69,9 @@ export class PixiStarfallRenderer {
   #sage = new Float32Array(MAX_SPARKS);
   #slife = new Float32Array(MAX_SPARKS);
   #ssize = new Float32Array(MAX_SPARKS);
-  #flashColor = { text: "", value: 0xffffff };
+  #flashColor = new SceneColor();
   #bolideSerial = null;
-  #bolideColor = { text: "", value: 0xffffff };
+  #bolideColor = new SceneColor();
   #particles = [];
   // Per star: head position (screen px), velocity (px/s), age and life (s), tail length (px), alive.
   #x = new Float32Array(0);
@@ -88,14 +86,13 @@ export class PixiStarfallRenderer {
   #spawnDebt = 0;
   #lastNow = null;
   #visible = false;
-  #color = { text: "", value: 0xffffff };
-  #zoneRects = new Float32Array(4);
-  #zoneWeights = new Float32Array(1);
-  #zoneCount = 0;
-  #zoneArea = 0;
-  #wholeArea = 0;
+  #color = new SceneColor();
+  #colorValue = 0xffffff;
+  // TK-358: the sky on screen (its zones, or the background's top third) and its mask on the stars' layer.
+  #zones = new ScreenZoneSet();
+  #background = new BackgroundPlacement();
+  #point = { x: 0, y: 0 };
   #mask;
-  #maskRects = [];
 
   // documentTarget: makes the streak's canvas; random: () => 0…1 (visual only).
   constructor({ pixi, documentTarget, random = Math.random }) {
@@ -129,14 +126,14 @@ export class PixiStarfallRenderer {
     this.#sparks.update();
     this.#layer = new pixi.Container();
     this.#layer.addChild(this.#container, this.#bolideContainer, this.#sparks);
-    this.#mask = new pixi.Graphics();
+    this.#mask = new ZoneRectMask({ pixi, target: this.#layer });
   }
 
   // Right over the background's sky, under the water and everything in the world (rendering.md 14).
   mount(stage) {
     stage.addChild(this.#layer);
     // The mask lives in the scene for its transform (Pixi does not draw a mask itself).
-    stage.addChild(this.#mask);
+    this.#mask.mount(stage);
   }
 
   get status() {
@@ -150,25 +147,26 @@ export class PixiStarfallRenderer {
     const elapsed = this.#lastNow === null ? 0 : Math.min(MAX_STEP_SEC, Math.max(0, (nowMs - this.#lastNow) / 1000));
     this.#lastNow = nowMs;
     // A bolide falls when the night's serial changes (the first frame only takes the serial as it is).
-    const serial = number(world?.weather?.bolideSerial, 0);
+    const serial = finiteOr(world?.weather?.bolideSerial, 0);
     const bolideDue = this.#bolideSerial !== null && serial !== this.#bolideSerial;
     if (world) this.#bolideSerial = serial;
     if (!world || settings?.enabled !== true) { this.#clear(); return this.#hide(); }
-    const strength = clamp01(number(world.weather?.starfall, 0));
+    const strength = clampUnit(finiteOr(world.weather?.starfall, 0));
     if (strength <= 0 && this.#count === 0 && !this.#bolide.alive && !this.#bolide.bursting && !bolideDue) {
       this.#spawnDebt = 0;
       return this.#hide();
     }
     this.#prepareZones(world, viewWidth, viewHeight);
-    if (bolideDue && this.#zoneCount > 0) this.#spawnBolide(settings);
+    if (bolideDue && this.#zones.count > 0) this.#spawnBolide(settings);
     const bolideFlying = this.#updateBolide(elapsed, settings);
-    const lifeMax = Math.max(0.1, pairAt(settings.lifeSec, 1, 0.9));
-    const perMinuteMax = Math.max(0, pairAt(settings.perMinute, 1, 30));
+    const lifeMax = Math.max(0.1, pairValue(settings.lifeSec, 1, 0.9));
+    const perMinuteMax = Math.max(0, pairValue(settings.perMinute, 1, 30));
     this.#ensurePool(Math.min(MAX_POOL, Math.ceil(perMinuteMax / 60 * lifeMax * 2) + 4));
-    this.#color = PixiStarfallRenderer.#parse(this.#color, settings.color);
-    const low = Math.max(0, pairAt(settings.perMinute, 0, 0));
-    const share = this.#wholeArea > 0 ? Math.min(1, this.#zoneArea / this.#wholeArea) : 0;
-    const rate = strength > 0 && this.#zoneCount > 0 ? (low + (perMinuteMax - low) * strength) / 60 * share : 0;
+    this.#colorValue = this.#color.read(settings.color);
+    const low = Math.max(0, pairValue(settings.perMinute, 0, 0));
+    const zones = this.#zones;
+    const share = zones.wholeArea > 0 ? Math.min(1, zones.visibleArea / zones.wholeArea) : 0;
+    const rate = strength > 0 && zones.count > 0 ? (low + (perMinuteMax - low) * strength) / 60 * share : 0;
     this.#spawnDebt += rate * elapsed * (0.5 + this.#random());
     const before = this.#count;
     this.#updateStars(elapsed, settings);
@@ -185,9 +183,9 @@ export class PixiStarfallRenderer {
   }
 
   #updateStars(elapsed, settings) {
-    const opacity = clamp01(number(settings.opacity, 0.9));
-    const fade = clamp01(number(settings.fadeShare, 0.4));
-    const widthPx = Math.max(0.5, number(settings.widthPx, 2));
+    const opacity = clampUnit(finiteOr(settings.opacity, 0.9));
+    const fade = clampUnit(finiteOr(settings.fadeShare, 0.4));
+    const widthPx = Math.max(0.5, finiteOr(settings.widthPx, 2));
     let alive = 0;
     for (let index = 0; index < this.#particles.length; index += 1) {
       const particle = this.#particles[index];
@@ -201,7 +199,7 @@ export class PixiStarfallRenderer {
       this.#x[index] += this.#vx[index] * elapsed;
       this.#y[index] += this.#vy[index] * elapsed;
       // Out of every sky zone: it fades out from here.
-      if (this.#age[index] < life * (1 - fade) && !this.#insideZone(this.#x[index], this.#y[index])) {
+      if (this.#age[index] < life * (1 - fade) && !this.#zones.contains(this.#x[index], this.#y[index])) {
         this.#age[index] = life * (1 - fade);
       }
       const age = this.#age[index];
@@ -215,8 +213,8 @@ export class PixiStarfallRenderer {
       particle.rotation = Math.atan2(this.#vy[index], this.#vx[index]);
       particle.scaleX = Math.max(0.01, tail / STREAK_W);
       particle.scaleY = widthPx / STREAK_H;
-      particle.alpha = opacity * flare * clamp01(envelope);
-      particle.tint = this.#color.value;
+      particle.alpha = opacity * flare * clampUnit(envelope);
+      particle.tint = this.#colorValue;
       alive += 1;
     }
     // A debt the pool could not take now waits at most one star.
@@ -226,20 +224,18 @@ export class PixiStarfallRenderer {
 
   #spawn(index, settings) {
     const random = this.#random;
-    const pick = random() * this.#zoneArea;
-    let zone = 0;
-    while (zone < this.#zoneCount - 1 && this.#zoneWeights[zone] < pick) zone += 1;
-    const offset = zone * 4;
-    this.#x[index] = this.#zoneRects[offset] + random() * this.#zoneRects[offset + 2];
-    this.#y[index] = this.#zoneRects[offset + 1] + random() * this.#zoneRects[offset + 3];
-    const jitter = number(settings.angleJitterDeg, 12) * (2 * random() - 1);
-    const angle = (number(settings.angleDeg, 35) + jitter) * Math.PI / 180;
+    const point = this.#point;
+    this.#zones.pick(random, point);
+    this.#x[index] = point.x;
+    this.#y[index] = point.y;
+    const jitter = finiteOr(settings.angleJitterDeg, 12) * (2 * random() - 1);
+    const angle = (finiteOr(settings.angleDeg, 35) + jitter) * Math.PI / 180;
     const side = random() < 0.5 ? -1 : 1;
-    const speed = between(settings.speedPx, 500, 900, random());
+    const speed = pairBetween(settings.speedPx, 500, 900, random());
     this.#vx[index] = side * Math.cos(angle) * speed;
     this.#vy[index] = Math.sin(angle) * speed;
-    this.#length[index] = between(settings.lengthPx, 60, 140, random());
-    this.#life[index] = between(settings.lifeSec, 0.4, 0.9, random());
+    this.#length[index] = pairBetween(settings.lengthPx, 60, 140, random());
+    this.#life[index] = pairBetween(settings.lifeSec, 0.4, 0.9, random());
     this.#age[index] = 0;
     this.#alive[index] = 1;
   }
@@ -248,26 +244,21 @@ export class PixiStarfallRenderer {
   #spawnBolide(settings) {
     const random = this.#random;
     const look = settings.bolide ?? {};
-    const pick = random() * this.#zoneArea;
-    let zone = 0;
-    while (zone < this.#zoneCount - 1 && this.#zoneWeights[zone] < pick) zone += 1;
-    const offset = zone * 4;
     const bolide = this.#bolide;
-    bolide.x = this.#zoneRects[offset] + random() * this.#zoneRects[offset + 2];
-    bolide.y = this.#zoneRects[offset + 1] + random() * this.#zoneRects[offset + 3] * 0.5;
-    const angle = number(look.angleDeg, 22) * Math.PI / 180;
-    const speed = between(look.speedPx, 250, 400, random());
+    this.#zones.pick(random, bolide, 0.5);
+    const angle = finiteOr(look.angleDeg, 22) * Math.PI / 180;
+    const speed = pairBetween(look.speedPx, 250, 400, random());
     const side = random() < 0.5 ? -1 : 1;
     bolide.vx = side * Math.cos(angle) * speed;
     bolide.vy = Math.sin(angle) * speed;
-    bolide.length = between(look.lengthPx, 300, 500, random());
-    bolide.life = between(look.lifeSec, 2.2, 3.2, random());
+    bolide.length = pairBetween(look.lengthPx, 300, 500, random());
+    bolide.life = pairBetween(look.lifeSec, 2.2, 3.2, random());
     bolide.age = 0;
     bolide.phase = random() * Math.PI * 2;
     // TK-357: whether it burns out early, and when (a share of its whole path; never before atShare[0]).
     const burst = look.burst ?? {};
-    const bursts = random() < clamp01(number(burst.chance, 0));
-    bolide.burstAt = bursts ? bolide.life * clamp01(between(burst.atShare, 0.2, 0.9, random())) : Infinity;
+    const bursts = random() < clampUnit(finiteOr(burst.chance, 0));
+    bolide.burstAt = bursts ? bolide.life * clampUnit(pairBetween(burst.atShare, 0.2, 0.9, random())) : Infinity;
     bolide.bursting = false;
     bolide.alive = true;
   }
@@ -281,36 +272,36 @@ export class PixiStarfallRenderer {
       return false;
     }
     const look = settings.bolide ?? {};
-    const fade = clamp01(number(settings.fadeShare, 0.4));
+    const fade = clampUnit(finiteOr(settings.fadeShare, 0.4));
     bolide.age += elapsed;
     if (bolide.age >= bolide.life) { bolide.alive = false; this.#bolideContainer.visible = false; return true; }
     bolide.x += bolide.vx * elapsed;
     bolide.y += bolide.vy * elapsed;
-    if (bolide.age < bolide.life * (1 - fade) && !this.#insideZone(bolide.x, bolide.y)) {
+    if (bolide.age < bolide.life * (1 - fade) && !this.#zones.contains(bolide.x, bolide.y)) {
       bolide.age = bolide.life * (1 - fade);
       bolide.burstAt = Infinity; // it left the sky first: no burst
     }
     const share = bolide.age / bolide.life;
     const flare = Math.min(1, share / 0.05);
     const envelope = share > 1 - fade ? (1 - share) / Math.max(1e-6, fade) : 1;
-    const alpha = clamp01(number(look.opacity, 1)) * flare * clamp01(envelope);
-    this.#bolideColor = PixiStarfallRenderer.#parse(this.#bolideColor, look.color);
+    const alpha = clampUnit(finiteOr(look.opacity, 1)) * flare * clampUnit(envelope);
+    const bolideColor = this.#bolideColor.read(look.color);
     const speed = Math.hypot(bolide.vx, bolide.vy);
     const tail = this.#bolideTail;
     tail.x = bolide.x;
     tail.y = bolide.y;
     tail.rotation = Math.atan2(bolide.vy, bolide.vx);
     tail.scale.set(Math.max(0.01, Math.min(bolide.length, speed * bolide.age) / STREAK_W),
-      Math.max(0.5, number(look.widthPx, 5)) / STREAK_H);
+      Math.max(0.5, finiteOr(look.widthPx, 5)) / STREAK_H);
     tail.alpha = alpha;
-    tail.tint = this.#bolideColor.value;
+    tail.tint = bolideColor;
     const head = this.#bolideHead;
     const flicker = 1 + 0.12 * Math.sin(bolide.age * 23 + bolide.phase);
     head.x = bolide.x;
     head.y = bolide.y;
-    head.scale.set(Math.max(1, number(look.glowPx, 28)) / GLOW * flicker);
+    head.scale.set(Math.max(1, finiteOr(look.glowPx, 28)) / GLOW * flicker);
     head.alpha = alpha;
-    head.tint = this.#bolideColor.value;
+    head.tint = bolideColor;
     this.#bolideContainer.visible = true;
     if (bolide.age >= bolide.burstAt) this.#startBurst(look, tail.alpha, Math.min(bolide.length, speed * bolide.age));
     return true;
@@ -325,24 +316,24 @@ export class PixiStarfallRenderer {
     bolide.burstAge = 0;
     bolide.tailAlpha = tailAlpha;
     bolide.tailLength = tailLength;
-    this.#flashColor = PixiStarfallRenderer.#parse(this.#flashColor, burst.color);
+    bolide.flashColor = this.#flashColor.read(burst.color);
     const random = this.#random;
-    const low = Math.max(0, Math.floor(pairAt(burst.particles, 0, 10)));
-    const high = Math.max(low, Math.floor(pairAt(burst.particles, 1, 18)));
+    const low = Math.max(0, Math.floor(pairValue(burst.particles, 0, 10)));
+    const high = Math.max(low, Math.floor(pairValue(burst.particles, 1, 18)));
     const count = Math.min(MAX_SPARKS, low + Math.floor(random() * (high - low + 1)));
     const heading = Math.atan2(bolide.vy, bolide.vx);
     for (let index = 0; index < MAX_SPARKS; index += 1) {
       if (index >= count) { this.#slife[index] = 0; this.#sage[index] = 1; continue; }
       // Mostly forward (the bolide's momentum), some to the sides and back.
       const angle = heading + (random() * 2 - 1) * Math.PI * (random() < 0.7 ? 0.45 : 1);
-      const speed = between(burst.particleSpeedPx, 60, 220, random());
+      const speed = pairBetween(burst.particleSpeedPx, 60, 220, random());
       this.#sx[index] = bolide.x;
       this.#sy[index] = bolide.y;
       this.#svx[index] = Math.cos(angle) * speed + bolide.vx * 0.25;
       this.#svy[index] = Math.sin(angle) * speed + bolide.vy * 0.25;
       this.#sage[index] = 0;
-      this.#slife[index] = between(burst.particleLifeSec, 0.4, 1.1, random());
-      this.#ssize[index] = between(burst.particleSizePx, 2, 5, random());
+      this.#slife[index] = pairBetween(burst.particleLifeSec, 0.4, 1.1, random());
+      this.#ssize[index] = pairBetween(burst.particleSizePx, 2, 5, random());
     }
     bolide.sparksLeft = count;
     this.#sparks.visible = true;
@@ -355,17 +346,17 @@ export class PixiStarfallRenderer {
     const burst = look.burst ?? {};
     bolide.burstAge += elapsed;
     const t = bolide.burstAge;
-    const flashSec = Math.max(0.05, number(burst.flashSec, 0.35));
-    const tailFadeSec = Math.max(0.05, number(burst.tailFadeSec, 1.4));
-    const flash = clamp01(t / flashSec);
+    const flashSec = Math.max(0.05, finiteOr(burst.flashSec, 0.35));
+    const tailFadeSec = Math.max(0.05, finiteOr(burst.tailFadeSec, 1.4));
+    const flash = clampUnit(t / flashSec);
     const head = this.#bolideHead;
-    const glowPx = Math.max(1, number(look.glowPx, 28));
-    const flashPx = Math.max(glowPx, number(burst.flashPx, 90));
+    const glowPx = Math.max(1, finiteOr(look.glowPx, 28));
+    const flashPx = Math.max(glowPx, finiteOr(burst.flashPx, 90));
     head.scale.set((glowPx + (flashPx - glowPx) * Math.sqrt(flash)) / GLOW);
-    head.alpha = clamp01(number(look.opacity, 1)) * (1 - flash) * (1 - flash);
-    head.tint = this.#flashColor.value;
+    head.alpha = clampUnit(finiteOr(look.opacity, 1)) * (1 - flash) * (1 - flash);
+    head.tint = bolide.flashColor;
     const tail = this.#bolideTail;
-    const tailShare = clamp01(t / tailFadeSec);
+    const tailShare = clampUnit(t / tailFadeSec);
     tail.alpha = bolide.tailAlpha * (1 - tailShare * tailShare * (3 - 2 * tailShare));
     tail.scale.set(Math.max(0.01, bolide.tailLength / STREAK_W), tail.scale.y);
     const drag = Math.exp(-SPARK_DRAG_PER_SEC * elapsed);
@@ -385,8 +376,8 @@ export class PixiStarfallRenderer {
       const scale = this.#ssize[index] * (0.4 + 0.6 * left) / GLOW * 2;
       particle.scaleX = scale;
       particle.scaleY = scale;
-      particle.alpha = clamp01(number(look.opacity, 1)) * left;
-      particle.tint = this.#flashColor.value;
+      particle.alpha = clampUnit(finiteOr(look.opacity, 1)) * left;
+      particle.tint = bolide.flashColor;
       sparks += 1;
     }
     bolide.sparksLeft = sparks;
@@ -398,81 +389,17 @@ export class PixiStarfallRenderer {
     return true;
   }
 
-  // The sky zones' visible parts on screen with cumulative areas; without zones — the background's top third.
+  // The sky zones' visible parts (masked; redrawn only when they change), or without zones the background's top third.
   #prepareZones(world, viewWidth, viewHeight) {
     const zoned = world.skyZoned === true;
-    const regions = world.skyRegions;
-    const count = zoned ? (regions ? regions.count : 0) : 1;
-    if (this.#zoneRects.length < count * 4) {
-      this.#zoneRects = new Float32Array(count * 4);
-      this.#zoneWeights = new Float32Array(count);
-    }
-    let total = 0, visible = 0, whole = 0;
-    for (let index = 0; index < count; index += 1) {
-      let rectX, rectY, rectWidth, rectHeight;
-      if (zoned) {
-        const rect = regions.getAt(index);
-        rectX = rect.x; rectY = rect.y; rectWidth = rect.width; rectHeight = rect.height;
-      } else {
-        const layers = world.backgroundLayers;
-        const base = layers && layers.count > 0 ? layers.getAt(0) : null;
-        rectX = base ? base.x : 0; rectY = base ? base.y : 0;
-        rectWidth = base ? base.width : viewWidth; rectHeight = (base ? base.height : viewHeight) / 3;
-      }
-      if (rectWidth > 0 && rectHeight > 0) whole += rectWidth * rectHeight;
-      const left = Math.max(0, rectX), top = Math.max(0, rectY);
-      const right = Math.min(viewWidth, rectX + rectWidth), bottom = Math.min(viewHeight, rectY + rectHeight);
-      if (!(right > left && bottom > top)) continue;
-      const offset = visible * 4;
-      this.#zoneRects[offset] = left; this.#zoneRects[offset + 1] = top;
-      this.#zoneRects[offset + 2] = right - left; this.#zoneRects[offset + 3] = bottom - top;
-      total += (right - left) * (bottom - top);
-      this.#zoneWeights[visible] = total;
-      visible += 1;
-    }
-    this.#zoneCount = visible;
-    this.#zoneArea = total;
-    this.#wholeArea = whole;
-    this.#updateMask(zoned, regions);
-  }
-
-  // Clips the stars' layer (the stars and the bolide) to the sky zones, redrawing only when their rectangles change.
-  #updateMask(zoned, regions) {
+    const regions = world.skyRegions ?? NO_REGIONS;
     if (!zoned) {
-      // An unassigned mask is drawn again (Pixi resets includeInBuild), so it is emptied too.
-      if (this.#layer.mask) { this.#layer.mask = null; this.#mask.clear(); this.#maskRects.length = 0; }
-      return;
+      const view = this.#background.place(world, viewWidth, viewHeight), fallback = this.#zones.fallback;
+      fallback.x = view.x; fallback.y = view.y; fallback.width = view.width; fallback.height = view.height / 3;
     }
-    const count = regions ? regions.count : 0;
-    const rects = this.#maskRects;
-    let same = rects.length === count * 4;
-    for (let index = 0; same && index < count; index += 1) {
-      const region = regions.getAt(index), offset = index * 4;
-      same = rects[offset] === region.x && rects[offset + 1] === region.y && rects[offset + 2] === region.width &&
-        rects[offset + 3] === region.height;
-    }
-    if (!same) {
-      rects.length = count * 4;
-      this.#mask.clear();
-      for (let index = 0; index < count; index += 1) {
-        const region = regions.getAt(index), offset = index * 4;
-        rects[offset] = region.x; rects[offset + 1] = region.y;
-        rects[offset + 2] = region.width; rects[offset + 3] = region.height;
-        this.#mask.rect(region.x, region.y, region.width, region.height);
-      }
-      if (count > 0) this.#mask.fill(0xffffff);
-    }
-    if (this.#layer.mask !== this.#mask) this.#layer.mask = this.#mask;
-  }
-
-  #insideZone(x, y) {
-    for (let zone = 0; zone < this.#zoneCount; zone += 1) {
-      const offset = zone * 4;
-      const left = this.#zoneRects[offset], top = this.#zoneRects[offset + 1];
-      const right = left + this.#zoneRects[offset + 2], bottom = top + this.#zoneRects[offset + 3];
-      if (x >= left && y >= top && x <= right && y <= bottom) return true;
-    }
-    return false;
+    this.#zones.prepare(zoned ? regions : null, viewWidth, viewHeight);
+    if (zoned) this.#mask.clipTo(regions);
+    else this.#mask.release();
   }
 
   #ensurePool(size) {
@@ -513,12 +440,6 @@ export class PixiStarfallRenderer {
     this.#container.visible = false;
     for (let index = 0; index < this.#particles.length; index += 1) this.#particles[index].alpha = 0;
     return true;
-  }
-
-  static #parse(cache, value) {
-    const text = typeof value === "string" ? value : "#ffffff";
-    if (text === cache.text) return cache;
-    return { text, value: parseColor(text) };
   }
 
   // A soft round glow (the bolide's head), bright in the middle, clear at the edge; drawn once.

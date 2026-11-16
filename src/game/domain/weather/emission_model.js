@@ -1,3 +1,4 @@
+import { clampUnit, finiteOr } from "../../../engine/math/number_normalization.js";
 import { WeatherEventTimeline } from "./weather_event_timeline.js";
 
 // Spec 179 (stage A, TK-321.1) and spec 180 D13 (TK-325): the location's emission and radiation.
@@ -14,8 +15,6 @@ import { WeatherEventTimeline } from "./weather_event_timeline.js";
 const PHASES = Object.freeze(["idle", "onset", "peak", "fade"]);
 const PHASE_OF = Object.freeze({ rise: "onset", peak: "peak", fall: "fade", idle: "idle" });
 
-const clamp01 = (value) => (value <= 0 ? 0 : value >= 1 ? 1 : value);
-const finite = (value, fallback) => (Number.isFinite(Number(value)) ? Number(value) : fallback);
 
 export class EmissionModel {
   #rng;
@@ -73,7 +72,7 @@ export class EmissionModel {
   update(dtMs) {
     const settings = this.#getSettings() || null;
     const emission = settings?.emission;
-    const dtSec = Math.max(0, finite(dtMs, 0)) / 1000;
+    const dtSec = Math.max(0, finiteOr(dtMs, 0)) / 1000;
     if (this.#cooldownLeftSec === null) this.#startIdle(emission);
     if (!this.#frozen) {
       if (this.#active) {
@@ -113,14 +112,14 @@ export class EmissionModel {
   // Spec 180 D4: the emission's intensity 0…1 held by hand (DEV: tune its look at a steady strength); null releases it.
   // While held, the phase shown is "peak" (> 0) or "idle" (0), so the screen, the cast gate and the radiation follow.
   holdIntensity(intensity) {
-    this.#intensityHold = intensity === null || !Number.isFinite(Number(intensity)) ? null : clamp01(Number(intensity));
+    this.#intensityHold = intensity === null || !Number.isFinite(Number(intensity)) ? null : clampUnit(Number(intensity));
     this.#sync(this.#getSettings() || null);
   }
 
   // Radiation 0…1 held by hand (DEV, tests); null returns to base + emission.
   setRadiationOverride(radiation) {
     this.#radiationOverride = radiation === null || !Number.isFinite(Number(radiation))
-      ? null : clamp01(Number(radiation));
+      ? null : clampUnit(Number(radiation));
     this.#sync(this.#getSettings() || null);
   }
 
@@ -136,20 +135,20 @@ export class EmissionModel {
     if (this.#cooldownLeftSec > 0 || left <= 0) return;
     this.#checkLeftSec -= left;
     if (this.#checkLeftSec > 0) return;
-    this.#checkLeftSec = Math.max(1, finite(emission?.checkIntervalSec, 60));
+    this.#checkLeftSec = Math.max(1, finiteOr(emission?.checkIntervalSec, 60));
     if (!this.#canStart()) return;
     if (this.#rng.next() < this.#chance(emission)) this.#begin(emission);
     else this.#failedChecks += 1;
   }
 
   #chance(emission) {
-    return clamp01(Math.max(0, finite(emission?.chancePerCheck, 0)) +
-      Math.max(0, finite(emission?.chanceGrowthPerCheck, 0)) * this.#failedChecks);
+    return clampUnit(Math.max(0, finiteOr(emission?.chancePerCheck, 0)) +
+      Math.max(0, finiteOr(emission?.chanceGrowthPerCheck, 0)) * this.#failedChecks);
   }
 
   #startIdle(emission) {
-    this.#cooldownLeftSec = Math.max(0, finite(emission?.cooldownSec, 0));
-    this.#checkLeftSec = Math.max(1, finite(emission?.checkIntervalSec, 60));
+    this.#cooldownLeftSec = Math.max(0, finiteOr(emission?.cooldownSec, 0));
+    this.#checkLeftSec = Math.max(1, finiteOr(emission?.checkIntervalSec, 60));
     this.#failedChecks = 0;
   }
 
@@ -169,10 +168,10 @@ export class EmissionModel {
   #sync(settings) {
     const snapshot = this.#snapshot;
     const timeline = this.#timeline;
-    const own = this.#active ? clamp01(timeline.strengthAt(this.#elapsedSec)) : 0;
+    const own = this.#active ? clampUnit(timeline.strengthAt(this.#elapsedSec)) : 0;
     const intensity = this.#intensityHold ?? own;
-    const base = clamp01(finite(settings?.radiation?.base, 0));
-    const peak = clamp01(finite(settings?.radiation?.emissionPeak, 1));
+    const base = clampUnit(finiteOr(settings?.radiation?.base, 0));
+    const peak = clampUnit(finiteOr(settings?.radiation?.emissionPeak, 1));
     const phase = this.#intensityHold !== null ? (this.#intensityHold > 0 ? "peak" : "idle")
       : this.#active ? PHASE_OF[timeline.phaseAt(this.#elapsedSec)] : "idle";
     snapshot.phase = phase;
@@ -187,7 +186,7 @@ export class EmissionModel {
     snapshot.peakEndSec = this.#active ? timeline.peakEndSec : 0;
     snapshot.peakStrength = this.#active ? timeline.peakStrength : 0;
     snapshot.intensity = intensity;
-    snapshot.radiation = this.#radiationOverride ?? clamp01(base + (peak - base) * intensity);
+    snapshot.radiation = this.#radiationOverride ?? clampUnit(base + (peak - base) * intensity);
     snapshot.chance = this.#active ? 0 : this.#chance(settings?.emission);
     snapshot.failedChecks = this.#failedChecks;
     snapshot.cooldownLeftSec = Math.max(0, this.#cooldownLeftSec ?? 0);

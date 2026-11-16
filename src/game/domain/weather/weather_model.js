@@ -1,3 +1,4 @@
+import { clampUnit, finiteOr } from "../../../engine/math/number_normalization.js";
 import { WeatherEventProcess } from "./weather_event_process.js";
 
 // Spec 180 stage A (TK-325): the location's weather as independent processes — rain, storm and fog — each with its own
@@ -18,8 +19,6 @@ import { WeatherEventProcess } from "./weather_event_process.js";
 const STRIKE_VARIANTS = 4;
 const KINDS = Object.freeze(["rain", "storm", "fog"]);
 
-const clamp01 = (value) => (value <= 0 ? 0 : value >= 1 ? 1 : value);
-const finite = (value, fallback) => (Number.isFinite(Number(value)) ? Number(value) : fallback);
 const pair = (value, fallback) => (Array.isArray(value) && value.length >= 2 &&
   Number.isFinite(Number(value[0])) && Number.isFinite(Number(value[1])) ? value : fallback);
 
@@ -80,18 +79,18 @@ export class WeatherModel {
   update(dtMs, clock = null, floors = null) {
     const settings = this.#getSettings() || null;
     if (!this.#started) this.#startInitial(settings);
-    const dtSec = Math.max(0, finite(dtMs, 0)) / 1000;
+    const dtSec = Math.max(0, finiteOr(dtMs, 0)) / 1000;
     const storm = this.#processes.storm;
-    storm.update(dtSec, true, 1, 1, finite(floors?.storm, 0));
+    storm.update(dtSec, true, 1, 1, finiteOr(floors?.storm, 0));
     if (storm.snapshot.serial !== this.#stormSerial) {
       this.#stormSerial = storm.snapshot.serial;
       this.#rollLightning(settings?.storm?.lightning, storm);
     }
     const stormStrength = storm.snapshot.strength;
     const general = this.#getGeneral()?.storm;
-    const rainChanceMult = 1 + (Math.max(1, finite(general?.rainChanceMult, 1)) - 1) * stormStrength;
-    const rainStrengthMult = 1 + (Math.max(1, finite(general?.rainStrengthMult, 1)) - 1) * stormStrength;
-    this.#processes.rain.update(dtSec, true, rainChanceMult, rainStrengthMult, finite(floors?.rain, 0));
+    const rainChanceMult = 1 + (Math.max(1, finiteOr(general?.rainChanceMult, 1)) - 1) * stormStrength;
+    const rainStrengthMult = 1 + (Math.max(1, finiteOr(general?.rainStrengthMult, 1)) - 1) * stormStrength;
+    this.#processes.rain.update(dtSec, true, rainChanceMult, rainStrengthMult, finiteOr(floors?.rain, 0));
     this.#updateFog(settings?.fog, clock, dtSec);
     this.#updateLightning(settings?.storm?.lightning, storm, dtSec);
     this.#sync();
@@ -141,7 +140,7 @@ export class WeatherModel {
   #startInitial(settings) {
     this.#started = true;
     for (const kind of KINDS) {
-      const strength = clamp01(finite(settings?.initial?.[kind], 0));
+      const strength = clampUnit(finiteOr(settings?.initial?.[kind], 0));
       if (strength > 0) this.start(kind, { peakStrength: strength, atPeak: true });
     }
   }
@@ -151,12 +150,12 @@ export class WeatherModel {
     const rainActive = this.#processes.rain.snapshot.active;
     if (this.#rainWasActive && !rainActive) {
       const boost = config?.rainBoost;
-      this.#fogRainBoost = Math.min(Math.max(1, finite(boost?.max, 1)), this.#fogRainBoost + Math.max(0, finite(boost?.perRain, 0)));
+      this.#fogRainBoost = Math.min(Math.max(1, finiteOr(boost?.max, 1)), this.#fogRainBoost + Math.max(0, finiteOr(boost?.perRain, 0)));
     }
     this.#rainWasActive = rainActive;
     const hourMult = this.#hourMult(config?.hours, clock?.hour);
     const fog = this.#processes.fog;
-    fog.update(dtSec, true, hourMult * this.#fogRainBoost, 1, 0, Math.max(0, finite(clock?.timeScale, 1)));
+    fog.update(dtSec, true, hourMult * this.#fogRainBoost, 1, 0, Math.max(0, finiteOr(clock?.timeScale, 1)));
     if (fog.snapshot.serial !== this.#fogSerial) {
       this.#fogSerial = fog.snapshot.serial;
       this.#fogRainBoost = 1;
@@ -171,9 +170,9 @@ export class WeatherModel {
     if (!Array.isArray(windows) || !Number.isFinite(hour)) return 1;
     let mult = null;
     for (const window of windows) {
-      const from = finite(window?.fromHour, 0), to = finite(window?.toHour, 0);
+      const from = finiteOr(window?.fromHour, 0), to = finiteOr(window?.toHour, 0);
       const inside = from <= to ? hour >= from && hour < to : hour >= from || hour < to;
-      if (inside) mult = Math.max(mult ?? 0, Math.max(0, finite(window?.chanceMult, 1)));
+      if (inside) mult = Math.max(mult ?? 0, Math.max(0, finiteOr(window?.chanceMult, 1)));
     }
     return mult ?? 1;
   }
@@ -182,12 +181,12 @@ export class WeatherModel {
   #rollLightning(config, storm) {
     const lightning = this.#lightning;
     const timeline = storm.timeline;
-    lightning.has = this.#rng.chance(clamp01(finite(config?.chance, 1)));
+    lightning.has = this.#rng.chance(clampUnit(finiteOr(config?.chance, 1)));
     if (!lightning.has) return;
     const [startMin, startMax] = pair(config?.startShare, [0, 0.3]);
     const [endMin, endMax] = pair(config?.endShare, [0.6, 1]);
-    lightning.startSec = timeline.durationSec * clamp01(this.#roll(startMin, startMax));
-    lightning.endSec = Math.max(lightning.startSec, timeline.durationSec * clamp01(this.#roll(endMin, endMax)));
+    lightning.startSec = timeline.durationSec * clampUnit(this.#roll(startMin, startMax));
+    lightning.endSec = Math.max(lightning.startSec, timeline.durationSec * clampUnit(this.#roll(endMin, endMax)));
     lightning.nextSec = lightning.startSec;
   }
 
@@ -200,7 +199,7 @@ export class WeatherModel {
     this.#emitStrike(config);
     const [slow, fast] = pair(config?.intervalSec, [25, 6]);
     const base = Number(slow) + (Number(fast) - Number(slow)) * storm.snapshot.strength;
-    const jitter = clamp01(finite(config?.jitter, 0.5));
+    const jitter = clampUnit(finiteOr(config?.jitter, 0.5));
     lightning.nextSec = elapsed + Math.max(0.5, base * (1 + jitter * (2 * this.#rng.next() - 1)));
     void dtSec;
   }
@@ -210,7 +209,7 @@ export class WeatherModel {
     snapshot.strikeSerial += 1;
     snapshot.strikeVariant = Math.min(STRIKE_VARIANTS - 1, Math.floor(this.#rng.next() * STRIKE_VARIANTS));
     const [near, far] = pair(config?.distance, [0.2, 1]);
-    snapshot.strikeDistance = clamp01(this.#roll(Number(near), Number(far)));
+    snapshot.strikeDistance = clampUnit(this.#roll(Number(near), Number(far)));
   }
 
   #roll(min, max) {

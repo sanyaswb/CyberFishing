@@ -1080,6 +1080,7 @@
 │        │  ├── canvas_metrics_provider.js
 │        │  └── game_loop.js
 │        ├── scene
+│        │  ├── background_placement.js
 │        │  ├── pixi_annotation_renderer.js
 │        │  ├── pixi_ash_renderer.js
 │        │  ├── pixi_background_renderer.js
@@ -1097,10 +1098,13 @@
 │        │  ├── pixi_water_renderer.js
 │        │  ├── pixi_world_entities_renderer.js
 │        │  ├── scene_change_fingerprint.js
+│        │  ├── scene_color.js
 │        │  ├── scene_skeletal_surface.js
 │        │  ├── scene_text_textures.js
 │        │  ├── scene_texture_cache.js
-│        │  └── water_wave_field.js
+│        │  ├── screen_zone_set.js
+│        │  ├── water_wave_field.js
+│        │  └── zone_rect_mask.js
 │        ├── storage
 │        │  ├── browser_snapshot_transaction.js
 │        │  ├── game_time_local_store.js

@@ -1,10 +1,9 @@
+import { clampUnit, finiteOr } from "../../../engine/math/number_normalization.js";
 import { backgroundTimeBlend } from "../../domain/time/background_time_blend.js";
 
 const MAX_STEP_SEC = 0.25;
 
-const clamp01 = (value) => (value <= 0 ? 0 : value >= 1 ? 1 : value);
-const number = (value, fallback) => (Number.isFinite(Number(value)) ? Number(value) : fallback);
-const positive = (value, fallback) => Math.max(0, number(value, fallback));
+const positive = (value, fallback) => Math.max(0, finiteOr(value, fallback));
 
 // Spec 172 D7 (TK-289): the state of the sea, which both the water's picture and the float's rocking follow, so they
 // always agree. From the weather, the wind and the time of day it gives multipliers of the waves' amplitude, speed and
@@ -66,7 +65,7 @@ export class SeaStateResolver {
   }
 
   update(nowMs) {
-    const now = number(nowMs, 0);
+    const now = finiteOr(nowMs, 0);
     const dt = Number.isFinite(this.#lastNowMs) ? Math.min(MAX_STEP_SEC, Math.max(0, (now - this.#lastNowMs) / 1000)) : 0;
     this.#lastNowMs = now;
     const settings = this.#getSettings();
@@ -85,16 +84,16 @@ export class SeaStateResolver {
       return state;
     }
     const environment = this.#getEnvironment();
-    const storm = clamp01(number(environment?.weather?.storm, 0));
-    const direction = Math.max(-1, Math.min(1, number(environment?.wind?.direction, 0)));
+    const storm = clampUnit(finiteOr(environment?.weather?.storm, 0));
+    const direction = Math.max(-1, Math.min(1, finiteOr(environment?.wind?.direction, 0)));
     const rawStrength = environment?.wind?.strength;
     const hasStrength = rawStrength !== undefined && rawStrength !== null && Number.isFinite(Number(rawStrength));
     const wind = hasStrength
-      ? Math.max(direction === 0 && storm <= 0 ? 0 : clamp01(Number(rawStrength)), storm)
+      ? Math.max(direction === 0 && storm <= 0 ? 0 : clampUnit(Number(rawStrength)), storm)
       : Math.max(Math.abs(direction), storm);
     if (direction !== 0) this.#travelTarget = Math.sign(direction);
     const night = Number.isFinite(Number(environment?.time))
-      ? clamp01(backgroundTimeBlend(Number(environment.time), this.#blend).night) : 0;
+      ? clampUnit(backgroundTimeBlend(Number(environment.time), this.#blend).night) : 0;
     const normal = settings.normal;
     const event = settings.storm;
     const calm = positive(normal?.calmAmplitude, 1);

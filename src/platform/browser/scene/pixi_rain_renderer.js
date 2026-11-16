@@ -24,6 +24,14 @@
 // when the settings grow); unused particles have alpha 0. Pixi 8 uploads vertex (scale), rotation and color (tint,
 // alpha) only when declared dynamic (ParticleBuffer.update), so they are. The scene presents a frame only while a drop
 // or a ring is alive.
+import { clampUnit, finiteOr } from "../../../engine/math/number_normalization.js";
+import { regionsBounds } from "../../../engine/math/rectangle_bounds.js";
+import { BackgroundPlacement } from "./background_placement.js";
+import { mixColor, SceneColor } from "./scene_color.js";
+import { ScreenZoneSet } from "./screen_zone_set.js";
+import { ZoneRectMask } from "./zone_rect_mask.js";
+
+const NO_REGIONS = Object.freeze({ count: 0, getAt: () => null });
 const STREAK_WIDTH = 4;
 const STREAK_HEIGHT = 64;
 const RING_SIZE = 64;
@@ -31,16 +39,7 @@ const MAX_STEP_SEC = 0.1;
 const MAX_SLANT_DEG = 72;
 const DYNAMIC = Object.freeze({ position: true, vertex: true, rotation: true, color: true, uvs: false });
 
-const clamp01 = (value) => (value <= 0 ? 0 : value >= 1 ? 1 : value);
-const number = (value, fallback) => (Number.isFinite(Number(value)) ? Number(value) : fallback);
 // Spec 179: a straight RGB mix of two 0xRRGGBB colours (share 0 → a, 1 → b).
-const mixColor = (a, b, share) => {
-  if (share <= 0) return a;
-  if (share >= 1) return b;
-  const channel = (shift) => Math.round(((a >> shift) & 255) + ((((b >> shift) & 255) - ((a >> shift) & 255)) * share));
-  return (channel(16) << 16) | (channel(8) << 8) | channel(0);
-};
-const parseColor = (text) => (/^#[0-9a-f]{6}$/iu.test(text) ? Number.parseInt(text.slice(1), 16) : 0xffffff);
 
 export class PixiRainRenderer {
   #pixi;
@@ -68,29 +67,22 @@ export class PixiRainRenderer {
   #rippleView = { puffs: this.#waterRipples, settings: null };
   #area = { left: 0, top: 0, right: 0, bottom: 0 };
   // TK-271.2: this frame's world -> screen placement (screen = origin + share x size).
-  #view = { x: 0, y: 0, width: 1, height: 1 };
+  #view = new BackgroundPlacement();
   #lastNow = null;
   #slantDeg = 0;
   #falling = 0;
   #visible = false;
   #stepMs = 0;
-  #dropColor = { text: "", value: 0xffffff };
-  #ringColor = { text: "", value: 0xffffff };
-  #emissionDropColor = { text: "", value: 0xffffff };
-  #emissionRingColor = { text: "", value: 0xffffff };
+  #dropColor = new SceneColor();
+  #ringColor = new SceneColor();
+  #emissionDropColor = new SceneColor();
+  #emissionRingColor = new SceneColor();
   #dropTint = 0xffffff;
   #ringTint = 0xffffff;
-  // TK-273: the rain zones' visible rectangles (left, top, width, height) and their cumulative areas, rebuilt each
-  // frame into arrays that grow only with the number of zones; the mask is redrawn only when the rectangles change.
-  #zoned = false;
-  #zoneRects = new Float32Array(0);
-  #zoneWeights = new Float32Array(0);
-  #zoneCount = 0;
-  #zoneArea = 0;
-  // TK-271.2: the whole rain area on screen (zones or the background below the water); #zoneArea is its visible part.
-  #rainArea = 0;
+  // TK-273, TK-358: the rain area on screen (the rain zones, or the background below the water) and the drops' mask.
+  #zones = new ScreenZoneSet();
   #mask;
-  #maskRects = [];
+  #point = { x: 0, y: 0 };
 
   // documentTarget: makes the textures' canvases; random: () => 0…1 (the drops' places and timing; visual only).
   constructor({ pixi, documentTarget, random = Math.random }) {
@@ -106,7 +98,7 @@ export class PixiRainRenderer {
     this.#surface = new pixi.ParticleContainer({ texture: this.#ring, dynamicProperties: DYNAMIC });
     this.#air.visible = false;
     this.#surface.visible = false;
-    this.#mask = new pixi.Graphics();
+    this.#mask = new ZoneRectMask({ pixi, target: this.#air });
   }
 
   // The rings go on the water: mounted right after it, under the tackle.
@@ -118,7 +110,7 @@ export class PixiRainRenderer {
   // Its zone mask lives in the scene for its transform (Pixi does not draw a mask itself).
   mountAir(stage) {
     stage.addChild(this.#air);
-    stage.addChild(this.#mask);
+    this.#mask.mount(stage);
   }
 
   // For PixiWaterRenderer: the rings as ripple puffs ({ count, getAt(i) → { x, y, size, life } }) and their settings
@@ -142,47 +134,46 @@ export class PixiRainRenderer {
     // Off the scene or switched off: no drop keeps falling.
     if (!world || settings?.enabled !== true) { this.#clear(); return this.#hide(); }
     const weather = world.weather;
-    const rain = clamp01(number(weather?.rain, 0));
-    const storm = clamp01(number(weather?.storm, 0));
+    const rain = clampUnit(finiteOr(weather?.rain, 0));
+    const storm = clampUnit(finiteOr(weather?.storm, 0));
     const stormSettings = weatherSettings?.storm;
     const windSettings = weatherSettings?.wind;
-    const maxDrops = Math.max(0, Math.floor(number(settings?.maxDrops, 0)));
-    const dropCap = Math.max(maxDrops, Math.floor(number(settings?.maxDropsCap, maxDrops)));
-    const stormShare = Math.max(0, number(stormSettings?.rainDropsShare, 0));
+    const maxDrops = Math.max(0, Math.floor(finiteOr(settings?.maxDrops, 0)));
+    const dropCap = Math.max(maxDrops, Math.floor(finiteOr(settings?.maxDropsCap, maxDrops)));
+    const stormShare = Math.max(0, finiteOr(stormSettings?.rainDropsShare, 0));
     // Spec 180 D1: drops come only from rain; a storm thickens the rain that falls (a storm without rain has no drops).
     const strength = rain > 0 ? 1 + storm * stormShare : 0;
     if (strength <= 0 && this.#falling === 0 && this.#ringCount === 0) return this.#hide();
     const started = performance.now();
     const rings = settings?.rings;
-    this.#ensurePools(Math.floor(dropCap * (1 + stormShare)), Math.max(0, Math.floor(number(rings?.maxRings, 0))));
+    this.#ensurePools(Math.floor(dropCap * (1 + stormShare)), Math.max(0, Math.floor(finiteOr(rings?.maxRings, 0))));
     this.#rippleView.settings = rings?.ripple ?? null;
-    this.#dropColor = PixiRainRenderer.#color(this.#dropColor, settings?.color);
-    this.#ringColor = PixiRainRenderer.#color(this.#ringColor, rings?.color);
     // Spec 179 D4: an emission turns the rain red (its colours, mixed with the emission's intensity).
-    this.#emissionDropColor = PixiRainRenderer.#color(this.#emissionDropColor, settings?.emissionColor ?? settings?.color);
-    this.#emissionRingColor = PixiRainRenderer.#color(this.#emissionRingColor, rings?.emissionColor ?? rings?.color);
-    const emission = clamp01(number(weather?.emission, 0));
-    this.#dropTint = mixColor(this.#dropColor.value, this.#emissionDropColor.value, emission);
-    this.#ringTint = mixColor(this.#ringColor.value, this.#emissionRingColor.value, emission);
-    const windDir = Math.max(-1, Math.min(1, number(weather?.windDirection, 0)));
+    const emission = clampUnit(finiteOr(weather?.emission, 0));
+    this.#dropTint = mixColor(this.#dropColor.read(settings?.color),
+      this.#emissionDropColor.read(settings?.emissionColor ?? settings?.color), emission);
+    this.#ringTint = mixColor(this.#ringColor.read(rings?.color),
+      this.#emissionRingColor.read(rings?.emissionColor ?? rings?.color), emission);
+    const windDir = Math.max(-1, Math.min(1, finiteOr(weather?.windDirection, 0)));
     const rawWindStrength = weather?.windStrength;
     const windStrength = rawWindStrength !== undefined && rawWindStrength !== null && Number.isFinite(Number(rawWindStrength))
-      ? clamp01(Number(rawWindStrength))
+      ? clampUnit(Number(rawWindStrength))
       : Math.abs(windDir);
-    const windGust = clamp01(number(weather?.windGust, 0));
-    const windSlant = Math.max(0, number(windSettings?.rainSlantDeg, 0));
-    const stormSlant = Math.max(0, number(stormSettings?.rainSlantDeg, 0));
-    const gustShare = Math.max(0, number(windSettings?.gustSlantShare, 1.2));
+    const windGust = clampUnit(finiteOr(weather?.windGust, 0));
+    const windSlant = Math.max(0, finiteOr(windSettings?.rainSlantDeg, 0));
+    const stormSlant = Math.max(0, finiteOr(stormSettings?.rainSlantDeg, 0));
+    const gustShare = Math.max(0, finiteOr(windSettings?.gustSlantShare, 1.2));
     const rawSlant = (windStrength + windGust * gustShare) * windSlant + storm * stormSlant;
     const targetSlant = windDir * Math.min(MAX_SLANT_DEG, rawSlant);
-    const followPerSec = Math.max(0, number(windSettings?.slantFollowPerSec, 2)) +
-      Math.min(1, windGust * 3) * Math.max(0, number(windSettings?.gustFollowPerSec, 6));
+    const followPerSec = Math.max(0, finiteOr(windSettings?.slantFollowPerSec, 2)) +
+      Math.min(1, windGust * 3) * Math.max(0, finiteOr(windSettings?.gustFollowPerSec, 6));
     this.#slantDeg += (targetSlant - this.#slantDeg) * Math.min(1, elapsed * followPerSec);
-    const area = this.#waterArea(world.clipRegions);
-    this.#placeView(world, viewWidth, viewHeight);
+    const area = regionsBounds(world.clipRegions, this.#area);
+    this.#view.place(world, viewWidth, viewHeight);
     this.#prepareZones(world, area, viewWidth, viewHeight);
     // TK-271.2: the visible share of the whole rain area's drops (none on screen: no new drop; falling ones finish).
-    const visibleShare = this.#rainArea > 0 ? Math.min(1, this.#zoneArea / this.#rainArea) : 0;
+    const zones = this.#zones;
+    const visibleShare = zones.wholeArea > 0 ? Math.min(1, zones.visibleArea / zones.wholeArea) : 0;
     const spawning = Math.min(Math.floor(dropCap * (1 + stormShare)), Math.round(maxDrops * strength * visibleShare));
     // Drops first: the rings their impacts leave this frame are drawn in this frame.
     this.#updateDrops(elapsed, spawning, settings, world, area, viewWidth, viewHeight);
@@ -217,16 +208,16 @@ export class PixiRainRenderer {
   }
 
   #updateDrops(elapsed, target, settings, world, area, viewWidth, viewHeight) {
-    const fall = Math.max(1, number(settings?.fallPx, 500));
-    const speed = Math.max(1, number(settings?.speedPx, 1500));
-    const jitter = clamp01(number(settings?.speedJitter, 0.15));
-    const length = Math.max(0, number(settings?.lengthPx, 36));
-    const width = Math.max(0, number(settings?.widthPx, 1.6));
-    const opacity = clamp01(number(settings?.opacity, 0.4));
-    const minScale = clamp01(number(settings?.minScale, 0.3));
-    const lengthJitter = clamp01(number(settings?.lengthJitter, 0));
-    const slantJitter = Math.max(0, number(settings?.slantJitterDeg, 0)) * Math.PI / 180;
-    const stretch = Math.max(0, number(settings?.speedStretch, 0));
+    const fall = Math.max(1, finiteOr(settings?.fallPx, 500));
+    const speed = Math.max(1, finiteOr(settings?.speedPx, 1500));
+    const jitter = clampUnit(finiteOr(settings?.speedJitter, 0.15));
+    const length = Math.max(0, finiteOr(settings?.lengthPx, 36));
+    const width = Math.max(0, finiteOr(settings?.widthPx, 1.6));
+    const opacity = clampUnit(finiteOr(settings?.opacity, 0.4));
+    const minScale = clampUnit(finiteOr(settings?.minScale, 0.3));
+    const lengthJitter = clampUnit(finiteOr(settings?.lengthJitter, 0));
+    const slantJitter = Math.max(0, finiteOr(settings?.slantJitterDeg, 0)) * Math.PI / 180;
+    const stretch = Math.max(0, finiteOr(settings?.speedStretch, 0));
     const meanLife = fall / speed;
     const baseAngle = this.#slantDeg * Math.PI / 180;
     let falling = 0;
@@ -252,8 +243,8 @@ export class PixiRainRenderer {
       // A faster drop (shorter life than the mean) is longer by speedStretch.
       const speedRatio = meanLife / Math.max(1e-6, this.#dropLife[index]);
       const dropLength = length * this.#dropLength[index] * (1 + stretch * (speedRatio - 1));
-      particle.x = this.#screenX(this.#dropU[index]) - distance * slant;
-      particle.y = this.#screenY(this.#dropV[index]) - distance;
+      particle.x = this.#view.screenX(this.#dropU[index]) - distance * slant;
+      particle.y = this.#view.screenY(this.#dropV[index]) - distance;
       particle.rotation = -Math.atan(slant);
       particle.scaleX = width * scale / STREAK_WIDTH;
       particle.scaleY = Math.max(0, dropLength) * scale / STREAK_HEIGHT;
@@ -266,16 +257,11 @@ export class PixiRainRenderer {
 
   #spawnDrop(index, world, area, viewWidth, viewHeight, minScale, fall, speed, jitter, lengthJitter = 0, slantJitter = 0) {
     // A visible part of the rain area by its size, then a point inside it, kept as shares of the background.
-    const pick = this.#random() * this.#zoneArea;
-    let zone = 0;
-    while (zone < this.#zoneCount - 1 && this.#zoneWeights[zone] < pick) zone += 1;
-    const offset = zone * 4;
-    const x = this.#zoneRects[offset] + this.#random() * this.#zoneRects[offset + 2];
-    const y = this.#zoneRects[offset + 1] + this.#random() * this.#zoneRects[offset + 3];
-    const view = this.#view;
-    this.#dropU[index] = (x - view.x) / view.width;
-    this.#dropV[index] = (y - view.y) / view.height;
-    this.#dropScale[index] = this.#scaleAt(y, world, area, minScale, viewHeight);
+    const point = this.#point;
+    this.#zones.pick(this.#random, point);
+    this.#dropU[index] = this.#view.shareX(point.x);
+    this.#dropV[index] = this.#view.shareY(point.y);
+    this.#dropScale[index] = this.#scaleAt(point.y, world, area, minScale, viewHeight);
     this.#dropLife[index] = (fall / speed) * (1 + (this.#random() * 2 - 1) * jitter);
     this.#dropLength[index] = 1 + (this.#random() * 2 - 1) * lengthJitter;
     this.#dropSlant[index] = (this.#random() * 2 - 1) * slantJitter;
@@ -300,7 +286,7 @@ export class PixiRainRenderer {
   #impact(index, world) {
     const regions = world?.clipRegions;
     if (!regions || this.#ringCount >= this.#rings.length) return;
-    const x = this.#screenX(this.#dropU[index]), y = this.#screenY(this.#dropV[index]);
+    const x = this.#view.screenX(this.#dropU[index]), y = this.#view.screenY(this.#dropV[index]);
     let water = false;
     for (let region = 0; region < regions.count && !water; region += 1) {
       const rect = regions.getAt(region);
@@ -320,10 +306,10 @@ export class PixiRainRenderer {
 
   // Rings widen and fade over lifeSec; finished ones are swapped out of the live range.
   #updateRings(elapsed, settings) {
-    const lifeSec = Math.max(0.05, number(settings?.lifeSec, 0.7));
-    const size = Math.max(0, number(settings?.sizePx, 16));
-    const opacity = clamp01(number(settings?.opacity, 0.4));
-    const flatten = clamp01(number(settings?.flatten, 0.35));
+    const lifeSec = Math.max(0.05, finiteOr(settings?.lifeSec, 0.7));
+    const size = Math.max(0, finiteOr(settings?.sizePx, 16));
+    const opacity = clampUnit(finiteOr(settings?.opacity, 0.4));
+    const flatten = clampUnit(finiteOr(settings?.flatten, 0.35));
     const show = settings?.enabled === true;
     let index = 0;
     while (index < this.#ringCount) {
@@ -340,8 +326,8 @@ export class PixiRainRenderer {
       const diameter = size * record.scale * (0.3 + 0.7 * record.life);
       record.size = diameter;
       // TK-271.2: the ring stays where it fell on the water; the water's ripples read the same screen point.
-      record.x = this.#screenX(record.u);
-      record.y = this.#screenY(record.v);
+      record.x = this.#view.screenX(record.u);
+      record.y = this.#view.screenY(record.v);
       const particle = this.#rings[index];
       particle.x = record.x;
       particle.y = record.y;
@@ -355,107 +341,19 @@ export class PixiRainRenderer {
     for (let rest = this.#ringCount; rest < this.#rings.length; rest += 1) this.#rings[rest].alpha = 0;
   }
 
-  // TK-271.2: the frame's placement of world points: the background's rectangle on screen, or the screen without one.
-  #placeView(world, viewWidth, viewHeight) {
-    const layers = world.backgroundLayers;
-    const background = layers && layers.count > 0 ? layers.getAt(0) : null;
-    const view = this.#view;
-    if (background && background.width > 0 && background.height > 0) {
-      view.x = background.x; view.y = background.y; view.width = background.width; view.height = background.height;
-    } else {
-      view.x = 0; view.y = 0; view.width = Math.max(1, viewWidth); view.height = Math.max(1, viewHeight);
-    }
-  }
-
-  #screenX(share) {
-    return this.#view.x + share * this.#view.width;
-  }
-
-  #screenY(share) {
-    return this.#view.y + share * this.#view.height;
-  }
-
-  // The rain area on screen: the rain zones (TK-273), or without them the background (the screen without one) from the
-  // water's far edge down; its visible parts with cumulative sizes for picking, the whole area for the density
-  // (TK-271.2), and the drops' mask (redrawn only when the zones' screen rectangles change; none without zones).
+  // The rain area on screen (TK-273, TK-358): the rain zones (the drops' mask, redrawn only when they change), or
+  // without them the background (the screen without one) from the water's far edge down, unmasked.
   #prepareZones(world, area, viewWidth, viewHeight) {
-    this.#zoned = world.rainZoned === true;
-    const regions = world.rainRegions;
-    const count = this.#zoned ? (regions ? regions.count : 0) : 1;
-    if (this.#zoneRects.length < count * 4) {
-      this.#zoneRects = new Float32Array(count * 4);
-      this.#zoneWeights = new Float32Array(count);
+    const zoned = world.rainZoned === true;
+    const regions = world.rainRegions ?? NO_REGIONS;
+    if (!zoned) {
+      const view = this.#view, fallback = this.#zones.fallback;
+      const top = area ? area.top : view.y + view.height * 0.35;
+      fallback.x = view.x; fallback.y = top; fallback.width = view.width; fallback.height = view.y + view.height - top;
     }
-    let whole = 0, total = 0, visible = 0;
-    for (let index = 0; index < count; index += 1) {
-      let rectX, rectY, rectWidth, rectHeight;
-      if (this.#zoned) {
-        const rect = regions.getAt(index);
-        rectX = rect.x; rectY = rect.y; rectWidth = rect.width; rectHeight = rect.height;
-      } else {
-        const view = this.#view;
-        const top = area ? area.top : view.y + view.height * 0.35;
-        rectX = view.x; rectY = top; rectWidth = view.width; rectHeight = view.y + view.height - top;
-      }
-      if (!(rectWidth > 0 && rectHeight > 0)) continue;
-      whole += rectWidth * rectHeight;
-      const left = Math.max(0, rectX), top = Math.max(0, rectY);
-      const right = Math.min(viewWidth, rectX + rectWidth), bottom = Math.min(viewHeight, rectY + rectHeight);
-      if (!(right > left && bottom > top)) continue;
-      const offset = visible * 4;
-      this.#zoneRects[offset] = left; this.#zoneRects[offset + 1] = top;
-      this.#zoneRects[offset + 2] = right - left; this.#zoneRects[offset + 3] = bottom - top;
-      total += (right - left) * (bottom - top);
-      this.#zoneWeights[visible] = total;
-      visible += 1;
-    }
-    this.#zoneCount = visible;
-    this.#zoneArea = total;
-    this.#rainArea = whole;
-    this.#updateMask(this.#zoned ? regions : null, this.#zoned ? count : 0);
-  }
-
-  #updateMask(regions, count) {
-    if (!regions) {
-      // An unassigned mask is drawn again (Pixi resets includeInBuild), so it is emptied too.
-      if (this.#air.mask) { this.#air.mask = null; this.#mask.clear(); this.#maskRects.length = 0; }
-      return;
-    }
-    const rects = this.#maskRects;
-    let same = rects.length === count * 4;
-    for (let index = 0; same && index < count; index += 1) {
-      const region = regions.getAt(index), offset = index * 4;
-      same = rects[offset] === region.x && rects[offset + 1] === region.y && rects[offset + 2] === region.width &&
-        rects[offset + 3] === region.height;
-    }
-    if (!same) {
-      rects.length = count * 4;
-      this.#mask.clear();
-      for (let index = 0; index < count; index += 1) {
-        const region = regions.getAt(index), offset = index * 4;
-        rects[offset] = region.x; rects[offset + 1] = region.y; rects[offset + 2] = region.width; rects[offset + 3] = region.height;
-        this.#mask.rect(region.x, region.y, region.width, region.height);
-      }
-      if (count > 0) this.#mask.fill(0xffffff);
-    }
-    if (this.#air.mask !== this.#mask) this.#air.mask = this.#mask;
-  }
-
-  // The castable zones' bounding box (reused), or null.
-  #waterArea(regions) {
-    if (!regions || regions.count === 0) return null;
-    let left = Infinity, top = Infinity, right = -Infinity, bottom = -Infinity;
-    for (let index = 0; index < regions.count; index += 1) {
-      const region = regions.getAt(index);
-      left = Math.min(left, region.x);
-      top = Math.min(top, region.y);
-      right = Math.max(right, region.x + region.width);
-      bottom = Math.max(bottom, region.y + region.height);
-    }
-    if (!(right > left && bottom > top)) return null;
-    const area = this.#area;
-    area.left = left; area.top = top; area.right = right; area.bottom = bottom;
-    return area;
+    this.#zones.prepare(zoned ? regions : null, viewWidth, viewHeight);
+    if (zoned) this.#mask.clipTo(regions);
+    else this.#mask.release();
   }
 
   // Grows the pools when the settings grow (never on an ordinary frame) and re-uploads the containers' buffers.
@@ -487,12 +385,6 @@ export class PixiRainRenderer {
       }
       this.#surface.update();
     }
-  }
-
-  static #color(cache, value) {
-    const text = typeof value === "string" ? value : "#ffffff";
-    if (text === cache.text) return cache;
-    return { text, value: parseColor(text) };
   }
 
   // A thin streak, transparent at its tail (top) and bright at its head (bottom), drawn once.

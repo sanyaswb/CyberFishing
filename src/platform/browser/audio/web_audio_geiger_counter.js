@@ -7,11 +7,11 @@
 //   clock and schedules them there, so a late or throttled timer neither bunches nor drops clicks; while the page is
 //   hidden nothing is planned. Each click is a buffer source into one master gain (volume); a slight random rate and
 //   level keep the clicks from sounding identical.
+import { finiteOr } from "../../../engine/math/number_normalization.js";
 const LOOKAHEAD_SEC = 0.2;
 const LEAD_SEC = 0.02;
 const GESTURES = Object.freeze(["pointerdown", "keydown", "touchstart"]);
 
-const number = (value, fallback) => (Number.isFinite(Number(value)) ? Number(value) : fallback);
 
 export class WebAudioGeigerCounter {
   #windowRef;
@@ -61,7 +61,7 @@ export class WebAudioGeigerCounter {
       return;
     }
     if (end <= start) return;
-    this.#master.gain.value = Math.max(0, Math.min(1, number(settings.volume, 0.4)));
+    this.#master.gain.value = Math.max(0, Math.min(1, finiteOr(settings.volume, 0.4)));
     const count = this.#planner.plan(end - start, this.#getRadiation(), settings);
     const click = this.#clickBuffer(settings);
     const times = this.#planner.times;
@@ -110,8 +110,8 @@ export class WebAudioGeigerCounter {
 
   // A click: noise × a fast decay, plus a short ring at toneHz (the counter's speaker), clickMs long.
   #clickBuffer(settings) {
-    const toneHz = Math.max(200, number(settings.toneHz, 3500));
-    const clickMs = Math.max(1, number(settings.clickMs, 4));
+    const toneHz = Math.max(200, finiteOr(settings.toneHz, 3500));
+    const clickMs = Math.max(1, finiteOr(settings.clickMs, 4));
     const key = `${toneHz}:${clickMs}`;
     if (this.#click && this.#clickKey === key) return this.#click;
     const rate = this.#context.sampleRate || 44100;

@@ -1012,6 +1012,8 @@ export class GameCompositionRoot {
       });
       // Spec 179 stage E: how the emission reaches the player (gas mask, the screen veil, the cast gate); spec 181: the
       // statuses weaken it, the gas mask in its slot holds its own.
+      // TK-358: the statuses' end timer goes with the game.
+      own(this.#playerStatuses());
       own(new EquipmentStatusSource({ inventory: systems.inventory, statuses: this.#playerStatuses(), slots: { gasMask: "gasMask" } }));
       const emissionExposure = new EmissionExposure({ getEnvironment: () => systems.env.getSnapshot(),
         getEquipped: () => systems.inventory.getEquipped(), statuses: this.#playerStatuses() });
@@ -1799,8 +1801,6 @@ export class GameCompositionRoot {
                       getStarfallModel: () => systems.env?.starfall ?? null,
                       // TK-354.1: the «Зорепад» test switch moves the game clock to the night.
                       setGameHour: (hours) => gameTimeClock?.setHours(hours) ?? false,
-                      // Spec 181: the player's statuses now (the vodka and its time left, the gas mask held by its slot).
-                      getStatuses: () => this.#playerStatuses(),
                       // Spec 180 D15: on-demand images for DEV (the wave test background).
                       requestImage,
                       // Spec 180 D10: the ash's and the waves' strength held by hand (null: automatic).

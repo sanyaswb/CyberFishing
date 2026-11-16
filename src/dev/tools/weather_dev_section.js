@@ -750,14 +750,7 @@ export class WeatherDevSection {
       ` · після дощу ×${weather.fogRainBoost ?? 1}`, controls);
     this.#ui.createInfoRow("викид", this.#emissionText(emission), controls);
     if (emission) this.#ui.createInfoRow("радіація", `${percent(emission.radiation)}${emission.radiationForced ? " (вручну)" : ""}`, controls);
-    // TK-340, spec 181: the player's statuses against the emission (the gas mask held by its slot, the vodka's time).
-    const statuses = this.#weather.getStatuses?.() ?? null;
-    if (statuses) {
-      const active = statuses.list();
-      const text = active.length === 0 ? "немає" : active.map((entry) => entry.held ? entry.id
-        : `${entry.id} · ще ${seconds(statuses.remainingSec(entry.id))}`).join(", ");
-      this.#ui.createInfoRow("статуси", text, controls);
-    }
+    // TK-358: the player's statuses (the vodka, the gas mask) are shown and given in DevTools «Гра» → «СТАТУСИ».
     const windText = wind
       ? `${WIND_NAMES[wind.direction] ?? wind.direction}${wind.state && wind.direction !== 0 ? ` · ${WIND_STATE_LABELS[wind.state] ?? wind.state}` : ""}` +
         ` · ${percent(wind.strength)}${wind.isGusting ? " (порив)" : ""}${wind.forced || wind.forcedStrength != null ? " (вручну)" : ""}`

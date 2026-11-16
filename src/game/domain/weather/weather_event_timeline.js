@@ -3,9 +3,9 @@
 // falls back to 0 by the end; the rise and the fall follow a smoothstep, so there is no kink at the peak's edges.
 // Settings (shares of the duration, so they suit any length): durationSec [min, max], peakAtShare [min, max],
 // peakShare [min, max], peakStrength [min, max] (0…1). One record rewritten in place.
-const clamp01 = (value) => (value <= 0 ? 0 : value >= 1 ? 1 : value);
+import { clampUnit } from "../../../engine/math/number_normalization.js";
 const smooth = (value) => {
-  const t = clamp01(value);
+  const t = clampUnit(value);
   return t * t * (3 - 2 * t);
 };
 const pairOf = (value, fallback) => (Array.isArray(value) && value.length >= 2 &&
@@ -33,12 +33,12 @@ export class WeatherEventTimeline {
       return high > low ? rng.range(low, high) : low;
     };
     this.durationSec = Math.max(1, roll("durationSec"));
-    const peakAt = clamp01(roll("peakAtShare"));
-    const peakLength = clamp01(roll("peakShare"));
+    const peakAt = clampUnit(roll("peakAtShare"));
+    const peakLength = clampUnit(roll("peakShare"));
     this.peakStartSec = this.durationSec * Math.min(peakAt, 0.98);
     this.peakEndSec = Math.min(this.durationSec * 0.99, this.peakStartSec + this.durationSec * peakLength);
-    const rolledStrength = clamp01(roll("peakStrength"));
-    this.peakStrength = peakStrength === null || !Number.isFinite(Number(peakStrength)) ? rolledStrength : clamp01(Number(peakStrength));
+    const rolledStrength = clampUnit(roll("peakStrength"));
+    this.peakStrength = peakStrength === null || !Number.isFinite(Number(peakStrength)) ? rolledStrength : clampUnit(Number(peakStrength));
     return this;
   }
 

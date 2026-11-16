@@ -1,3 +1,5 @@
+import { regionsBounds } from "../../../engine/math/rectangle_bounds.js";
+import { ZoneRectMask } from "./zone_rect_mask.js";
 import { WaterWaveField } from "./water_wave_field.js";
 
 // The displacement map's size (spec 106 D2): about 13 art pixels per texel across the test location's water, enough
@@ -33,8 +35,8 @@ export class PixiWaterRenderer {
   #filterArea = { x: 0, y: 0, width: 0, height: 0 };
   #area = { left: 0, top: 0, right: 0, bottom: 0 };
   #getImageSize;
+  // TK-358: the zones' mask of the filtered copy (shared ZoneRectMask).
   #mask;
-  #maskRects = [];
   #shares = [];
   #visible = false;
   #lastStepAt = null;
@@ -92,8 +94,8 @@ export class PixiWaterRenderer {
     stage.addChild(this.#mapSprite);
     // TK-066: the zones' outline. Pixi applies a container's masks before its filters (effect priority 0 < 1), so the
     // mask clips the filtered result; the mask lives in the scene for its transform and bounds and is not drawn itself.
-    this.#mask = new pixi.Graphics();
-    stage.addChild(this.#mask);
+    this.#mask = new ZoneRectMask({ pixi, target: this.#container });
+    this.#mask.mount(stage);
   }
 
   // For DEV: whether the water animates, the map size, the last step's JavaScript time and the drift speed (art px/s).
@@ -109,7 +111,7 @@ export class PixiWaterRenderer {
     const base = world?.visible === true && settings?.enabled === true && world.backgroundLayers.count > 0
       ? world.backgroundLayers.getAt(0) : null;
     const baseTexture = base ? this.#textures.get(base.assetId) : null;
-    const area = baseTexture ? this.#waterArea(world.clipRegions) : null;
+    const area = baseTexture ? regionsBounds(world.clipRegions, this.#area) : null;
     const left = area ? Math.max(0, area.left) : 0;
     const top = area ? Math.max(0, area.top) : 0;
     const width = area ? Math.min(viewWidth, area.right) - left : 0;
@@ -236,53 +238,9 @@ export class PixiWaterRenderer {
       shares[index * 4 + 3] = (region.y + region.height - area.top) / spanY;
     }
     const reshaped = this.#field.setRegions(shares, count, union);
-    if (count < 2) {
-      // An unassigned mask is drawn again (Pixi resets includeInBuild), so it is emptied too.
-      if (this.#container.mask) { this.#container.mask = null; this.#mask.clear(); this.#maskRects.length = 0; }
-      return reshaped;
-    }
-    const rects = this.#maskRects;
-    let same = rects.length === count * 4;
-    for (let index = 0; same && index < count; index += 1) {
-      const region = regions.getAt(index), offset = index * 4;
-      same = rects[offset] === region.x && rects[offset + 1] === region.y && rects[offset + 2] === region.width &&
-        rects[offset + 3] === region.height;
-    }
-    if (!same) {
-      rects.length = count * 4;
-      const mask = this.#mask;
-      mask.clear();
-      for (let index = 0; index < count; index += 1) {
-        const region = regions.getAt(index), offset = index * 4;
-        rects[offset] = region.x; rects[offset + 1] = region.y; rects[offset + 2] = region.width; rects[offset + 3] = region.height;
-        mask.rect(region.x, region.y, region.width, region.height);
-      }
-      mask.fill(0xffffff);
-    }
-    if (this.#container.mask !== this.#mask) this.#container.mask = this.#mask;
+    // Several zones: a mask of them clips the filtered copy; one zone needs none (its box is the filter area).
+    if (count < 2) this.#mask.release();
+    else this.#mask.clipTo(regions);
     return reshaped;
-  }
-
-  // The bounding box of the castable zones (reused), or null when there are none.
-  #waterArea(regions) {
-    if (!regions || regions.count === 0) return null;
-    let left = Infinity;
-    let top = Infinity;
-    let right = -Infinity;
-    let bottom = -Infinity;
-    for (let index = 0; index < regions.count; index += 1) {
-      const region = regions.getAt(index);
-      left = Math.min(left, region.x);
-      top = Math.min(top, region.y);
-      right = Math.max(right, region.x + region.width);
-      bottom = Math.max(bottom, region.y + region.height);
-    }
-    if (!(right > left && bottom > top)) return null;
-    const area = this.#area;
-    area.left = left;
-    area.top = top;
-    area.right = right;
-    area.bottom = bottom;
-    return area;
   }
 }

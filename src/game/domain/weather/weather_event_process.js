@@ -1,3 +1,4 @@
+import { clampUnit, finiteOr } from "../../../engine/math/number_normalization.js";
 import { WeatherEventTimeline } from "./weather_event_timeline.js";
 
 // Spec 180 D1, D2, D13: one weather phenomenon (rain, storm, fog) as an independent process.
@@ -13,8 +14,6 @@ import { WeatherEventTimeline } from "./weather_event_timeline.js";
 //   No other process is touched: there is no shared freeze (the cause of the storm switch defect, spec 180).
 // The shown strength moves toward its target at most 1 / smoothSec per second, so a hold, a release or an early end
 // never jumps. Settings are read live; nothing is allocated per update; snapshot is rewritten in place.
-const clamp01 = (value) => (value <= 0 ? 0 : value >= 1 ? 1 : value);
-const finite = (value, fallback) => (Number.isFinite(Number(value)) ? Number(value) : fallback);
 const DEFAULT_SMOOTH_SEC = 6;
 
 export class WeatherEventProcess {
@@ -70,19 +69,19 @@ export class WeatherEventProcess {
   // minimum strength (0…1) held from outside; timeScale: how fast this process's own time runs (1: real seconds).
   update(dtSec, allowed = true, chanceMult = 1, strengthMult = 1, floor = 0, timeScale = 1) {
     const settings = this.#getSettings() || null;
-    const dt = Math.max(0, finite(dtSec, 0));
-    const eventDt = dt * Math.max(0, finite(timeScale, 1));
-    if (this.#checkLeftSec === null) this.#checkLeftSec = Math.max(1, finite(settings?.checkIntervalSec, 60));
+    const dt = Math.max(0, finiteOr(dtSec, 0));
+    const eventDt = dt * Math.max(0, finiteOr(timeScale, 1));
+    if (this.#checkLeftSec === null) this.#checkLeftSec = Math.max(1, finiteOr(settings?.checkIntervalSec, 60));
     if (this.#active) {
       this.#elapsedSec += eventDt;
       if (this.#elapsedSec >= this.#timeline.durationSec || !allowed) this.#end(settings);
     } else if (allowed && settings?.enabled !== false) {
       this.#rollIdle(settings, eventDt, chanceMult);
     }
-    const own = this.#active ? clamp01(this.#timeline.strengthAt(this.#elapsedSec) * Math.max(0, finite(strengthMult, 1))) : 0;
-    const target = this.#held ?? Math.max(own, clamp01(finite(floor, 0)));
+    const own = this.#active ? clampUnit(this.#timeline.strengthAt(this.#elapsedSec) * Math.max(0, finiteOr(strengthMult, 1))) : 0;
+    const target = this.#held ?? Math.max(own, clampUnit(finiteOr(floor, 0)));
     const snapshot = this.#snapshot;
-    const smoothSec = this.#smoothSecOverride ?? Math.max(0, finite(settings?.smoothSec, DEFAULT_SMOOTH_SEC));
+    const smoothSec = this.#smoothSecOverride ?? Math.max(0, finiteOr(settings?.smoothSec, DEFAULT_SMOOTH_SEC));
     snapshot.strength = smoothSec <= 0 ? target
       : snapshot.strength < target ? Math.min(target, snapshot.strength + dt / smoothSec)
         : Math.max(target, snapshot.strength - dt / smoothSec);
@@ -111,7 +110,7 @@ export class WeatherEventProcess {
   // strength 0…1 pins this process; null returns it to its own course. fadeSec (null: the settings') sets how fast
   // the shown strength moves while held and right after.
   hold(strength, { fadeSec = null } = {}) {
-    this.#held = strength === null || !Number.isFinite(Number(strength)) ? null : clamp01(Number(strength));
+    this.#held = strength === null || !Number.isFinite(Number(strength)) ? null : clampUnit(Number(strength));
     this.#smoothSecOverride = fadeSec === null || !Number.isFinite(Number(fadeSec)) ? null : Math.max(0, Number(fadeSec));
     this.#snapshot.held = this.#held !== null;
   }
@@ -126,7 +125,7 @@ export class WeatherEventProcess {
     if (this.#cooldownLeftSec > 0 || left <= 0) return;
     this.#checkLeftSec -= left;
     if (this.#checkLeftSec > 0) return;
-    this.#checkLeftSec = Math.max(1, finite(settings?.checkIntervalSec, 60));
+    this.#checkLeftSec = Math.max(1, finiteOr(settings?.checkIntervalSec, 60));
     if (this.#rng.next() < this.#chance(settings, chanceMult)) this.#begin(settings, null);
     else this.#failedChecks += 1;
   }
@@ -143,15 +142,15 @@ export class WeatherEventProcess {
   #end(settings) {
     this.#active = false;
     this.#elapsedSec = 0;
-    this.#cooldownLeftSec = Math.max(0, finite(settings?.cooldownSec, 0));
-    this.#checkLeftSec = Math.max(1, finite(settings?.checkIntervalSec, 60));
+    this.#cooldownLeftSec = Math.max(0, finiteOr(settings?.cooldownSec, 0));
+    this.#checkLeftSec = Math.max(1, finiteOr(settings?.checkIntervalSec, 60));
     this.#failedChecks = 0;
   }
 
   #chance(settings, chanceMult) {
-    const base = Math.max(0, finite(settings?.chancePerCheck, 0)) +
-      Math.max(0, finite(settings?.chanceGrowthPerCheck, 0)) * this.#failedChecks;
-    return clamp01(base * Math.max(0, finite(chanceMult, 1)));
+    const base = Math.max(0, finiteOr(settings?.chancePerCheck, 0)) +
+      Math.max(0, finiteOr(settings?.chanceGrowthPerCheck, 0)) * this.#failedChecks;
+    return clampUnit(base * Math.max(0, finiteOr(chanceMult, 1)));
   }
 
   #sync(settings, chanceMult) {

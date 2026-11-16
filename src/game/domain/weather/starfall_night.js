@@ -15,8 +15,7 @@
 // The strength is a function of the game hour (no dt): a time-of-day jump lands on the plan's value at once. The rng is
 // the starfall's own stream (it never shifts the weather's or the fish's numbers; no gameplay effect, Q6). snapshot is
 // one object rewritten in place; the plan's arrays are reused between nights.
-const clamp01 = (value) => (value <= 0 ? 0 : value >= 1 ? 1 : value);
-const finite = (value, fallback) => (Number.isFinite(Number(value)) ? Number(value) : fallback);
+import { clampUnit, finiteOr } from "../../../engine/math/number_normalization.js";
 const MAX_PERIODS = 24;
 
 export class StarfallNight {
@@ -64,10 +63,10 @@ export class StarfallNight {
   update(clock, blocked = false) {
     const settings = this.#getSettings() || null;
     const snapshot = this.#snapshot;
-    const hour = finite(clock?.hour, NaN);
+    const hour = finiteOr(clock?.hour, NaN);
     const enabled = settings?.enabled === true && Number.isFinite(hour);
-    const from = finite(settings?.fromHour, 21);
-    const to = finite(settings?.toHour, 5);
+    const from = finiteOr(settings?.fromHour, 21);
+    const to = finiteOr(settings?.toHour, 5);
     const windowHours = ((to - from) % 24 + 24) % 24 || 24;
     const position = ((hour - from) % 24 + 24) % 24;
     const inside = enabled && position < windowHours;
@@ -96,7 +95,7 @@ export class StarfallNight {
 
   // DEV: the strength pinned (0…1), null releases it to the night's plan.
   hold(strength) {
-    this.#held = strength === null || strength === undefined ? null : clamp01(finite(strength, 0));
+    this.#held = strength === null || strength === undefined ? null : clampUnit(finiteOr(strength, 0));
     this.#snapshot.held = this.#held !== null;
   }
 
@@ -107,7 +106,7 @@ export class StarfallNight {
 
   // The night's one check, and on success its timeline and the bolide's roll.
   #checkNight(settings, windowHours) {
-    this.#plan(settings, windowHours, this.#rng.chance(clamp01(finite(settings?.nightChance, 0))));
+    this.#plan(settings, windowHours, this.#rng.chance(clampUnit(finiteOr(settings?.nightChance, 0))));
   }
 
   #plan(settings, windowHours, success) {
@@ -122,8 +121,8 @@ export class StarfallNight {
     if (!success) return;
     const rng = this.#rng;
     const [low, high] = Array.isArray(settings?.periods) ? settings.periods : [3, 6];
-    const minCount = Math.max(1, Math.min(MAX_PERIODS, Math.floor(finite(low, 3))));
-    const maxCount = Math.max(minCount, Math.min(MAX_PERIODS, Math.floor(finite(high, minCount))));
+    const minCount = Math.max(1, Math.min(MAX_PERIODS, Math.floor(finiteOr(low, 3))));
+    const maxCount = Math.max(minCount, Math.min(MAX_PERIODS, Math.floor(finiteOr(high, minCount))));
     const count = minCount + Math.floor(rng.next() * (maxCount - minCount + 1)) % (maxCount - minCount + 1);
     // Random lengths: each a weight in [0.4, 1.6], scaled to the whole window.
     let total = 0;
@@ -131,8 +130,8 @@ export class StarfallNight {
     this.#starts[0] = 0;
     for (let index = 1; index <= count; index += 1) this.#starts[index] = this.#starts[index - 1] + this.#starts[index] / total * windowHours;
     this.#starts[count] = windowHours;
-    const maxStrength = clamp01(finite(settings?.maxStrength, 1));
-    const quiet = clamp01(finite(settings?.quietChance, 0.25));
+    const maxStrength = clampUnit(finiteOr(settings?.maxStrength, 1));
+    const quiet = clampUnit(finiteOr(settings?.quietChance, 0.25));
     for (let index = 0; index < count; index += 1) {
       this.#levels[index] = rng.chance(quiet) ? 0 : maxStrength * rng.range(0.15, 1);
       snapshot.periodStartHours.push(this.#starts[index]);
@@ -140,7 +139,7 @@ export class StarfallNight {
     }
     snapshot.periodCount = count;
     // Q5: the bolide's chance once, after a successful check; its moment anywhere in the night.
-    if (rng.chance(clamp01(finite(settings?.bolideChance, 0)))) {
+    if (rng.chance(clampUnit(finiteOr(settings?.bolideChance, 0)))) {
       snapshot.bolideAtHours = rng.range(0, windowHours);
       this.#bolidePending = true;
     }
@@ -153,7 +152,7 @@ export class StarfallNight {
     if (count === 0) return 0;
     let index = 0;
     while (index < count - 1 && position >= this.#starts[index + 1]) index += 1;
-    const blend = clamp01(finite(settings?.blendShare, 0.35));
+    const blend = clampUnit(finiteOr(settings?.blendShare, 0.35));
     const level = this.#levels[index];
     const start = this.#starts[index];
     const end = this.#starts[index + 1];
@@ -182,7 +181,7 @@ export class StarfallNight {
   }
 
   static #ease(from, to, share) {
-    const t = clamp01(share);
+    const t = clampUnit(share);
     return from + (to - from) * (1 - Math.cos(Math.PI * t)) / 2;
   }
 }

@@ -752,6 +752,63 @@ async function checkRadiationGrain() {
   assert.equal(canvasTextures[0].destroyed, true, "dispose frees the tile");
 }
 
+// TK-358: the weather renderers' shared parts — the zones on screen (visible parts, areas, a point picked by area, the
+// point test), the zones' mask (redrawn only on a change, released empty), the zones' bounding box, the colour parsed
+// once per change and the background's placement.
+async function checkSharedWeatherParts() {
+  const { ScreenZoneSet } = await importSource("src/platform/browser/scene/screen_zone_set.js");
+  const { ZoneRectMask } = await importSource("src/platform/browser/scene/zone_rect_mask.js");
+  const { SceneColor, mixColor } = await importSource("src/platform/browser/scene/scene_color.js");
+  const { BackgroundPlacement } = await importSource("src/platform/browser/scene/background_placement.js");
+  const { regionsBounds } = await importSource("src/engine/math/rectangle_bounds.js");
+  const list = (items) => ({ count: items.length, getAt: (index) => items[index] });
+  const zones = new ScreenZoneSet();
+  const twoZones = list([{ x: -100, y: 0, width: 300, height: 100 }, { x: 900, y: 600, width: 400, height: 200 }]);
+  zones.prepare(twoZones, 1000, 700);
+  assert.deepEqual([zones.count, zones.visibleArea, zones.wholeArea], [2, 200 * 100 + 100 * 100, 300 * 100 + 400 * 200],
+    "the visible parts are clipped to the screen; the whole area counts the zones in full");
+  let seed = 3;
+  const random = () => { seed = (Math.imul(seed, 1664525) + 1013904223) >>> 0; return seed / 4294967296; };
+  const point = { x: 0, y: 0 };
+  let inFirst = 0;
+  for (let index = 0; index < 3000; index += 1) {
+    assert.ok(zones.pick(random, point) && zones.contains(point.x, point.y), "a picked point is inside a visible zone");
+    if (point.x < 200) inFirst += 1;
+  }
+  assert.ok(Math.abs(inFirst / 3000 - 2 / 3) < 0.05, `picked by visible area (${(inFirst / 3000).toFixed(2)} in the larger part)`);
+  zones.pick(random, point, 0.5);
+  assert.ok(point.y <= 50 || point.y >= 600 && point.y <= 650, "heightShare keeps it in the zone's top share");
+  assert.equal(zones.contains(500, 300), false);
+  zones.prepare(list([{ x: 2000, y: 0, width: 10, height: 10 }]), 1000, 700);
+  assert.deepEqual([zones.count, zones.pick(random, point)], [0, false], "nothing on screen: nothing to pick");
+  Object.assign(zones.fallback, { x: 0, y: 0, width: 1000, height: 700 });
+  zones.prepare(null, 1000, 700);
+  assert.deepEqual([zones.count, zones.visibleArea], [1, 700000], "without zones the fallback rectangle");
+  const { pixi } = fakePixi();
+  const target = new pixi.Container();
+  const mask = new ZoneRectMask({ pixi, target });
+  const stage = new pixi.Container();
+  mask.mount(stage);
+  assert.equal(stage.children[0], mask.graphics, "the mask lives in the scene");
+  mask.clipTo(twoZones);
+  const drawn = mask.graphics.ops;
+  assert.deepEqual([target.mask, drawn.length, mask.graphics.includeInBuild], [mask.graphics, 3, false], "clips its target");
+  mask.clipTo(twoZones);
+  assert.equal(mask.graphics.ops, drawn, "the same rectangles: no redraw");
+  mask.release();
+  assert.deepEqual([target.mask, mask.graphics.ops.length, mask.graphics.includeInBuild], [null, 0, true],
+    "released: off its target and empty (Pixi draws it again)");
+  const bounds = regionsBounds(twoZones, { left: 0, top: 0, right: 0, bottom: 0 });
+  assert.deepEqual(bounds, { left: -100, top: 0, right: 1300, bottom: 800 }, "the zones' bounding box");
+  assert.equal(regionsBounds(list([]), {}), null);
+  const color = new SceneColor();
+  assert.deepEqual([color.read("#ff0000"), color.read("bad"), color.read(undefined)], [0xff0000, 0xffffff, 0xffffff]);
+  assert.equal(mixColor(0x000000, 0xff0000, 0.5), 0x800000, "mixes channel by channel");
+  const view = new BackgroundPlacement().place({ backgroundLayers: list([{ x: -400, y: 0, width: 1200, height: 700 }]) }, 400, 700);
+  assert.deepEqual([view.area, view.visibleArea(400, 700), view.screenX(0.5), view.shareX(200)], [840000, 280000, 200, 0.5],
+    "the background on screen, its visible part, shares and points");
+}
+
 // Spec 182 stage C (TK-352): the starfall's ordinary stars — only in the sky zones, as many a minute as the night's
 // strength asks, streaks that fly down at a slant and fade, a fixed pool, frames only while a star flies.
 async function checkStarfall() {
@@ -992,13 +1049,14 @@ async function checkAsh() {
   const before = embers.gpuView().map((particle) => [particle.x, particle.y, particle.alpha, particle.scaleX, particle.tint]);
   frame(world({ emission: 1 }));
   const after = embers.gpuView().map((particle) => [particle.x, particle.y, particle.alpha, particle.scaleX, particle.tint]);
-  const moved = after.filter(([x, y, alpha], index) => alpha > 0 && before[index][2] > 0 &&
-    (x !== before[index][0] || y !== before[index][1]));
+  // TK-358: each moved ember keeps its own index (a filtered list compared by its position mixed embers up).
+  const moved = after.map((sample, index) => [...sample, index]).filter(([x, y, alpha, , , index]) => alpha > 0 &&
+    before[index][2] > 0 && (x !== before[index][0] || y !== before[index][1]));
   assert.ok(moved.length > full.maxParticles / 2, "the embers move every frame");
   assert.ok(embers.particleChildren.every((particle, index) => after[index][2] === particle.alpha &&
     after[index][3] === particle.scaleX && after[index][4] === particle.tint),
     "the GPU draws every ember's current brightness, size and colour (vertex and color are dynamic)");
-  const steps = moved.map(([x, y], index) => Math.hypot(x - before[index][0], y - before[index][1]));
+  const steps = moved.map(([x, y, , , , index]) => Math.hypot(x - before[index][0], y - before[index][1]));
   assert.ok(Math.max(...after.map(([, , alpha]) => alpha)) <= full.opacity + 1e-9, "never brighter than the opacity");
   assert.ok(steps.every((step) => step < 6), `slow and smooth: under 6 px per frame (${Math.max(...steps).toFixed(2)})`);
   const visible = after.filter(([, , alpha]) => alpha > 0);
@@ -2190,6 +2248,7 @@ async function main() {
   await checkWavesSwitch();
   await checkRain();
   await checkAsh();
+  await checkSharedWeatherParts();
   await checkRadiationGrain();
   await checkStarfall();
   await checkSceneWorldKinds();

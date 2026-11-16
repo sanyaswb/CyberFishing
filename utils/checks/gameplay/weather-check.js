@@ -1472,6 +1472,23 @@ const step = (model, seconds, clock = null, dt = 0.1) => {
   radiationSource.update();
   assert.equal(radiationEvents.join(), "start:radiation,end:radiation", "one start and one end, never per frame");
   stopRadiationEvents();
+  // TK-358: a radiation without its description (removed in DevTools) is picked up once the description is back.
+  const liveDefs = { ...CONFIG.statusEffects };
+  delete liveDefs.radiation;
+  const lateStatuses = new PlayerStatusEffects({ now: () => clockMs, getDefinitions: () => liveDefs, scheduler });
+  const lateSource = new RadiationStatusSource({ getEnvironment: () => ({ radiation: 0.5 }), statuses: lateStatuses });
+  lateSource.update();
+  assert.equal(lateStatuses.has("radiation"), false, "no description: nothing held");
+  liveDefs.radiation = CONFIG.statusEffects.radiation;
+  lateSource.update();
+  assert.equal(lateStatuses.has("radiation"), true, "the description back: the radiation's debuff is held");
+  // TK-358: disposed statuses forget their pending timer, so a later apply schedules its end again.
+  lateStatuses.apply("vodka");
+  lateStatuses.dispose();
+  const timersBefore = timers.size;
+  lateStatuses.apply("vodka"); // renewed at the same moment: the same end as the cleared timer's
+  assert.equal(timers.size, timersBefore + 1, "after dispose a renewed status schedules its end again");
+  lateStatuses.dispose();
   clockMs = 0;
   timers.clear();
   env = { emission: { phase: "idle", intensity: 0 } };

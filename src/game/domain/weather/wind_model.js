@@ -5,6 +5,7 @@
 // - Global gusts: smooth pulse envelopes layered over base strength, shared by waves, rain slant and the float.
 // - Direction rule (owner Q4): strength === 0 <-> direction === 0; rising from 0 picks -1 or +1 at random and holds
 //   that direction until wind drops back to 0. Allocation-free: rewrites one snapshot object in place.
+import { clampUnit, finiteOr } from "../../../engine/math/number_normalization.js";
 const WIND_STATES = Object.freeze(["calm", "light", "moderate", "strong"]);
 const WIND_EPS = 1e-4;
 const DEFAULT_FADE_SEC = 14;
@@ -26,8 +27,6 @@ const DEFAULT_SETTINGS = Object.freeze({
   float: DEFAULT_FLOAT,
 });
 
-const clamp01 = (value) => (value <= 0 ? 0 : value >= 1 ? 1 : value);
-const finite = (value, fallback) => (Number.isFinite(Number(value)) ? Number(value) : fallback);
 const pair = (value, fallback) =>
   Array.isArray(value) &&
   value.length >= 2 &&
@@ -101,7 +100,7 @@ export class WindModel {
 
   // dtMs: real milliseconds since the last update; rain/storm: 0…1 intensities from WeatherModel.
   update(dtMs, { rain = 0, storm = 0 } = {}) {
-    const dtSec = Math.max(0, finite(dtMs, 0)) / 1000;
+    const dtSec = Math.max(0, finiteOr(dtMs, 0)) / 1000;
     const settings = this.#getSettings() || DEFAULT_SETTINGS;
 
     if (this.#forcedDirection === 0) {
@@ -113,8 +112,8 @@ export class WindModel {
       return this.#snapshot;
     }
 
-    const rainLevel = clamp01(finite(rain, 0));
-    const stormLevel = clamp01(finite(storm, 0));
+    const rainLevel = clampUnit(finiteOr(rain, 0));
+    const stormLevel = clampUnit(finiteOr(storm, 0));
 
     if (this.#forcedStrength !== null) {
       this.#baseStrength = this.#forcedStrength;
@@ -122,7 +121,7 @@ export class WindModel {
       this.#updateActiveGust(dtSec, settings);
       const strength = this.#forcedStrength <= WIND_EPS && !this.#gustActive
         ? 0
-        : clamp01(this.#baseStrength + this.#gustCurrent);
+        : clampUnit(this.#baseStrength + this.#gustCurrent);
       this.#sync(strength, settings);
       return this.#snapshot;
     }
@@ -137,7 +136,7 @@ export class WindModel {
       this.#enterState("light", settings);
     }
 
-    const fadeSec = Math.max(0, finite(settings.fadeSec, DEFAULT_FADE_SEC));
+    const fadeSec = Math.max(0, finiteOr(settings.fadeSec, DEFAULT_FADE_SEC));
     if (fadeSec <= 0) {
       this.#baseStrength = this.#baseTarget;
     } else if (this.#baseStrength !== this.#baseTarget) {
@@ -150,9 +149,9 @@ export class WindModel {
 
     // Spec 180 D3: the rain's and the storm's effect on the wind are general (CONFIG.weather.wind.rain, .storm).
     const general = this.#getGeneral();
-    const rainFloor = rainLevel > 0 ? rainLevel * Math.max(0, finite(general?.wind?.rain?.minStrength, 0)) : 0;
-    const stormFloor = stormLevel > 0 ? stormLevel * Math.max(0, finite(general?.storm?.windMinStrength, 0)) : 0;
-    const rainBonus = rainLevel * Math.max(0, finite(general?.wind?.rain?.bonus, 0));
+    const rainFloor = rainLevel > 0 ? rainLevel * Math.max(0, finiteOr(general?.wind?.rain?.minStrength, 0)) : 0;
+    const stormFloor = stormLevel > 0 ? stormLevel * Math.max(0, finiteOr(general?.storm?.windMinStrength, 0)) : 0;
+    const rainBonus = rainLevel * Math.max(0, finiteOr(general?.wind?.rain?.bonus, 0));
     const dirFloor =
       this.#forcedDirection === -1 || this.#forcedDirection === 1
         ? Math.max(
@@ -160,10 +159,10 @@ export class WindModel {
             Number(pair(settings?.states?.light?.strength, DEFAULT_STATES.light.strength)[0]) || 0.15,
           )
         : 0;
-    const boostedBase = clamp01(Math.max(this.#baseStrength, rainFloor, stormFloor, dirFloor) + rainBonus);
+    const boostedBase = clampUnit(Math.max(this.#baseStrength, rainFloor, stormFloor, dirFloor) + rainBonus);
 
     this.#updateGust(settings, boostedBase, rainLevel, stormLevel, dtSec);
-    const strength = clamp01(boostedBase + this.#gustCurrent);
+    const strength = clampUnit(boostedBase + this.#gustCurrent);
     this.#sync(strength, settings);
     return this.#snapshot;
   }
@@ -186,7 +185,7 @@ export class WindModel {
       this.#enterState("light", settings);
       this.#baseStrength = Math.max(this.#baseStrength, this.#baseTarget * 0.5 || 0.2);
     }
-    this.#sync(clamp01(Math.max(this.#forcedStrength ?? this.#baseStrength, 0) + this.#gustCurrent), settings);
+    this.#sync(clampUnit(Math.max(this.#forcedStrength ?? this.#baseStrength, 0) + this.#gustCurrent), settings);
   }
 
   // Forced strength in 0…1, or null for automatic wind. Setting 0 clears direction to 0.
@@ -199,10 +198,10 @@ export class WindModel {
       } else {
         this.#baseTarget = this.#episodeTarget;
       }
-      this.#sync(clamp01(this.#baseStrength + this.#gustCurrent), settings);
+      this.#sync(clampUnit(this.#baseStrength + this.#gustCurrent), settings);
       return;
     }
-    const clamped = clamp01(Number(strength));
+    const clamped = clampUnit(Number(strength));
     if (clamped <= WIND_EPS) {
       this.#forcedDirection = null;
       this.#autoDirection = 0;
@@ -223,7 +222,7 @@ export class WindModel {
     const gust = this.#getGeneral()?.wind?.gust; // spec 180 D3: a gust's shape is general
     const rolledDelta = delta !== null && Number.isFinite(Number(delta))
       ? Math.max(0, Number(delta))
-      : clamp01(this.#roll(pair(gust?.deltaRange, [0.12, 0.3])));
+      : clampUnit(this.#roll(pair(gust?.deltaRange, [0.12, 0.3])));
     const rolledDuration = durationSec !== null && Number.isFinite(Number(durationSec))
       ? Math.max(0.2, Number(durationSec))
       : Math.max(0.2, this.#roll(pair(gust?.durationSec, [1.5, 4.5])));
@@ -235,7 +234,7 @@ export class WindModel {
     if (this.#gustActive && this.#forcedDirection === null && this.#autoDirection === 0) {
       this.#autoDirection = this.#pickDirection();
     }
-    this.#sync(clamp01((this.#forcedStrength ?? this.#baseStrength) + this.#gustCurrent));
+    this.#sync(clampUnit((this.#forcedStrength ?? this.#baseStrength) + this.#gustCurrent));
     return this.#gustActive;
   }
 
@@ -248,7 +247,7 @@ export class WindModel {
       const name = WIND_STATES[index];
       if (disallowCalm && name === "calm") continue;
       const weight = hasCustomStates
-        ? Math.max(0, finite(states[name]?.weight, 0))
+        ? Math.max(0, finiteOr(states[name]?.weight, 0))
         : DEFAULT_STATES[name].weight;
       total += weight;
     }
@@ -259,7 +258,7 @@ export class WindModel {
         const name = WIND_STATES[index];
         if (disallowCalm && name === "calm") continue;
         const weight = hasCustomStates
-          ? Math.max(0, finite(states[name]?.weight, 0))
+          ? Math.max(0, finiteOr(states[name]?.weight, 0))
           : DEFAULT_STATES[name].weight;
         roll -= weight;
         if (roll < 0) {
@@ -275,7 +274,7 @@ export class WindModel {
     const entry = settings?.states?.[state] ?? DEFAULT_STATES[state] ?? DEFAULT_STATES.calm;
     this.#episode += 1;
     this.#episodeLeftSec = Math.max(1, this.#roll(pair(entry.durationSec, DEFAULT_STATES[state].durationSec)));
-    this.#episodeTarget = state === "calm" ? 0 : clamp01(this.#roll(pair(entry.strength, DEFAULT_STATES[state].strength)));
+    this.#episodeTarget = state === "calm" ? 0 : clampUnit(this.#roll(pair(entry.strength, DEFAULT_STATES[state].strength)));
     this.#baseTarget = this.#episodeTarget;
   }
 
@@ -290,9 +289,9 @@ export class WindModel {
     }
     const gust = settings?.gust;
     const general = this.#getGeneral();
-    const baseChance = Math.max(0, finite(gust?.chancePerSec, 0.14));
-    const rainMult = 1 + rainLevel * Math.max(0, finite(general?.wind?.rain?.gustChanceMult, 1.5));
-    const stormMult = 1 + stormLevel * Math.max(0, finite(general?.storm?.gustChanceMult, 2.5));
+    const baseChance = Math.max(0, finiteOr(gust?.chancePerSec, 0.14));
+    const rainMult = 1 + rainLevel * Math.max(0, finiteOr(general?.wind?.rain?.gustChanceMult, 1.5));
+    const stormMult = 1 + stormLevel * Math.max(0, finiteOr(general?.storm?.gustChanceMult, 2.5));
     const strengthWeight = 0.35 + 0.65 * Math.max(boostedBase, stormLevel);
     const probability = Math.min(1, baseChance * rainMult * stormMult * strengthWeight * dtSec);
     if (probability > 0 && this.#rng.chance(probability)) {
@@ -306,12 +305,12 @@ export class WindModel {
       return;
     }
     this.#gustAgeSec += dtSec;
-    const u = clamp01(this.#gustAgeSec / this.#gustDurationSec);
+    const u = clampUnit(this.#gustAgeSec / this.#gustDurationSec);
     if (u >= 1) {
       this.#clearGust();
       return;
     }
-    const attackShare = Math.min(0.8, Math.max(0.05, finite(this.#getGeneral()?.wind?.gust?.attackShare, 0.25)));
+    const attackShare = Math.min(0.8, Math.max(0.05, finiteOr(this.#getGeneral()?.wind?.gust?.attackShare, 0.25)));
     const envelope = u < attackShare
       ? Math.sin((u / attackShare) * Math.PI * 0.5)
       : Math.cos(((u - attackShare) / (1 - attackShare)) * Math.PI * 0.5);
@@ -337,7 +336,7 @@ export class WindModel {
   }
 
   #sync(rawStrength, settings = this.#getSettings() || DEFAULT_SETTINGS) {
-    const strength = rawStrength <= WIND_EPS ? 0 : clamp01(rawStrength);
+    const strength = rawStrength <= WIND_EPS ? 0 : clampUnit(rawStrength);
     if (this.#forcedDirection === null) {
       if (strength <= 0) this.#autoDirection = 0;
       else if (this.#autoDirection === 0) this.#autoDirection = this.#pickDirection();
@@ -346,9 +345,9 @@ export class WindModel {
     const snapshot = this.#snapshot;
     snapshot.strength = direction === 0 ? 0 : strength;
     snapshot.direction = snapshot.strength <= 0 ? 0 : direction;
-    snapshot.baseStrength = clamp01(this.#baseStrength);
+    snapshot.baseStrength = clampUnit(this.#baseStrength);
     snapshot.gustStrength = Math.max(0, this.#gustCurrent);
-    snapshot.targetStrength = clamp01(this.#forcedStrength ?? this.#baseTarget);
+    snapshot.targetStrength = clampUnit(this.#forcedStrength ?? this.#baseTarget);
     snapshot.state = classifyState(snapshot.strength);
     snapshot.episode = this.#episode;
     snapshot.episodeLeftSec = Math.max(0, this.#episodeLeftSec);

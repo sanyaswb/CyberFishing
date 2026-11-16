@@ -14,9 +14,7 @@
 // opens toward the whole screen by the same share), the blur's px × blur share, the pulses' rate × blurRate share — so
 // 0.5 shows exactly half of the effect at any phase and the pulses keep the emission's rhythm; two zero shares (the gas
 // mask) hide the veil. random: () => 0…1 (visual only). One record rewritten in place; no allocation per frame.
-const clamp01 = (value) => (value <= 0 ? 0 : value >= 1 ? 1 : value);
-const number = (value, fallback) => (Number.isFinite(Number(value)) ? Number(value) : fallback);
-const pairAt = (pair, index, fallback) => number(Array.isArray(pair) ? pair[index] : undefined, fallback);
+import { clampUnit, finiteOr, pairValue } from "../../../engine/math/number_normalization.js";
 const TWO_PI = Math.PI * 2;
 // The swell's period drifts on a slower wave with this period (s), so consecutive swells differ in length.
 const SWELL_DRIFT_SEC = 23;
@@ -43,10 +41,10 @@ export class EmissionScreenEffect {
   // blurShare, blurRateShare: 0…1, the shares of the output that stay (spec 181 D2).
   update(dtMs, strength, settings, vignetteShare = 1, blurShare = 1, blurRateShare = 1) {
     const record = this.#record;
-    const vignetteKept = clamp01(number(vignetteShare, 1));
-    const blurKept = clamp01(number(blurShare, 1));
+    const vignetteKept = clampUnit(finiteOr(vignetteShare, 1));
+    const blurKept = clampUnit(finiteOr(blurShare, 1));
     const shown = vignetteKept > 0 || blurKept > 0;
-    const level = settings?.enabled !== false && shown ? clamp01(number(strength, 0)) : 0;
+    const level = settings?.enabled !== false && shown ? clampUnit(finiteOr(strength, 0)) : 0;
     record.includeHud = settings?.includeHud !== false;
     record.strength = level;
     if (level <= 0) {
@@ -57,7 +55,7 @@ export class EmissionScreenEffect {
       record.clearRadius = 1;
       return record;
     }
-    const dtSec = Math.min(0.25, Math.max(0, number(dtMs, 0)) / 1000);
+    const dtSec = Math.min(0.25, Math.max(0, finiteOr(dtMs, 0)) / 1000);
     const vignetteOn = settings?.vignette?.enabled !== false && vignetteKept > 0;
     const blurOn = settings?.blur?.enabled !== false && blurKept > 0;
     record.visible = vignetteOn || blurOn;
@@ -66,39 +64,39 @@ export class EmissionScreenEffect {
       record.darkness *= vignetteKept;
       record.clearRadius = 1 - (1 - record.clearRadius) * vignetteKept;
     } else { record.darkness = 0; record.clearRadius = 1; }
-    record.blurPx = blurOn ? this.#updateBlur(level, dtSec, settings?.blur, clamp01(number(blurRateShare, 1))) * blurKept : 0;
+    record.blurPx = blurOn ? this.#updateBlur(level, dtSec, settings?.blur, clampUnit(finiteOr(blurRateShare, 1))) * blurKept : 0;
     return record;
   }
 
   #updateVignette(record, level, dtSec, vignette) {
     const eased = level * level * (3 - 2 * level);
-    const start = clamp01(pairAt(vignette?.clearRadius, 0, 0.95));
-    const end = clamp01(pairAt(vignette?.clearRadius, 1, 0.15));
-    const slowSec = Math.max(0.5, pairAt(vignette?.swayPeriodSec, 0, 7));
-    const fastSec = Math.max(0.5, pairAt(vignette?.swayPeriodSec, 1, 3.5));
+    const start = clampUnit(pairValue(vignette?.clearRadius, 0, 0.95));
+    const end = clampUnit(pairValue(vignette?.clearRadius, 1, 0.15));
+    const slowSec = Math.max(0.5, pairValue(vignette?.swayPeriodSec, 0, 7));
+    const fastSec = Math.max(0.5, pairValue(vignette?.swayPeriodSec, 1, 3.5));
     // The swell's period wanders between the two bounds on a slower drift, and shortens a little with the strength.
     this.#driftPhase = (this.#driftPhase + TWO_PI * dtSec / SWELL_DRIFT_SEC) % TWO_PI;
     const drift = 0.5 + 0.5 * Math.sin(this.#driftPhase);
-    const periodSec = slowSec + (fastSec - slowSec) * clamp01(0.6 * drift + 0.4 * level);
+    const periodSec = slowSec + (fastSec - slowSec) * clampUnit(0.6 * drift + 0.4 * level);
     this.#swellPhase = (this.#swellPhase + TWO_PI * dtSec / periodSec) % TWO_PI;
     const wave = Math.sin(this.#swellPhase);
     // Closing in (wave > 0) goes the whole amplitude, opening out only swayOutShare of it.
-    const amplitude = Math.max(0, number(vignette?.swayAmplitude, 0.06)) * eased;
-    const outShare = clamp01(number(vignette?.swayOutShare, 0.55));
+    const amplitude = Math.max(0, finiteOr(vignette?.swayAmplitude, 0.06)) * eased;
+    const outShare = clampUnit(finiteOr(vignette?.swayOutShare, 0.55));
     const sway = wave >= 0 ? wave * amplitude : wave * amplitude * outShare;
-    record.clearRadius = clamp01(start + (end - start) * eased - sway);
-    record.feather = clamp01(number(vignette?.feather, 0.5));
-    record.darkness = clamp01(clamp01(number(vignette?.maxDarkness, 0.85)) * eased * (1 + 0.12 * wave * eased));
+    record.clearRadius = clampUnit(start + (end - start) * eased - sway);
+    record.feather = clampUnit(finiteOr(vignette?.feather, 0.5));
+    record.darkness = clampUnit(clampUnit(finiteOr(vignette?.maxDarkness, 0.85)) * eased * (1 + 0.12 * wave * eased));
   }
 
   // Spec 180 D5: five knobs — strengthPx, pulsesPerSec [at the start, at the peak], irregularity (the gaps' spread and the
   // heights' range), sharpness (0: soft swells, 1: sharp twitches → attack 0.2 … 0.03 s, decay 0.8 … 0.15 s), floor.
   #updateBlur(level, dtSec, blur, rateShare) {
     const random = this.#random;
-    const slowRate = Math.max(0.05, pairAt(blur?.pulsesPerSec, 0, 0.42));
-    const fastRate = Math.max(0.05, pairAt(blur?.pulsesPerSec, 1, 2.85));
-    const jitter = clamp01(number(blur?.irregularity, 0.6));
-    const sharpness = clamp01(number(blur?.sharpness, 0.88));
+    const slowRate = Math.max(0.05, pairValue(blur?.pulsesPerSec, 0, 0.42));
+    const fastRate = Math.max(0.05, pairValue(blur?.pulsesPerSec, 1, 2.85));
+    const jitter = clampUnit(finiteOr(blur?.irregularity, 0.6));
+    const sharpness = clampUnit(finiteOr(blur?.sharpness, 0.88));
     const attack = 0.2 + (0.03 - 0.2) * sharpness;
     const decay = 0.8 + (0.15 - 0.8) * sharpness;
     this.#nextPulseSec -= dtSec;
@@ -119,8 +117,8 @@ export class EmissionScreenEffect {
       const rest = 1 - (age - attack) / decay;
       shape = rest * rest;
     }
-    const base = clamp01(number(blur?.floor, 0.15));
-    const peak = Math.max(0, number(blur?.strengthPx, 6));
+    const base = clampUnit(finiteOr(blur?.floor, 0.15));
+    const peak = Math.max(0, finiteOr(blur?.strengthPx, 6));
     return peak * level * (base + (1 - base) * shape * this.#pulseHeight);
   }
 

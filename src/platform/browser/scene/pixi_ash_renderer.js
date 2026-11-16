@@ -21,20 +21,17 @@
 // sized by the settings (it grows only when the settings grow); unused particles have alpha 0. position, vertex
 // (scale) and color (tint, alpha) change every frame, so they are dynamic (Pixi 8 ParticleBuffer.update). The scene
 // presents a frame only while an ember is alive.
+import { clampUnit, finiteOr } from "../../../engine/math/number_normalization.js";
+import { BackgroundPlacement } from "./background_placement.js";
+import { mixColor, SceneColor } from "./scene_color.js";
+import { ScreenZoneSet } from "./screen_zone_set.js";
+
 const GLOW_SIZE = 32;
 const MAX_STEP_SEC = 0.1;
 const TWO_PI = Math.PI * 2;
 const DYNAMIC = Object.freeze({ position: true, vertex: true, rotation: false, color: true, uvs: false });
 
-const clamp01 = (value) => (value <= 0 ? 0 : value >= 1 ? 1 : value);
-const number = (value, fallback) => (Number.isFinite(Number(value)) ? Number(value) : fallback);
-const parseColor = (text) => (/^#[0-9a-f]{6}$/iu.test(text) ? Number.parseInt(text.slice(1), 16) : 0xffffff);
-const mixColor = (a, b, share) => {
-  if (share <= 0) return a;
-  if (share >= 1) return b;
-  const channel = (shift) => Math.round(((a >> shift) & 255) + ((((b >> shift) & 255) - ((a >> shift) & 255)) * share));
-  return (channel(16) << 16) | (channel(8) << 8) | channel(0);
-};
+const NO_REGIONS = Object.freeze({ count: 0, getAt: () => null });
 
 export class PixiAshRenderer {
   #pixi;
@@ -58,15 +55,15 @@ export class PixiAshRenderer {
   #lastNow = null;
   #visible = false;
   #stepMs = 0;
-  #view = { x: 0, y: 0, width: 1, height: 1 };
+  #view = new BackgroundPlacement();
   // TK-349: the ash zones' visible rectangles (left, top, width, height) and cumulative areas; grow with the zone count.
   #zoned = false;
-  #zoneRects = new Float32Array(0);
-  #zoneWeights = new Float32Array(0);
-  #zoneCount = 0;
-  #zoneArea = 0;
-  #hot = { text: "", value: 0xffffff };
-  #cool = { text: "", value: 0xffffff };
+  #zones = new ScreenZoneSet();
+  #point = { x: 0, y: 0 };
+  #hot = new SceneColor();
+  #cool = new SceneColor();
+  #hotValue = 0xffffff;
+  #coolValue = 0xffffff;
 
   // documentTarget: makes the texture's canvas; random: () => 0…1 (the embers' places and timing; visual only).
   constructor({ pixi, documentTarget, random = Math.random }) {
@@ -99,26 +96,21 @@ export class PixiAshRenderer {
     this.#lastNow = nowMs;
     if (!world || settings?.enabled !== true) { this.#clear(); return this.#hide(); }
     // Spec 180 D10: the ash's own strength (follows the emission unless DevTools holds it).
-    const intensity = clamp01(number(world.weather?.ash ?? world.weather?.emission, 0));
-    const max = Math.max(0, Math.floor(number(settings?.maxParticles, 0)));
-    const cap = Math.max(max, Math.floor(number(settings?.maxParticlesCap, max)));
-    this.#placeView(world, viewWidth, viewHeight);
+    const intensity = clampUnit(finiteOr(world.weather?.ash ?? world.weather?.emission, 0));
+    const max = Math.max(0, Math.floor(finiteOr(settings?.maxParticles, 0)));
+    const cap = Math.max(max, Math.floor(finiteOr(settings?.maxParticlesCap, max)));
+    this.#view.place(world, viewWidth, viewHeight);
     this.#prepareZones(world, viewWidth, viewHeight);
     // TK-355: the visible share of the location's ash (its zones, or the whole background) at the location's density.
-    const view = this.#view;
-    const locationArea = Math.max(1, view.width * view.height);
-    const visibleArea = this.#zoned ? this.#zoneArea
-      : Math.max(0, Math.min(viewWidth, view.x + view.width) - Math.max(0, view.x)) *
-        Math.max(0, Math.min(viewHeight, view.y + view.height) - Math.max(0, view.y));
-    const share = Math.min(1, visibleArea / locationArea);
+    const share = Math.min(1, this.#zones.visibleArea / Math.max(1, this.#view.area));
     const target = intensity > 0 ? Math.round(max * share) : 0;
     if (target === 0 && this.#count === 0) return this.#hide();
     const started = performance.now();
     this.#ensurePool(cap);
-    this.#hot = PixiAshRenderer.#color(this.#hot, settings?.hotColor);
-    this.#cool = PixiAshRenderer.#color(this.#cool, settings?.coolColor);
+    this.#hotValue = this.#hot.read(settings?.hotColor);
+    this.#coolValue = this.#cool.read(settings?.coolColor);
     this.#time = (this.#time + elapsed) % 3600;
-    this.#updateEmbers(elapsed, target, settings, world, viewWidth, viewHeight, number(weatherSettings?.wind?.ashDriftPx, 40));
+    this.#updateEmbers(elapsed, target, settings, world, viewWidth, viewHeight, finiteOr(weatherSettings?.wind?.ashDriftPx, 40));
     this.#visible = true;
     this.#container.visible = true;
     this.#stepMs = performance.now() - started;
@@ -131,17 +123,17 @@ export class PixiAshRenderer {
   }
 
   #updateEmbers(elapsed, target, settings, world, viewWidth, viewHeight, windDrift) {
-    const sizeMin = Math.max(0, number(settings?.sizePx?.[0], 2));
-    const sizeMax = Math.max(sizeMin, number(settings?.sizePx?.[1], 9));
-    const lifeMin = Math.max(0.1, number(settings?.lifeSec?.[0], 3));
-    const lifeMax = Math.max(lifeMin, number(settings?.lifeSec?.[1], 7));
-    const rise = number(settings?.riseSpeedPx, 18);
-    const wander = Math.max(0, number(settings?.wanderPx, 26));
-    const opacity = clamp01(number(settings?.opacity, 0.85));
-    const flicker = clamp01(number(settings?.flicker, 0.35));
-    const fade = clamp01(number(settings?.fadeShare, 0.25));
-    const wind = Math.max(-1, Math.min(1, number(world.weather?.windDirection, 0))) *
-      clamp01(number(world.weather?.windStrength, Math.abs(number(world.weather?.windDirection, 0))));
+    const sizeMin = Math.max(0, finiteOr(settings?.sizePx?.[0], 2));
+    const sizeMax = Math.max(sizeMin, finiteOr(settings?.sizePx?.[1], 9));
+    const lifeMin = Math.max(0.1, finiteOr(settings?.lifeSec?.[0], 3));
+    const lifeMax = Math.max(lifeMin, finiteOr(settings?.lifeSec?.[1], 7));
+    const rise = finiteOr(settings?.riseSpeedPx, 18);
+    const wander = Math.max(0, finiteOr(settings?.wanderPx, 26));
+    const opacity = clampUnit(finiteOr(settings?.opacity, 0.85));
+    const flicker = clampUnit(finiteOr(settings?.flicker, 0.35));
+    const fade = clampUnit(finiteOr(settings?.fadeShare, 0.25));
+    const wind = Math.max(-1, Math.min(1, finiteOr(world.weather?.windDirection, 0))) *
+      clampUnit(finiteOr(world.weather?.windStrength, Math.abs(finiteOr(world.weather?.windDirection, 0))));
     const view = this.#view;
     const toU = 1 / Math.max(1, view.width);
     const toV = 1 / Math.max(1, view.height);
@@ -155,7 +147,7 @@ export class PixiAshRenderer {
       const particle = this.#particles[index];
       if (!this.#alive[index]) {
         if (alive >= target) { particle.alpha = 0; continue; }
-        this.#spawn(index, left, top, right, bottom, sizeMin, sizeMax, lifeMin, lifeMax);
+        this.#spawn(index, sizeMin, sizeMax, lifeMin, lifeMax);
       }
       this.#age[index] += elapsed;
       const life = this.#life[index];
@@ -168,7 +160,7 @@ export class PixiAshRenderer {
         continue;
       }
       // TK-349: out of every ash zone — it fades out from here (its age jumps to the start of the fade).
-      if (this.#zoned && age < life * (1 - fade) && !this.#insideZone(view.x + u * view.width, view.y + v * view.height)) {
+      if (this.#zoned && age < life * (1 - fade) && !this.#zones.contains(view.screenX(u), view.screenY(v))) {
         this.#age[index] = life * (1 - fade);
       }
       const depth = this.#depth[index];
@@ -190,28 +182,20 @@ export class PixiAshRenderer {
       const scale = this.#size[index] * depth / GLOW_SIZE;
       particle.scaleX = scale;
       particle.scaleY = scale;
-      particle.alpha = opacity * clamp01(envelope) * glow;
-      particle.tint = mixColor(this.#hot.value, this.#cool.value, share);
+      particle.alpha = opacity * clampUnit(envelope) * glow;
+      particle.tint = mixColor(this.#hotValue, this.#coolValue, share);
       alive += 1;
     }
     this.#count = alive;
   }
 
-  #spawn(index, left, top, right, bottom, sizeMin, sizeMax, lifeMin, lifeMax) {
+  #spawn(index, sizeMin, sizeMax, lifeMin, lifeMax) {
     const random = this.#random;
-    if (this.#zoned && this.#zoneCount > 0) {
-      // A visible ash zone by its area, then a point inside it (screen → shares of the background).
-      const pick = random() * this.#zoneArea;
-      let zone = 0;
-      while (zone < this.#zoneCount - 1 && this.#zoneWeights[zone] < pick) zone += 1;
-      const offset = zone * 4;
-      const view = this.#view;
-      this.#u[index] = (this.#zoneRects[offset] + random() * this.#zoneRects[offset + 2] - view.x) / Math.max(1, view.width);
-      this.#v[index] = (this.#zoneRects[offset + 1] + random() * this.#zoneRects[offset + 3] - view.y) / Math.max(1, view.height);
-    } else {
-      this.#u[index] = left + (right - left) * random();
-      this.#v[index] = top + (bottom - top) * random();
-    }
+    // A visible ash zone (or the visible background) by its area, then a point inside it, as shares of the background.
+    const point = this.#point;
+    this.#zones.pick(random, point);
+    this.#u[index] = this.#view.shareX(point.x);
+    this.#v[index] = this.#view.shareY(point.y);
     this.#depth[index] = 0.4 + 0.6 * random();
     this.#size[index] = sizeMin + (sizeMax - sizeMin) * random() * random();
     this.#life[index] = lifeMin + (lifeMax - lifeMin) * random();
@@ -221,51 +205,14 @@ export class PixiAshRenderer {
     this.#alive[index] = 1;
   }
 
-  // TK-349: the ash zones' visible parts on screen with cumulative areas for picking (none: no new ember).
+  // TK-349, TK-358: the ash zones' visible parts (none on screen: no new ember), or without zones the background.
   #prepareZones(world, viewWidth, viewHeight) {
     this.#zoned = world.ashZoned === true;
-    const regions = world.ashRegions;
-    const count = this.#zoned && regions ? regions.count : 0;
-    if (this.#zoneRects.length < count * 4) {
-      this.#zoneRects = new Float32Array(count * 4);
-      this.#zoneWeights = new Float32Array(count);
+    if (!this.#zoned) {
+      const view = this.#view, fallback = this.#zones.fallback;
+      fallback.x = view.x; fallback.y = view.y; fallback.width = view.width; fallback.height = view.height;
     }
-    let total = 0, visible = 0;
-    for (let index = 0; index < count; index += 1) {
-      const rect = regions.getAt(index);
-      const left = Math.max(0, rect.x), top = Math.max(0, rect.y);
-      const right = Math.min(viewWidth, rect.x + rect.width), bottom = Math.min(viewHeight, rect.y + rect.height);
-      if (!(right > left && bottom > top)) continue;
-      const offset = visible * 4;
-      this.#zoneRects[offset] = left; this.#zoneRects[offset + 1] = top;
-      this.#zoneRects[offset + 2] = right - left; this.#zoneRects[offset + 3] = bottom - top;
-      total += (right - left) * (bottom - top);
-      this.#zoneWeights[visible] = total;
-      visible += 1;
-    }
-    this.#zoneCount = visible;
-    this.#zoneArea = total;
-  }
-
-  #insideZone(x, y) {
-    for (let zone = 0; zone < this.#zoneCount; zone += 1) {
-      const offset = zone * 4;
-      const left = this.#zoneRects[offset], top = this.#zoneRects[offset + 1];
-      if (x >= left && y >= top && x <= left + this.#zoneRects[offset + 2] && y <= top + this.#zoneRects[offset + 3]) return true;
-    }
-    return false;
-  }
-
-  // The embers' world: the background's first layer (the location's picture on screen), else the screen.
-  #placeView(world, viewWidth, viewHeight) {
-    const layers = world.backgroundLayers;
-    const base = layers && layers.count > 0 ? layers.getAt(0) : null;
-    const view = this.#view;
-    if (base && base.width > 0 && base.height > 0) {
-      view.x = base.x; view.y = base.y; view.width = base.width; view.height = base.height;
-    } else {
-      view.x = 0; view.y = 0; view.width = Math.max(1, viewWidth); view.height = Math.max(1, viewHeight);
-    }
+    this.#zones.prepare(this.#zoned ? world.ashRegions ?? NO_REGIONS : null, viewWidth, viewHeight);
   }
 
   #ensurePool(size) {
@@ -299,12 +246,6 @@ export class PixiAshRenderer {
     this.#container.visible = false;
     for (let index = 0; index < this.#particles.length; index += 1) this.#particles[index].alpha = 0;
     return true;
-  }
-
-  static #color(cache, value) {
-    const text = typeof value === "string" ? value : "#ffffff";
-    if (text === cache.text) return cache;
-    return { text, value: parseColor(text) };
   }
 
   // A soft round glow, bright in the middle and transparent at the edge, drawn once.

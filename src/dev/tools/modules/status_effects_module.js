@@ -3,12 +3,9 @@
 // (CONFIG.statusEffects) as a tree with live edits (the same values as in «Конфіг»). A status held by its source (the gas
 // mask in its slot) is shown but not given or taken here: its source decides.
 // statuses: the DEV port { list(), definition(id), remainingSec(id), apply(id, { source }), remove(id), clear() }.
-const KIND_LABELS = Object.freeze({ buff: "баф", debuff: "дебаф" });
+import { STATUS_LABELS } from "../../../game/presentation/status/status_labels.js";
 
-const clock = (seconds) => {
-  const total = Math.max(0, Math.ceil(Number(seconds) || 0));
-  return `${Math.floor(total / 60)}:${String(total % 60).padStart(2, "0")}`;
-};
+const KIND_LABELS = Object.freeze({ buff: "баф", debuff: "дебаф" });
 
 export class StatusEffectsModule {
   #config;
@@ -62,7 +59,7 @@ export class StatusEffectsModule {
 
   #describe(entry) {
     const definition = this.#statuses.definition(entry.id);
-    const time = entry.held ? `без таймера (${entry.source || "джерело"})` : `ще ${clock(this.#statuses.remainingSec(entry.id))}`;
+    const time = entry.held ? `без таймера (${entry.source || "джерело"})` : `ще ${STATUS_LABELS.countdown(this.#statuses.remainingSec(entry.id))}`;
     const stacks = entry.stacks > 1 ? ` · ×${entry.stacks}` : "";
     const modifiers = [];
     for (const [system, keys] of Object.entries(definition?.modifiers || {})) {

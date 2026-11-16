@@ -5,7 +5,7 @@
 // - isCastBlocked(): from the emission's start to its end a cast needs a gas mask (the vodka does not allow it); a fight
 //   that is already on continues (owner, Q10), only new casts are refused.
 // It reads the environment's snapshot, the equipment and the statuses live, allocates nothing and keeps no state.
-const clamp01 = (value) => (value <= 0 ? 0 : value >= 1 ? 1 : value);
+import { clampUnit } from "../../../engine/math/number_normalization.js";
 
 export class EmissionExposure {
   #getEnvironment;
@@ -35,11 +35,11 @@ export class EmissionExposure {
   intensity() {
     if (!this.isActive()) return 0;
     const intensity = Number(this.#getEnvironment()?.emission?.intensity);
-    return Number.isFinite(intensity) ? clamp01(intensity) : 0;
+    return Number.isFinite(intensity) ? clampUnit(intensity) : 0;
   }
 
   modifier(key) {
-    return clamp01(this.#statuses.modifier("emission", key));
+    return clampUnit(this.#statuses.modifier("emission", key));
   }
 
   isCastBlocked() {

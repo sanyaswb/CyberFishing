@@ -3,15 +3,14 @@
 // A description (CONFIG.statusEffects.<id>): { kind: "buff" | "debuff", iconAsset, durationSec (0: no timer — a held
 // status from the equipment or the environment), stacking: "renew" | "max" | "add", maxStacks, timeBase: "real",
 // badge (shown in the HUD), modifiers: { <system>: { <key>: share that stays, 0…1 } } }.
+import { finiteOr } from "../../../engine/math/number_normalization.js";
 export const STATUS_KINDS = Object.freeze(["buff", "debuff"]);
 export const STATUS_STACKING = Object.freeze(["renew", "max", "add"]);
 // Spec 181 Q1: real time (the page's monotonic clock). "game" is reserved for a later status.
 export const STATUS_TIME_BASES = Object.freeze(["real"]);
 
-const number = (value, fallback) => (Number.isFinite(Number(value)) ? Number(value) : fallback);
-
 export function statusDurationMs(definition) {
-  return Math.max(0, number(definition?.durationSec, 0)) * 1000;
+  return Math.max(0, finiteOr(definition?.durationSec, 0)) * 1000;
 }
 
 // A timed apply onto entry ({ stacks, startedAtMs, untilMs }): a fresh entry starts; an active one stacks by its rule —
@@ -33,7 +32,7 @@ export function stackTimedStatus(entry, definition, nowMs, active) {
     }
     return entry;
   }
-  if (stacking === "add") entry.stacks = Math.min(Math.max(1, Math.floor(number(definition?.maxStacks, 1))), entry.stacks + 1);
+  if (stacking === "add") entry.stacks = Math.min(Math.max(1, Math.floor(finiteOr(definition?.maxStacks, 1))), entry.stacks + 1);
   entry.startedAtMs = nowMs;
   entry.untilMs = nowMs + durationMs;
   return entry;
@@ -43,6 +42,6 @@ export function stackTimedStatus(entry, definition, nowMs, active) {
 export function statusModifierShare(definition, system, key, stacks) {
   const raw = definition?.modifiers?.[system]?.[key];
   if (raw === undefined || raw === null) return 1;
-  const share = Math.min(1, Math.max(0, number(raw, 1)));
+  const share = Math.min(1, Math.max(0, finiteOr(raw, 1)));
   return stacks > 1 ? share ** stacks : share;
 }
