@@ -484,6 +484,117 @@ async function stageTwo() {
   assert.equal(opened, 1, "a tap opens the radio's editor");
   indicator.dispose();
 
+  // Spec 181 D3 (TK-343): the status badges under the radio — a drained fill as CSS animations started with the status's
+  // time, the debuff outline, the countdown on a tap, a fade at the end; the DOM written only on events.
+  {
+    const { PlayerStatusEffects } = runtime.importModule("src/game/application/world/player_status_effects.js");
+    const { StatusHudBadges } = runtime.importModule("src/platform/browser/ui/status_hud_badges.js");
+    const { HudIndicatorColumn } = runtime.importModule("src/platform/browser/ui/hud_indicator_column.js");
+    const { STATUS_LABELS } = runtime.importModule("src/game/presentation/status/status_labels.js");
+    const { CONFIG: liveConfig } = runtime.importModule("src/game/config/runtime/game_config.js");
+    let clock = 0;
+    const timers = new Map();
+    let nextTimer = 0;
+    const scheduler = {
+      setTimeout: (fn, ms) => { timers.set(++nextTimer, { fn, at: clock + ms, every: 0 }); return nextTimer; },
+      clearTimeout: (id) => timers.delete(id),
+      setInterval: (fn, ms) => { timers.set(++nextTimer, { fn, at: clock + ms, every: ms }); return nextTimer; },
+      clearInterval: (id) => timers.delete(id),
+    };
+    const advance = (toMs) => {
+      for (let guard = 0; guard < 10000; guard += 1) {
+        const due = [...timers].filter(([, timer]) => timer.at <= toMs).sort((a, b) => a[1].at - b[1].at)[0];
+        if (!due) break;
+        const [id, timer] = due;
+        clock = timer.at;
+        if (timer.every) timer.at += timer.every; else timers.delete(id);
+        timer.fn();
+      }
+      clock = toMs;
+    };
+    const definitions = { ...plain(liveConfig.statusEffects),
+      sick: { kind: "debuff", icon: "radiation", badge: true, durationSec: 30, stacking: "renew", maxStacks: 1, timeBase: "real",
+        modifiers: {} } };
+    const statuses = new PlayerStatusEffects({ now: () => clock, getDefinitions: () => definitions, scheduler });
+    const column = new HudIndicatorColumn({ documentRef: doc, mountNode: doc.body });
+    const icons = { create: (symbol, className) => { const icon = doc.createElement("svg"); icon.className = className;
+      icon.dataset.symbol = symbol; return icon; } };
+    const badges = new StatusHudBadges({ documentRef: doc, mountNode: column.element, statuses, icons, labels: STATUS_LABELS,
+      colors: () => ({ full: "rgb(0, 255, 0)", half: "rgb(255, 200, 0)", low: "rgb(255, 0, 0)" }), scheduler, now: () => clock });
+    const badgeList = () => column.element.children.filter((child) => child.classList.contains("hud-indicator--status"));
+    statuses.hold("gasMask", true);
+    assert.equal(badgeList().length, 0, "Q3: the gas mask shows no badge");
+    clock = 1000;
+    statuses.apply("vodka");
+    const [vodkaBadge] = badgeList();
+    assert(vodkaBadge && vodkaBadge.classList.contains("hud-indicator--buff") && vodkaBadge.classList.contains("hud-indicator--timed"),
+      "a drunk vodka shows a timed buff badge");
+    assert.equal(vodkaBadge.getAttribute("aria-label"), "Горілка");
+    assert.equal(vodkaBadge.children.find((child) => child.className === "hud-indicator__icon")?.dataset.symbol, "vodka");
+    assert.equal(JSON.stringify(["--hud-indicator-duration", "--hud-indicator-delay", "--hud-indicator-color-full",
+      "--hud-indicator-color-low"].map((key) => vodkaBadge.style.getPropertyValue(key))),
+    JSON.stringify(["600000ms", "0ms", "rgb(0, 255, 0)", "rgb(255, 0, 0)"]), "the fill runs for the status's whole time from now");
+    const fill = vodkaBadge.children[0];
+    assert.equal(fill.className, "hud-indicator__fill", "the fill lies under the icon");
+    assert.equal(fill.children.map((child) => child.className).join(),
+      "hud-indicator__tone hud-indicator__tone--half,hud-indicator__tone hud-indicator__tone--low", "two tones cross-fade the colour");
+    // The radio arrives after the first frame and still takes the first place.
+    const radioLate = new RadioHudIndicator({ documentRef: doc, mountNode: column.element, labels: RADIO_LABELS,
+      radio: { getStatus: () => indicatorStatus, subscribe: () => () => {} }, onActivate: () => {} });
+    assert(column.element.children[0].classList.contains("hud-indicator--radio"), "the radio is the first in the column");
+    // No DOM work between events: a minute of frames reading the statuses leaves the badge as it was.
+    const snapshot = () => JSON.stringify([vodkaBadge.className, vodkaBadge.children.length, vodkaBadge.children[0] === fill,
+      vodkaBadge.style.getPropertyValue("--hud-indicator-delay")]);
+    const before = snapshot();
+    for (let frame = 0; frame < 3600; frame += 1) { clock += 16; statuses.modifier("emission", "blur"); }
+    assert.equal(snapshot(), before, "no DOM writes between the status's events");
+    assert.equal([...timers.values()].filter((timer) => timer.every).length, 0, "no counter timer while it is closed");
+    // Q6: a tap shows the time left, rewritten once a second while open; a second tap hides it and stops the timer.
+    const count = vodkaBadge.children.find((child) => child.className === "hud-indicator__count");
+    vodkaBadge.click();
+    assert.equal([count.hidden, count.textContent].join(), "false,9:03", "a tap shows m:ss left");
+    advance(clock + 61000);
+    assert.equal(count.textContent, "8:02", "the open counter follows the time");
+    vodkaBadge.click();
+    assert.equal(count.hidden, true);
+    assert.equal([...timers.values()].filter((timer) => timer.every).length, 0, "closed: the counter timer stops");
+    // Renew: the fill starts again for the whole duration.
+    statuses.apply("vodka");
+    assert(vodkaBadge.children[0] !== fill && vodkaBadge.children[0].className === "hud-indicator__fill", "a renew restarts the fill");
+    assert.equal(vodkaBadge.style.getPropertyValue("--hud-indicator-delay"), "0ms");
+    statuses.apply("sick");
+    const sickBadge = badgeList()[1];
+    assert(sickBadge.classList.contains("hud-indicator--debuff"), "Q4: a debuff in the same column with the danger outline");
+    assert.equal(sickBadge.getAttribute("aria-label"), "sick (дебаф)");
+    // The end: a fade, then the badge is gone.
+    advance(clock + 30001);
+    assert(sickBadge.classList.contains("hud-indicator--ending") && sickBadge.parentNode === column.element, "an ended status fades");
+    advance(clock + 300);
+    assert.equal(sickBadge.parentNode, null, "and is removed after the fade");
+    assert.equal(badgeList().length, 1, "the vodka stays");
+    // A badge built while a status is half gone starts its fill at that point (negative delay).
+    badges.dispose();
+    assert.equal(badgeList().length, 0, "dispose removes the badges");
+    clock += 1000;
+    const rebuilt = new StatusHudBadges({ documentRef: doc, mountNode: column.element, statuses, icons, labels: STATUS_LABELS,
+      colors: () => ({ full: "g", half: "y", low: "r" }), scheduler, now: () => clock });
+    assert.equal(badgeList()[0].style.getPropertyValue("--hud-indicator-delay"), "-31301ms", "the time already gone");
+    rebuilt.dispose();
+    radioLate.dispose();
+    column.dispose();
+    statuses.dispose();
+    // The fill and its colours animate transform and opacity only (the compositor), never a colour or a size.
+    const css = runtime.read("src/game/presentation/styles/hud/hud-indicator.css").replace(/\s+/gu, " ");
+    for (const name of ["hud-indicator-drain", "hud-indicator-tone-half", "hud-indicator-tone-low"]) {
+      const body = css.match(new RegExp(`@keyframes ${name} \\{(.*?\\})\\s*\\}`, "u"))?.[1] ?? "";
+      const properties = [...body.matchAll(/([a-z-]+):/gu)].map((match) => match[1]);
+      assert(properties.length > 0 && properties.every((property) => property === "transform" || property === "opacity"),
+        `${name} animates transform/opacity only`);
+    }
+    assert(/\.hud-indicator__fill \{[^}]*transform-origin: 50% 100%;/u.test(css), "the fill drains from the top down");
+    assert(/\.hud-indicator--debuff \{[^}]*border-color: var\(--ui-danger\);/u.test(css), "a debuff has the danger outline");
+  }
+
   // TK-152: power button blocked when no battery / empty battery
   let powerBlockedCalls = 0;
   let powerOnCalls = 0;

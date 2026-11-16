@@ -312,7 +312,15 @@ actions share one compact Grid without the parameter rows' dashed separators.
 An opposite scene gesture closes the visible zone before a later gesture can open the other. House
 wheel bursts produce one vertical command and never pan horizontally. Sheets reach the bottom edge
 and share the dock's outer width; dock side insets are 20px mobile / 40px desktop, with reserved content
-space above its buttons. HUD/toolbar borders share `--ui-control-border-*` tokens. Index and DEV compose
+space above its buttons. HUD/toolbar borders share `--ui-control-border-*` tokens.
+HUD indicators (spec 142 D12, spec 181 D3, `hud-indicator.css`): the `hud-indicators` column under the clock places
+them (fixed, flex column, `pointer-events: none` except on the circles); each `hud-indicator` circle owns its look. The
+radio (informational) is prepended first; status badges (`--status`, `--buff` / `--debuff` with the danger outline)
+follow in start order. A timed status's `hud-indicator__fill` drains by `transform: scaleY` from the bottom and changes
+colour by cross-fading two `hud-indicator__tone` layers' opacity (compositor only; the colours are the degradation
+palette at 100/50/20 %, set once per badge as `--hud-indicator-color-*`), run by `--hud-indicator-duration` and a
+negative `--hud-indicator-delay`; `hud-indicator__count` is the tap countdown styled as `inventory-toggle__item-count`.
+Index and DEV compose
 `GameToolbar`; its version badge stays aligned with the bottom actions, keeps their height and clips
 excess text while shrinking horizontally. Hidden actions consume no row space.
 House's footer remains accessible as compact icon buttons. One upward gesture reveals all names;

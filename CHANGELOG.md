@@ -2,6 +2,11 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.51.36 - Status badge in the HUD (spec 181 stage C, TK-343)
+
+- A drunk vodka shows a round badge with a bottle under the radio: its green fill drains from the top down as the time runs out, turns yellow and red, and the badge fades away at the end; a tap shows the time left.
+- The radio and the statuses share one column under the clock; debuffs get a red outline. The fill is a CSS animation: no per-frame work.
+
 ## v0.51.35 - Vodka halves what you see of the emission (spec 181 stage B, TK-342)
 
 - The emission's screen effect gets the full emission strength; the vodka weakens its output: exactly half the darkness and the blur at any phase (before, 50 % at the input showed only 20–30 % outside the peak), the blur keeps the emission's rhythm; the gas mask still shows nothing.
@@ -45,8 +50,3 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 
 - DevTools «Діагностика» → «РАНДОМАЙЗЕР»: «Дощ», «Шторм», «Туман» and «Пориви» run the game's own weather and wind models on the location's current settings — share of time, events per hour, length, peak strength, intervals and their spread; rain in and out of a storm, storms with lightning, gusts in clear weather, rain and storm.
 - The report now shows right under «Запустити» (it was hidden in a closed section's description).
-
-## v0.51.26 - «Конфіг» shows the whole CONFIG (spec 180 stage E, TK-334)
-
-- DevTools «Конфіг»: every CONFIG group in the code's order with the code's keys — `debug` too; keys the game identifies data by (`id`, `name`, `icon`, `backgroundColor` …) are shown read-only. Only the catalogs merged into CONFIG stay in «Бази».
-- Text lists (`input.keys.*`, `fog.phases`), empty lists and null values (`player.equipment.*Id`) now have rows in every config tree.

@@ -931,6 +931,8 @@
 │  │     │  ├── victory_view_model_builder.js
 │  │     │  ├── victory_weight_scale_renderer.js
 │  │     │  └── victory_window.js
+│  │     ├── status
+│  │     │  └── status_labels.js
 │  │     ├── styles
 │  │     │  ├── auto-switch.css
 │  │     │  ├── degradation_color_resolver.js
@@ -1118,9 +1120,11 @@
 │           ├── game_stage_layout.js
 │           ├── game_toolbar.js
 │           ├── hold_charges.js
+│           ├── hud_indicator_column.js
 │           ├── radio_hud_indicator.js
 │           ├── startup_failure_screen.js
 │           ├── startup_load_meter.js
+│           ├── status_hud_badges.js
 │           └── time_display.js
 └── vendor
    └── pixi

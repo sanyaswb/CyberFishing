@@ -23,7 +23,7 @@ export const STATUS_EFFECTS = {
   // Протигаз у слоті (spec 181 Q3: без значка — його видно в слоті): ефектів викиду немає; закид дозволяє сам слот.
   gasMask: {
     kind: "buff",
-    icon: "gasMask",
+    icon: "gas-mask",
     badge: false,
     durationSec: 0,
     stacking: "renew",

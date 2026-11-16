@@ -62,6 +62,9 @@ import { resolveSessionSeed } from "../../engine/random/session_seed.js";
 import { EmissionExposure } from "../../game/application/world/emission_exposure.js";
 import { PlayerStatusEffects } from "../../game/application/world/player_status_effects.js";
 import { EquipmentStatusSource } from "../../game/application/world/equipment_status_source.js";
+import { HudIndicatorColumn } from "../../platform/browser/ui/hud_indicator_column.js";
+import { StatusHudBadges } from "../../platform/browser/ui/status_hud_badges.js";
+import { STATUS_LABELS } from "../../game/presentation/status/status_labels.js";
 import { EmissionScreenEffect } from "../../game/presentation/weather/emission_screen_effect.js";
 import { EmissionVeilDomRenderer } from "../../platform/browser/dom/emission_veil_dom_renderer.js";
 import { WindModel } from "../../game/domain/weather/wind_model.js";
@@ -1912,12 +1915,17 @@ export class GameCompositionRoot {
     inventory.setBusyDevices({
       rootInstanceIds: () => systems.chum.rootInstanceIdsAway(),
     });
+    // Spec 181 D3: the HUD indicator column under the clock — the radio first, then the status badges.
+    const indicatorColumn = this.#uiSurface ? own(new HudIndicatorColumn({ documentRef: this.#documentTarget,
+      mountNode: this.#uiSurface.mountRoot })) : null;
     systems.radio = this.#composeRadio({
       own,
       inventory,
       devicePower,
       weather: systems.env,
+      mountNode: indicatorColumn?.element ?? null,
     });
+    if (indicatorColumn) this.#composeStatusBadges({ own, mountNode: indicatorColumn.element });
     this.#composeGeigerCounter({ own, environment: systems.env });
     // A device card's charge is its battery's (null without a battery: no bar); a battery card reads its live charge directly.
     inventory.setDeviceChargeProvider?.((deviceItem) => {
@@ -1934,7 +1942,7 @@ export class GameCompositionRoot {
   // Spec 142: the field radio receiver, a feature loaded after the first frame (spec 157 R12): the asset load plan
   // warms it up after ready, the radio's editor asks for it on first use. Until it arrives there is no HUD indicator and
   // no radio controls; a radio left on in the preferences starts once it has.
-  #composeRadio({ own, inventory, devicePower, weather }) {
+  #composeRadio({ own, inventory, devicePower, weather, mountNode }) {
     const config = () => this.#config.radio || {};
     // DEV only: the main parameters of the enabled sound effects as sliders (TK-098); null in production.
     const tuning = this.#createRadioEffectTuning?.({ config }) || null;
@@ -1952,7 +1960,7 @@ export class GameCompositionRoot {
             inventory,
             devicePower,
             weather,
-            mountNode: this.#uiSurface?.mountRoot || this.#documentTarget.body,
+            mountNode: mountNode || this.#uiSurface?.mountRoot || this.#documentTarget.body,
             onActivate: () => this.#radioEditorOpener?.(),
             tuning,
           }),
@@ -1962,6 +1970,25 @@ export class GameCompositionRoot {
       feature.radio.setBiting(this.#stateName === "biting"),
     );
     return radio;
+  }
+
+  // Spec 181 D3 (TK-343): the player's statuses as round badges under the radio; the fill's colours come from the
+  // degradation palette (full, half, a fifth left).
+  #composeStatusBadges({ own, mountNode }) {
+    const palette = new DegradationColorResolver({ configProvider: () => this.#config.degradationColors || {} });
+    const color = (percent, fallback) => { const resolved = palette.resolvePercent(percent);
+      return resolved.available ? resolved.cssColor : fallback; };
+    own(new StatusHudBadges({
+      documentRef: this.#documentTarget,
+      mountNode,
+      statuses: this.#playerStatuses(),
+      icons: composeHudIcons({ documentRef: this.#documentTarget, assets: this.#assets }),
+      labels: STATUS_LABELS,
+      colors: () => ({ full: color(100, "var(--ui-success)"), half: color(50, "var(--ui-warning)"),
+        low: color(20, "var(--ui-danger)") }),
+      scheduler: this.#windowTarget,
+      now: () => this.#windowTarget.performance.now(),
+    }));
   }
 
   #playerStatuses() {

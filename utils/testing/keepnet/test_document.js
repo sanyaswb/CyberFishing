@@ -26,6 +26,11 @@ class TestElement {
   get textContent() { return this.text + this.children.map((child) => child.textContent).join(""); }
   append(...children) { for (const child of children) { child.remove(); child.parentNode = this; this.children.push(child); } }
   appendChild(child) { this.append(child); return child; }
+  // DOM contract: the nodes go before the first child, in their order.
+  prepend(...children) {
+    const first = this.children.find((child) => !children.includes(child)) ?? null;
+    for (const child of children) this.insertBefore(child, first);
+  }
   insertBefore(child, reference) {
     if (reference == null) return this.appendChild(child);
     if (reference.parentNode !== this) throw new Error("insertBefore reference is not a child");

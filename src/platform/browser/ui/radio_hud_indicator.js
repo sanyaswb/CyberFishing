@@ -30,7 +30,8 @@ export class RadioHudIndicator {
     svg.append(wave);
     button.append(svg);
     button.addEventListener("click", () => onActivate?.());
-    mountNode.appendChild(button);
+    // Spec 181 D3: the first of the HUD indicator column (it arrives after the first frame, statuses may be there).
+    mountNode.prepend(button);
     this.#button = button;
     this.#unsubscribe = radio.subscribe((status) => this.#update(status));
     this.#update(radio.getStatus());
