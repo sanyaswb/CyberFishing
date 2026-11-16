@@ -11,6 +11,7 @@ import { ItemShopModule } from "./modules/item_shop_module.js";
 import { OverlaySettingsModule } from "./modules/overlay_settings_module.js";
 import { ConfigModule } from "./modules/config_module.js";
 import { DebugModule } from "./modules/debug_module.js";
+import { StatusEffectsModule } from "./modules/status_effects_module.js";
 import { SceneModule } from "./modules/scene_module.js";
 import { ZoneEditorModule } from "./modules/zone_editor_module.js";
 import { DatabaseModule } from "./modules/database_module.js";
@@ -72,6 +73,8 @@ export class DevTools {
       radio = null,
       weather = null,
       keepnet = null,
+      // Spec 181 D5: the player's statuses (StatusEffectsModule) or null.
+      statuses = null,
       scene = null,
       zoneEditorState = null,
       zoneEditorFiles = null,
@@ -135,7 +138,7 @@ export class DevTools {
     const shop = typeof grantCatalogItem === "function" ? new ItemShopModule({ items: catalogs.items, grantCatalogItem, assets }) : null;
     this.#pages = [
       { id: "game", title: "Гра", icon: "hook", navigation: true, empty: "",
-        modules: [shop, new DebugModule({ config, keepnet })] },
+        modules: [shop, statuses ? new StatusEffectsModule({ config, statuses }) : null, new DebugModule({ config, keepnet })] },
       { id: "config", title: "Конфіг", icon: "sliders", empty: "", modules: [new ConfigModule({ config })] },
       { id: "data", title: "Бази", icon: "database", empty: "",
         modules: [new DatabaseModule({ catalogs }),

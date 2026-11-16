@@ -2727,6 +2727,58 @@ function choiceRow(options, value, path) {
   rawUi.dispose?.();
 }
 
+// --- Spec 181 D5 (TK-344): «СТАТУСИ» gives and takes the player's statuses, its descriptions edit them live -----------
+{
+  const statusUi = new DevToolsUI(() => {}, {}, null, null, null, document.body, createElement("div"));
+  const host = createElement("div");
+  statusUi.body.appendChild(host);
+  const { StatusEffectsModule } = runtime.importModule("src/dev/tools/modules/status_effects_module.js");
+  const { PlayerStatusEffects } = runtime.importModule("src/game/application/world/player_status_effects.js");
+  const { CONFIG: gameConfig } = runtime.importModule("src/game/config/runtime/game_config.js");
+  const config = { statusEffects: JSON.parse(JSON.stringify(gameConfig.statusEffects)) };
+  let clock = 0;
+  const statuses = new PlayerStatusEffects({ now: () => clock, getDefinitions: () => config.statusEffects,
+    scheduler: { setTimeout: () => 1, clearTimeout() {} } });
+  statuses.hold("gasMask", true, { source: "gasMask" });
+  // The edits write into the live config, as DevConfigEditService does.
+  const edits = { update: (path, value) => { let node = config; const keys = path.slice(1);
+    for (const key of keys.slice(0, -1)) node = node[key]; node[keys.at(-1)] = value; },
+  isOverridden: () => false, resetParameter() {},
+  read: (path) => path.slice(1).reduce((node, key) => node?.[key], config) };
+  const createSection = (label, parent, path, options) => statusUi.createSection(label, parent, true, null, path, options);
+  // The tree double keeps ConfigTreeRenderer.render(obj, parent, path): it records what the module hands it.
+  const rendered = [];
+  const tree = { render: (obj, parent, path) => rendered.push({ obj, path: path.join(".") }) };
+  new StatusEffectsModule({ config, statuses }).mount(host, { ui: statusUi, createSection, tree, edits });
+  const button = (label) => byClass("devtools__action", host).find((element) => element.innerText === label);
+  const activeText = () => byClass("devtools__row", host).filter((row) => row.children[0]?.dataset.devtoolsKey &&
+    ["vodka", "gasMask", "активні"].includes(row.children[0].dataset.devtoolsKey))
+    .map((row) => `${row.children[0].dataset.devtoolsKey}=${byClass("devtools__value", row)[0]?.innerText}`);
+  assert.equal(JSON.stringify(activeText()), JSON.stringify(["gasMask=баф · без таймера (gasMask) · emission.vignette 0, " +
+    "emission.blur 0, emission.blurRate 1"]), "the gas mask held by its slot is shown");
+  assert.ok(button("Видати: vodka") && !button("Видати: gasMask") && !button("Зняти: gasMask"),
+    "a timed status can be given; a held one belongs to its source");
+  button("Видати: vodka").click();
+  assert.ok(statuses.has("vodka"), "«Видати» applies the status");
+  assert.ok(activeText().includes("vodka=баф · ще 10:00 · emission.vignette 0.5, emission.blur 0.5, emission.blurRate 1"),
+    "the active vodka with its time left and modifiers");
+  // Deep sections open as drill-ins outside the module's host (DevToolsUI), so the row is looked up in the whole panel.
+  assert.ok(rendered.length === 1 && rendered[0].obj === config.statusEffects && rendered[0].path === "CONFIG.statusEffects",
+    "the descriptions are the live CONFIG.statusEffects as a tree of parameters");
+  edits.update(["CONFIG", "statusEffects", "vodka", "modifiers", "emission", "vignette"], 0.3);
+  assert.equal(statuses.modifier("emission", "vignette"), 0, "the gas mask still wins (product)");
+  statuses.hold("gasMask", false);
+  assert.equal(statuses.modifier("emission", "vignette"), 0.3, "a live edit reaches the active vodka at once");
+  button("Зняти: vodka").click();
+  assert.equal(statuses.has("vodka"), false, "«Зняти» ends it");
+  statuses.hold("gasMask", true, { source: "gasMask" });
+  button("Видати: vodka").click();
+  button("Зняти всі").click();
+  assert.equal(JSON.stringify(statuses.list().map((entry) => entry.id)), JSON.stringify(["gasMask"]),
+    "«Зняти всі» ends the timed ones, the slot keeps the gas mask's");
+  statusUi.dispose?.();
+}
+
 // --- TK-335: the RANDOMIZER's report is visible right after «Запустити» ------------------------------------------------
 {
   const randomUi = new DevToolsUI(() => {}, {}, null, null, null, document.body, createElement("div"));

@@ -1805,6 +1805,8 @@ export class GameCompositionRoot {
                         systems.env?.triggerWindGust?.() ?? false,
                     },
                     // DEV keepnet section (TK-227): fill to a share of the capacity through the ordinary keep/release commands.
+                    // Spec 181 D5: the player's statuses for «СТАТУСИ» (give, take, the active ones).
+                    statuses: this.#playerStatusesPort(),
                     keepnet: {
                       getView: () => this.#sessionServices.liveBait.getView(),
                       keepCatch: (fish) =>
@@ -1989,6 +1991,19 @@ export class GameCompositionRoot {
       scheduler: this.#windowTarget,
       now: () => this.#windowTarget.performance.now(),
     }));
+  }
+
+  // Spec 181 D5: the DEV port of the player's statuses (no subscribe: DevTools redraws on its own buttons).
+  #playerStatusesPort() {
+    const statuses = this.#playerStatuses();
+    return Object.freeze({
+      list: () => statuses.list(),
+      definition: (id) => statuses.definition(id),
+      remainingSec: (id) => statuses.remainingSec(id),
+      apply: (id, options) => statuses.apply(id, options),
+      remove: (id) => statuses.remove(id),
+      clear: () => statuses.clear(),
+    });
   }
 
   #playerStatuses() {

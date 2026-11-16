@@ -176,3 +176,8 @@
   зносу (`DegradationColorResolver` на 100/50/20 %), раз на значок. Оновлення (renew) — новий елемент заливки (анімації
   починаються знову). Кінець — клас `--ending` і прибирання через 300 мс (таймер, бо `transitionend` у прихованій
   вкладці ненадійний). Q5 (будинок) — ще не реалізовано: будинку немає; правило записане для етапу I spec 179.
+- **Етап D (TK-344, v0.51.37).** `StatusEffectsModule` (`src/dev/tools/modules/status_effects_module.js`) на сторінці
+  «Гра» між магазином і DEBUG; DEV-порт `#playerStatusesPort()` (list, definition, remainingSec, apply, remove, clear —
+  без subscribe: розділ перемальовує «Активні» після своїх кнопок і на «↻ Оновити»). Статус, який тримає джерело
+  (протигаз), показано, але не видається й не знімається тут. Описи — `tree.render(CONFIG.statusEffects)`; глибокі гілки
+  відкриваються як drill-in (правила DevToolsUI).

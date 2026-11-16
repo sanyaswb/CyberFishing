@@ -2,6 +2,10 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.51.37 - DevTools «СТАТУСИ» (spec 181 stage D, TK-344)
+
+- DevTools «Гра» → «СТАТУСИ»: the active buffs and debuffs with their time left and modifiers, «Видати» / «Зняти» / «Зняти всі», and the descriptions (`CONFIG.statusEffects`) as live parameters — the vodka's duration and shares change at once.
+
 ## v0.51.36 - Status badge in the HUD (spec 181 stage C, TK-343)
 
 - A drunk vodka shows a round badge with a bottle under the radio: its green fill drains from the top down as the time runs out, turns yellow and red, and the badge fades away at the end; a tap shows the time left.
@@ -45,8 +49,3 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 ## v0.51.28 - Weather selector starts at «Всі» and keeps its choice (TK-333.2)
 
 - DevTools «ПОГОДА»: the selector opens at «Всі»; a choice of «Загальні» or a location stays when DevTools is closed and opened again (until the page reloads).
-
-## v0.51.27 - RANDOMIZER probes for rain, storm, fog and gusts (spec 180 stage F, TK-335)
-
-- DevTools «Діагностика» → «РАНДОМАЙЗЕР»: «Дощ», «Шторм», «Туман» and «Пориви» run the game's own weather and wind models on the location's current settings — share of time, events per hour, length, peak strength, intervals and their spread; rain in and out of a storm, storms with lightning, gusts in clear weather, rain and storm.
-- The report now shows right under «Запустити» (it was hidden in a closed section's description).
