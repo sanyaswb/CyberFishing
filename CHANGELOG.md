@@ -2,6 +2,10 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.52.14 - Full-power touch aim start off by default (TK-365.2)
+
+- An aim switched on by a tap waits at power 0 again and a downward swipe raises the power; the full-power start stays as a DevTools switch (casting.touchAim.startAtFullPower).
+
 ## v0.52.13 - Double tap to the map's edge before aiming (TK-366.1)
 
 - Without an aim, a double tap in the left or right half of the screen takes the camera at once to that edge of the map; no aim starts. While aiming, a double tap removes the aim as before.
@@ -42,7 +46,3 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 ## v0.52.5 - In God mode a cast no longer lands outside the castable zone (TK-362.2)
 
 - With God mode on, its infinite-casting flag accepted any random point of the accuracy circle, land included, so a cast at the edge of the castable mask could land outside the green zone. The landing point is now always tested for water; God mode lifts only the distance limit (also for the legacy click cast). Game-cycle report unchanged.
-
-## v0.52.4 - The tackle no longer gets stuck on land over a mask stair (TK-362.1)
-
-- Near a stair of the castable zone's mask the tackle could step diagonally past the stair's corner onto land during drift, a bite or a fight, and then never move again. Each step is now tested where it ends, and a tackle that is off the water comes back when reeled in. Game-cycle report unchanged.

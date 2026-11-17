@@ -387,6 +387,8 @@ assert.equal(casts, 0);
   const { CONFIG } = runtime.importModule("src/game/config/runtime/game_config.js");
   const { CastPowerAim } = runtime.importModule("src/game/application/casting/cast_power_aim.js");
   const casting = JSON.parse(JSON.stringify(CONFIG.casting));
+  // TK-365.2: the full-power start is a test switch, off by default.
+  assert.equal(casting.touchAim.startAtFullPower, false, "the full-power start is off by default");
   const width = 1000;
   const pans = [];
   const aim = new CastPowerAim({ config: { casting }, projector: null, getWaterMetric: () => null,
