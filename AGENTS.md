@@ -145,8 +145,12 @@ Before any work affecting design, UI markup, CSS, SVG, HUD, screens or DEV inter
   margin, TK-222).
 - **Gameplay changes** need a `docs/gameplay_backlog.md` entry and an unchanged game-cycle report or an owner-approved
   re-baseline with its reason (DEVELOPMENT_RULES "Gameplay changes").
-- **Shell edits:** prefer the file tools; large heredocs with quotes or backticks break in this shell, so write a small
-  script file and run it.
+- **Shell edits** (owner, 2026-11-18: «Зроби так щоб таких проблем не виникало»): no heredocs (`<<`) and no multi-line
+  or long `node -e` / `node -p` scripts in the shell — quotes, backslashes and `\n` get mangled. Edit project files with
+  the Edit tool; a scripted change is a `.cjs` file written with the Write tool into the session scratchpad and run with
+  `node <file>`; a commit message is written to a file and committed with `git commit -F <file>`. Only short one-line
+  `node -e` checks stay inline. The agent's local hook (`.claude/hooks/block-fragile-shell.cjs`, untracked) blocks the
+  rest.
 
 ## Development history
 
