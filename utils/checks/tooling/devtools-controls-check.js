@@ -2810,6 +2810,14 @@ function choiceRow(options, value, path) {
   assert.ok(godText.includes("ВІРТУАЛЬНА ПІДМОТКА 1.5 м/с") && godText.includes("25 %") && godText.includes("300 м"),
     "with the pole's virtual reel values and the reel's reserve");
   assert.ok(rowAt("CONFIG.debug.godMode.infiniteCasting"), "the God mode switches stay in the section");
+  // TK-364.2: a live refresh with the same values does not rewrite the warning.
+  const firstGodLine = byClass("devtools__alert-line", godAlert)[0];
+  let godLineWrites = 0;
+  let godLineText = firstGodLine.innerText;
+  Object.defineProperty(firstGodLine, "innerText", { configurable: true, get: () => godLineText,
+    set: (value) => { godLineWrites += 1; godLineText = value; } });
+  for (let refresh = 0; refresh < 3; refresh += 1) debugModule.refreshLive();
+  assert.equal(godLineWrites, 0, "live refreshes with unchanged values leave the warning's text alone");
   godConfig.debug.godMode.infiniteCastingLine.poleRetrieveSpeedMetersPerSec = 2;
   debugModule.refreshLive();
   assert.ok(byClass("devtools__alert-line", godAlert).some((line) => line.innerText.includes("ВІРТУАЛЬНА ПІДМОТКА 2 м/с")),

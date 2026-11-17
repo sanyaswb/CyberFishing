@@ -197,6 +197,17 @@ for (const State of [WaitingState, BitingState]) {
   assert.equal(godPole.getState().virtualLineMeters, 0, "the virtual line is wound back completely");
   assert.ok(Math.abs(step(godPole, 30) - 20) < 0.01, "then the pole's own line holds the fish, never shorter");
   godPole.setVirtualReelHolding(false);
+  // TK-364.1: a break loses at most the tackle's own line, not the God mode reserve or the pole's virtual line.
+  const wholeLoss = { range: (low) => low };
+  const breakReel = new LineSystem({ rod, reel, config: {}, lineStats, castDistanceCalculator: calculator, godModeLine: godLine });
+  step(breakReel, 60);
+  assert.equal(breakReel.calculateBreakLossMeters({ rng: wholeLoss }), 20, "a God mode reel break loses at most its 20 m line");
+  const breakPole = new LineSystem({ rod, reel: pole, config: {}, lineStats, castDistanceCalculator: calculator, godModeLine: godLine });
+  step(breakPole, 60);
+  assert.equal(breakPole.calculateBreakLossMeters({ rng: wholeLoss }), 20, "a God mode pole break loses at most its own line");
+  const breakNormal = new LineSystem({ rod, reel, config: {}, lineStats, castDistanceCalculator: calculator });
+  step(breakNormal, 12);
+  assert.equal(breakNormal.calculateBreakLossMeters({ rng: wholeLoss }), 12, "without God mode the loss is as before");
 
   // FightSessionFactory hands the God mode line only while infiniteCasting is on.
   const physicsConfig = Object.fromEntries(["getReelDragConfig", "getRodPullConfig", "getRodHoldConfig", "getReelConfig",

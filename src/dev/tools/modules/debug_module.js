@@ -7,7 +7,8 @@ export class DebugModule {
   #keepnet;
   // TK-364: the God mode infinite casting warning (created when «godMode» is first opened) and its shown lines.
   #godNotice = null;
-  #godNoticeShown = null;
+  // TK-364.2: the values the warning shows (reserve, pole speed, min share); the text is rewritten only when they change.
+  #godNoticeShown = [NaN, NaN, NaN];
 
   // keepnet: the keepnet's DEV port (KeepnetDevSection) or null.
   constructor({ config, keepnet = null }) {
@@ -59,13 +60,25 @@ export class DebugModule {
   // works then — above all for a pole, which has no reel and is wound by a virtual one with the shown values.
   refreshLive() {
     if (!this.#godNotice) return;
-    const text = this.#godNoticeText();
-    this.#godNotice.hidden = text === null;
-    if (text !== null && text !== this.#godNoticeShown) {
-      this.#godNoticeShown = text;
-      const lines = Array.from(this.#godNotice.children).filter((child) => child.className === "devtools__alert-line");
-      text.forEach((line, index) => { if (lines[index]) lines[index].innerText = line; });
-    }
+    const god = this.#config.debug?.godMode;
+    const visible = !!(god?.enabled && god.infiniteCasting);
+    this.#godNotice.hidden = !visible;
+    if (!visible || this.#sameGodNoticeValues(god.infiniteCastingLine || {})) return;
+    const lines = Array.from(this.#godNotice.children).filter((child) => child.className === "devtools__alert-line");
+    this.#godNoticeText().forEach((line, index) => { if (lines[index]) lines[index].innerText = line; });
+  }
+
+  // Whether the warning already shows these values; remembers them when not.
+  #sameGodNoticeValues(line) {
+    const shown = this.#godNoticeShown;
+    const reserve = Number(line.reserveMeters) || 0;
+    const speed = Number(line.poleRetrieveSpeedMetersPerSec) || 0;
+    const share = Number(line.poleMinEfficiency) || 0;
+    if (shown[0] === reserve && shown[1] === speed && shown[2] === share) return true;
+    shown[0] = reserve;
+    shown[1] = speed;
+    shown[2] = share;
+    return false;
   }
 
   #renderGodMode(parent, { ui, createSection, tree }) {
@@ -73,7 +86,7 @@ export class DebugModule {
     createSection("godMode", parent, path, { render: (content) => {
       tree.render(this.#config.debug.godMode, content, path);
       const text = this.#godNoticeText();
-      this.#godNoticeShown = text;
+      this.#sameGodNoticeValues(this.#config.debug.godMode.infiniteCastingLine || {});
       this.#godNotice = ui.createAlert("Нескінченний закид: ліска в боротьбі", text || ["", "", ""], content,
         ["CONFIG", "debug", "godMode", "infiniteCastingNotice"]);
       this.#godNotice.hidden = text === null;

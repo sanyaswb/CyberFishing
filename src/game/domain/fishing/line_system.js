@@ -46,6 +46,8 @@ export class LineSystem {
   // A pole keeps its line (#poleNormalMeters) and gets a virtual line beyond it: the fish takes it while the player does
   // not pull, the player's pull winds it back (virtual reel) down to the pole's own line, then the pole is as usual.
   #godModeLine = null;
+  // TK-364.1: the tackle's own line (before the God mode reserve); a break never loses more than this.
+  #ownLineMeters = 0;
   #poleNormalMeters = 0;
   #poleVirtualMeters = 0;
   #virtualReelHolding = false;
@@ -80,6 +82,7 @@ export class LineSystem {
     this.#reelLineMeters = reachModel.lineLengthMeters;
     this.#totalLengthMeters = reachModel.maxReachMeters;
     this.#godModeLine = godModeLine;
+    this.#ownLineMeters = this.#totalLengthMeters;
     if (godModeLine && this.#hasReel) {
       this.#totalLengthMeters = Math.max(this.#totalLengthMeters, this.#godReserveMeters());
     }
@@ -374,7 +377,8 @@ export class LineSystem {
   }
 
   calculateBreakLossMeters({ rng = null } = {}) {
-    const released = Math.max(0, Number(this.#releasedMeters) || 0);
+    // TK-364.1: God mode's reserve or a pole's virtual line is not on the tackle; only its own line can be lost.
+    const released = Math.min(this.#ownLineMeters, Math.max(0, Number(this.#releasedMeters) || 0));
     if (released <= 0) return 0;
 
     const preserved = this.#randomRange(rng, 0, released);
