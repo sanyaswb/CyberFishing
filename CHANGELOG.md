@@ -2,6 +2,11 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.52.1 - DevTools weather «Керування»: live switches, sliders when on (TK-360)
+
+- «Стан і керування» is now «Керування». A strength slider shows under Дощ/Шторм/Туман/Викид/Зорепад only while it is on; «Болід зараз» is the last row and on a phone closes DevTools so the bolide is seen falling.
+- «The fog comes on after the starfall goes off»: the switches showed the state of the last redraw. The starfall's test switch moves the clock to 23:00 (the fog's ×3 window), a fog started by itself and the next redraw revealed it. The switches now follow the live state while the panel is open. Game-cycle report unchanged.
+
 ## v0.52.0 - Emission, player statuses, starfall and the weather review
 
 - Minor release of v0.51.1–0.51.57 (owner-approved minor). Emission (spec 179): a state of the location with radiation, its background and red rain, fiery ash, darkening and pulsing blur, the radiation hiss (denser at the edges) and Geiger clicks, the gas mask and vodka. Player statuses (spec 181): buffs and debuffs with live parameters, round HUD badges with a draining fill and countdown, the radiation debuff, the radio badge with its drawing, wave and battery charge, DevTools «СТАТУСИ».
@@ -41,7 +46,3 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 
 - DevTools «ПОГОДА» → «Стан і керування»: «Зорепад (ніч)» moves the game clock to the night and holds the starfall at «Зорепад: сила, %»; «Болід зараз» under it. «ЗОРЕПАД» keeps the night state and its settings only.
 - Measured: rain at 100 % with a storm plus a triple-dense starfall and a bolide cost about 0.1 ms of JavaScript a frame on a desktop; the starfall adds two small draw calls.
-
-## v0.51.49 - DevTools «ЗОРЕПАД» (spec 182 stage E, TK-354)
-
-- DevTools «ПОГОДА» → «ЗОРЕПАД»: the night now (plain or a starfall night with its periods and the bolide), the strength by hand (stars at any hour), «Зорепадна ніч зараз», «Болід зараз», the stars and the bolide look (general) and the night settings (location), live.

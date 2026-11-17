@@ -16,11 +16,16 @@ import {
 // DevTools «ПОГОДА» (spec 172, 175, 179; spec 180 stage C, TK-327).
 // - On top: the selector «Загальні» | «Всі» | a location (spec 180 D4, D11; TK-333): «Загальні» — the general settings,
 //   a location — only what belongs to it, «Всі» — both together in every section (the location picked last).
-// - «Стан і керування» of the location the game runs (D10): the live state of every process, then a slider per element
-//   (rain, storm, fog, emission, ash, wind, waves, current) — moving a slider holds that element by hand (no separate
-//   «manual» switches); under the rain's and the ash's sliders, collapsed, their look at strength 100 for the selected
-//   location (or the general one) — each slider stands at the real value within its range (D16). The action buttons
-//   (events now, emission parts, a gust, a strike, «↺ Автоматична погода») come last.
+// - «Керування» (TK-360; was «Стан і керування») of the location the game runs (D10): the live state of every process,
+//   then a slider per element (rain, storm, fog, emission, starfall, ash, wind, waves, current) — moving a slider holds
+//   that element by hand (no separate «manual» switches). An element with a switch (rain, storm, fog, emission,
+//   starfall) shows its slider only while it is on (TK-360). Under the rain's and the ash's sliders, collapsed, their
+//   look at strength 100 for the selected location (or the general one) — each slider stands at the real value within
+//   its range (D16). The action buttons (emission parts, a gust, a strike, «↺ Автоматична погода») come next, and
+//   «Болід зараз» last (on a phone it closes the panel, so the bolide is seen falling).
+// - TK-360: the switches follow the live state. While the panel is open, refreshLive() (each live update) compares
+//   which elements are on — one integer — with what the section shows, and redraws it only when that changed: a fog
+//   that started by itself shows at once, not at the next redraw caused by another control.
 // - Sections by element: ДОЩ, ШТОРМ, ВІТЕР, ТУМАН, ВИКИД, РАДІАЦІЯ (TK-337), ПОПІЛ, ВОДА, ПОЧАТОК І ПОРОГИ — general and location parts by
 //   the selector; a section with edits not in the code is marked «· змінено» and has «↺ Скинути розділ до коду» (D8).
 // - «Збереження» (spec 175, spec 180 stage D, TK-332): the file holds the level the selector shows — «Загальні»: the
@@ -29,7 +34,7 @@ import {
 // TK-327.1 (owner): only an element's section opens inside (a different section); everything in it — its groups and
 // the trees' nested objects — opens in place under it (inline). The selector is buttons on top (no empty wrapper); each
 // event (rain, storm, fog, emission) has a switch: on starts a random event as the game would, off ends it, and the
-// event's generated course (duration, peak, strength, lightning) shows on top of «Стан і керування».
+// event's generated course (duration, peak, strength, lightning) shows on top of «Керування».
 const GENERAL = "Загальні";
 const ALL = "Всі";
 const EVENT_PHASES = Object.freeze({ rise: "розгін", peak: "пік", fall: "затухання", idle: "немає" });
@@ -71,6 +76,8 @@ const seconds = (value) => `${Math.round(Number(value) || 0)} с`;
 const clamp = (value, min, max) => Math.max(min, Math.min(max, Number(value) || 0));
 // TK-354.1: the game hour the «Зорепад» test switch jumps to (inside the starfall's night 21:00–5:00).
 const STARFALL_TEST_HOUR = 23;
+// TK-360: one bit per element with a switch — which of them are on (refreshLive compares it with the shown one).
+const LIVE_BITS = Object.freeze({ rain: 1, storm: 2, fog: 4, emission: 8, starfall: 16 });
 
 export class WeatherDevSection {
   #ui;
@@ -100,6 +107,9 @@ export class WeatherDevSection {
   #starfallLevel = 70;
   #fadeSec = 5;
   #radiation = 50;
+  // TK-360: which switched elements are on in what the section shows (LIVE_BITS), -1 before the first draw.
+  #shownLive = -1;
+  #closeOnPhone;
   #onConfigUpdated = (event) => {
     const path = event?.detail?.path;
     if (!Array.isArray(path) || path[0] !== "CONFIG") return;
@@ -138,6 +148,7 @@ export class WeatherDevSection {
     gameVersion = "",
     now = () => new Date(),
     view = {},
+    closeOnPhone = () => {},
   }) {
     this.#ui = ui;
     this.#weather = weather;
@@ -156,6 +167,7 @@ export class WeatherDevSection {
     this.#resetWeather = resetWeather;
     this.#gameVersion = gameVersion;
     this.#now = now;
+    this.#closeOnPhone = closeOnPhone;
     // TK-333.2 (owner): «Всі» by default, and the choice outlives the section — the panel draws a new section every
     // time it opens, so the choice lives in view (owned by the module, which lives as long as the page).
     this.#view = view;
@@ -202,6 +214,29 @@ export class WeatherDevSection {
     this.#savingSection.clear();
     this.#marks = [];
     this.#content = null;
+    this.#shownLive = -1;
+  }
+
+  // TK-360: called on every live update while the panel is open; redraws only when an element turned on or off.
+  refreshLive() {
+    if (!this.#content || this.#shownLive < 0) return;
+    if (this.#liveState() !== this.#shownLive) this.#fill();
+  }
+
+  // Which switched elements are on now (LIVE_BITS); reads the snapshots, allocates nothing.
+  #liveState() {
+    const events = this.#weather.getModel()?.snapshot?.events;
+    const emission = this.#weather.getEmissionModel?.()?.snapshot ?? null;
+    const starfall = this.#weather.getStarfallModel?.()?.snapshot ?? null;
+    let state = 0;
+    for (const [kind] of EVENTS) if (this.#eventOn(events?.[kind])) state |= LIVE_BITS[kind];
+    if (emission && emission.phase !== "idle") state |= LIVE_BITS.emission;
+    if (starfall?.held === true) state |= LIVE_BITS.starfall;
+    return state;
+  }
+
+  #eventOn(event) {
+    return event?.active === true || event?.held === true;
   }
 
   // The location the selector names (or the game's, with «Загальні»): export, import and the location parts use it.
@@ -784,14 +819,16 @@ export class WeatherDevSection {
 
   #renderControls(model, content) {
     const weather = model.snapshot;
-    const controls = this.#createSection("Стан і керування", content, ["WEATHER", "controls"]);
+    const controls = this.#createSection("Керування", content, ["WEATHER", "controls"]);
+    this.#shownLive = this.#liveState();
     this.#renderGenerated(weather, this.#weather.getEmissionModel?.()?.snapshot ?? null, controls);
     this.#renderStatus(weather, controls);
     // D10: moving a slider holds that element by hand; «↺ Автоматична погода» returns everything.
     for (const [kind, label] of EVENTS) {
       const event = weather.events?.[kind];
+      const shown = this.#eventOn(event);
       // TK-327.1: on starts a random event (as the game would), off ends it and releases its slider's hold.
-      this.#ui.createSwitcherRow(label, event?.active === true || event?.held === true, controls, (on) => {
+      this.#ui.createSwitcherRow(label, shown, controls, (on) => {
         if (on) model.start(kind);
         else {
           model.hold(kind, null, { fadeSec: this.#fadeSec });
@@ -799,6 +836,8 @@ export class WeatherDevSection {
         }
         this.#fill();
       }, ["WEATHER", "controls", kind]);
+      // TK-360 (owner): the strength appears once the element is on.
+      if (!shown) continue;
       if (event?.held) this.#levels[kind] = Math.round(event.strength * 100);
       this.#ui.createRangeRow(`${label}: сила, %`, this.#levels[kind], controls, (value) => {
         this.#levels[kind] = clamp(value, 0, 100);
@@ -809,7 +848,8 @@ export class WeatherDevSection {
     const emission = this.#weather.getEmissionModel?.() ?? null;
     if (emission) {
       const snapshot = emission.snapshot;
-      this.#ui.createSwitcherRow("Викид", snapshot.phase !== "idle", controls, (on) => {
+      const shown = snapshot.phase !== "idle";
+      this.#ui.createSwitcherRow("Викид", shown, controls, (on) => {
         if (on) emission.force("onset");
         else {
           emission.holdIntensity(null);
@@ -817,11 +857,13 @@ export class WeatherDevSection {
         }
         this.#fill();
       }, ["WEATHER", "controls", "emission"]);
-      if (snapshot.intensityHeld) this.#levels.emission = Math.round(snapshot.intensity * 100);
-      this.#ui.createRangeRow("Викид: сила, %", this.#levels.emission, controls, (value) => {
-        this.#levels.emission = clamp(value, 0, 100);
-        emission.holdIntensity(this.#levels.emission / 100);
-      }, ["WEATHER", "controls", "emissionStrength"]);
+      if (shown) {
+        if (snapshot.intensityHeld) this.#levels.emission = Math.round(snapshot.intensity * 100);
+        this.#ui.createRangeRow("Викид: сила, %", this.#levels.emission, controls, (value) => {
+          this.#levels.emission = clamp(value, 0, 100);
+          emission.holdIntensity(this.#levels.emission / 100);
+        }, ["WEATHER", "controls", "emissionStrength"]);
+      }
     }
     this.#renderStarfallControls(controls);
     if (this.#weather.holdAsh) {
@@ -850,11 +892,12 @@ export class WeatherDevSection {
       this.#fadeSec = Math.max(0, Number(value) || 0);
     });
     this.#renderActions(model, emission, controls);
+    this.#renderBolide(controls);
   }
 
   // TK-354.1 (owner): «Зорепад» for a test — on: the game clock jumps to the night (unless it is already inside the
-  // starfall's window) and the starfall is held at the slider's strength; off: the night's own plan again. Under it the
-  // strength and «Болід зараз».
+  // starfall's window) and the starfall is held at the slider's strength; off: the night's own plan again. Under it,
+  // while on, the strength (TK-360).
   #renderStarfallControls(controls) {
     const starfall = this.#weather.getStarfallModel?.() ?? null;
     if (!starfall) return;
@@ -867,13 +910,21 @@ export class WeatherDevSection {
       } else starfall.hold(null);
       this.#fill();
     }, ["WEATHER", "controls", "starfall"]);
+    if (!snapshot.held) return;
     this.#ui.createRangeRow("Зорепад: сила, %", this.#starfallLevel, controls, (value) => {
       this.#starfallLevel = clamp(value, 0, 100);
       starfall.hold(this.#starfallLevel / 100);
-      this.#ui.syncValue?.(["WEATHER", "controls", "starfall"], true);
     }, ["WEATHER", "controls", "starfallStrength"]);
-    this.#ui.createButtonRow("Болід зараз", controls, () => starfall.bolideNow(), false, "",
-      ["WEATHER", "controls", "bolide"]);
+  }
+
+  // TK-360 (owner): «Болід зараз» is the last row; on a phone the panel closes at once, so the bolide is seen falling.
+  #renderBolide(controls) {
+    const starfall = this.#weather.getStarfallModel?.() ?? null;
+    if (!starfall) return;
+    this.#ui.createButtonRow("Болід зараз", controls, () => {
+      starfall.bolideNow();
+      this.#closeOnPhone();
+    }, false, "", ["WEATHER", "controls", "bolide"]);
   }
 
   #renderWindControls(controls) {

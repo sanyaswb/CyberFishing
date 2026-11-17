@@ -38,9 +38,29 @@ rule as something the next change can follow.
 | R22 | Each switch of a manual control holds only its own process; never one shared freeze or a switch that sets another process. A check flips every switch in every order and asserts the others keep their course. | I-22 |
 | R23 | A DevTools section that redraws its container while a child drill-in (`depth >= MAX_INLINE_SECTION_DEPTH`) may be open must wrap the rebuild in `DevToolsUI.preserveDrill`, and UI tests of nested modules must mount at the real production section depth (e.g. `СЦЕНА WebGL` -> `ПОГОДА`). | I-23 |
 | R24 | A double of `DevToolsUI` that records what a section shows keeps its placement contract (`#insertTreeNode`: rows before nested sections and slots, whatever order they were made in) and asserts the order the user reads. A mark derived from session edits («· змінено», a reset button) follows `config-updated` in place, not only the next redraw. Found by looking at the live panel, which the fake hid. | I-24 |
+| R26 | A DevTools control that shows a live state (an on/off switch of a process that also starts and ends by itself) follows that state while the panel is open, not only the redraw caused by another control: a cheap comparison on each live update, a redraw only on change. A check changes the state without touching a control and asserts the switch at once. | I-26 |
 | R25 | A check that compares a filtered list with the list it came from keeps each item's own index (map to [value, index] before filtering); comparing by the filtered position mixes items up and can pass or fail by luck. | I-25 |
 
 <a id="i-25"></a>
+
+## I-26 · 2026-11-17 · up to v0.52.0: «after the starfall goes off the fog comes on» (TK-360)
+
+- **Seen:** the owner in DevTools «ПОГОДА» → «Стан і керування»: switching «Зорепад (ніч)» off turned «Туман» on.
+- **Cause:** no link in the game: `StarfallNight` and `WeatherModel` share nothing (reproduced in Node on the real
+  `weather/test.js`). `WeatherDevSection.#renderControls` (`src/dev/tools/weather_dev_section.js`) drew each switch from the
+  snapshot of the moment it redrew and never again (a «↻ Оновити» button stood for that). «Зорепад (ніч)» on jumps the game
+  clock to 23:00 — the fog's ×3 hour window (19–24); at 23:00 a fog starts by itself within a minute in 53 of 200 seeded runs
+  (22 of 200 at noon). The redraw caused by the starfall switch going off was the first to show it, so it looked caused by
+  that switch. Any state that started or ended by itself between two redraws looked the same.
+- **Fix (TK-360, v0.52.1):** `refreshLive()` — on each `debug-live-update` while the panel is open (`DevTools` calls it on
+  every page module that has it) the section compares which switched elements are on (one integer, no allocation) with what
+  it shows and redraws only when that changed. The section is now «Керування», a strength slider shows only while its
+  element is on, «Болід зараз» is last and closes the panel on a phone.
+- **Rule R26:** a control that shows a live state follows it while the panel is open; redraw on change only.
+- **Check:** `utils/checks/gameplay/weather-check.js` (TK-360: every switch alone and in every pair over the real
+  `WeatherModel`, `EmissionModel`, `StarfallNight` changes only its own element; a fog that starts by itself shows at once)
+  and `utils/checks/tooling/devtools-controls-check.js` (TK-360: live updates reach the section while open; the bolide closes
+  the panel on a coarse pointer). Both fail on v0.52.0.
 
 ## I-25 · 2026-11-16 · up to v0.51.54: the ash's «slow and smooth» check compared the wrong embers (TK-358)
 

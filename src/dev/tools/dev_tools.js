@@ -60,8 +60,12 @@ export class DevTools {
     if (this.#isDisposed) return;
     this.#liveData = event.detail || null;
     // Spec 174 B4: a new fish on the hook (or its tree's shape) redraws only its own sections.
-    if (this.#isOpen && this.#activeFish.hasChanged) this.#activeFish.refresh();
+    if (!this.#isOpen) return;
+    if (this.#activeFish.hasChanged) this.#activeFish.refresh();
+    // TK-360: modules that show a live state follow it (each redraws only what changed).
+    for (const module of this.#liveModules) module.refreshLive();
   };
+  #liveModules = [];
 
   constructor(
     config,
@@ -131,7 +135,8 @@ export class DevTools {
     } });
     const createSection = (label, parent, path = null, options = {}) => this.#createSection(label, parent, path, options);
     this.#context = Object.freeze({ ui, createSection, edits: this.#edits,
-      tree: new ConfigTreeRenderer({ ui, schema, aliases: parameterAliases, edits: this.#edits, createSection }) });
+      tree: new ConfigTreeRenderer({ ui, schema, aliases: parameterAliases, edits: this.#edits, createSection }),
+      closeOnPhone: () => this.#closeOnPhone() });
 
     this.#activeFish = new ActiveFishModule({ getHookedFish: () => this.#liveData?.hookedFish,
       policy: new ActiveFishDevToolsVisibilityPolicy() });
@@ -166,6 +171,7 @@ export class DevTools {
       { id: "panel", title: "Панель", icon: "gear", empty: "",
         modules: [new PanelSettingsModule({ storageCache, apply: (options) => ui.setPanelOptions(options) })] },
     ].map((page) => ({ ...page, modules: page.modules.filter(Boolean).map(assertDevPanelModule) }));
+    this.#liveModules = this.#pages.flatMap((page) => page.modules).filter((module) => typeof module.refreshLive === "function");
     this.#activePage = storageCache.get(ACTIVE_PAGE_KEY, "game");
 
     tooltipProvider.ready.then(() => {
@@ -197,6 +203,12 @@ export class DevTools {
 
   open() {
     if (!this.#isDisposed && !this.#isOpen) this.toggle();
+  }
+
+  // TK-360: on a phone (a coarse pointer — the media query the panel's phone layout uses) the panel covers the scene, so
+  // a control that shows something in the scene closes it; on a computer the panel stays.
+  #closeOnPhone() {
+    if (this.#isOpen && globalThis.matchMedia?.("(pointer: coarse)")?.matches === true) this.toggle();
   }
 
   // Spec 177 (TK-296): open DevTools (if closed), expand ancestor sections and highlight the parameter green.

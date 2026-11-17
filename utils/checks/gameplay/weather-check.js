@@ -559,7 +559,8 @@ const step = (model, seconds, clock = null, dt = 0.1) => {
     'id="weather-wave-speed"',
     'data-overlay-control="devtools-link"',
     'data-overlay-activate="release"',
-    'data-devtools-path="WEATHER.controls.stormStrength"',
+    // TK-360: the weather rows link to the switches (a strength slider shows only while its element is on).
+    'data-devtools-path="WEATHER.controls.storm"',
     'data-devtools-path="WEATHER.controls.windDirection"',
     'data-devtools-path="WEATHER.controls.windStrength"',
     'data-devtools-path="CONFIG.spawns.timePhases.night.startHour"',
@@ -809,7 +810,8 @@ const step = (model, seconds, clock = null, dt = 0.1) => {
   const stageCEnv = {
     time: 14,
     phase: "day",
-    weather: { precipitation: "clear", rain: 0, storm: 0, fog: 0, cloud: 0, strikeSerial: 0, frozen: false },
+    weather: { precipitation: "clear", rain: 0, storm: 0, fog: 0, cloud: 0, strikeSerial: 0, frozen: false,
+      events: { rain: { active: false }, storm: { active: false }, fog: { active: false } } },
     wind: { ...liveWind.snapshot, state: "strong", forced: true },
   };
   const waterCfg = JSON.parse(JSON.stringify(GAME.canvas.water));
@@ -905,9 +907,11 @@ const step = (model, seconds, clock = null, dt = 0.1) => {
       },
       start(kind) {
         calls.push(["start", kind]);
+        stageCEnv.weather.events[kind].active = true;
       },
       stop(kind) {
         calls.push(["stop", kind]);
+        stageCEnv.weather.events[kind].active = false;
       },
       releaseAll() {
         calls.push(["releaseAll"]);
@@ -967,11 +971,20 @@ const step = (model, seconds, clock = null, dt = 0.1) => {
       "Weather Chances clamps fogChance to [0, 1] and calls updateConfig",
     );
     // TK-327.1: an event's switch starts a random event (like the game) and ends it; no «подія зараз» buttons.
+    // TK-360 (owner): a strength slider appears only once its element is on, and goes when it is off.
+    assert(!rowsByPath.has("WEATHER.controls.stormStrength") && !rowsByPath.has("WEATHER.controls.rainStrength") &&
+      !rowsByPath.has("WEATHER.controls.fogStrength") && !rowsByPath.has("WEATHER.controls.rainAt100"),
+    "nothing on: no strength sliders (and no rain «at 100» group)");
     rowsByPath.get("WEATHER.controls.storm").onChange(true);
     assert(calls.some(([k, kind]) => k === "start" && kind === "storm"), "the storm switch on starts a random storm");
+    assert(rowsByPath.has("WEATHER.controls.stormStrength"), "the storm on: its slider appears");
+    rowsByPath.delete("WEATHER.controls.stormStrength");
     rowsByPath.get("WEATHER.controls.storm").onChange(false);
     assert(calls.some(([k, kind]) => k === "stop" && kind === "storm"), "off ends it");
+    assert(!rowsByPath.has("WEATHER.controls.stormStrength"), "off: the slider goes");
     assert(!rowsByPath.has("WEATHER.controls.stormStart"), "no «Шторм: подія зараз» button");
+    rowsByPath.get("WEATHER.controls.storm").onChange(true);
+    rowsByPath.get("WEATHER.controls.rain").onChange(true);
     calls.length = 0;
     // Spec 180 D1, D10: a slider holds its own element only (no «manual» switches); the storm's never touches the rain.
     rowsByPath.get("WEATHER.controls.stormStrength").onChange(40);
@@ -1865,6 +1878,129 @@ const step = (model, seconds, clock = null, dt = 0.1) => {
     starButtons.get("WEATHER.controls.bolide")();
     assert.equal(starNight.snapshot.bolideSerial, bolidesBefore + 1, "«Болід зараз» under the slider drops one");
     starSection.dispose();
+  }
+
+  // TK-360 (owner): «Керування» over the real weather, emission and starfall. Cause of «after the starfall goes off the
+  // fog comes on»: the switches showed the state of the last redraw; the starfall's test switch jumps the clock to 23:00
+  // (the fog's ×3 window), a fog starts by itself, and the next redraw (the starfall off) revealed it. Now: every switch
+  // changes only its own element; a state that changes by itself shows at once (refreshLive); a strength slider only
+  // while its element is on; «Болід зараз» last, closing the panel on a phone.
+  {
+    const { WeatherModel: LiveWeather } = require("../../../src/game/domain/weather/weather_model.js");
+    const { EmissionModel: LiveEmission } = require("../../../src/game/domain/weather/emission_model.js");
+    const { StarfallNight: LiveStarfall } = require("../../../src/game/domain/weather/starfall_night.js");
+    const settings360 = JSON.parse(JSON.stringify(MAP_DB.test.weather));
+    const weather = new LiveWeather({ rng: new SeededRng("tk360"), getSettings: () => settings360,
+      getGeneralSettings: () => GAME_CONFIG.weather });
+    const emission = new LiveEmission({ rng: new SeededRng("tk360:emission"), getSettings: () => settings360 });
+    const star = new LiveStarfall({ rng: new SeededRng("tk360:starfall"), getSettings: () => settings360.starfall });
+    const clock = { hour: 12, timeScale: 240 };
+    const tick = (ms) => {
+      weather.update(ms, clock, null);
+      emission.update(ms);
+      star.update(clock, emission.snapshot.phase !== "idle");
+    };
+    tick(16);
+    let controlsNode = null, rows = [], renders = 0, closed = 0;
+    const titles = [], switches360 = new Map(), ranges360 = new Map(), buttons360 = new Map();
+    const inControls = (parent, at) => { if (parent === controlsNode) rows.push(at); };
+    const section360 = new WeatherDevSection({
+      view: { selected: "test" },
+      ui: {
+        createInfoRow() {}, releaseValueBindings() {}, setSectionLabel() {},
+        createSelectRow(label, choices, value, parent, onChange, path) { inControls(parent, path.join(".")); },
+        createInputRow(label, value, parent) { inControls(parent, `input:${label}`); },
+        addParameter(parent, { path }) { if (path) inControls(parent, path.join(".")); },
+        createSwitcherRow(label, value, parent, onChange, path) {
+          switches360.set(path.join("."), { value, onChange });
+          inControls(parent, path.join("."));
+        },
+        createRangeRow(label, value, parent, onChange, path) {
+          ranges360.set(path.join("."), onChange);
+          inControls(parent, path.join("."));
+        },
+        createButtonRow(label, parent, onClick, navigation, icon, path) {
+          const at = path ? path.join(".") : label;
+          buttons360.set(at, onClick);
+          inControls(parent, at);
+          return { style: {} };
+        },
+      },
+      weather: { locationId: "test", getModel: () => weather, getWind: () => null, getEmissionModel: () => emission,
+        getStarfallModel: () => star, setGameHour: (next) => { clock.hour = next; star.update(clock); return true; } },
+      config: () => settings360, locationConfig: () => settings360, locationsMap: () => ({ test: { weather: settings360 } }),
+      general: () => ({ rain: GAME_CONFIG.canvas.rain, ash: GAME_CONFIG.canvas.ash }),
+      createSection: (label, parent, path) => {
+        const content = { replaceChildren() {}, appendChild() {} };
+        if (path?.join(".") === "WEATHER.controls") {
+          controlsNode = content;
+          titles.push(label);
+          rows = [];
+          renders += 1;
+          switches360.clear();
+          ranges360.clear();
+        }
+        return content;
+      },
+      renderConfigTree() {},
+      closeOnPhone: () => { closed += 1; },
+    });
+    section360.render({ replaceChildren() {}, appendChild() {} });
+    assert.equal(titles.at(-1), "Керування", "the section is «Керування» (was «Стан і керування»)");
+    const KINDS360 = ["rain", "storm", "fog", "emission", "starfall"];
+    const live = () => {
+      const events = weather.snapshot.events;
+      const on = KINDS360.filter((kind) => kind === "emission" ? emission.snapshot.phase !== "idle"
+        : kind === "starfall" ? star.snapshot.held : events[kind].active || events[kind].held);
+      return on.join();
+    };
+    const shown = () => KINDS360.filter((kind) => switches360.get(`WEATHER.controls.${kind}`)?.value === true).join();
+    const sliders = () => KINDS360.filter((kind) => ranges360.has(`WEATHER.controls.${kind}Strength`)).join();
+    assert.deepEqual([live(), shown(), sliders()], ["", "", ""], "noon, nothing on: no switch on and no strength slider");
+    assert.ok(!rows.includes("WEATHER.controls.rainAt100"), "the rain's «at 100» group waits for the rain too");
+    const flip = (kind, on) => {
+      switches360.get(`WEATHER.controls.${kind}`).onChange(on);
+      tick(16);
+      section360.refreshLive();
+    };
+    // Every switch alone and every pair: a switch turns its own element on or off and nothing else.
+    for (const first of KINDS360) {
+      flip(first, true);
+      assert.deepEqual([live(), shown(), sliders()], [first, first, first], `«${first}» on: only it is on, with its slider`);
+      for (const second of KINDS360) {
+        if (second === first) continue;
+        const both = KINDS360.filter((kind) => kind === first || kind === second).join();
+        flip(second, true);
+        assert.deepEqual([live(), shown()], [both, both], `«${second}» on beside «${first}»: both on`);
+        flip(second, false);
+        assert.deepEqual([live(), shown(), sliders()], [first, first, first], `«${second}» off: «${first}» alone stays on`);
+      }
+      flip(first, false);
+      assert.deepEqual([live(), shown(), sliders()], ["", "", ""], `«${first}» off: nothing else came on`);
+    }
+    assert.equal(clock.hour, 23, "the starfall's test switch moved the clock into the night (the fog's ×3 window)");
+    // A fog that starts by itself shows on its switch at once; an unchanged state never redraws.
+    const before = renders;
+    section360.refreshLive();
+    assert.equal(renders, before, "refreshLive with nothing changed draws nothing");
+    let seconds360 = 0;
+    while (!weather.snapshot.events.fog.active && seconds360 < 3600) {
+      tick(1000);
+      seconds360 += 1;
+    }
+    assert.ok(weather.snapshot.events.fog.active, "at 23:00 a fog starts by itself (seeded)");
+    section360.refreshLive();
+    assert.ok(switches360.get("WEATHER.controls.fog").value === true && ranges360.has("WEATHER.controls.fogStrength"),
+      "the fog's switch shows it at once, with its slider — no other control had to redraw the section");
+    const redrawn = renders;
+    section360.refreshLive();
+    assert.equal(renders, redrawn, "and only once");
+    // «Болід зараз» is the last row; it drops a bolide and closes the panel on a phone.
+    assert.equal(rows.at(-1), "WEATHER.controls.bolide", "«Болід зараз» is the section's last row");
+    const bolides = star.snapshot.bolideSerial;
+    buttons360.get("WEATHER.controls.bolide")();
+    assert.deepEqual([star.snapshot.bolideSerial, closed], [bolides + 1, 1], "a bolide falls and the panel closes on a phone");
+    section360.dispose();
   }
 
   // TK-333.2 (owner): «Всі» by default; the choice outlives the section (the panel draws a new one when it opens again).

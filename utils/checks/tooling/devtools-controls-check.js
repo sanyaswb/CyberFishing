@@ -2572,6 +2572,50 @@ function choiceRow(options, value, path) {
   tools.dispose();
 }
 
+// --- TK-360: the open panel's live updates reach the weather; «Болід зараз» closes the panel on a phone ----------------
+{
+  const { DevTools } = runtime.importModule("src/dev/tools/dev_tools.js");
+  const liveUi = new DevToolsUI(() => {}, {}, null, null, null, document.body, createElement("div"));
+  let reads = 0;
+  let bolides = 0;
+  const events = { rain: { active: false }, storm: { active: false }, fog: { active: false } };
+  const weatherModel = { snapshot: { events, strikeSerial: 0, strikeVariant: 0, strikeDistance: 0 },
+    hold() {}, start() {}, stop() {}, releaseAll() {}, strike() {} };
+  const starfall = { snapshot: { held: false, strength: 0, inWindow: false, active: false, periodLevels: [] },
+    hold() {}, bolideNow: () => { bolides += 1; } };
+  const tools = new DevTools({ debug: {}, locations: { map: {} } }, { synchronize() {} }, {
+    catalogs: { items: {}, fishes: [], maps: {} },
+    settingsStore: null,
+    debugModulesSource: () => ({}),
+    storageCache: { get: (key, fallback) => fallback, set() {}, remove() {} },
+    weather: { locationId: "test", getModel: () => { reads += 1; return weatherModel; }, getWind: () => null,
+      getStarfallModel: () => starfall },
+    createUI: () => ({ ui: liveUi, tooltipProvider: { ready: new Promise(() => {}) } }),
+  });
+  const fireLive = () => { for (const listener of document.listeners.get("debug-live-update") ?? []) listener({ detail: {} }); };
+  fireLive();
+  assert.equal(reads, 0, "the panel closed: the weather is not read on live updates");
+  tools.toggle();
+  const fogRow = () => byClass("devtools__row", liveUi.body).find((row) => row.children[0]?.dataset?.devtoolsKey === "Туман");
+  const fogChecked = () => byClass("devtools__switch-input", fogRow())[0].checked;
+  assert.equal(fogChecked(), false, "no fog: its switch is off");
+  const readsBefore = reads;
+  fireLive();
+  assert.ok(reads > readsBefore, "open: a live update reaches the weather section");
+  events.fog.active = true;
+  fireLive();
+  assert.equal(fogChecked(), true, "a fog that started by itself shows on its switch with the next live update");
+  const bolideButton = () => byClass("devtools__action", liveUi.body).find((button) => button.innerText === "Болід зараз");
+  runtime.context.matchMedia = (query) => ({ matches: false, media: query });
+  bolideButton().click();
+  assert.deepEqual([bolides, tools.isOpen], [1, true], "on a computer «Болід зараз» drops a bolide and the panel stays");
+  runtime.context.matchMedia = (query) => ({ matches: query === "(pointer: coarse)", media: query });
+  bolideButton().click();
+  assert.deepEqual([bolides, tools.isOpen], [2, false], "on a phone it drops a bolide and closes the panel");
+  delete runtime.context.matchMedia;
+  tools.dispose();
+}
+
 // --- TK-304 (spec 174 C2): seven modules on a rail, one page shown, the choice remembered -----------------------------
 {
   const { DevTools } = runtime.importModule("src/dev/tools/dev_tools.js");

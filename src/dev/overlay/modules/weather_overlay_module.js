@@ -41,25 +41,26 @@ export class WeatherOverlayModule extends OverlayModule {
     html += this.plainRow("Опади", state, {
       color: "#ffffff",
       metricKey: "weather.precipitation",
+      // TK-360: links lead to the switches — a strength slider shows only while its element is on.
       devtoolsPath:
         reading.precipitation === "storm"
-          ? "WEATHER.controls.stormStrength"
-          : "WEATHER.controls.rainStrength",
+          ? "WEATHER.controls.storm"
+          : "WEATHER.controls.rain",
     });
     html += this.plainRow("Гроза 0…1", share(reading.storm), {
       color: "#ff8866",
       metricKey: "weather.storm",
-      devtoolsPath: "WEATHER.controls.stormStrength",
+      devtoolsPath: "WEATHER.controls.storm",
     });
     html += this.plainRow("Дощ 0…1", share(reading.rain), {
       color: "#88bbff",
       metricKey: "weather.rain",
-      devtoolsPath: "WEATHER.controls.rainStrength",
+      devtoolsPath: "WEATHER.controls.rain",
     });
     html += this.plainRow("Туман 0…1", share(reading.fog), {
       color: "#cccccc",
       metricKey: "weather.fog",
-      devtoolsPath: "WEATHER.controls.fogStrength",
+      devtoolsPath: "WEATHER.controls.fog",
     });
     const windStateLabel = WIND_STATE[reading.windState];
     const windText = `${WIND[reading.windDirection] ?? reading.windDirection}${

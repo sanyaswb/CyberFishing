@@ -4,9 +4,12 @@
 //   module.mount(host, context)  draws the module's sections into host (called on every full redraw);
 //   module.dispose()              optional: called once when DevTools is disposed (listeners, timers, open editors);
 //                                 a module that keeps a section between draws disposes the old one in mount().
+//   module.refreshLive()          optional (TK-360): called on every live update while the panel is open; a module that
+//                                 shows a live state compares it cheaply and redraws only what changed.
 //
 // context: { ui (DevToolsUI), createSection(label, parent, path, options) (a remembered disclosure),
-//            tree (ConfigTreeRenderer), edits (DevConfigEditService) }.
+//            tree (ConfigTreeRenderer), edits (DevConfigEditService),
+//            closeOnPhone() (TK-360: closes the panel on a phone, where it covers the scene) }.
 //
 // A module receives its own collaborators in its constructor (the game ports it shows or edits) and never reaches
 // another module.

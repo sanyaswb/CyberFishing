@@ -47,7 +47,12 @@ export class SceneModule {
     this.#weatherSection = null;
   }
 
-  #renderWeather(parent, { ui, createSection, tree, edits }) {
+  // TK-360: the weather's switches follow the live state.
+  refreshLive() {
+    this.#weatherSection?.refreshLive();
+  }
+
+  #renderWeather(parent, { ui, createSection, tree, edits, closeOnPhone }) {
     if (!this.#weather) return;
     this.#weatherSection?.dispose();
     const config = this.#config, base = this.#configRuntime?.baseConfig;
@@ -89,6 +94,7 @@ export class SceneModule {
       } : null,
       gameVersion: this.#gameVersion,
       view: this.#weatherView,
+      closeOnPhone,
     });
     this.#weatherSection.render(parent);
   }
