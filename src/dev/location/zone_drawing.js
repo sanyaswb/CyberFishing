@@ -1,4 +1,4 @@
-import { ZONE_PHYSICS_KEYS } from "./zone_category_colors.js";
+import { ZONE_PHYSICS_KEYS, ZONE_FREE_CATEGORIES } from "./zone_category_colors.js";
 import { cutZones, mergeTouchingZones } from "./zone_cell_shapes.js";
 
 const EPSILON = 1e-9;
@@ -134,8 +134,8 @@ export class ZoneDrawing {
     const map = this.#getMap(), locations = this.#config.locations, d = this.#draft;
     if (!map || !d) return null;
     const cellPx = map.getCellSize?.() ?? locations.cellSize, design = locations.designCellSize || cellPx;
-    // The castable area and the rain (spec 172 D4) may be drawn anywhere on the map; the others inside the castable area.
-    const area = d.category === "castable" || d.category === "rain" || d.category === "ash" || d.category === "sky"
+    // The castable area and the weather's zones may be drawn anywhere on the map; the others inside the castable area.
+    const area = ZONE_FREE_CATEGORIES.includes(d.category)
       ? { left: 0, top: 0, right: locations.baseResolution.width, bottom: locations.baseResolution.height }
       : map.getCastableBoundsVirtual(cellPx);
     const iMin = Math.ceil(area.left / cellPx - EPSILON), iMax = Math.floor(area.right / cellPx + EPSILON) - 1;

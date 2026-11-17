@@ -2,6 +2,10 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.51.57 - Zone editor categories from one list (TK-359)
+
+- The zone editor takes its categories from one place (their colours), and the weather zones drawn anywhere from one list, so a new zone category no longer needs edits in four files. Nothing changes on screen.
+
 ## v0.51.56 - DevTools weather fade no longer sticks (TK-358.1)
 
 - After a DevTools weather switch (rain, storm, fog) was turned off, its quick fade stayed for the rest of the session, so the natural events of that kind came and went faster than the location smoothSec. The fade now lasts only while held and until the release has arrived.
@@ -39,8 +43,3 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 ## v0.51.48 - The bolide (spec 182 stage D, TK-353)
 
 - At most once a starfall night, at any moment (quiet stretches too), a big star falls: a long wide bright tail with a glowing, slightly flickering head, slower and longer than the others; it fades like them. Its look is live in DevTools «Конфіг» → canvas → starfall → bolide.
-
-## v0.51.47 - Falling stars on the scene (spec 182 stage C, TK-352)
-
-- On a starfall night short bright streaks fly down at a slant in the sky zones, more or fewer as the night's strength rises and falls; a star that leaves the sky fades. They lie over the sky, under the water and the world; frames only while a star flies.
-- Their look is live in DevTools «Конфіг» → canvas → starfall (stars a minute, tail, speed, slant, colour).

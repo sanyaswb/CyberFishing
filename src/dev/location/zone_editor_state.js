@@ -1,3 +1,4 @@
+import { ZONE_CATEGORY_COLORS } from "./zone_category_colors.js";
 // Session-owned editor settings (spec 129, Revision 2). Showing never changes the gameplay's zone-enable switches.
 // locationId: the location the editor works on (spec 130 D1); loadedLocationId: the one on screen, the only one the
 // editor draws and drags (D2). enabled: the editor input mode, with the cell grid turned on; selection: the zone whose
@@ -8,6 +9,8 @@
 // switched on (TK-050); cellGrid*: the map's cells; depth*: the depth numbers in the cells.
 // The middle share of a zone (of its width and height) that moves the whole zone (Revision 3, R3-3).
 export const MOVE_SHARE = 0.3;
+
+const byCategory = (value) => Object.fromEntries(Object.keys(ZONE_CATEGORY_COLORS).map((category) => [category, value]));
 
 export class ZoneEditorState {
   revision = 0;
@@ -23,11 +26,12 @@ export class ZoneEditorState {
   spacingMeters = 1;
   cellGridOpacity = 0.25;
   depthOpacity = 0.7;
-  categories = { castable: false, collisions: false, snags: false, dynamic: false, rain: false, ash: false, sky: false };
-  #selectedIndices = { castable: 0, collisions: 0, snags: 0, dynamic: 0, rain: 0, ash: 0, sky: 0 };
-  #all = { castable: false, collisions: false, snags: false, dynamic: false, rain: false, ash: false, sky: false };
+  // TK-359: one entry per zone category (ZONE_CATEGORY_COLORS), not a list repeated by hand.
+  categories = byCategory(false);
+  #selectedIndices = byCategory(0);
+  #all = byCategory(false);
   selection;
-  editing = { castable: false, collisions: false, snags: false, dynamic: false, rain: false, ash: false, sky: false };
+  editing = byCategory(false);
   hovered = new Set();
   hoveredBound = -1;
   #zoneListeners = new Set();

@@ -9,7 +9,8 @@ import { clipZoneToCastable } from "../location/zone_castable_clip.js";
 import { findZonesBeyondMap, fitZonesToMap } from "../location/zone_map_bounds.js";
 import { DevSavingSection } from "./export/dev_saving_section.js";
 
-const CATEGORIES = Object.freeze(["castable", "collisions", "snags", "dynamic", "rain", "ash", "sky"]);
+// TK-359: the categories of ZONE_CATEGORY_COLORS, in its order.
+const CATEGORIES = Object.freeze(Object.keys(ZONE_CATEGORY_COLORS));
 const LABELS = Object.freeze({ castable: "Ігрова область (закидання)", collisions: "Перешкоди", snags: "Зачепи",
   dynamic: "Рухомі зони", rain: "Дощ (де падають краплі)", ash: "Попіл (де летить пил викиду)",
   sky: "Небо (де падають зорі)" });

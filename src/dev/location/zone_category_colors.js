@@ -13,6 +13,10 @@ export const ZONE_CATEGORY_COLORS = Object.freeze({
   sky: "#cfe6ff",
 });
 
+// TK-359: the categories drawn anywhere on the map (the others only inside the castable area): the castable area itself
+// and the weather's zones (rain, ash, sky).
+export const ZONE_FREE_CATEGORIES = Object.freeze(["castable", "rain", "ash", "sky"]);
+
 // The gameplay switch of each category (Revision 2): the editor lists, draws and drags a category only while it is on.
 export const ZONE_PHYSICS_KEYS = Object.freeze({
   castable: "enableCastable",

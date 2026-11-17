@@ -1,6 +1,7 @@
 // Release notes, newest first (unshift with every patch). DEV only: no production code reads them, and in the start's
 // bundle they cost 13 KB gzip (spec 160). dev.html publishes them with the version: window.CYBER_FISHING_PROJECT_VERSION.notes.
 export const PROJECT_RELEASE_NOTES = Object.freeze([
+  "TK-359: pre-push review — zone editor categories from ZONE_CATEGORY_COLORS, ZONE_FREE_CATEGORIES.",
   "TK-358.1: a DevTools hold fade (fadeSec) lasts only while held and until released; then the location smoothSec.",
   "TK-358: weather review — ScreenZoneSet, ZoneRectMask, BackgroundPlacement, SceneColor, number helpers; status dispose and radiation fixes.",
   "TK-357: bolide burst — flare, frozen fading tail, sparks; bolide.burst settings.",

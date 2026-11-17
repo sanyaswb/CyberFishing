@@ -295,6 +295,13 @@ const { WorldPerspective } = load("src/game/domain/locations/world_perspective.j
 const state = new ZoneEditorState();
 // TK-049: zone areas start hidden (and the depth numbers off); the checks below show every category explicitly.
 assert(Object.values(state.categories).every(shown => shown === false) && state.depth === false, "zones and depth start hidden");
+// TK-359: the editor knows every zone category of ZONE_CATEGORY_COLORS (no hand-kept list), the weather's zones drawn anywhere.
+{
+  const { ZONE_CATEGORY_COLORS, ZONE_FREE_CATEGORIES } = load("src/dev/location/zone_category_colors.js");
+  assert.equal(JSON.stringify(Object.keys(state.categories)), JSON.stringify(Object.keys(ZONE_CATEGORY_COLORS)), "every category has its show switch");
+  assert.equal(JSON.stringify(Object.keys(state.editing)), JSON.stringify(Object.keys(ZONE_CATEGORY_COLORS)), "and its edit switch");
+  assert.equal(JSON.stringify([...ZONE_FREE_CATEGORIES]), JSON.stringify(["castable", "rain", "ash", "sky"]), "the weather zones are drawn anywhere");
+}
 state.setFlag("enabled", true); assert(state.grid === false && state.cellGrid === true, "TK-050: enabling the editor shows the cell grid, not the perspective grid");
 state.setFlag("enabled", false);
 assert(!state.cellGrid && !state.grid, 'disabling the editor also disables its automatic grid');
