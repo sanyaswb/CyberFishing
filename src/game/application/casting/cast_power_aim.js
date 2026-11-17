@@ -423,7 +423,7 @@ export class CastPowerAim {
   }
 
   #applyKeyboardControls(input, dt) {
-    const dtSec = Math.min(0.1, Math.max(0, (Number(dt) || 0) / 1000));
+    const dtSec = this.#dtSec(dt);
     const powerDirection =
       (input?.castPowerIncrease || input?.dragIncrease ? 1 : 0) -
       (input?.castPowerDecrease || input?.dragDecrease ? 1 : 0);
@@ -480,7 +480,7 @@ export class CastPowerAim {
       0,
       Number(this.#cfg().powerAnchorReturnPxPerSecond) || swipePx * 6,
     );
-    const dtSec = Math.min(0.1, Math.max(0, dt / 1000));
+    const dtSec = this.#dtSec(dt);
     const maxStep = dtSec > 0 ? speed * dtSec : targetY - this.#startY;
     this.#startY = Math.min(targetY, this.#startY + maxStep);
   }
@@ -518,7 +518,7 @@ export class CastPowerAim {
 
     const easePower = Math.max(0.1, cfg.edgeScrollEasePower ?? 1.6);
     const maxSpeed = Math.max(0, cfg.edgeScrollMaxPxPerSecond ?? 900);
-    const dtSec = Math.min(0.1, Math.max(0, dt / 1000));
+    const dtSec = this.#dtSec(dt);
     const delta =
       direction * maxSpeed * Math.pow(this.#clamp(edgeRatio, 0, 1), easePower) * dtSec;
     this.#panViewport(delta);
@@ -651,9 +651,6 @@ export class CastPowerAim {
     return this.#clamp(Number(value) || 0, 0, width);
   }
 
-  // TK-093: an edge zone along each side of the game viewport leads the line towards that edge. From the zone's inner
-  // border the lead grows smoothly over rampDistancePx to maxLeadPx and stays there up to the edge. A viewport too
-  // narrow for two zones halves itself (zone = half the width, ramp = the same share of it), so the centre stays at 0.
   // TK-365: the power a click-armed aim waits with: full when casting.touchAim.startAtFullPower is on, else 0.
   #armedPower() {
     return this.#cfg().touchAim?.startAtFullPower === true ? 1 : 0;
@@ -674,7 +671,7 @@ export class CastPowerAim {
     const cfg = this.#cfg().touchAim || {};
     const viewport = this.#getViewportSize?.();
     const half = Math.max(1, viewport?.width || 1) / 2;
-    const dtSec = Math.min(0.1, Math.max(0, (Number(dt) || 0) / 1000));
+    const dtSec = this.#dtSec(dt);
     const dead = this.#clamp(Number(cfg.panDeadZoneRatio) || 0, 0, 0.95);
     const offset = this.#clamp((screenX - half) / half, -1, 1);
     const depth = this.#clamp((Math.abs(offset) - dead) / (1 - dead), 0, 1);
@@ -686,6 +683,14 @@ export class CastPowerAim {
     if (this.#touchPanVelocity !== 0) this.#panViewport(this.#touchPanVelocity * dtSec);
   }
 
+  // A frame's milliseconds as seconds, capped at 0.1 s (a hidden tab's long frame does not jump the aim or the camera).
+  #dtSec(dt) {
+    return Math.min(0.1, Math.max(0, (Number(dt) || 0) / 1000));
+  }
+
+  // TK-093: an edge zone along each side of the game viewport leads the line towards that edge. From the zone's inner
+  // border the lead grows smoothly over rampDistancePx to maxLeadPx and stays there up to the edge. A viewport too
+  // narrow for two zones halves itself (zone = half the width, ramp = the same share of it), so the centre stays at 0.
   #pointerScreenX(value) {
     const cfg = this.#cfg().pointerAim;
     const lead = cfg?.maxLeadPx ?? 80;
