@@ -232,6 +232,11 @@ export const CONFIG = {
     keyboardPowerChangePerSecond: 0.75,
     keyboardAimSpeedPxPerSecond: 420,
     pointerAim: { maxLeadPx: 80, edgeZonePx: 200, rampDistancePx: 100 },
+    // TK-363 (spec 183 D6): touch aim as a joystick. Horizontal swipe from the touch point beyond deadZonePx sets the
+    // speed (full at fullSpeedSwipePx); a still finger in the screen's edge band (share of width) pushes toward that
+    // edge; the speed changes by at most accelerationPxPerSecond2.
+    touchAim: { deadZonePx: 12, fullSpeedSwipePx: 140, maxSpeedPxPerSecond: 700, easePower: 1.6, edgeBandRatio: 0.12,
+      accelerationPxPerSecond2: 2400 },
     cancelPowerThreshold: 0,
     edgeScrollCenterRatio: 0.3,
     edgeScrollMaxPxPerSecond: 900,

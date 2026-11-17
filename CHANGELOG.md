@@ -2,6 +2,10 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.52.6 - Touch aim moves like a joystick (TK-363)
+
+- On a touch screen the cast aim no longer jumps under the finger. A held sideways swipe from the touch point moves it, faster for a longer swipe; a still finger near a screen edge pushes it toward that edge; it speeds up and slows down smoothly, and the cast goes where the aim is. Mouse unchanged. Values in casting.touchAim.
+
 ## v0.52.5 - In God mode a cast no longer lands outside the castable zone (TK-362.2)
 
 - With God mode on, its infinite-casting flag accepted any random point of the accuracy circle, land included, so a cast at the edge of the castable mask could land outside the green zone. The landing point is now always tested for water; God mode lifts only the distance limit (also for the legacy click cast). Game-cycle report unchanged.
@@ -42,7 +46,3 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 
 - The rain, water, ash and starfall share one implementation of their zones on screen, zone masks, background placement and colours; the weather modules use the engine number helpers. The look is unchanged.
 - Fixed: the player statuses are released with the game and a status renewed after that gets its end again; the radiation debuff appears once its description is back; the weather controls no longer duplicate DevTools «СТАТУСИ»; an ash check that compared the wrong embers.
-
-## v0.51.54 - The bolide can burn out (TK-357)
-
-- A bolide may now burn out before it leaves the sky (never before 20 % of its path): its head flares and is gone, its tail stops where it was and fades smoothly, and sparks fly off the flare, slowing and falling a little. Tunable in DevTools «Конфіг» → canvas → starfall → bolide → burst.

@@ -337,4 +337,53 @@ assert.equal(casts, 0);
   touchInput.dispose();
   equipment = {};
 }
-console.log("Scouting input passed: click/drag, mouse/touch/wheel, accumulated movement, inversion/distance, cancellation, equipped holds and clock shielding; spec 183 touch aiming.");
+// TK-363 (spec 183 D6): a touch aim never jumps to the finger. A waiting aim stays where it is when a touch lands
+// elsewhere; a held sideways swipe moves it at a speed that grows with the swipe and starts smoothly; a still finger in
+// the middle leaves it, at a screen edge pushes it toward that edge; the release casts where the aim is. The mouse keeps
+// placing the aim under the pointer.
+{
+  const { CONFIG } = runtime.importModule("src/game/config/runtime/game_config.js");
+  const { CastPowerAim } = runtime.importModule("src/game/application/casting/cast_power_aim.js");
+  const casting = JSON.parse(JSON.stringify(CONFIG.casting));
+  const width = 1000;
+  const aim = new CastPowerAim({ config: { casting }, projector: null, getWaterMetric: () => null,
+    getViewportSize: () => ({ width, height: 600 }), panViewport: null, rng: null });
+  const hold = (pointerType, startX, x, frames, y = 100) => {
+    const xs = [];
+    for (let frame = 0; frame < frames; frame += 1) {
+      aim.update({ pointerDown: true, pointerType, pointerStart: { x: startX, y: 100 }, pointerCurrent: { x, y } }, null, 16);
+      xs.push(aim.getVisualState().screenX);
+    }
+    return xs;
+  };
+  const release = (pointerType, x, y = 100) => aim.update({ pointerDown: false, pointerReleased: true, pointerType,
+    pointerRelease: { x, y }, pointerStart: { x, y: 100 }, pointerCurrent: { x, y } }, null, 16);
+  aim.arm(500);
+  assert.equal(hold("touch", 800, 800, 1)[0], 500, "a touch far from a waiting aim does not move it there");
+  release("touch", 800);
+  aim.arm(500);
+  const still = hold("touch", 500, 505, 30);
+  assert.equal(still[29], 500, "a still finger in the middle (inside the dead zone) leaves the aim");
+  release("touch", 505);
+  aim.arm(500);
+  const short = hold("touch", 500, 560, 40);
+  release("touch", 560);
+  aim.arm(500);
+  const long = hold("touch", 500, 700, 40);
+  assert.ok(long[0] - 500 < 2, "the aim starts moving smoothly, not with a jump");
+  assert.ok(short[39] > 500 && long[39] > short[39], "a held swipe to the right moves the aim right, a longer one faster");
+  for (let index = 1; index < long.length; index += 1) assert.ok(long[index] - long[index - 1] <= 700 * 0.016 + 1e-9, "never faster than the full speed");
+  const released = release("touch", 700, 300);
+  assert.equal(released.screenX, long[39], "the release casts from where the aim is, not from the finger");
+  aim.arm(500);
+  const left = hold("touch", 980, 860, 30);
+  assert.ok(left[29] < 500, "a swipe to the left from the right edge moves the aim left");
+  release("touch", 860);
+  aim.arm(500);
+  const edge = hold("touch", 995, 995, 30);
+  assert.ok(edge[29] > 500, "a still finger at the right edge pushes the aim right");
+  release("touch", 995);
+  assert.equal(hold("mouse", 300, 300, 1)[0], 300, "the mouse places the aim under the pointer as before");
+  release("mouse", 300);
+}
+console.log("Scouting input passed: click/drag, mouse/touch/wheel, accumulated movement, inversion/distance, cancellation, equipped holds and clock shielding; spec 183 touch aiming; touch aim moves like a joystick (TK-363).");

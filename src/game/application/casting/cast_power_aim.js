@@ -17,6 +17,9 @@ export class CastPowerAim {
   #keyboardActive = false;
   // Spec 183 D2: a touch aim that waits between touches (power 0 at #screenX until the next press).
   #armed = false;
+  // TK-363: a touch aim moves at a speed set by the finger, never jumps to it (#touchScreenX).
+  #touch = false;
+  #touchVelocity = 0;
   #leadSource;
   #zoneSource;
   #rampSource;
@@ -85,20 +88,25 @@ export class CastPowerAim {
     }
 
     if (input?.pointerDown) {
+      const touch = input.pointerType === "touch";
       if (!this.#active) {
         this.#startX = input.pointerStart.x;
         this.#startY = input.pointerStart.y;
         this.#initialStartY = input.pointerStart.y;
-        this.#screenX = this.#clampScreenX(input.pointerStart.x);
+        // TK-363: a waiting touch aim keeps its place; a new one starts where the finger touched.
+        if (!(touch && this.#armed)) this.#screenX = this.#clampScreenX(input.pointerStart.x);
         this.#screenY = input.pointerStart.y;
+        this.#touchVelocity = 0;
         this.#active = true;
       }
 
-      this.#screenX = this.#pointerScreenX(input.pointerCurrent.x);
+      this.#touch = touch;
+      if (touch) this.#screenX = this.#touchScreenX(input.pointerCurrent.x, dt);
+      else this.#screenX = this.#pointerScreenX(input.pointerCurrent.x);
       this.#screenY = input.pointerCurrent.y;
       this.#updateStartY(this.#screenY, dt);
       this.#power = this.#calculatePower(this.#screenY);
-      if (this.#applyEdgeScroll(this.#screenX, dt)) {
+      if (this.#applyEdgeScroll(this.#screenX, dt) && !touch) {
         this.#screenX = this.#pointerScreenX(input.pointerCurrent.x);
       }
       this.#updateVisual(mode);
@@ -106,7 +114,7 @@ export class CastPowerAim {
     }
 
     if (this.#active && input?.pointerReleased) {
-      this.#screenX = this.#pointerScreenX(input.pointerRelease.x);
+      if (!this.#touch) this.#screenX = this.#pointerScreenX(input.pointerRelease.x);
       this.#screenY = input.pointerRelease.y;
       this.#updateStartY(this.#screenY, 0);
       this.#power = this.#calculatePower(this.#screenY);
@@ -635,6 +643,37 @@ export class CastPowerAim {
   // TK-093: an edge zone along each side of the game viewport leads the line towards that edge. From the zone's inner
   // border the lead grows smoothly over rampDistancePx to maxLeadPx and stays there up to the edge. A viewport too
   // narrow for two zones halves itself (zone = half the width, ramp = the same share of it), so the centre stays at 0.
+  // TK-363 (spec 183 D6): on touch the aim is driven like a joystick, not placed under the finger. The horizontal swipe
+  // from the touch point sets the speed and side (longer swipe — faster, up to the full speed); a finger held still in
+  // an edge band of the screen moves the aim toward that edge, deeper — faster. The speed is reached smoothly
+  // (acceleration), so the aim starts and stops without jumps; at the screen's edge the map scrolls as before.
+  #touchScreenX(pointerX, dt) {
+    const cfg = this.#cfg().touchAim || {};
+    const viewport = this.#getViewportSize?.();
+    const width = Math.max(1, viewport?.width || 1);
+    const dtSec = Math.min(0.1, Math.max(0, (Number(dt) || 0) / 1000));
+    const deadZone = Math.max(0, Number(cfg.deadZonePx) || 0);
+    const fullSwipe = Math.max(deadZone + 1, Number(cfg.fullSpeedSwipePx) || 140);
+    const maxSpeed = Math.max(0, Number(cfg.maxSpeedPxPerSecond) || 0);
+    const ease = Math.max(0.1, Number(cfg.easePower) || 1);
+    const x = Number.isFinite(pointerX) ? pointerX : this.#startX;
+    const swipe = x - this.#startX;
+    let target = 0;
+    if (Math.abs(swipe) > deadZone) {
+      target = Math.sign(swipe) * maxSpeed * Math.pow(this.#clamp((Math.abs(swipe) - deadZone) / (fullSwipe - deadZone), 0, 1), ease);
+    } else {
+      const band = width * this.#clamp(Number(cfg.edgeBandRatio) || 0, 0, 0.5);
+      if (band > 0 && x < band) target = -maxSpeed * Math.pow((band - x) / band, ease);
+      else if (band > 0 && x > width - band) target = maxSpeed * Math.pow((x - (width - band)) / band, ease);
+    }
+    const step = Math.max(0, Number(cfg.accelerationPxPerSecond2) || 0) * dtSec;
+    const change = target - this.#touchVelocity;
+    this.#touchVelocity = step > 0 && Math.abs(change) > step ? this.#touchVelocity + Math.sign(change) * step : target;
+    const next = this.#clampScreenX(this.#screenX + this.#touchVelocity * dtSec);
+    if (next === 0 || next === width) this.#touchVelocity = 0;
+    return next;
+  }
+
   #pointerScreenX(value) {
     const cfg = this.#cfg().pointerAim;
     const lead = cfg?.maxLeadPx ?? 80;
