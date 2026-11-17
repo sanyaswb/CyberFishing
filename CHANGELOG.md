@@ -2,6 +2,10 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.52.16 - The emission blurs only the world by default (TK-324.4)
+
+- The emission's blur now covers only the world by default (emission.screen.includeHud off): it is the cheaper WebGL filter of v0.52.15, and the HUD, buttons and windows stay sharp. Blurring together with the HUD stays available as the «Розмивати разом з HUD» switch.
+
 ## v0.52.15 - Emission blur of the world alone through WebGL (TK-324.3)
 
 - With «Розмивати разом з HUD» (emission.screen.includeHud) off, the emission's blur of the world is now drawn by the WebGL scene at half resolution with two passes (emission.screen.blur.scene) instead of the browser's backdrop-filter at the screen's full resolution: the same pulses at a fraction of the cost. The darkening stays as it was. With the HUD blurred too, nothing changes.
@@ -42,7 +46,3 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 ## v0.52.7 - Touch aim: a still finger steers by screen half (TK-363.1)
 
 - A still finger on the left half of the screen moves the cast aim left, on the right half right; the farther from the middle, the faster, and in the very middle it stays. Before, only a narrow band at the screen edge did this.
-
-## v0.52.6 - Touch aim moves like a joystick (TK-363)
-
-- On a touch screen the cast aim no longer jumps under the finger. A held sideways swipe from the touch point moves it, faster for a longer swipe; a still finger near a screen edge pushes it toward that edge; it speeds up and slows down smoothly, and the cast goes where the aim is. Mouse unchanged. Values in casting.touchAim.

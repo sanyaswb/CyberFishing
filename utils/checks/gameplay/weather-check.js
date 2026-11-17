@@ -1525,7 +1525,10 @@ const step = (model, seconds, clock = null, dt = 0.1) => {
   // The effect (TK-324.1): sharp irregular blur pulses that quicken and grow toward the peak; a vignette that sways on
   // a wandering swell and closes in deeper than it opens out.
   const settings = CONFIG.emission.screen;
-  assert.equal(settings.includeHud, true, "owner Q6: blur with the HUD for the test");
+  assert.equal(settings.includeHud, false,
+    "TK-324.4 (owner): by default only the world is blurred — the WebGL scene's filter, not the full-resolution CSS veil");
+  assert.equal(sceneBlurPx({ visible: true, includeHud: settings.includeHud, blurPx: 3 }), 3,
+    "so the default emission blur goes to the scene");
   let seedFx = 5;
   const randomFx = () => { seedFx = (Math.imul(seedFx, 1664525) + 1013904223) >>> 0; return seedFx / 4294967296; };
   const run = (strengthAt, seconds) => {
