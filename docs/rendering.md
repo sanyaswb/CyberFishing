@@ -179,6 +179,12 @@ gameplay zones or their enable flags; hiding background also hides its displaced
     TK-338.1: the tile is cut into 32 px frames made once; each cell takes a random frame and flip at a jump and its
     alpha from its distance to the screen's centre (`radiationGrain.edges`: denser at the edges, `centerShare` 1 — even).
     Smaller cells mean more sprites (one batch, one texture); alpha is written only at a jump.
+    TK-324.3: the emission's blur of the world alone (`emission.screen.includeHud` off) is one Pixi `BlurFilter` on the
+    stage (`PixiSceneBlur`), not the DOM veil's `backdrop-filter`, which blurs every frame at the full device resolution:
+    the stage renders at `emission.screen.blur.scene.resolution` (0.5 logical) with `quality` passes per axis, `filterArea`
+    is the screen (no bounds walk), edges repeat, strength written on a quarter-pixel change, and the filter is off below a
+    quarter pixel. Its shaders compile in the warm-up frame. With the HUD (`includeHud` on) only the DOM veil can blur
+    the HUD and windows too, so it stays CSS (the costlier mode); without an active scene the veil blurs as before.
     TK-349: the ash flies only in its own zones (`zones.ash`, `world.ashRegions`, apart from the rain's): new embers start
     inside a visible zone and one that drifts out fades over its fade share — no mask, so the edge stays soft.
     Spec 182 (TK-352): the starfall's stars (`PixiStarfallRenderer`) are mounted right after the background (over the

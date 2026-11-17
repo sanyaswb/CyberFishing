@@ -431,6 +431,8 @@ Spec 179 stage E (TK-324): `hud/emission-veil.css` — `emission-veil` is one DO
 (`CONFIG.emission.screen.includeHud` off) moves it right after the WebGL scene canvas at `z-index: -1`, under the 2D
 HUD canvas. It never takes input and is `display: none` with no filter outside an emission. TK-324.2:
 `emission-veil--clear` drops the gradient while there is no darkening (`emission.screen.vignette.enabled` off).
+TK-324.3: with `includeHud` off and the WebGL scene active the scene blurs the world itself (docs/rendering.md rule
+14); the veil then has no `backdrop-filter`, only darkens, and is hidden while there is no darkness.
 
 TK-032/033 (v0.46.6): toolbar buttons and selector sector shapes share `--ui-control-background`,
 `--ui-control-hover-background` and `--ui-control-active-background` from tokens.css. Sector highlight

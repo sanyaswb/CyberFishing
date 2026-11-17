@@ -21,7 +21,8 @@ export const CONFIG = {
     wind: WIND_SETTINGS,
   },
   // Spec 179: what the emission does to the player. screen (stage E): darkening from the edges inward and a pulsing
-  // blur without a gas mask; includeHud — the HUD and windows too (everything but DevTools), off — only the world.
+  // blur without a gas mask; includeHud — the HUD and windows too (everything but DevTools, CSS backdrop-filter), off —
+  // only the world (the WebGL scene's own blur filter at a reduced resolution, TK-324.3).
   emission: {
     screen: {
       enabled: true,
@@ -45,6 +46,11 @@ export const CONFIG = {
         irregularity: 0.6, // нерівність: розкид проміжків і висот (0 — рівно, 1 — дуже хаотично)
         sharpness: 0.88, // різкість: 0 — м'які хвилі, 1 — різкі сіпання
         floor: 0.15, // частка розмиття між пульсами
+        // TK-324.3: розмиття лише сцени (includeHud вимкнено) — фільтр WebGL замість backdrop-filter.
+        scene: {
+          resolution: 0.5, // роздільність фільтра, пікселів на логічний px (менше — дешевше й м'якше)
+          quality: 2, // проходів розмиття по кожній осі (більше — рівніше й дорожче)
+        },
       },
     },
   },

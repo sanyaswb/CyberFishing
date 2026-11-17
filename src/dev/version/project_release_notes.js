@@ -1,6 +1,7 @@
 // Release notes, newest first (unshift with every patch). DEV only: no production code reads them, and in the start's
 // bundle they cost 13 KB gzip (spec 160). dev.html publishes them with the version: window.CYBER_FISHING_PROJECT_VERSION.notes.
 export const PROJECT_RELEASE_NOTES = Object.freeze([
+  "TK-324.3: the emission's blur of the world alone (emission.screen.includeHud off) is a WebGL BlurFilter on the scene at half resolution (emission.screen.blur.scene) instead of the full-resolution CSS backdrop-filter; the veil only darkens then.",
   "TK-365.2: the touch aim's full-power start (casting.touchAim.startAtFullPower) is off by default; the DevTools switch stays for testing.",
   "TK-366.1: the double tap to the map's edge works before aiming (no aim), not while aiming; a finger's double tap window is 450 ms (input.touchCast.doubleTapMs).",
   "TK-366, TK-365.1: a double tap while aiming jumps the camera to the map's left or right edge with the aim at the screen's middle; a tap on a full-power aim removes it instead of casting.",

@@ -3,6 +3,8 @@
 // - includeHud (owner, Q6): the veil sits in the UI surface between its content (HUD, toolbar, windows) and its
 //   portals (DevTools), so everything but DevTools is blurred; off, it sits right above the WebGL scene and under the
 //   2D HUD canvas, so only the world is.
+// - TK-324.3: blurs false — the WebGL scene blurs the world itself (includeHud off, scene active); the veil then only
+//   darkens (no backdrop-filter) and hides while there is no darkness to show.
 // - Written only on change beyond what can be seen (a quarter pixel of blur, half an 8-bit step of darkness, a quarter
 //   percent of radius); hidden (display: none, no backdrop-filter) while the emission does not reach the player.
 const BLUR_EPSILON = 0.25;
@@ -30,11 +32,13 @@ export class EmissionVeilDomRenderer {
     this.#element.setAttribute("aria-hidden", "true");
   }
 
-  // record: EmissionScreenEffect.record ({ visible, includeHud, darkness, clearRadius, feather, blurPx }).
-  apply(record) {
+  // record: EmissionScreenEffect.record ({ visible, includeHud, darkness, clearRadius, feather, blurPx }); blurs: whether
+  // the veil blurs (false — the scene does, TK-324.3).
+  apply(record, blurs = true) {
     const applied = this.#applied;
     const element = this.#element;
-    if (!record?.visible) {
+    const blurPx = blurs ? record?.blurPx ?? 0 : 0;
+    if (!record?.visible || (!blurs && !(record.darkness >= DARK_EPSILON))) {
       if (applied.visible) {
         applied.visible = false;
         element.classList.remove("emission-veil--visible");
@@ -62,9 +66,9 @@ export class EmissionVeilDomRenderer {
       element.style.setProperty("--emission-veil-clear", `${(record.clearRadius * 100).toFixed(2)}%`);
       element.style.setProperty("--emission-veil-feather", `${(record.feather * 100).toFixed(2)}%`);
     }
-    if (Math.abs(applied.blurPx - record.blurPx) >= BLUR_EPSILON) {
-      applied.blurPx = record.blurPx;
-      const filter = record.blurPx >= BLUR_EPSILON ? `blur(${record.blurPx.toFixed(2)}px)` : "none";
+    if (Math.abs(applied.blurPx - blurPx) >= BLUR_EPSILON) {
+      applied.blurPx = blurPx;
+      const filter = blurPx >= BLUR_EPSILON ? `blur(${blurPx.toFixed(2)}px)` : "none";
       element.style.backdropFilter = filter;
       element.style.webkitBackdropFilter = filter;
     }

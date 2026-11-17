@@ -33,6 +33,15 @@ owner's approach is clearly not optimal, say so and propose the better one befor
 owner's words are ambiguous (for example «доторкання курсором» — the cursor reaching the edge, not a click), ask or choose
 the reading that matches how the feature is used, and say which one was chosen.
 
+**Optimisation comes first** (owner, 2026-11-18): «у мене в пріоритеті оптимізація, тому краще перепитай у мене декілька
+разів коли я пропоную рішення яке погано впливає на оптимізацію … треба знайти оптимальне рішення для візуалізації і
+оптимізації». For every visual or runtime feature, look for the solution that gives the look with the least CPU/GPU cost
+(reduced-resolution passes, work only on change, no per-frame allocations, docs/rendering.md). When the owner's request
+or an earlier decision costs performance (a full-screen pass at full resolution, an extra full-screen layer, per-frame
+work that can be cached), do not implement it on the first word: name the cost (what runs, how often, at what resolution),
+propose the cheaper way with the same look, and ask again until the owner confirms the costly one knowingly. Also say
+when an existing implementation is not the cheapest option, even if it was accepted earlier.
+
 Read [DEVELOPMENT_RULES.md](DEVELOPMENT_RULES.md) before production changes and follow the current owner's instructions.
 
 Before changing tools or tests, read [utils/UTILS_RULES.md](utils/UTILS_RULES.md). Prioritize deterministic functional

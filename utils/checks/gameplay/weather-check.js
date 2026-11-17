@@ -1387,7 +1387,7 @@ const step = (model, seconds, clock = null, dt = 0.1) => {
 // Spec 179 stage E (TK-324): exposure (gas mask, cast gate), the screen effect's curves and the DOM veil.
 {
   const { EmissionExposure } = require("../../../src/game/application/world/emission_exposure.js");
-  const { EmissionScreenEffect } = require("../../../src/game/presentation/weather/emission_screen_effect.js");
+  const { EmissionScreenEffect, sceneBlurPx } = require("../../../src/game/presentation/weather/emission_screen_effect.js");
   const { EmissionVeilDomRenderer } = require("../../../src/platform/browser/dom/emission_veil_dom_renderer.js");
   const { CONFIG } = require("../../../src/game/config/runtime/game_config.js");
   const { PlayerStatusEffects } = require("../../../src/game/application/world/player_status_effects.js");
@@ -1673,6 +1673,22 @@ const step = (model, seconds, clock = null, dt = 0.1) => {
   assert.ok(!created.classList.set.has("emission-veil--visible") && created.style.backdropFilter === "none",
     "after the emission: hidden, no backdrop filter left");
   assert.deepEqual(placed, ["portals", "scene"], "placed only when its layer changes");
+
+  // TK-324.3: the world alone (includeHud off) is blurred by the WebGL scene; the veil then only darkens, and hides
+  // while there is no darkness. sceneBlurPx is the scene's share: the blur with includeHud off, 0 otherwise.
+  const sceneFrame = { ...frame, includeHud: false, blurPx: 5 };
+  assert.equal(sceneBlurPx(sceneFrame), 5, "includeHud off: the scene blurs the world");
+  assert.equal(sceneBlurPx(frame), 0, "includeHud on: the veil blurs, the scene does not");
+  assert.equal(sceneBlurPx({ ...sceneFrame, visible: false }), 0, "nothing shown: no scene blur");
+  veil.apply(sceneFrame, false);
+  assert.ok(created.classList.set.has("emission-veil--visible") && created.style.backdropFilter === "none",
+    "the scene blurs: the veil darkens without a backdrop filter");
+  assert.equal(created.style.props["--emission-veil-darkness"], "0.500", "the darkness is still the veil's");
+  veil.apply({ ...sceneFrame, darkness: 0 }, false);
+  assert.ok(!created.classList.set.has("emission-veil--visible"), "no darkness and the scene blurs: no veil layer at all");
+  veil.apply(sceneFrame, true);
+  assert.equal(created.style.backdropFilter, "blur(5.00px)", "the scene inactive (2D canvas): the veil blurs again");
+  veil.apply({ visible: false });
 }
 
 // Spec 180 B (TK-326): the look at a strength — values mixed between their ends, the location's override at 100,

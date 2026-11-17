@@ -22,6 +22,7 @@
         "AnimationStateData",
         "Application",
         "AtlasAttachmentLoader",
+        "BlurFilter",
         "ColorMatrixFilter",
         "Container",
         "CurveTimeline1",
@@ -45,7 +46,7 @@
         "installEvalFreeSystems"
       ],
       "file": "vendor/pixi/8.22.0/pixi-scene.js",
-      "sha256": "478ce37986b2d28082ee1dc26661d08e4ce110784fd5f7da0ac2b504687ef566",
+      "sha256": "3ba6086acac617d1d09086a670f90dbf74b81e5304b5809eb93f01a908369b73",
       "license": "vendor/pixi/8.22.0/LICENSE",
       "licenseSha256": "bf10ca389d05447b3554dc6d1ae202f42339bfaa8c9c5e0cde1f9e4abfc5d25f",
       "importer": "src/platform/browser/scene/pixi_runtime_module.js"

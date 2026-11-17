@@ -97,8 +97,19 @@ function fakePixi() {
       }
     },
   });
+  // Pixi 8.22's filters contract (effectsMixin: `set filters`): one filter or a list; the container keeps a frozen copy,
+  // null / an empty list removes the effect; filterArea is kept by reference (local coordinates). filterSets counts
+  // the assignments (each one copies the list and may rebuild the render structure).
   class Container {
-    constructor() { this.children = []; this.visible = true; }
+    constructor() { this.children = []; this.visible = true; this._filters = null; this.filterArea = undefined; this.filterSets = 0; }
+
+    get filters() { return this._filters; }
+
+    set filters(value) {
+      this.filterSets += 1;
+      const list = value && !Array.isArray(value) ? [value] : value;
+      this._filters = list?.length ? Object.freeze(list.slice(0)) : null;
+    }
 
     addChild(...children) {
       for (const child of children) child.parent = this;
@@ -174,6 +185,19 @@ function fakePixi() {
       this.scale = { x: scale, y: scale };
       sprite.renderable = false;
     }
+  }
+  // Pixi 8.22's BlurFilter (filters/defaults/blur): strength in logical px (the shader reads the input's logical size),
+  // quality = passes per axis, resolution = filter pixels per logical px; repeatEdgePixels true drops the padding.
+  class BlurFilter {
+    constructor({ strength = 8, quality = 4, resolution = "inherit" } = {}) {
+      const own = { strength, quality };
+      Object.assign(this, { resolution, repeatEdgePixels: false, destroyed: false, writes: 0 });
+      for (const key of ["strength", "quality"]) {
+        Object.defineProperty(this, key, { get: () => own[key], set: (value) => { own[key] = value; this.writes += 1; } });
+      }
+    }
+
+    destroy() { this.destroyed = true; }
   }
   class Texture {
     // A sub-texture: a frame of another texture's source (the static rod's atlas region).
@@ -296,11 +320,15 @@ function fakePixi() {
       return this.initCall.promise;
     }
 
-    render() { this.renders += 1; }
+    render() {
+      this.renders += 1;
+      // TK-324.3: what the stage was filtered with at each render (the warm-up frame compiles the blur's shaders).
+      (this.stageFilters ??= []).push(this.stage.filters ? this.stage.filters.map((filter) => filter.constructor.name) : null);
+    }
 
     destroy(...args) { this.destroyed = args; }
   }
-  return { pixi: { Application, Container, DisplacementFilter, Graphics, Particle, ParticleContainer, Rectangle, Sprite,
+  return { pixi: { Application, BlurFilter, Container, DisplacementFilter, Graphics, Particle, ParticleContainer, Rectangle, Sprite,
     Texture }, apps, textures,
     canvasTextures };
 }
@@ -520,6 +548,77 @@ async function checkTextureCacheAndBackground() {
   sceneTextures.dispose();
 }
 
+// TK-324.3: the emission's blur of the world alone — one BlurFilter on the stage at a reduced resolution, the screen as
+// its filterArea, written only on visible change, off below a quarter pixel; the layer warms its shaders and presents a
+// frame when the blur moves.
+async function checkSceneBlur() {
+  const { PixiSceneBlur } = await importSource("src/platform/browser/scene/pixi_scene_blur.js");
+  const { CONFIG } = await importSource("src/game/config/runtime/game_config.js");
+  const { pixi } = fakePixi();
+  assert.throws(() => new PixiSceneBlur({ pixi: {}, stage: {} }), /requires pixi.BlurFilter/u);
+  const stage = new pixi.Container();
+  const blur = new PixiSceneBlur({ pixi, stage });
+  const settings = { ...CONFIG.emission.screen.blur.scene };
+  assert.equal(JSON.stringify(settings), JSON.stringify({ resolution: 0.5, quality: 2 }), "half resolution, two passes per axis");
+  assert.equal(blur.update(0.2, settings, 400, 800), false, "under a quarter pixel: nothing to do");
+  assert.equal(stage.filters, null, "no filter, no pass");
+  assert.equal(blur.update(3, settings, 400, 800), true, "the blur starts: a new frame");
+  const filter = stage.filters?.[0];
+  assert.ok(filter instanceof pixi.BlurFilter && stage.filters.length === 1, "one BlurFilter on the stage");
+  assert.equal(JSON.stringify([filter.strength, filter.quality, filter.resolution, filter.repeatEdgePixels]),
+    JSON.stringify([3, 2, 0.5, true]), "strength in logical px, the config's passes and resolution, edges repeated");
+  assert.equal(JSON.stringify([stage.filterArea.x, stage.filterArea.y, stage.filterArea.width, stage.filterArea.height]),
+    JSON.stringify([0, 0, 400, 800]), "filterArea is the screen: Pixi never measures the stage's bounds");
+  const writes = filter.writes, sets = stage.filterSets;
+  assert.equal(blur.update(3.2, settings, 400, 800), false, "a change under a quarter pixel is not written");
+  assert.equal(filter.writes, writes, "the filter untouched");
+  assert.equal(blur.update(4, settings, 400, 800), true, "a visible change is a new frame");
+  assert.equal(filter.strength, 4);
+  assert.equal(stage.filterSets, sets, "the filter list is assigned only when the blur starts or ends");
+  const area = stage.filterArea;
+  assert.equal(blur.update(4, settings, 800, 400), true, "a resize moves the area");
+  assert.equal(JSON.stringify([stage.filterArea === area, area.width, area.height]), JSON.stringify([true, 800, 400]),
+    "the same rectangle, rewritten");
+  assert.equal(blur.update(4, { resolution: 0.25, quality: 1 }, 800, 400), true, "live config edits apply");
+  assert.equal(JSON.stringify([filter.resolution, filter.quality]), JSON.stringify([0.25, 1]));
+  assert.equal(blur.update(0, settings, 800, 400), true, "the blur ends: one more frame without it");
+  assert.equal(stage.filters, null, "the filter is off the stage");
+  assert.equal(blur.update(0, settings, 800, 400), false, "and stays off without frames");
+  blur.dispose();
+  assert.equal(filter.destroyed, true, "disposed with the scene");
+
+  // The layer: shaders warmed in the warm-up frame, then off; a blur from getSceneBlurPx presents a frame.
+  const { PixiSceneLayer } = await importSource("src/platform/browser/scene/pixi_scene_layer.js");
+  const { FightAreaStyleResolver } = await importSource("src/game/presentation/styles/fight_area_style_resolver.js");
+  const dom = fakeDom();
+  const fake = fakePixi();
+  let blurPx = 0;
+  const layer = new PixiSceneLayer({ pixi: fake.pixi, documentTarget: dom.documentTarget, gameCanvas: dom.gameCanvas,
+    canvasMetrics: { width: 400, height: 816, pixelRatio: 2 }, background: "#0f171e", images: fakeImages([]),
+    router: { drawsOnScene: () => false }, clock: { now: 0 }, getWaterSettings: () => null,
+    fightAreaStyles: new FightAreaStyleResolver({ configProvider: () => ({}) }), probe: recordingProbe(),
+    logger: { warn() {} }, getSceneBlurPx: () => blurPx, getSceneBlurSettings: () => settings });
+  const app = fake.apps[0];
+  app.initCall.resolve();
+  await layer.whenReady();
+  assert.equal(JSON.stringify(app.stageFilters), JSON.stringify([["BlurFilter"]]), "the warm-up frame renders with the blur");
+  assert.equal(app.stage.filters, null, "then the blur is off");
+  const frame = { world: { backgroundColor: "#0f171e", weather: null }, fishing: null };
+  layer.render(frame);
+  const quiet = app.renders;
+  layer.render(frame);
+  assert.equal(app.renders, quiet, "nothing changed: no frame");
+  blurPx = 5;
+  layer.render(frame);
+  assert.equal(JSON.stringify([app.renders - quiet, app.stageFilters.at(-1)]), JSON.stringify([1, ["BlurFilter"]]),
+    "the world's blur: one frame with the stage blurred");
+  assert.equal(layer.getStatus().blur.on, true, "DEV status shows the blur");
+  blurPx = 0;
+  layer.render(frame);
+  assert.equal(JSON.stringify(app.stageFilters.at(-1)), "null", "the blur ends: a clean frame");
+  layer.dispose();
+}
+
 async function checkPixiSceneLayer() {
   const { PixiSceneLayer } = await importSource("src/platform/browser/scene/pixi_scene_layer.js");
   const metrics = { width: 400, height: 816, pixelRatio: 2 };
@@ -609,8 +708,10 @@ async function checkPixiSceneLayer() {
       sea: { amplitudeScale: 1, speedScale: 1, wavelengthScale: 1, travel: 1 } },
     rain: { active: false, drops: 0, rings: 0, dropPool: 0, ringPool: 0, slantDeg: 0, stepMs: 0 },
     ash: { active: false, embers: 0, pool: 0, stepMs: 0 }, grain: { active: false, opacity: 0, cells: 0 },
-    starfall: { active: false, stars: 0, pool: 0, bolide: false, burst: false, sparks: 0 } },
-  "no castable zones in this frame: still water; no emission: no ash; no radiation: no hiss; no starfall night: no stars");
+    starfall: { active: false, stars: 0, pool: 0, bolide: false, burst: false, sparks: 0 },
+    blur: { on: false, strength: 0, resolution: 0.5, quality: 2 } },
+  "no castable zones in this frame: still water; no emission: no ash; no radiation: no hiss; no starfall night: no stars; " +
+  "no blur after the warm-up");
   base.x = -20;
   layer.render(frame);
   assert.equal(app.renders, 3, "a camera move presents one frame");
@@ -2250,6 +2351,7 @@ async function main() {
   await checkAsh();
   await checkSharedWeatherParts();
   await checkRadiationGrain();
+  await checkSceneBlur();
   await checkStarfall();
   await checkSceneWorldKinds();
   await checkSceneTackle();
@@ -2268,7 +2370,7 @@ async function main() {
     + `(phases, change detection, art density), water wave field (deterministic, moving, edge fade, perspective), `
     + `change fingerprints, dashes, text textures, world entities and fight areas (2D colours, clips, frames only on change), `
     + `line, rod (static region, Spine view at the rod's depth) and float (shapes, glow halo), `
-    + `PixiSceneLayer over a fake Pixi (no ticker/events/GC, warm-up, frames only on change, portrait art 1:1, water `
+    + `scene blur (one BlurFilter at a reduced resolution, screen filterArea, written on change, warmed), PixiSceneLayer over a fake Pixi (no ticker/events/GC, warm-up, frames only on change, portrait art 1:1, water `
     + `steps at its frame rate over the visible zone, context loss and restore, DEV status, dispose), one routing decision per frame, `
     + `"canvas"/"webgl" composition with a real no-WebGL fallback, every world kind gated on the 2D canvas, DEV `
     + `section, runtime ${entry.version} with stopped tickers and eval-free systems only under a strict CSP, CSS, bundle (${size} bytes), ${productionModules} `

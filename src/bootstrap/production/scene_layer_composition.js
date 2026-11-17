@@ -15,9 +15,11 @@ const SCENE_RENDERED_KINDS = Object.freeze(["background", "world-entities", "fig
 // images: the page's ImageAssetProvider, whose loaded images become the scene's textures; clock: the game clock that
 // times the water's animation (spec 106); fightAreaStyles: the fight area style resolver the 2D renderer uses too.
 // getLookOverrides: () => the current location's look overrides (MAP_DB.<id>.weather.look) or null (spec 180 D16).
+// getSceneBlurPx: () => the emission's blur of the world alone now, logical px (TK-324.3; 0 — the scene is not blurred).
 // Returns { sceneLayer, sceneRouter, transparentCanvas }.
 export function composeSceneLayer({ config, modeOverride = null, documentTarget, gameCanvas, canvasMetrics, images, clock,
-  fightAreaStyles, probe, logger, getImageSize = null, preload = null, getLookOverrides = () => null }) {
+  fightAreaStyles, probe, logger, getImageSize = null, preload = null, getLookOverrides = () => null,
+  getSceneBlurPx = () => 0 }) {
   const looks = new WeatherLookResolver({ getLooks: () => config.canvas, getOverrides: getLookOverrides });
   let mode = config.canvas?.scene ?? "canvas";
   if (modeOverride != null) {
@@ -39,6 +41,8 @@ export function composeSceneLayer({ config, modeOverride = null, documentTarget,
         getWeatherSettings: () => config.weather ?? null,
         getRadiationGrainSettings: () => config.canvas?.radiationGrain ?? null,
         getStarfallSettings: () => config.canvas?.starfall ?? null,
+        getSceneBlurPx,
+        getSceneBlurSettings: () => config.emission?.screen?.blur?.scene ?? null,
         fightAreaStyles, probe, logger,
         background: config.canvas?.backgroundColor, getImageSize })),
     onUnavailable: (error) => logger.warn("[Scene] The WebGL scene runtime did not load; the 2D canvas stays alone.", error),

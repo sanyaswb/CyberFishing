@@ -10,6 +10,7 @@ import { PixiRainRenderer } from "./pixi_rain_renderer.js";
 import { PixiAshRenderer } from "./pixi_ash_renderer.js";
 import { PixiRadiationGrainRenderer } from "./pixi_radiation_grain_renderer.js";
 import { PixiStarfallRenderer } from "./pixi_starfall_renderer.js";
+import { PixiSceneBlur } from "./pixi_scene_blur.js";
 import { PixiWorldEntitiesRenderer } from "./pixi_world_entities_renderer.js";
 import { SceneTextTextures } from "./scene_text_textures.js";
 import { SceneTextureCache } from "./scene_texture_cache.js";
@@ -63,6 +64,9 @@ export class PixiSceneLayer {
   #getGrainSettings;
   #starfall = null;
   #getStarfallSettings;
+  #blur = null;
+  #getSceneBlurPx;
+  #getSceneBlurSettings;
   #fightAreaStyles;
   #documentTarget;
   #getImageSize;
@@ -104,7 +108,8 @@ export class PixiSceneLayer {
   constructor({ pixi, documentTarget, gameCanvas, canvasMetrics, background, images, router, clock, getWaterSettings,
     fightAreaStyles, probe, logger, getWakeSettings = () => null, getImageSize = null, prepareRenderer = null,
     getRainSettings = () => null, getAshSettings = () => null, getWeatherSettings = () => null,
-    getRadiationGrainSettings = () => null, getStarfallSettings = () => null }) {
+    getRadiationGrainSettings = () => null, getStarfallSettings = () => null, getSceneBlurPx = () => 0,
+    getSceneBlurSettings = () => null }) {
     if (typeof pixi?.Application !== "function") throw new TypeError("PixiSceneLayer requires the Pixi namespace");
     if (typeof gameCanvas?.before !== "function") throw new TypeError("PixiSceneLayer requires the game canvas");
     if (typeof images?.tryGet !== "function") throw new TypeError("PixiSceneLayer requires images");
@@ -132,6 +137,9 @@ export class PixiSceneLayer {
     this.#getGrainSettings = getRadiationGrainSettings;
     // Spec 182 stage C (TK-352): CONFIG.canvas.starfall, the falling stars' look.
     this.#getStarfallSettings = getStarfallSettings;
+    // TK-324.3: the emission's blur of the world alone (px now, 0 — none) and CONFIG.emission.screen.blur.scene.
+    this.#getSceneBlurPx = getSceneBlurPx;
+    this.#getSceneBlurSettings = getSceneBlurSettings;
     this.#fightAreaStyles = fightAreaStyles;
     this.#documentTarget = documentTarget;
     this.#metrics = canvasMetrics;
@@ -186,6 +194,9 @@ export class PixiSceneLayer {
       changed = true;
     }
     if (this.#resizeIfChanged(app)) changed = true;
+    if (this.#blur.update(this.#getSceneBlurPx(), this.#getSceneBlurSettings(), this.#metrics.width, this.#metrics.height)) {
+      changed = true;
+    }
     if (!changed && !this.#needsFrame) return;
     this.#needsFrame = false;
     app.render();
@@ -213,7 +224,7 @@ export class PixiSceneLayer {
     return { state, webglVersion: this.#app.renderer.context?.webGLVersion ?? null, width: this.#width,
       height: this.#height, pixelRatio: this.#pixelRatio, textures: this.#textures.size, textureBytes: this.#textures.bytes,
       water: this.#water.status, rain: this.#rain.status, ash: this.#ash.status, grain: this.#grain.status,
-      starfall: this.#starfall.status };
+      starfall: this.#starfall.status, blur: this.#blur.status };
   }
 
   // DEV fallback test (DevTools "СЦЕНА WebGL"): lose the context through WEBGL_lose_context until restoreContext().
@@ -240,6 +251,7 @@ export class PixiSceneLayer {
     this.#ash?.dispose();
     this.#grain?.dispose();
     this.#starfall?.dispose();
+    this.#blur?.dispose();
     this.#rod?.dispose();
     this.#float?.dispose();
     this.#worldEntities?.dispose();
@@ -298,9 +310,13 @@ export class PixiSceneLayer {
       this.#grain = new PixiRadiationGrainRenderer({ pixi: this.#pixi, documentTarget: this.#documentTarget });
       this.#grain.mount(app.stage);
       this.#annotations = new PixiAnnotationRenderer({ pixi: this.#pixi, stage: app.stage });
+      // TK-324.3: the blur of the whole stage; its shaders compile in the warm-up frame below, then it is off.
+      this.#blur = new PixiSceneBlur({ pixi: this.#pixi, stage: app.stage });
       this.#clearColor = background;
       this.#remember(app, width, height, resolution);
+      this.#blur.warm(width, height);
       app.render();
+      this.#blur.reset();
     } catch (error) {
       if (!this.#released) {
         this.#logger.warn("[Scene] WebGL scene layer is unavailable; the 2D canvas stays alone.", error);

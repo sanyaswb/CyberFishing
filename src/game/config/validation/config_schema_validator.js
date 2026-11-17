@@ -1350,6 +1350,16 @@ export class ConfigSchemaValidator {
         this.#requireParameterLabel(`${sectionPath}.${key}`);
       }
     }
+    // TK-324.3: the scene's own blur filter (includeHud off).
+    const scene = cfg.blur?.scene;
+    const scenePath = `${path}.blur.scene`;
+    if (!scene || typeof scene !== "object") { this.#error(`CONFIG.${scenePath}`, "missing"); return; }
+    this.#requireParameterLabel(scenePath);
+    this.#requireFiniteNumber(`CONFIG.${scenePath}.resolution`, scene.resolution, { min: 0.1, max: 1 });
+    this.#requireParameterLabel(`${scenePath}.resolution`);
+    this.#requireFiniteNumber(`CONFIG.${scenePath}.quality`, scene.quality, { min: 1, max: 8 });
+    if (!Number.isSafeInteger(scene.quality)) this.#error(`CONFIG.${scenePath}.quality`, "expected integer");
+    this.#requireParameterLabel(`${scenePath}.quality`);
   }
 
   // Spec 181 D1: the player's buffs and debuffs (CONFIG.statusEffects): kind, timer, stacking and the modifiers' shares.

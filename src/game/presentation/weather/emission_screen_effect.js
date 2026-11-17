@@ -19,6 +19,12 @@ const TWO_PI = Math.PI * 2;
 // The swell's period drifts on a slower wave with this period (s), so consecutive swells differ in length.
 const SWELL_DRIFT_SEC = 23;
 
+// TK-324.3: the blur the WebGL scene draws itself — the world alone (includeHud off); 0 while the veil blurs (includeHud
+// on) or nothing is shown. The veil skips its backdrop-filter in that case (EmissionVeilDomRenderer.apply).
+export function sceneBlurPx(record) {
+  return record?.visible === true && record.includeHud === false ? record.blurPx : 0;
+}
+
 export class EmissionScreenEffect {
   #random;
   #pulseAge = Infinity;

@@ -27,7 +27,7 @@ const LICENCE_FILE = /^(?:licen[cs]e|copying)(?:\.(?:md|txt))?$/iu;
 // Stage 4 (spec 107): Rectangle (texture frames of the static rod) and the spine-core classes SpineScene drives, from
 // the same copy of spine-core that spine-pixi-v8 renders.
 const SCENE_EXPORTS = Object.freeze({
-  "pixi.js": ["Application", "ColorMatrixFilter", "Container", "DisplacementFilter", "Graphics", "Particle",
+  "pixi.js": ["Application", "BlurFilter", "ColorMatrixFilter", "Container", "DisplacementFilter", "Graphics", "Particle",
     "ParticleContainer", "Rectangle",
     "RenderTexture", "Sprite", "Texture", "Ticker"],
   "@esotericsoftware/spine-pixi-v8": ["AnimationState", "AnimationStateData", "AtlasAttachmentLoader", "CurveTimeline1",
