@@ -133,3 +133,4 @@
   `#applyEdgeScroll`, як була. Перевірка `scouting-input` (падає на v0.52.9).
 - **TK-365 (v0.52.10, D7).** `#armedPower` (1 з `startAtFullPower`), `#powerAt` (1 − сила свайпу для дотику на
   такому прицілі). Перевірка `scouting-input`.
+- [ ] Огляд перед push не проводився для TK-363.2, TK-365 (власник, 2026-11-17, push fe05329b).
