@@ -2,6 +2,12 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.52.0 - Emission, player statuses, starfall and the weather review
+
+- Minor release of v0.51.1–0.51.57 (owner-approved minor). Emission (spec 179): a state of the location with radiation, its background and red rain, fiery ash, darkening and pulsing blur, the radiation hiss (denser at the edges) and Geiger clicks, the gas mask and vodka. Player statuses (spec 181): buffs and debuffs with live parameters, round HUD badges with a draining fill and countdown, the radiation debuff, the radio badge with its drawing, wave and battery charge, DevTools «СТАТУСИ».
+- Weather (spec 180): independent events with timelines, general and location settings, DevTools «ПОГОДА» sections, saving and the RANDOMIZER; separate rain, ash and sky zones, densities per location. Starfall (spec 182): a night check at 21:00, periods of floating strength, stars in the sky zones, a bolide that may burn out with a flare and sparks, DevTools «ЗОРЕПАД» and a test switch.
+- A critic code review of the weather: shared scene parts instead of copies and the fixes it found; the review is now asked about before every push (docs/code_review.md). Game-cycle report unchanged.
+
 ## v0.51.57 - Zone editor categories from one list (TK-359)
 
 - The zone editor takes its categories from one place (their colours), and the weather zones drawn anywhere from one list, so a new zone category no longer needs edits in four files. Nothing changes on screen.
@@ -39,7 +45,3 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 ## v0.51.49 - DevTools «ЗОРЕПАД» (spec 182 stage E, TK-354)
 
 - DevTools «ПОГОДА» → «ЗОРЕПАД»: the night now (plain or a starfall night with its periods and the bolide), the strength by hand (stars at any hour), «Зорепадна ніч зараз», «Болід зараз», the stars and the bolide look (general) and the night settings (location), live.
-
-## v0.51.48 - The bolide (spec 182 stage D, TK-353)
-
-- At most once a starfall night, at any moment (quiet stretches too), a big star falls: a long wide bright tail with a glowing, slightly flickering head, slower and longer than the others; it fades like them. Its look is live in DevTools «Конфіг» → canvas → starfall → bolide.
