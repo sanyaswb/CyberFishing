@@ -148,4 +148,65 @@ for (const State of [WaitingState, BitingState]) {
   }
   assert.ok(water(stranded.getPosition().x, stranded.getPosition().y), "a tackle on land comes back when pulled toward the rod");
 }
-console.log("Tackle line limit passed: waiting/biting, fixed/sliding floats, feeder/spinning, off-centre rod, uniform/profiled metres and inward retrieval; empty tackle in the landing zone stays until a double click (TK-263); the tackle never steps over a mask stair onto land (TK-362.1).");
+// TK-364 (owner): in God mode (infiniteCasting) a fish hooked far beyond the tackle's line jumped to the line's limit on
+// the first fight frame. The fight's line keeps the fish where it is: a reel's spool holds the reserve; a pole's line
+// beyond its own length is virtual — the fish takes it while the player does not pull, the pull winds it back (virtual
+// reel, config speed, slower under tension) down to the pole's own line, never shorter. Without God mode — as before.
+{
+  const { LineSystem } = load("src/game/domain/fishing/line_system.js");
+  const { FightSessionFactory } = load("src/game/application/fishing/fight_session_factory.js");
+  const godLine = JSON.parse(JSON.stringify(CONFIG.debug.godMode.infiniteCastingLine));
+  const ppm = 50;
+  const calculator = new CastDistanceCalculator({ physics: { simulation: { pixelsPerMeter: ppm } } });
+  const rod = { getLengthMeters: () => 4 };
+  const lineStats = { effectiveStats: { lengthMeters: 20, maxLoadKg: 8 } };
+  const rodTip = { x: 0, y: 0 };
+  const at = (meters) => ({ x: 0, y: -meters * ppm });
+  const step = (line, meters) => {
+    const position = at(meters);
+    line.updateDistance(position, rodTip);
+    line.releaseForDistance({ dragRatio: 0.5, shouldSlip: false, slipReleaseRatio: 0, creepReleaseRatio: 0 });
+    line.constrainPosition(position, { x: 0, y: 0 }, rodTip);
+    line.updateDistance(position, rodTip);
+    return -position.y / ppm;
+  };
+  const reel = { hasReel: () => true };
+  const normalReel = new LineSystem({ rod, reel, config: {}, lineStats, castDistanceCalculator: calculator });
+  assert.ok(Math.abs(step(normalReel, 60) - 20) < 0.01, "without God mode a reel's fight is held by its 20 m line (as before)");
+  const godReel = new LineSystem({ rod, reel, config: {}, lineStats, castDistanceCalculator: calculator, godModeLine: godLine });
+  assert.ok(Math.abs(step(godReel, 60) - 60) < 0.01, "God mode: a reel's fish hooked at 60 m stays at 60 m");
+  assert.ok(godReel.getState().totalLineMeters >= godLine.reserveMeters, "and the spool holds the reserve");
+
+  const pole = { hasReel: () => false };
+  const polePole = new LineSystem({ rod, reel: pole, config: {}, lineStats, castDistanceCalculator: calculator });
+  assert.ok(Math.abs(step(polePole, 60) - 20) < 0.01, "without God mode a pole's fight is held by its line (as before)");
+  const godPole = new LineSystem({ rod, reel: pole, config: {}, lineStats, castDistanceCalculator: calculator, godModeLine: godLine });
+  assert.ok(Math.abs(step(godPole, 60) - 60) < 0.01, "God mode: a pole's fish hooked at 60 m stays at 60 m");
+  assert.ok(Math.abs(godPole.getState().virtualLineMeters - 40) < 0.01, "40 m of it is the pole's virtual line");
+  assert.ok(Math.abs(step(godPole, 65) - 65) < 0.01, "the fish takes more virtual line while the player does not pull");
+  godPole.setVirtualReelHolding(true);
+  assert.ok(Math.abs(step(godPole, 70) - 65) < 0.01, "while the player pulls the fish takes no line");
+  const wound = godPole.recoverVirtualLine({ dtSec: 1, tensionKg: 0 });
+  assert.ok(Math.abs(wound - godLine.poleRetrieveSpeedMetersPerSec) < 1e-9, "the pull winds the virtual reel at its speed");
+  const slow = godPole.recoverVirtualLine({ dtSec: 1, tensionKg: 8 });
+  assert.ok(Math.abs(slow - godLine.poleRetrieveSpeedMetersPerSec * godLine.poleMinEfficiency) < 1e-9,
+    "under full tension it winds at its minimum share");
+  const fishAfter = step(godPole, 65);
+  assert.ok(fishAfter < 65 - wound, "the shorter line brings the fish in");
+  for (let frame = 0; frame < 2000; frame += 1) godPole.recoverVirtualLine({ dtSec: 0.05, tensionKg: 0 });
+  assert.equal(godPole.getState().virtualLineMeters, 0, "the virtual line is wound back completely");
+  assert.ok(Math.abs(step(godPole, 30) - 20) < 0.01, "then the pole's own line holds the fish, never shorter");
+  godPole.setVirtualReelHolding(false);
+
+  // FightSessionFactory hands the God mode line only while infiniteCasting is on.
+  const physicsConfig = Object.fromEntries(["getReelDragConfig", "getRodPullConfig", "getRodHoldConfig", "getReelConfig",
+    "getTensionConfig", "getLineSystemConfig"].map((name) => [name, () => ({})]));
+  const equipment = { rod: { variant: "pole", effectiveStats: { hasReel: false, lengthMeters: 4 } },
+    line: { effectiveStats: { lengthMeters: 20, maxLoadKg: 8 } }, hooks: [] };
+  const lineFor = (enabled) => new FightSessionFactory({ config: { fightPhysicsConfig: physicsConfig, physics: { simulation: { pixelsPerMeter: ppm } } },
+    rng: null, castDistanceCalculator: calculator, runtimeConfig: CONFIG,
+    devFlags: { isEnabled: (flag) => enabled && flag === "infiniteCasting" } }).createEquipment(equipment).lineSystem;
+  assert.ok(Math.abs(step(lineFor(true), 60) - 60) < 0.01, "the fight factory gives the God mode line with infiniteCasting");
+  assert.ok(Math.abs(step(lineFor(false), 60) - 20) < 0.01, "and the tackle's own line without it");
+}
+console.log("Tackle line limit passed: waiting/biting, fixed/sliding floats, feeder/spinning, off-centre rod, uniform/profiled metres and inward retrieval; empty tackle in the landing zone stays until a double click (TK-263); the tackle never steps over a mask stair onto land (TK-362.1); God mode fight line keeps a far fish in place, pole virtual reel (TK-364).");

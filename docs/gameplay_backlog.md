@@ -20,13 +20,16 @@ Notes: suspected owner module, related checks.
 
 ## Open
 
-### G-140 God mode: a fish hooked far away is pulled at once to the edge of the tackle's line (P3, open; owner decision pending)
+### G-140 God mode: a fish hooked far away is pulled at once to the edge of the tackle's line (P3, done in v0.52.8; owner acceptance pending)
 Found: 2026-11-17, owner, phone, v0.52.5.
 Reproduce: God mode on (`infiniteCasting`), cast far beyond the tackle's normal reach, get a bite.
 Expected: the fight starts where the fish is; the line plays out and is retrieved as usual (God mode lifts the distance).
 Actual: the fish with the line jumps to the tackle's line limit on the first fight frame.
 Notes: `LineSystem.updateDistance` sets the released line to `min(total, distance)`; the total comes from the tackle's
-reach model, untouched by God mode. TK-364 (proposal in tasks.md).
+reach model, untouched by God mode. Fixed by TK-364: with infiniteCasting the fight's line gets
+`CONFIG.debug.godMode.infiniteCastingLine` — a reel's spool of at least `reserveMeters`; a pole's virtual line beyond its
+own, taken freely by the fish while the player does not pull and wound back while pulling (virtual reel, down to the
+pole's own line). DevTools «godMode» warns about it. Check `tackle-line-limit`. God mode only; game-cycle unchanged.
 
 ### G-139 In God mode a cast whose accuracy circle reaches onto land lands on land (P2, done in v0.52.5; owner acceptance pending)
 Found: 2026-11-17, owner, phone, v0.52.3.

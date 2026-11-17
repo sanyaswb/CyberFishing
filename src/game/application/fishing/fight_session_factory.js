@@ -178,8 +178,15 @@ export class FightSessionFactory {
       config: lineSystemConfig,
       lineStats: activeLineStats,
       castDistanceCalculator: this.castDistanceCalculator,
+      godModeLine: this.#godModeLine(),
     });
     return { rod, reel, hook, lineSystem };
+  }
+
+  // TK-364: God mode infiniteCasting lifts the distance for the fight too (LineSystem godModeLine).
+  #godModeLine() {
+    if (this.devFlags?.isEnabled?.("infiniteCasting") !== true) return null;
+    return (this.runtimeConfig || this.config)?.debug?.godMode?.infiniteCastingLine || null;
   }
 
   #getLineSystemConfig() {

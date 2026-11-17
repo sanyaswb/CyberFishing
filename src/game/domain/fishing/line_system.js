@@ -41,13 +41,24 @@ export class LineSystem {
     hardLimit: false,
   };
   #distanceCalculator;
+  // TK-364: God mode infiniteCasting line ({ reserveMeters, poleRetrieveSpeedMetersPerSec, poleMinEfficiency }) or null.
+  // A reel gets a spool of at least reserveMeters, so a fish hooked beyond the tackle's normal line is not pulled to it.
+  // A pole keeps its line (#poleNormalMeters) and gets a virtual line beyond it: the fish takes it while the player does
+  // not pull, the player's pull winds it back (virtual reel) down to the pole's own line, then the pole is as usual.
+  #godModeLine = null;
+  #poleNormalMeters = 0;
+  #poleVirtualMeters = 0;
+  #virtualReelHolding = false;
+  #lastVirtualRecoveredMeters = 0;
 
+  // godModeLine: CONFIG.debug.godMode.infiniteCastingLine while God mode infiniteCasting is on, else null.
   constructor({
     rod,
     reel,
     config,
     lineStats = null,
     castDistanceCalculator = null,
+    godModeLine = null,
   }) {
     this.#config = config || {};
     this.#distanceCalculator =
@@ -68,6 +79,11 @@ export class LineSystem {
     this.#baseReachMeters = this.#hasReel ? 0 : reachModel.baseReachMeters;
     this.#reelLineMeters = reachModel.lineLengthMeters;
     this.#totalLengthMeters = reachModel.maxReachMeters;
+    this.#godModeLine = godModeLine;
+    if (godModeLine && this.#hasReel) {
+      this.#totalLengthMeters = Math.max(this.#totalLengthMeters, this.#godReserveMeters());
+    }
+    this.#poleNormalMeters = this.#totalLengthMeters;
     this.#maxRemainingMeters = this.#hasReel ? this.#totalLengthMeters : 0;
 
     this.#spoolState = new LineSpoolState({
@@ -105,6 +121,9 @@ export class LineSystem {
           this.#totalLengthMeters,
           this.#distanceMeters,
         ));
+      } else if (this.#godModeLine && this.#distanceMeters > this.#poleNormalMeters) {
+        // TK-364: the pole's virtual line starts where the fish is (no jump to the pole's line).
+        this.#poleVirtualMeters = Math.min(this.#godReserveMeters(), this.#distanceMeters);
       }
       this.#initialized = true;
     }
@@ -115,6 +134,7 @@ export class LineSystem {
 
   releaseForDistance(control = 0) {
     this.#lastReleasedMeters = 0;
+    if (this.#releasesVirtualPoleLine()) return this.#releaseVirtualPoleLine();
     const availableToRelease = this.#spoolState.remainingLineMeters;
     if (!this.#hasReel || availableToRelease <= 0) {
       this.#refreshState();
@@ -261,6 +281,60 @@ export class LineSystem {
     return recovered;
   }
 
+  // TK-364: whether the player pulls this frame (the pole's virtual reel winds then and the fish takes no line).
+  setVirtualReelHolding(holding) {
+    this.#virtualReelHolding = !!holding;
+  }
+
+  // TK-364: while the player pulls, a pole's virtual line is wound back at poleRetrieveSpeedMetersPerSec — slower under
+  // tension (not below poleMinEfficiency), never shorter than the pole's own line. Returns the metres wound.
+  recoverVirtualLine({ dtSec, tensionKg }) {
+    this.#lastVirtualRecoveredMeters = 0;
+    if (this.#hasReel || !this.#virtualReelHolding || this.#poleVirtualMeters <= this.#poleNormalMeters) return 0;
+    const speed = Math.max(0, Number(this.#godModeLine.poleRetrieveSpeedMetersPerSec) || 0);
+    const limit = Math.max(0.001, Number(this.getEffectiveLineMaxLoadKg()) || 1);
+    const minEfficiency = clampUnit(this.#godModeLine.poleMinEfficiency);
+    const efficiency = Math.max(minEfficiency, clampUnit(1 - (Number(tensionKg) || 0) / limit));
+    const amount = speed * efficiency * Math.max(0, Number(dtSec) || 0);
+    const next = Math.max(this.#poleNormalMeters, this.#poleVirtualMeters - amount);
+    this.#lastVirtualRecoveredMeters = this.#poleVirtualMeters - next;
+    this.#poleVirtualMeters = next <= this.#poleNormalMeters + 0.000001 ? 0 : next;
+    this.#refreshState();
+    return this.#lastVirtualRecoveredMeters;
+  }
+
+  #godReserveMeters() {
+    return Math.max(this.#totalLengthMeters, Number(this.#godModeLine?.reserveMeters) || 0);
+  }
+
+  #releasesVirtualPoleLine() {
+    return !this.#hasReel && this.#godModeLine !== null && !this.#virtualReelHolding &&
+      this.#distanceMeters > this.#releasedMeters;
+  }
+
+  // TK-364: a pole fish beyond the released line takes virtual line freely while the player does not pull.
+  #releaseVirtualPoleLine() {
+    const excess = this.#distanceMeters - this.#releasedMeters;
+    const before = this.#releasedMeters;
+    this.#poleVirtualMeters = Math.min(this.#godReserveMeters(), this.#distanceMeters);
+    this.#refreshState();
+    const released = Math.max(0, this.#releasedMeters - before);
+    this.#lastReleasedMeters = released;
+    const unsatisfied = Math.max(0, excess - released);
+    return this.#setReleaseResult({
+      releasedMeters: released,
+      demandedMeters: excess,
+      satisfiedMeters: released,
+      unsatisfiedMeters: unsatisfied,
+      didSlip: released > 0.000001,
+      hasReserveAfterRelease: this.#releasedMeters < this.#godReserveMeters() - 0.001,
+      hardLimitReached: unsatisfied > 0.000001,
+      lineLengthLocked: unsatisfied > 0.000001,
+      blockedByHardLimit: unsatisfied > 0.000001,
+      releaseBlockedReason: unsatisfied > 0.000001 ? "spool_empty" : "none",
+    });
+  }
+
   constrainPosition(position, velocity, rodTipPosition) {
     const maxDistancePx = this.#releasedMeters * this.#pixelsPerMeter;
     if (maxDistancePx <= 0) return this.#setConstraintResult();
@@ -342,6 +416,8 @@ export class LineSystem {
       effectiveLineMaxLoadKg: this.getEffectiveLineMaxLoadKg(),
       lastReleasedMeters: this.#lastReleasedMeters,
       lastRecoveredMeters: this.#lastRecoveredMeters,
+      virtualLineMeters: Math.max(0, this.#poleVirtualMeters - this.#poleNormalMeters),
+      lastVirtualRecoveredMeters: this.#lastVirtualRecoveredMeters,
       lastReleaseResult: this.#lastReleaseResult,
       lastConstraintResult: this.#lastConstraintResult,
     };
@@ -351,7 +427,7 @@ export class LineSystem {
     if (!this.#hasReel) {
       this.#spoolState.setReleasedLineMeters(this.#totalLengthMeters);
     }
-    this.#releasedMeters = this.#spoolState.releasedLineMeters;
+    this.#releasedMeters = Math.max(this.#spoolState.releasedLineMeters, this.#poleVirtualMeters);
 
     this.#remainingMeters = this.#spoolState.remainingLineMeters;
     this.#lineExtensionRatio =

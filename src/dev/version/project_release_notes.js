@@ -1,6 +1,7 @@
 // Release notes, newest first (unshift with every patch). DEV only: no production code reads them, and in the start's
 // bundle they cost 13 KB gzip (spec 160). dev.html publishes them with the version: window.CYBER_FISHING_PROJECT_VERSION.notes.
 export const PROJECT_RELEASE_NOTES = Object.freeze([
+  "TK-364: in God mode (infiniteCasting) the fight's line keeps a far fish in place: a reel gets a line reserve; a pole gets a virtual line wound by a virtual reel while pulling; DevTools godMode shows a warning.",
   "TK-363.1: on touch a still finger pushes the cast aim toward its half of the screen, faster farther from the middle (was an edge band only).",
   "TK-363: on touch the cast aim moves like a joystick: the held sideways swipe sets its speed, a still finger at a screen edge pushes it there; it never jumps under the finger.",
   "TK-362.2: in God mode (infiniteCasting) a cast no longer lands outside the castable mask; the flag lifts only the distance limit.",

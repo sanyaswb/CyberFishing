@@ -1603,6 +1603,18 @@
     "label": "GOD infinite cast distance",
     "description": "Allows casting the rod to any distance across the entire water map with any selected tackle; tackle changes do not limit cast reach."
   },
+  "debug.godMode.infiniteCastingLine.reserveMeters": {
+    "label": "GOD line reserve, m",
+    "description": "With infinite casting: a reel's spool holds at least this much line in a fight, and a pole's virtual line can grow up to it, so a fish hooked far away is not pulled to the tackle's line limit."
+  },
+  "debug.godMode.infiniteCastingLine.poleRetrieveSpeedMetersPerSec": {
+    "label": "GOD pole virtual reel, m/s",
+    "description": "With infinite casting: a pole has no reel, so its line beyond its own length is wound back at this speed while the player pulls (virtual reel), never shorter than the pole's own line."
+  },
+  "debug.godMode.infiniteCastingLine.poleMinEfficiency": {
+    "label": "GOD pole virtual reel min share",
+    "description": "Under tension the virtual reel winds slower (1 − tension / line limit), but never slower than this share of its speed."
+  },
   "debug.godMode.forceAnomalyChance": {
     "label": "GOD anomaly chance 100%",
     "description": "Canonical anomaly chance override. The switch shown under Fixed Catch is linked to this same value, so both controls always change together."

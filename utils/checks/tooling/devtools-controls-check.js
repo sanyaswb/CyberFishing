@@ -2794,6 +2794,33 @@ function choiceRow(options, value, path) {
   assert.ok(rowAt("CONFIG.debug.seed"), "debug's parameters are in «Конфіг»");
   assert.ok(!sectionPaths.includes("CONFIG.locations.map") && !sectionPaths.includes("CONFIG.spawns.fishes"),
     "the catalogs merged into CONFIG stay in «Бази»");
+  // TK-364: «DEBUG» → «godMode» warns at its top while infinite casting is on: the pole's virtual reel and its values.
+  host.replaceChildren();
+  const { DebugModule } = runtime.importModule("src/dev/tools/modules/debug_module.js");
+  const godConfig = { debug: { seed: 0, godMode: { enabled: true, infiniteCasting: true,
+    infiniteCastingLine: { reserveMeters: 300, poleRetrieveSpeedMetersPerSec: 1.5, poleMinEfficiency: 0.25 } } } };
+  const debugModule = new DebugModule({ config: godConfig });
+  debugModule.mount(host, { ui: rawUi, tree, edits: { update() {}, isOverridden: () => false, resetParameter() {} },
+    createSection: (label, parent, path, options) => rawUi.createSection(label, parent, true, null, path, options) });
+  rawUi.materializeAll();
+  const godSection = byClass("devtools__section", host).find((section) => section.dataset.devtoolsPath === "CONFIG.debug.godMode");
+  const godAlert = godSection && byClass("devtools__alert", godSection)[0];
+  assert.ok(godAlert && !godAlert.hidden, "«godMode» shows the infinite casting warning");
+  const godText = byClass("devtools__alert-line", godAlert).map((line) => line.innerText).join("\n");
+  assert.ok(godText.includes("ВІРТУАЛЬНА ПІДМОТКА 1.5 м/с") && godText.includes("25 %") && godText.includes("300 м"),
+    "with the pole's virtual reel values and the reel's reserve");
+  assert.ok(rowAt("CONFIG.debug.godMode.infiniteCasting"), "the God mode switches stay in the section");
+  godConfig.debug.godMode.infiniteCastingLine.poleRetrieveSpeedMetersPerSec = 2;
+  debugModule.refreshLive();
+  assert.ok(byClass("devtools__alert-line", godAlert).some((line) => line.innerText.includes("ВІРТУАЛЬНА ПІДМОТКА 2 м/с")),
+    "a changed value shows on the live refresh");
+  godConfig.debug.godMode.infiniteCasting = false;
+  debugModule.refreshLive();
+  assert.equal(godAlert.hidden, true, "without infinite casting the warning hides");
+  godConfig.debug.godMode.infiniteCasting = true;
+  godConfig.debug.godMode.enabled = false;
+  debugModule.refreshLive();
+  assert.equal(godAlert.hidden, true, "and with God mode off");
   rawUi.dispose?.();
 }
 

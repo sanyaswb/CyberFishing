@@ -2,6 +2,11 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.52.8 - God mode: a fish hooked far away stays in place; virtual reel for the pole (TK-364)
+
+- With God mode infinite casting, a fish hooked beyond the tackle's normal line no longer jumps to the line's limit. A reel gets a 300 m line reserve. A pole keeps its own line and gets a virtual one beyond it: the fish takes it while you do not pull, and pulling winds it back (virtual reel, 1.5 m/s, slower under tension) down to the pole's own line.
+- DevTools → DEBUG → godMode shows a warning with these values while infinite casting is on. Values in CONFIG.debug.godMode.infiniteCastingLine. Without God mode nothing changes.
+
 ## v0.52.7 - Touch aim: a still finger steers by screen half (TK-363.1)
 
 - A still finger on the left half of the screen moves the cast aim left, on the right half right; the farther from the middle, the faster, and in the very middle it stays. Before, only a narrow band at the screen edge did this.
@@ -41,7 +46,3 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 ## v0.51.57 - Zone editor categories from one list (TK-359)
 
 - The zone editor takes its categories from one place (their colours), and the weather zones drawn anywhere from one list, so a new zone category no longer needs edits in four files. Nothing changes on screen.
-
-## v0.51.56 - DevTools weather fade no longer sticks (TK-358.1)
-
-- After a DevTools weather switch (rain, storm, fog) was turned off, its quick fade stayed for the rest of the session, so the natural events of that kind came and went faster than the location smoothSec. The fade now lasts only while held and until the release has arrived.

@@ -135,6 +135,8 @@ export class FightPhysicsOrchestrator {
     const hasReel = !!reel.hasReel();
     const dragSupported = hasReel && reel.hasDrag() !== false;
     const isPullMode = !!pullInput.pullHeld;
+    // TK-364: a pole's God mode virtual line is wound while the player pulls; the fish takes it otherwise.
+    lineSystem.setVirtualReelHolding(isPullMode);
     const isRecoverMode = hasReel && !isPullMode;
     const maxTackleLoadKg = stressSystem.getEffectiveMaxTackleLoadKg() || 0;
     const rodLimitKg =
@@ -335,9 +337,11 @@ export class FightPhysicsOrchestrator {
             maxRecoverMeters: holdReelRecover.maxMoveMeters,
           })
         : 0;
+      const virtualRecoveredMeters = lineSystem.recoverVirtualLine({ dtSec, tensionKg: recoveryLoad.tensionKg });
       return {
         holdReelRecover,
         autoRecovery,
+        virtualRecoveredMeters,
         recoveredMeters: autoRecovery.recoveredMeters + holdRecoveredMeters,
         autoRecoveredMeters: autoRecovery.recoveredMeters,
         holdRecoveredMeters,

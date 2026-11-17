@@ -651,6 +651,8 @@ function checkLocationMapConfigChanges() {
       options?.render?.(section); return section;
     },
     createNavigation(pages){for(const [label,click] of pages) navigationButtons.set(label,click);},
+    // As DevToolsUI.createAlert: the alert element is returned (TK-364 hides and refills it).
+    createAlert(title,lines,parent,path){return {title,parent,path,hidden:false,children:[]};},
     createButtonRow(label,parent,click,navigation,iconUrl,path,options={}){navigationButtons.set(label,click);if(options.badge)buttonBadges.set(label,options.badge);},
     createSwitcherRow(key,value,parent,change,path){if(path){const id=path.join('.');switches.set(id,change);controlParents.set(id,[...(controlParents.get(id)||[]),parent]);}},
     // Spec 174 B1: the config tree adds its rows through addParameter (one description per row).

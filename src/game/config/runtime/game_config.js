@@ -286,6 +286,10 @@ export const CONFIG = {
       noRodBreak: false, // 4. Вудка ніколи не ламається
       noFishStaminaLoss: false, // 5. Стаміна риби не витрачається і завжди тримається на 100%
       infiniteCasting: true, // 6. Нескінченна дальність закидання вудки при будь-якій снасті
+      // TK-364: ліска в боротьбі при infiniteCasting. Котушка: шпуля щонайменше reserveMeters. Махова: понад свою ліску —
+      // віртуальна ліска: риба її бере, поки гравець не тягне; поки тягне — віртуальна підмотка poleRetrieveSpeedMetersPerSec
+      // (під натягом повільніше, не нижче poleMinEfficiency швидкості), не коротше за ліску вудки.
+      infiniteCastingLine: { reserveMeters: 300, poleRetrieveSpeedMetersPerSec: 1.5, poleMinEfficiency: 0.25 },
 
       // Bite debug controls. Працюють тільки коли enabled: true.
       // fixedBiteChancePercent обрізається до діапазону 0..100.

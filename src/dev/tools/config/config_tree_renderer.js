@@ -177,7 +177,7 @@ export class ConfigTreeRenderer {
 
   #shouldSkipKey(path, key, options) {
     if (options.groupedDebug && path.join(".") === "CONFIG.debug" &&
-      (key.startsWith("overlay") || key === "inventory" || key === "inventorySplit")) return true;
+      (key.startsWith("overlay") || key === "inventory" || key === "inventorySplit" || key === "godMode")) return true;
     if (!options.visibilityPolicy && !options.raw && EXCLUDED_KEYS.includes(key)) return true;
     if (!options.raw && path[0] === "CONFIG" && path.length === 1 && key === "debug") return true;
     if (options.applyHookedFishLegacySkips !== false && path[0] === "HOOKED_FISH") {
