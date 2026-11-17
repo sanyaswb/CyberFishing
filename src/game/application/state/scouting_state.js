@@ -10,6 +10,9 @@ export class ScoutingState extends GameState {
   #missingLineWarnedForPress = false;
   #gasMaskWarnedForPress = false;
   #isUiDimmed = false;
+  // TK-366: a touch tap has just removed a waiting aim; if that tap becomes a double tap, the aim comes back at the
+  // screen's middle with the camera at the map's edge on the tapped side.
+  #aimRemovedByTap = false;
 
   /** @param {ScoutingStateDeps} deps */
   constructor(deps) {
@@ -33,6 +36,7 @@ export class ScoutingState extends GameState {
     this.#missingReelWarnedForPress = false;
     this.#missingLineWarnedForPress = false;
     this.#castAim.reset();
+    this.#aimRemovedByTap = false;
     this.#setUiDimmed(false);
   }
 
@@ -269,6 +273,15 @@ export class ScoutingState extends GameState {
       this.#setUiDimmed(false);
     }
 
+    // TK-366: a double tap while aiming (its first tap removed the aim) jumps the camera to the map's edge on the
+    // tapped side and puts the aim back at the screen's middle.
+    if (input?.isDoubleClick && input.pointerType === "touch" && this.#aimRemovedByTap) {
+      this.#aimRemovedByTap = false;
+      this.#jumpToMapEdge(input.pointerRelease.x);
+      return false;
+    }
+    if (input?.clickPos) this.#aimRemovedByTap = false;
+
     // Spec 183 D1: a touch tap on the map (a scroll candidate that did not move) arms the aim at the tap; a double tap
     // never does. The aim then waits for a touch that sets its direction and power.
     if (input?.clickPos && input.pointerType === "touch" && input.pointerPanning && !this.#castAim.isArmed &&
@@ -296,13 +309,16 @@ export class ScoutingState extends GameState {
     if (!release) return false;
     this.#setUiDimmed(false);
 
-    if (this.#isCancelledRelease(release)) {
-      // Spec 183 D2: a touch aim that ended at power 0 after a move keeps waiting; a tap or a double tap removes it.
-      if (input?.pointerType === "touch" && !input.clickPos && !input.isDoubleClick) {
+    // TK-365.1: a touch tap while aiming removes the aim (D2) whatever power it shows (a full-power aim, TK-365).
+    const touchTap = input?.pointerType === "touch" && !!(input.clickPos || input.isDoubleClick);
+    if (touchTap || this.#isCancelledRelease(release)) {
+      // Spec 183 D2: a touch aim that ended at power 0 after a move keeps waiting; a tap removes it.
+      if (input?.pointerType === "touch" && !touchTap) {
         this.#castAim.arm(release.screenX);
         this.#setUiDimmed(true);
         return false;
       }
+      this.#aimRemovedByTap = touchTap && !!input.clickPos;
       this.#castAim.reset();
       this.#pendingCast = null;
       this.deps.commands.setState("scouting");
@@ -329,6 +345,16 @@ export class ScoutingState extends GameState {
       rodScreenX: target.rodScreenX,
     };
     return false;
+  }
+
+  // TK-366: the camera goes at once to the map's left (x in the screen's left half) or right edge; the aim waits at the
+  // screen's middle. The pan is clamped by the camera, so a map's width in screen pixels always reaches the edge.
+  #jumpToMapEdge(screenX) {
+    const width = Math.max(1, Number(this.deps.getViewportSize()?.width) || 1);
+    const mapWidthPx = Number(this.deps.config.locations.baseResolution.width) * this.deps.projector.getScale();
+    this.deps.commands.panViewport((screenX < width / 2 ? -1 : 1) * mapWidthPx);
+    this.#castAim.arm(width / 2);
+    this.#setUiDimmed(true);
   }
 
   #commitPendingCast() {

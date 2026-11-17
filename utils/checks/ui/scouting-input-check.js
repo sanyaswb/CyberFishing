@@ -34,13 +34,13 @@ const { ScoutingState } = runtime.importModule("src/game/application/state/scout
 const { InputController } = runtime.importModule("src/platform/browser/input/input_controller.js");
 const { EventLifecycle } = runtime.importModule("src/engine/events/event_lifecycle.js");
 const { GameViewportFacade } = runtime.importModule("src/game/presentation/viewport/game_viewport_facade.js");
-const config = { casting: { enabled: true }, input: { pointerThreshold: 10,
+const config = { casting: { enabled: true }, locations: { baseResolution: { width: 2560 } }, input: { pointerThreshold: 10,
   pullHoldMinMs: 120, keys: { pull: ["Space"] },
   mapPan: { inverted: true, sensitivity: 1, maxDistancePx: 0, wheelStepPx: 40 },
 } };
 let equipment = {}, warnings = 0, casts = 0, gasMaskWarnings = 0, emissionBlocks = false;
 const deps = {
-  config, projector: { focusOnVirtualPos() {}, followVirtualX() {} }, rng: {},
+  config, projector: { focusOnVirtualPos() {}, followVirtualX() {}, getScale: () => 1 }, rng: {},
   inventory: { getEquipped: () => equipment, evaluateCastReadiness: () => ({ canCast: !!equipment.rod }) },
   world: { getWaterMetric: () => ({}) }, getViewportSize: () => ({ width: 800, height: 600 }),
   isAimingChum: () => false, canPlayerCast: () => false,
@@ -221,7 +221,9 @@ assert.equal(casts, 0);
 {
   equipment = { rod: { id: "rod" } };
   const touchCasts = [];
-  const touchDeps = { ...deps, commands: { ...deps.commands, castLine: (...args) => touchCasts.push(args), setState() {} } };
+  const edgePans = [];
+  const touchDeps = { ...deps, commands: { ...deps.commands, castLine: (...args) => touchCasts.push(args), setState() {},
+    panViewport: (delta) => edgePans.push(delta) } };
   const touchScouting = new ScoutingState(touchDeps);
   touchScouting.resolveCastTarget = (aim, release) => ({ success: true, x: release.screenX, y: 100, depth: 1, travelDelayMs: 0,
     originVirtualX: release.screenX, originVirtualY: 600, rodScreenX: release.screenX, power: release.power });
@@ -277,16 +279,52 @@ assert.equal(casts, 0);
   now += 1000;
   tap();
   assert.equal(touchScouting.isTouchAimArmed(), false, "a tap while aiming removes it");
-  // A double tap removes the aim and does not start it again.
+  // TK-366: a double tap while aiming jumps the camera to the map's edge on the tapped side; the aim waits at the middle.
   now += 1000;
   tap();
   assert.equal(touchScouting.isTouchAimArmed(), true);
   now += 1000;
+  const pansBeforeJump = edgePans.length;
   tap(300, 80);
   now += 60;
   tap(300, 80);
-  assert.equal(touchScouting.isTouchAimArmed(), false, "a double tap removes aiming and does not start it again");
+  assert.equal(touchScouting.isTouchAimArmed(), true, "a double tap while aiming keeps aiming");
+  assert.deepEqual(edgePans.slice(pansBeforeJump), [-2560], "a double tap in the left half takes the camera to the map's left edge");
+  now += 1000;
+  tap(700, 80);
+  now += 60;
+  tap(700, 80);
+  assert.deepEqual([touchScouting.isTouchAimArmed(), edgePans.at(-1)], [true, 2560], "in the right half — to the right edge");
+  now += 1000;
+  touch("pointerdown", { clientX: 400, clientY: 100 });
+  touchFrame();
+  touch("pointermove", { clientX: 400, clientY: 200 });
+  touchFrame();
+  touch("pointerup", { clientX: 400, clientY: 200 });
+  touchFrame();
+  touchFrame();
+  assert.equal(touchCasts.at(-1)?.[0], 400, "and the aim waited at the screen's middle (the cast goes from there)");
+  // Without a waiting aim a double tap starts nothing (its first tap arms, the second removes).
+  now += 1000;
+  const pansBeforeIdle = edgePans.length;
+  tap(300, 80);
+  now += 60;
+  tap(300, 80);
+  assert.deepEqual([touchScouting.isTouchAimArmed(), edgePans.length], [false, pansBeforeIdle],
+    "a double tap without an aim does not jump or start aiming");
+  // TK-365.1: with a full-power aim a tap at the aim line removes the aim (D2), it does not cast.
+  config.casting.touchAim = { startAtFullPower: true, powerZonePx: 25 };
+  now += 1000;
+  tap(300);
+  assert.equal(touchScouting.isTouchAimArmed(), true);
+  const castsBeforeTap = touchCasts.length;
+  now += 1000;
+  tap(300);
+  assert.deepEqual([touchScouting.isTouchAimArmed(), touchCasts.length], [false, castsBeforeTap],
+    "a tap on a full-power aim removes it without a cast");
+  delete config.casting.touchAim;
   // Aiming, then a pull down with power casts and ends the aim.
+  const castsBeforePull = touchCasts.length;
   now += 1000;
   tap();
   now += 1000;
@@ -297,7 +335,7 @@ assert.equal(casts, 0);
   touch("pointerup", { clientX: 300, clientY: 200 });
   touchFrame();
   touchFrame();
-  assert.deepEqual([touchCasts.length, touchScouting.isTouchAimArmed()], [1, false], "a release with power casts; the aim ends");
+  assert.deepEqual([touchCasts.length - castsBeforePull, touchScouting.isTouchAimArmed()], [1, false], "a release with power casts; the aim ends");
   // A long swipe down aims at once, its power from the touch point.
   now += 1000;
   const pansBefore = touchPans.length;
@@ -310,7 +348,7 @@ assert.equal(casts, 0);
   touch("pointerup", { clientX: 404, clientY: 200 });
   touchFrame();
   touchFrame();
-  assert.equal(touchCasts.length, 2, "and its release casts");
+  assert.equal(touchCasts.length - castsBeforePull, 2, "and its release casts");
   assert.equal(touchPans.length, pansBefore, "a swipe down never scrolls the map");
   // A short move down released before the swipe length is neither a tap nor aiming.
   now += 1000;
@@ -319,7 +357,7 @@ assert.equal(casts, 0);
   touchFrame();
   touch("pointerup", { clientX: 300, clientY: 125 });
   const shortPull = touchFrame();
-  assert.deepEqual([shortPull.clickPos, touchScouting.isTouchAimArmed(), touchCasts.length], [null, false, 2],
+  assert.deepEqual([shortPull.clickPos, touchScouting.isTouchAimArmed(), touchCasts.length - castsBeforePull], [null, false, 2],
     "a short pull down is not a click and does not aim");
   // The mouse aims on press as before (spec 183 D3).
   now += 1000;
@@ -418,4 +456,4 @@ assert.equal(casts, 0);
   assert.equal(frame("mouse", 300, 300).screenX, 300, "the mouse places the aim under the pointer as before");
   release("mouse", 300);
 }
-console.log("Scouting input passed: click/drag, mouse/touch/wheel, accumulated movement, inversion/distance, cancellation, equipped holds and clock shielding; spec 183 touch aiming; touch aim follows the finger 1:1 with a smooth centre-based map scroll (TK-363.2) and an optional full-power start (TK-365); power only from a touch near the aim line (TK-363.3).");
+console.log("Scouting input passed: click/drag, mouse/touch/wheel, accumulated movement, inversion/distance, cancellation, equipped holds and clock shielding; spec 183 touch aiming; touch aim follows the finger 1:1 with a smooth centre-based map scroll (TK-363.2) and an optional full-power start (TK-365); power only from a touch near the aim line (TK-363.3); a double tap while aiming jumps to the map's edge (TK-366).");

@@ -1,6 +1,7 @@
 // Release notes, newest first (unshift with every patch). DEV only: no production code reads them, and in the start's
 // bundle they cost 13 KB gzip (spec 160). dev.html publishes them with the version: window.CYBER_FISHING_PROJECT_VERSION.notes.
 export const PROJECT_RELEASE_NOTES = Object.freeze([
+  "TK-366, TK-365.1: a double tap while aiming jumps the camera to the map's left or right edge with the aim at the screen's middle; a tap on a full-power aim removes it instead of casting.",
   "TK-363.3: on touch only a touch that begins within 25 px of the aim line sets the cast power; a touch farther away only moves the aim and does not cast.",
   "TK-363.2, TK-365: touch aim follows the finger 1:1 again (no jump), the map scrolls smoothly by the aim's distance from the middle; test switch casting.touchAim.startAtFullPower — a tapped aim starts at full power.",
   "TK-364.1, TK-364.2 (review before push): a God mode line break loses at most the tackle's own line; the God mode warning is rewritten only when its values change.",

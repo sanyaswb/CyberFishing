@@ -2,6 +2,11 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.52.12 - Double tap while aiming jumps to the map's edge (TK-366)
+
+- While the touch aim waits, a double tap in the left half of the screen takes the camera at once to the map's left edge, in the right half to the right edge; the aim waits at the screen's middle. A single tap still removes the aim.
+- A tap on an aim waiting at full power (casting.touchAim.startAtFullPower) now removes it as a tap should, instead of casting.
+
 ## v0.52.11 - Touch cast power only near the aim line (TK-363.3)
 
 - A touch that begins within 25 px of the aim line (casting.touchAim.powerZonePx) sets both direction and power; a touch farther away only moves the aim, an accidental downward slip does not change the power, and its release keeps the aim without casting.
@@ -40,8 +45,3 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 ## v0.52.3 - Cast area: landings stay inside the castable zone (spec 183, TK-362)
 
 - Checked the cast area: when the accuracy area crosses the edge of the castable zone, a point outside is refused and drawn again, so the tackle never lands outside (20 000 casts on the test map, none outside). A new check keeps it that way. No game change.
-
-## v0.52.2 - Touch cast controls: scroll, tap to aim, no long-press re-cast (spec 183, TK-361)
-
-- On a phone with a ready rod a sideways swipe now scrolls the map instead of aiming. A tap starts aiming: the aim waits until a touch pulls down with power and casts; a release at zero power keeps it, a tap or a double tap removes it. A long swipe down aims and casts at once. The mouse works as before.
-- The long-press re-cast is gone for touch and mouse: reel the tackle in, double tap, cast. Game-cycle report unchanged.
