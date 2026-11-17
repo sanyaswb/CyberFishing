@@ -397,6 +397,20 @@ assert.equal(casts, 0);
   aim.reset();
   assert.ok(frame("touch", 500, 500, 400).power > 0.99, "an aim started by a long swipe (not armed) still grows from 0");
   release("touch", 500, 400);
+  // TK-363.3: only a touch that begins near the aim line sets the power; one farther away only moves the aim.
+  aim.arm(500);
+  frame("touch", 900, 900);
+  const aimOnly = frame("touch", 900, 850, 400);
+  assert.deepEqual([aimOnly.screenX, aimOnly.power], [450, 1], "a touch far from the aim line moves it but a downward slip keeps the power");
+  assert.equal(release("touch", 850, 400).power, 0, "and its release does not cast (the aim stays)");
+  aim.arm(500);
+  frame("touch", 520, 520);
+  assert.equal(frame("touch", 520, 520, 400).power, 0, "a touch within the zone of the aim line sets the power");
+  release("touch", 520, 400);
+  aim.arm(500);
+  frame("touch", 526, 526);
+  assert.equal(frame("touch", 526, 526, 400).power, 1, "26 px away is outside the 25 px zone");
+  release("touch", 526, 400);
   casting.touchAim.startAtFullPower = false;
   aim.arm(500);
   assert.equal(aim.getVisualState().power, 0, "with the switch off the armed aim waits at 0 (as before)");
@@ -404,4 +418,4 @@ assert.equal(casts, 0);
   assert.equal(frame("mouse", 300, 300).screenX, 300, "the mouse places the aim under the pointer as before");
   release("mouse", 300);
 }
-console.log("Scouting input passed: click/drag, mouse/touch/wheel, accumulated movement, inversion/distance, cancellation, equipped holds and clock shielding; spec 183 touch aiming; touch aim follows the finger 1:1 with a smooth centre-based map scroll (TK-363.2) and an optional full-power start (TK-365).");
+console.log("Scouting input passed: click/drag, mouse/touch/wheel, accumulated movement, inversion/distance, cancellation, equipped holds and clock shielding; spec 183 touch aiming; touch aim follows the finger 1:1 with a smooth centre-based map scroll (TK-363.2) and an optional full-power start (TK-365); power only from a touch near the aim line (TK-363.3).");

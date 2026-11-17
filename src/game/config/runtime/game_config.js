@@ -237,7 +237,9 @@ export const CONFIG = {
     // panMaxPxPerSecond), changing by at most panAccelerationPxPerSecond2. TK-365 (test switch): startAtFullPower — an aim
     // armed by a click waits at full power and a downward swipe lowers it.
     touchAim: { panDeadZoneRatio: 0.1, panMaxPxPerSecond: 450, panEasePower: 1.6, panAccelerationPxPerSecond2: 1500,
-      startAtFullPower: true },
+      startAtFullPower: true,
+      // TK-363.3: only a touch that begins within this many px of the aim line (sideways) sets the power.
+      powerZonePx: 25 },
     cancelPowerThreshold: 0,
     edgeScrollCenterRatio: 0.3,
     edgeScrollMaxPxPerSecond: 900,

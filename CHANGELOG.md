@@ -2,6 +2,10 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.52.11 - Touch cast power only near the aim line (TK-363.3)
+
+- A touch that begins within 25 px of the aim line (casting.touchAim.powerZonePx) sets both direction and power; a touch farther away only moves the aim, an accidental downward slip does not change the power, and its release keeps the aim without casting.
+
 ## v0.52.10 - Touch aim 1:1 with a smooth centre scroll; full-power start switch (TK-363.2, TK-365)
 
 - On a touch screen the cast aim moves exactly as far as the finger moves, from where it was — it does not jump under the finger and is no longer a slow joystick. While aiming, the map scrolls toward the aim's side, faster the farther the aim is from the screen's middle (at most 450 px/s), speeding up and slowing down smoothly.
@@ -41,8 +45,3 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 
 - On a phone with a ready rod a sideways swipe now scrolls the map instead of aiming. A tap starts aiming: the aim waits until a touch pulls down with power and casts; a release at zero power keeps it, a tap or a double tap removes it. A long swipe down aims and casts at once. The mouse works as before.
 - The long-press re-cast is gone for touch and mouse: reel the tackle in, double tap, cast. Game-cycle report unchanged.
-
-## v0.52.1 - DevTools weather «Керування»: live switches, sliders when on (TK-360)
-
-- «Стан і керування» is now «Керування». A strength slider shows under Дощ/Шторм/Туман/Викид/Зорепад only while it is on; «Болід зараз» is the last row and on a phone closes DevTools so the bolide is seen falling.
-- «The fog comes on after the starfall goes off»: the switches showed the state of the last redraw. The starfall's test switch moves the clock to 23:00 (the fog's ×3 window), a fog started by itself and the next redraw revealed it. The switches now follow the live state while the panel is open. Game-cycle report unchanged.

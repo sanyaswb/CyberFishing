@@ -24,6 +24,9 @@ export class CastPowerAim {
   #touchPanVelocity = 0;
   // TK-365: this touch adjusts down from full power (an aim armed by a click, casting.touchAim.startAtFullPower).
   #touchFromFullPower = false;
+  // TK-363.3: this touch began within casting.touchAim.powerZonePx of the aim line, so it sets the power too; a touch
+  // farther away only moves the aim and its release does not cast.
+  #touchSetsPower = true;
   #leadSource;
   #zoneSource;
   #rampSource;
@@ -100,6 +103,8 @@ export class CastPowerAim {
         // TK-363: a waiting touch aim keeps its place; a new one starts where the finger touched.
         if (!(touch && this.#armed)) this.#screenX = this.#clampScreenX(input.pointerStart.x);
         this.#touchAimStartX = this.#screenX;
+        this.#touchSetsPower = !touch || !this.#armed ||
+          Math.abs(input.pointerStart.x - this.#screenX) <= Math.max(0, Number(this.#cfg().touchAim?.powerZonePx) || 0);
         this.#touchFromFullPower = touch && this.#armed && this.#armedPower() === 1;
         this.#screenY = input.pointerStart.y;
         this.#touchPanVelocity = 0;
@@ -111,7 +116,7 @@ export class CastPowerAim {
       else this.#screenX = this.#pointerScreenX(input.pointerCurrent.x);
       this.#screenY = input.pointerCurrent.y;
       this.#updateStartY(this.#screenY, dt);
-      this.#power = this.#powerAt(this.#screenY);
+      this.#power = this.#touchSetsPower ? this.#powerAt(this.#screenY) : this.#armedPower();
       if (touch) this.#applyTouchPan(this.#screenX, dt);
       else if (this.#applyEdgeScroll(this.#screenX, dt)) this.#screenX = this.#pointerScreenX(input.pointerCurrent.x);
       this.#updateVisual(mode);
@@ -122,7 +127,8 @@ export class CastPowerAim {
       if (!this.#touch) this.#screenX = this.#pointerScreenX(input.pointerRelease.x);
       this.#screenY = input.pointerRelease.y;
       this.#updateStartY(this.#screenY, 0);
-      this.#power = this.#powerAt(this.#screenY);
+      // TK-363.3: an aim-only touch releases at power 0 — no cast; the scouting state keeps the aim where it is now.
+      this.#power = this.#touchSetsPower ? this.#powerAt(this.#screenY) : 0;
 
       this.#release.active = true;
       this.#release.screenX = this.#screenX;

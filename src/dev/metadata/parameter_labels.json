@@ -1607,6 +1607,10 @@
     "label": "Touch aim: start at full power",
     "description": "Test switch (TK-365). On: an aim switched on by a tap waits at full power, a downward swipe lowers it and back up raises it. Off: it waits at 0 and a downward swipe raises it."
   },
+  "casting.touchAim.powerZonePx": {
+    "label": "Touch aim: power zone around the aim line, px",
+    "description": "Only a touch that begins this close to the aim line (to either side) sets the cast power; a touch farther away only moves the aim, and its release does not cast."
+  },
   "casting.touchAim.panMaxPxPerSecond": {
     "label": "Touch aim: map scroll speed, px/s",
     "description": "While a touch aims, the map scrolls toward the aim's side; this is the speed with the aim at the screen's edge."
