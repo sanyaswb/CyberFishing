@@ -2,6 +2,11 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.52.10 - Touch aim 1:1 with a smooth centre scroll; full-power start switch (TK-363.2, TK-365)
+
+- On a touch screen the cast aim moves exactly as far as the finger moves, from where it was — it does not jump under the finger and is no longer a slow joystick. While aiming, the map scrolls toward the aim's side, faster the farther the aim is from the screen's middle (at most 450 px/s), speeding up and slowing down smoothly.
+- Test switch casting.touchAim.startAtFullPower (on): an aim switched on by a tap waits at full power; a downward swipe lowers the power, back up raises it.
+
 ## v0.52.9 - Review fixes for God mode line (TK-364.1, TK-364.2)
 
 - A line break in God mode no longer writes off more line than the tackle has: the 300 m reserve or a pole's virtual line is not lost, only the tackle's own line.
@@ -41,9 +46,3 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 
 - «Стан і керування» is now «Керування». A strength slider shows under Дощ/Шторм/Туман/Викид/Зорепад only while it is on; «Болід зараз» is the last row and on a phone closes DevTools so the bolide is seen falling.
 - «The fog comes on after the starfall goes off»: the switches showed the state of the last redraw. The starfall's test switch moves the clock to 23:00 (the fog's ×3 window), a fog started by itself and the next redraw revealed it. The switches now follow the live state while the panel is open. Game-cycle report unchanged.
-
-## v0.52.0 - Emission, player statuses, starfall and the weather review
-
-- Minor release of v0.51.1–0.51.57 (owner-approved minor). Emission (spec 179): a state of the location with radiation, its background and red rain, fiery ash, darkening and pulsing blur, the radiation hiss (denser at the edges) and Geiger clicks, the gas mask and vodka. Player statuses (spec 181): buffs and debuffs with live parameters, round HUD badges with a draining fill and countdown, the radiation debuff, the radio badge with its drawing, wave and battery charge, DevTools «СТАТУСИ».
-- Weather (spec 180): independent events with timelines, general and location settings, DevTools «ПОГОДА» sections, saving and the RANDOMIZER; separate rain, ash and sky zones, densities per location. Starfall (spec 182): a night check at 21:00, periods of floating strength, stars in the sky zones, a bolide that may burn out with a flare and sparks, DevTools «ЗОРЕПАД» and a test switch.
-- A critic code review of the weather: shared scene parts instead of copies and the fixes it found; the review is now asked about before every push (docs/code_review.md). Game-cycle report unchanged.

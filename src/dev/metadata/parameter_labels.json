@@ -1603,6 +1603,26 @@
     "label": "GOD infinite cast distance",
     "description": "Allows casting the rod to any distance across the entire water map with any selected tackle; tackle changes do not limit cast reach."
   },
+  "casting.touchAim.startAtFullPower": {
+    "label": "Touch aim: start at full power",
+    "description": "Test switch (TK-365). On: an aim switched on by a tap waits at full power, a downward swipe lowers it and back up raises it. Off: it waits at 0 and a downward swipe raises it."
+  },
+  "casting.touchAim.panMaxPxPerSecond": {
+    "label": "Touch aim: map scroll speed, px/s",
+    "description": "While a touch aims, the map scrolls toward the aim's side; this is the speed with the aim at the screen's edge."
+  },
+  "casting.touchAim.panDeadZoneRatio": {
+    "label": "Touch aim: still middle (share of half width)",
+    "description": "Around the screen's middle the map does not scroll; beyond it the speed grows with the aim's distance from the middle."
+  },
+  "casting.touchAim.panEasePower": {
+    "label": "Touch aim: scroll curve",
+    "description": "How the scroll speed grows with the aim's distance from the middle: 1 — evenly, more — slow near the middle, fast at the edge."
+  },
+  "casting.touchAim.panAccelerationPxPerSecond2": {
+    "label": "Touch aim: scroll smoothing, px/s²",
+    "description": "How fast the map scroll speeds up and slows down, so the camera moves without jerks."
+  },
   "debug.godMode.infiniteCastingLine.reserveMeters": {
     "label": "GOD line reserve, m",
     "description": "With infinite casting: a reel's spool holds at least this much line in a fight, and a pole's virtual line can grow up to it, so a fish hooked far away is not pulled to the tackle's line limit."

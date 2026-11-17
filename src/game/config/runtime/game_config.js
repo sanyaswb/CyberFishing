@@ -232,11 +232,12 @@ export const CONFIG = {
     keyboardPowerChangePerSecond: 0.75,
     keyboardAimSpeedPxPerSecond: 420,
     pointerAim: { maxLeadPx: 80, edgeZonePx: 200, rampDistancePx: 100 },
-    // TK-363 (spec 183 D6): touch aim as a joystick. Horizontal swipe from the touch point beyond deadZonePx sets the
-    // speed (full at fullSpeedSwipePx); a still finger pushes toward its half of the screen, faster away from the middle
-    // (TK-363.1); the speed changes by at most accelerationPxPerSecond2.
-    touchAim: { deadZonePx: 12, fullSpeedSwipePx: 140, maxSpeedPxPerSecond: 700, easePower: 1.6,
-      accelerationPxPerSecond2: 2400 },
+    // TK-363.2 (spec 183 D6): on touch the aim moves 1:1 with the finger; while aiming the map scrolls toward the aim's
+    // side at a speed set by its distance from the screen's middle (past panDeadZoneRatio of half the width, up to
+    // panMaxPxPerSecond), changing by at most panAccelerationPxPerSecond2. TK-365 (test switch): startAtFullPower — an aim
+    // armed by a click waits at full power and a downward swipe lowers it.
+    touchAim: { panDeadZoneRatio: 0.1, panMaxPxPerSecond: 450, panEasePower: 1.6, panAccelerationPxPerSecond2: 1500,
+      startAtFullPower: true },
     cancelPowerThreshold: 0,
     edgeScrollCenterRatio: 0.3,
     edgeScrollMaxPxPerSecond: 900,

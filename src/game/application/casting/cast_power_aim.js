@@ -17,9 +17,13 @@ export class CastPowerAim {
   #keyboardActive = false;
   // Spec 183 D2: a touch aim that waits between touches (power 0 at #screenX until the next press).
   #armed = false;
-  // TK-363: a touch aim moves at a speed set by the finger, never jumps to it (#touchScreenX).
+  // TK-363.2: a touch aim moves 1:1 with the finger from where it was (#touchAimStartX), never jumps under it; the map
+  // scrolls smoothly at a speed set by the aim's distance from the screen's middle (#applyTouchPan).
   #touch = false;
-  #touchVelocity = 0;
+  #touchAimStartX = 0;
+  #touchPanVelocity = 0;
+  // TK-365: this touch adjusts down from full power (an aim armed by a click, casting.touchAim.startAtFullPower).
+  #touchFromFullPower = false;
   #leadSource;
   #zoneSource;
   #rampSource;
@@ -69,7 +73,7 @@ export class CastPowerAim {
     this.#keyboardActive = false;
     this.#armed = true;
     this.#screenX = this.#clampScreenX(screenX);
-    this.#power = 0;
+    this.#power = this.#armedPower();
     this.#updateVisual(mode);
   }
 
@@ -95,20 +99,21 @@ export class CastPowerAim {
         this.#initialStartY = input.pointerStart.y;
         // TK-363: a waiting touch aim keeps its place; a new one starts where the finger touched.
         if (!(touch && this.#armed)) this.#screenX = this.#clampScreenX(input.pointerStart.x);
+        this.#touchAimStartX = this.#screenX;
+        this.#touchFromFullPower = touch && this.#armed && this.#armedPower() === 1;
         this.#screenY = input.pointerStart.y;
-        this.#touchVelocity = 0;
+        this.#touchPanVelocity = 0;
         this.#active = true;
       }
 
       this.#touch = touch;
-      if (touch) this.#screenX = this.#touchScreenX(input.pointerCurrent.x, dt);
+      if (touch) this.#screenX = this.#clampScreenX(this.#touchAimStartX + input.pointerCurrent.x - this.#startX);
       else this.#screenX = this.#pointerScreenX(input.pointerCurrent.x);
       this.#screenY = input.pointerCurrent.y;
       this.#updateStartY(this.#screenY, dt);
-      this.#power = this.#calculatePower(this.#screenY);
-      if (this.#applyEdgeScroll(this.#screenX, dt) && !touch) {
-        this.#screenX = this.#pointerScreenX(input.pointerCurrent.x);
-      }
+      this.#power = this.#powerAt(this.#screenY);
+      if (touch) this.#applyTouchPan(this.#screenX, dt);
+      else if (this.#applyEdgeScroll(this.#screenX, dt)) this.#screenX = this.#pointerScreenX(input.pointerCurrent.x);
       this.#updateVisual(mode);
       return null;
     }
@@ -117,7 +122,7 @@ export class CastPowerAim {
       if (!this.#touch) this.#screenX = this.#pointerScreenX(input.pointerRelease.x);
       this.#screenY = input.pointerRelease.y;
       this.#updateStartY(this.#screenY, 0);
-      this.#power = this.#calculatePower(this.#screenY);
+      this.#power = this.#powerAt(this.#screenY);
 
       this.#release.active = true;
       this.#release.screenX = this.#screenX;
@@ -163,7 +168,7 @@ export class CastPowerAim {
     }
 
     if (this.#armed) {
-      this.#power = 0;
+      this.#power = this.#armedPower();
       this.#updateVisual(mode);
     } else if (!input?.pointerReleased) {
       this.#visual.active = false;
@@ -643,36 +648,36 @@ export class CastPowerAim {
   // TK-093: an edge zone along each side of the game viewport leads the line towards that edge. From the zone's inner
   // border the lead grows smoothly over rampDistancePx to maxLeadPx and stays there up to the edge. A viewport too
   // narrow for two zones halves itself (zone = half the width, ramp = the same share of it), so the centre stays at 0.
-  // TK-363 (spec 183 D6): on touch the aim is driven like a joystick, not placed under the finger. The horizontal swipe
-  // from the touch point sets the speed and side (longer swipe — faster, up to the full speed); a finger held still
-  // moves the aim toward its half of the screen, faster the farther from the middle. The speed is reached smoothly
-  // (acceleration), so the aim starts and stops without jumps; at the screen's edge the map scrolls as before.
-  #touchScreenX(pointerX, dt) {
+  // TK-365: the power a click-armed aim waits with: full when casting.touchAim.startAtFullPower is on, else 0.
+  #armedPower() {
+    return this.#cfg().touchAim?.startAtFullPower === true ? 1 : 0;
+  }
+
+  // TK-365: a touch on a full-power aim lowers the power by the same downward swipe that raises it from 0.
+  #powerAt(screenY) {
+    const power = this.#calculatePower(screenY);
+    return this.#touchFromFullPower ? 1 - power : power;
+  }
+
+  // TK-363.2 (spec 183 D6): while a touch aims, the map scrolls toward the side the aim stands on. The target speed
+  // grows with the aim's distance from the screen's middle (share of half the width past panDeadZoneRatio, curve
+  // panEasePower, up to panMaxPxPerSecond); the speed changes by at most panAccelerationPxPerSecond2, so the camera
+  // starts and stops without jerks. The aim itself stays where the finger put it.
+  #applyTouchPan(screenX, dt) {
+    if (!this.#panViewport) return;
     const cfg = this.#cfg().touchAim || {};
     const viewport = this.#getViewportSize?.();
-    const width = Math.max(1, viewport?.width || 1);
+    const half = Math.max(1, viewport?.width || 1) / 2;
     const dtSec = Math.min(0.1, Math.max(0, (Number(dt) || 0) / 1000));
-    const deadZone = Math.max(0, Number(cfg.deadZonePx) || 0);
-    const fullSwipe = Math.max(deadZone + 1, Number(cfg.fullSpeedSwipePx) || 140);
-    const maxSpeed = Math.max(0, Number(cfg.maxSpeedPxPerSecond) || 0);
-    const ease = Math.max(0.1, Number(cfg.easePower) || 1);
-    const x = Number.isFinite(pointerX) ? pointerX : this.#startX;
-    const swipe = x - this.#startX;
-    let target = 0;
-    if (Math.abs(swipe) > deadZone) {
-      target = Math.sign(swipe) * maxSpeed * Math.pow(this.#clamp((Math.abs(swipe) - deadZone) / (fullSwipe - deadZone), 0, 1), ease);
-    } else {
-      // TK-363.1: a still finger pushes the aim toward its half of the screen, slower near the middle.
-      const half = width / 2;
-      const offset = this.#clamp((x - half) / half, -1, 1);
-      target = Math.sign(offset) * maxSpeed * Math.pow(Math.abs(offset), ease);
-    }
-    const step = Math.max(0, Number(cfg.accelerationPxPerSecond2) || 0) * dtSec;
-    const change = target - this.#touchVelocity;
-    this.#touchVelocity = step > 0 && Math.abs(change) > step ? this.#touchVelocity + Math.sign(change) * step : target;
-    const next = this.#clampScreenX(this.#screenX + this.#touchVelocity * dtSec);
-    if (next === 0 || next === width) this.#touchVelocity = 0;
-    return next;
+    const dead = this.#clamp(Number(cfg.panDeadZoneRatio) || 0, 0, 0.95);
+    const offset = this.#clamp((screenX - half) / half, -1, 1);
+    const depth = this.#clamp((Math.abs(offset) - dead) / (1 - dead), 0, 1);
+    const target = Math.sign(offset) * Math.max(0, Number(cfg.panMaxPxPerSecond) || 0) *
+      Math.pow(depth, Math.max(0.1, Number(cfg.panEasePower) || 1));
+    const step = Math.max(0, Number(cfg.panAccelerationPxPerSecond2) || 0) * dtSec;
+    const change = target - this.#touchPanVelocity;
+    this.#touchPanVelocity = step > 0 && Math.abs(change) > step ? this.#touchPanVelocity + Math.sign(change) * step : target;
+    if (this.#touchPanVelocity !== 0) this.#panViewport(this.#touchPanVelocity * dtSec);
   }
 
   #pointerScreenX(value) {
