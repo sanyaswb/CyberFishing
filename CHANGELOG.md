@@ -2,6 +2,10 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.52.7 - Touch aim: a still finger steers by screen half (TK-363.1)
+
+- A still finger on the left half of the screen moves the cast aim left, on the right half right; the farther from the middle, the faster, and in the very middle it stays. Before, only a narrow band at the screen edge did this.
+
 ## v0.52.6 - Touch aim moves like a joystick (TK-363)
 
 - On a touch screen the cast aim no longer jumps under the finger. A held sideways swipe from the touch point moves it, faster for a longer swipe; a still finger near a screen edge pushes it toward that edge; it speeds up and slows down smoothly, and the cast goes where the aim is. Mouse unchanged. Values in casting.touchAim.
@@ -41,8 +45,3 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 ## v0.51.56 - DevTools weather fade no longer sticks (TK-358.1)
 
 - After a DevTools weather switch (rain, storm, fog) was turned off, its quick fade stayed for the rest of the session, so the natural events of that kind came and went faster than the location smoothSec. The fade now lasts only while held and until the release has arrived.
-
-## v0.51.55 - Weather code review: shared parts, fixed bugs (TK-358)
-
-- The rain, water, ash and starfall share one implementation of their zones on screen, zone masks, background placement and colours; the weather modules use the engine number helpers. The look is unchanged.
-- Fixed: the player statuses are released with the game and a status renewed after that gets its end again; the radiation debuff appears once its description is back; the weather controls no longer duplicate DevTools «СТАТУСИ»; an ash check that compared the wrong embers.

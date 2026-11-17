@@ -644,8 +644,8 @@ export class CastPowerAim {
   // border the lead grows smoothly over rampDistancePx to maxLeadPx and stays there up to the edge. A viewport too
   // narrow for two zones halves itself (zone = half the width, ramp = the same share of it), so the centre stays at 0.
   // TK-363 (spec 183 D6): on touch the aim is driven like a joystick, not placed under the finger. The horizontal swipe
-  // from the touch point sets the speed and side (longer swipe — faster, up to the full speed); a finger held still in
-  // an edge band of the screen moves the aim toward that edge, deeper — faster. The speed is reached smoothly
+  // from the touch point sets the speed and side (longer swipe — faster, up to the full speed); a finger held still
+  // moves the aim toward its half of the screen, faster the farther from the middle. The speed is reached smoothly
   // (acceleration), so the aim starts and stops without jumps; at the screen's edge the map scrolls as before.
   #touchScreenX(pointerX, dt) {
     const cfg = this.#cfg().touchAim || {};
@@ -662,9 +662,10 @@ export class CastPowerAim {
     if (Math.abs(swipe) > deadZone) {
       target = Math.sign(swipe) * maxSpeed * Math.pow(this.#clamp((Math.abs(swipe) - deadZone) / (fullSwipe - deadZone), 0, 1), ease);
     } else {
-      const band = width * this.#clamp(Number(cfg.edgeBandRatio) || 0, 0, 0.5);
-      if (band > 0 && x < band) target = -maxSpeed * Math.pow((band - x) / band, ease);
-      else if (band > 0 && x > width - band) target = maxSpeed * Math.pow((x - (width - band)) / band, ease);
+      // TK-363.1: a still finger pushes the aim toward its half of the screen, slower near the middle.
+      const half = width / 2;
+      const offset = this.#clamp((x - half) / half, -1, 1);
+      target = Math.sign(offset) * maxSpeed * Math.pow(Math.abs(offset), ease);
     }
     const step = Math.max(0, Number(cfg.accelerationPxPerSecond2) || 0) * dtSec;
     const change = target - this.#touchVelocity;

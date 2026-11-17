@@ -339,7 +339,8 @@ assert.equal(casts, 0);
 }
 // TK-363 (spec 183 D6): a touch aim never jumps to the finger. A waiting aim stays where it is when a touch lands
 // elsewhere; a held sideways swipe moves it at a speed that grows with the swipe and starts smoothly; a still finger in
-// the middle leaves it, at a screen edge pushes it toward that edge; the release casts where the aim is. The mouse keeps
+// the very middle leaves it, elsewhere pushes it toward its half of the screen, faster away from the middle (TK-363.1);
+// the release casts where the aim is. The mouse keeps
 // placing the aim under the pointer.
 {
   const { CONFIG } = runtime.importModule("src/game/config/runtime/game_config.js");
@@ -359,12 +360,12 @@ assert.equal(casts, 0);
   const release = (pointerType, x, y = 100) => aim.update({ pointerDown: false, pointerReleased: true, pointerType,
     pointerRelease: { x, y }, pointerStart: { x, y: 100 }, pointerCurrent: { x, y } }, null, 16);
   aim.arm(500);
-  assert.equal(hold("touch", 800, 800, 1)[0], 500, "a touch far from a waiting aim does not move it there");
+  assert.ok(Math.abs(hold("touch", 800, 800, 1)[0] - 500) < 2, "a touch far from a waiting aim does not move it there");
   release("touch", 800);
   aim.arm(500);
-  const still = hold("touch", 500, 505, 30);
-  assert.equal(still[29], 500, "a still finger in the middle (inside the dead zone) leaves the aim");
-  release("touch", 505);
+  const still = hold("touch", 500, 500, 30);
+  assert.equal(still[29], 500, "a still finger in the very middle leaves the aim");
+  release("touch", 500);
   aim.arm(500);
   const short = hold("touch", 500, 560, 40);
   release("touch", 560);
@@ -381,8 +382,16 @@ assert.equal(casts, 0);
   release("touch", 860);
   aim.arm(500);
   const edge = hold("touch", 995, 995, 30);
-  assert.ok(edge[29] > 500, "a still finger at the right edge pushes the aim right");
   release("touch", 995);
+  aim.arm(500);
+  const nearMiddle = hold("touch", 650, 650, 30);
+  release("touch", 650);
+  aim.arm(500);
+  const leftHalf = hold("touch", 200, 200, 30);
+  release("touch", 200);
+  assert.ok(nearMiddle[29] > 500 && edge[29] > nearMiddle[29],
+    "a still finger in the right half pushes the aim right, faster farther from the middle (not only at the edge)");
+  assert.ok(leftHalf[29] < 500, "a still finger in the left half pushes the aim left");
   assert.equal(hold("mouse", 300, 300, 1)[0], 300, "the mouse places the aim under the pointer as before");
   release("mouse", 300);
 }
