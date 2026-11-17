@@ -20,6 +20,15 @@ Notes: suspected owner module, related checks.
 
 ## Open
 
+### G-138 The tackle steps over a stair of the castable mask onto land and cannot be reeled back (P2, done in v0.52.4; owner acceptance pending)
+Found: 2026-11-17, owner, phone screenshot, v0.52.3.
+Reproduce: cast near the top-left stairs of the test map's castable mask; drift, a bite or retrieval moves the tackle
+diagonally past a stair's corner.
+Expected: the tackle stays on the castable water; retrieval brings it back.
+Actual: it stood on land above a stair and did not move again, though the cast counted as successful.
+Notes: `WaterEntity` tested each axis alone (`_applyPhysics`, `applyHookedFightMovement`, `updateBite`); fixed by
+`_resolveWaterStep`; check `tackle-line-limit`; TK-362.1, spec 183, incident I-27. Game-cycle report unchanged.
+
 ### G-137 Touch: a tap on the water aims at once, the map cannot be scrolled with a rod ready (P3, done in v0.52.2; owner acceptance pending)
 Found: 2026-11-17, owner, phone, v0.52.1.
 Reproduce: a rod, reel and line equipped, scouting; swipe sideways on the water.

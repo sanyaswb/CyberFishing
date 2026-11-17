@@ -103,4 +103,49 @@ for (const State of [WaitingState, BitingState]) {
     assert.deepEqual(transitions, ["scouting"], `${State.name} ${variant}: a double click takes the tackle out`);
   }
 }
-console.log("Tackle line limit passed: waiting/biting, fixed/sliding floats, feeder/spinning, off-centre rod, uniform/profiled metres and inward retrieval; empty tackle in the landing zone stays until a double click (TK-263).");
+// TK-362.1 (owner, phone screenshot): the tackle got onto land over a stair of the castable zone's mask and could not be
+// reeled back. Each axis was tested alone, so a diagonal step past a stair's corner passed both tests and landed on land;
+// from there both tests failed for good. Real mask of the test map, real FloatEntity: drift, a bite's run and a fight move
+// never leave the water, and a tackle put on land by another path comes back when retrieved.
+{
+  const { LocationMap } = load("src/game/domain/locations/location_map.js");
+  const { SeededRng } = load("src/engine/random/seeded_rng.js");
+  const locations = JSON.parse(JSON.stringify(CONFIG.locations));
+  const map = new LocationMap("test", locations, new SeededRng("tk363:map"), { depthReader: { getDepthAtPixel: () => 2 } });
+  const water = (x, y) => (map.isCastableAt(x, y) ? { depth: 2 } : null);
+  water.getDepth = () => 2;
+  const bounds = map.getCastableBoundsVirtual(locations.cellSize);
+  const fixedRng = { next: () => 0.5, range: (low) => low, chance: () => false };
+  // A stair of the mask: land at (370, 815), water left of it below and right of it on the same row.
+  assert.deepEqual([!!water(370, 815), !!water(370, 825), !!water(385, 815)], [false, true, true], "the test map has the stair");
+  const corner = new FloatEntity(385, 825, CONFIG.float || {}, 10, fixedRng, null, null, null, CONFIG);
+  corner.getVelocity().set(-600, -400);
+  corner.update(bounds, 16, {}, water, {}, 0, null);
+  assert.ok(water(corner.getPosition().x, corner.getPosition().y), "a diagonal step past a stair's corner stays on the water");
+  const rng = new SeededRng("tk363:drift");
+  let offWater = 0;
+  for (let index = 0; index < 400; index += 1) {
+    let x, y;
+    do { x = rng.range(0, 500); y = rng.range(800, 960); } while (!water(x, y));
+    const entity = new FloatEntity(x, y, CONFIG.float || {}, 10, fixedRng, null, null, null, CONFIG);
+    for (let frame = 0; frame < 200; frame += 1) {
+      const angle = rng.range(0, Math.PI * 2), speed = rng.range(50, 900);
+      entity.getVelocity().set(Math.cos(angle) * speed, Math.sin(angle) * speed);
+      entity.update(bounds, 16, {}, water, {}, 0, null);
+      if (!water(entity.getPosition().x, entity.getPosition().y)) offWater += 1;
+    }
+  }
+  assert.equal(offWater, 0, "tackle drifting at random near the mask's stairs never leaves the water");
+  const fight = new FloatEntity(385, 825, CONFIG.float || {}, 10, fixedRng, null, null, null, CONFIG);
+  fight.applyHookedFightMovement({ boundsRect: bounds, dt: 16, environment: {}, checkWater: water,
+    targetVelocity: { x: -600, y: -400 } });
+  assert.ok(water(fight.getPosition().x, fight.getPosition().y), "a fish's diagonal pull past the corner stays on the water");
+  // A tackle already on land (any other path) is reeled back.
+  const stranded = new FloatEntity(370, 815, CONFIG.float || {}, 10, fixedRng, null, null, null, CONFIG);
+  for (let frame = 0; frame < 60; frame += 1) {
+    stranded.getVelocity().set(120, 120);
+    stranded.update(bounds, 16, {}, water, {}, 0, null);
+  }
+  assert.ok(water(stranded.getPosition().x, stranded.getPosition().y), "a tackle on land comes back when pulled toward the rod");
+}
+console.log("Tackle line limit passed: waiting/biting, fixed/sliding floats, feeder/spinning, off-centre rod, uniform/profiled metres and inward retrieval; empty tackle in the landing zone stays until a double click (TK-263); the tackle never steps over a mask stair onto land (TK-362.1).");

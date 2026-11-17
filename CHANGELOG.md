@@ -2,6 +2,10 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.52.4 - The tackle no longer gets stuck on land over a mask stair (TK-362.1)
+
+- Near a stair of the castable zone's mask the tackle could step diagonally past the stair's corner onto land during drift, a bite or a fight, and then never move again. Each step is now tested where it ends, and a tackle that is off the water comes back when reeled in. Game-cycle report unchanged.
+
 ## v0.52.3 - Cast area: landings stay inside the castable zone (spec 183, TK-362)
 
 - Checked the cast area: when the accuracy area crosses the edge of the castable zone, a point outside is refused and drawn again, so the tackle never lands outside (20 000 casts on the test map, none outside). A new check keeps it that way. No game change.
@@ -42,7 +46,3 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 ## v0.51.53 - Starfall mask on one layer (TK-356.1)
 
 - The falling stars and the bolide share one layer under one sky mask: one stencil pass a frame instead of two, and the mask can no longer show up as a white shape when it is taken off one of them. The scene checks now model Pixi masks.
-
-## v0.51.52 - Clip falling stars and bolide to the sky zones (TK-356)
-
-- Ordinary falling stars and the bolide now share a Pixi Graphics sky mask so tails and glow cut off cleanly at the sky zone boundary and never spill onto the world below; the mask redraws only when sky rectangles change and is removed when sky zones are off.

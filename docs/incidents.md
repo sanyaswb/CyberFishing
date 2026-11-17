@@ -38,10 +38,31 @@ rule as something the next change can follow.
 | R22 | Each switch of a manual control holds only its own process; never one shared freeze or a switch that sets another process. A check flips every switch in every order and asserts the others keep their course. | I-22 |
 | R23 | A DevTools section that redraws its container while a child drill-in (`depth >= MAX_INLINE_SECTION_DEPTH`) may be open must wrap the rebuild in `DevToolsUI.preserveDrill`, and UI tests of nested modules must mount at the real production section depth (e.g. `СЦЕНА WebGL` -> `ПОГОДА`). | I-23 |
 | R24 | A double of `DevToolsUI` that records what a section shows keeps its placement contract (`#insertTreeNode`: rows before nested sections and slots, whatever order they were made in) and asserts the order the user reads. A mark derived from session edits («· змінено», a reset button) follows `config-updated` in place, not only the next redraw. Found by looking at the live panel, which the fake hid. | I-24 |
+| R27 | Movement on a masked area is tested at the point it ends on, not only per axis: a diagonal step can pass both axis tests and cross a corner of the mask. An entity that is already outside its area must still be able to come back. A check of such an area runs the real mask of a location (its stairs), not a rectangle. | I-27 |
 | R26 | A DevTools control that shows a live state (an on/off switch of a process that also starts and ends by itself) follows that state while the panel is open, not only the redraw caused by another control: a cheap comparison on each live update, a redraw only on change. A check changes the state without touching a control and asserts the switch at once. | I-26 |
 | R25 | A check that compares a filtered list with the list it came from keeps each item's own index (map to [value, index] before filtering); comparing by the filtered position mixes items up and can pass or fail by luck. | I-25 |
 
 <a id="i-25"></a>
+
+## I-27 · 2026-11-17 · up to v0.52.3: the tackle stood on land above a stair of the castable mask (TK-362.1)
+
+- **Seen:** the owner on a phone (screenshot): after a successful cast into the top-left corner of the test map the float
+  stood above a stair of the castable zone's mask, outside the green zone, and could not be reeled back. Earlier the same
+  day (TK-362) the agent had checked only the landing point (20 000 casts, none outside) and answered that the tackle
+  cannot get outside — a wasted round for the owner.
+- **Cause:** `WaterEntity` (`src/game/domain/tackle/water_entity.js`: `_applyPhysics`, `applyHookedFightMovement`,
+  `updateBite`) tested the water at `(nextX, y)` and `(x, nextY)`, never at `(nextX, nextY)`. Every stair of a mask has a
+  corner of land pointing into the water; a diagonal step past it passed both tests and ended on land, and from there both
+  tests failed for every step, so the tackle never moved again. Node, real mask, real `FloatEntity`: 2000 drifting floats
+  near the stairs — 4 on land, 2 still there after 3 s of retrieval.
+- **Fix (v0.52.4):** `WaterEntity._resolveWaterStep` — one step for the three movements: axes as before (sliding along a
+  shore), a diagonal step past a corner keeps only its X move, and a tackle already off the water moves freely (retrieval
+  brings it back). After: 0 of 2000.
+- **Rule R27:** test the end point of a move on a masked area, keep a way back for an entity outside it, and check with a
+  real location mask. When answering «can X get outside», follow the object through every system that moves it, not only
+  the one that places it.
+- **Check:** `utils/checks/gameplay/tackle-line-limit-check.js` (TK-362.1 block: the stair corner, 400 drifting floats,
+  a fight move, a stranded tackle reeled back); fails on v0.52.3.
 
 ## I-26 · 2026-11-17 · up to v0.52.0: «after the starfall goes off the fog comes on» (TK-360)
 

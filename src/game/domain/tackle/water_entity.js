@@ -74,6 +74,8 @@ export class WaterEntity {
   ) {
     this._position = new Vector2(x, y);
     this._velocity = new Vector2(0, 0);
+    // TK-362.1: one reused step record of _resolveWaterStep.
+    this._waterStep = { x: 0, y: 0, blockedX: false, blockedY: false };
     this._currentBiteMoveVelocity = new Vector2(0, 0);
     this._forceScratch = new Vector2(0, 0);
     this._waterVelocity = new Vector2(0, 0);
@@ -261,19 +263,12 @@ export class WaterEntity {
 
     const prevX = this._position.x;
     const prevY = this._position.y;
-    let nextX = this._position.x + targetVelocityX * dtSec + drift.x;
-    let nextY = this._position.y + targetVelocityY * dtSec + drift.y;
-
-    if (checkWater) {
-      if (!checkWater(nextX, this._position.y)) {
-        this._velocity.x = 0;
-        nextX = this._position.x;
-      }
-      if (!checkWater(this._position.x, nextY)) {
-        this._velocity.y = 0;
-        nextY = this._position.y;
-      }
-    }
+    const fightStep = this._resolveWaterStep(checkWater,
+      this._position.x + targetVelocityX * dtSec + drift.x, this._position.y + targetVelocityY * dtSec + drift.y);
+    if (fightStep.blockedX) this._velocity.x = 0;
+    if (fightStep.blockedY) this._velocity.y = 0;
+    const nextX = fightStep.x;
+    const nextY = fightStep.y;
 
     const bounds = boundsRect || {
       left: -Infinity,
@@ -536,19 +531,12 @@ export class WaterEntity {
       return;
     }
 
-    let nextX = this._position.x + this._velocity.x * dtSec + driftDx;
-    let nextY = this._position.y + this._velocity.y * dtSec + driftDy;
-
-    if (checkWater) {
-      if (!checkWater(nextX, this._position.y)) {
-        this._velocity.x = 0;
-        nextX = this._position.x;
-      }
-      if (!checkWater(this._position.x, nextY)) {
-        this._velocity.y = 0;
-        nextY = this._position.y;
-      }
-    }
+    const step = this._resolveWaterStep(checkWater,
+      this._position.x + this._velocity.x * dtSec + driftDx, this._position.y + this._velocity.y * dtSec + driftDy);
+    if (step.blockedX) this._velocity.x = 0;
+    if (step.blockedY) this._velocity.y = 0;
+    const nextX = step.x;
+    const nextY = step.y;
 
     this._position.set(
       Math.max(boundsRect.left, Math.min(boundsRect.right, nextX)),
@@ -678,6 +666,35 @@ export class WaterEntity {
     this._biteMoveTimer = 0;
   }
 
+  // TK-362.1: one step of the tackle that keeps it on the water. Each axis is tested as before, so the tackle slides along
+  // a shore. A diagonal step that passes both axis tests can still land beyond a corner of the shore — every stair of a
+  // castable zone's mask has one — and from there both axis tests fail, so the tackle stayed on land for good: such a
+  // step keeps only its X move. A tackle already off the water (another path put it there) moves freely, so retrieving
+  // brings it back. Writes and returns the reused record { x, y, blockedX, blockedY }.
+  _resolveWaterStep(checkWater, nextX, nextY) {
+    const step = this._waterStep;
+    const x = this._position.x;
+    const y = this._position.y;
+    step.x = nextX;
+    step.y = nextY;
+    step.blockedX = false;
+    step.blockedY = false;
+    if (!checkWater || !checkWater(x, y)) return step;
+    if (!checkWater(nextX, y)) {
+      step.blockedX = true;
+      step.x = x;
+    }
+    if (!checkWater(x, nextY)) {
+      step.blockedY = true;
+      step.y = y;
+    }
+    if (!step.blockedX && !step.blockedY && !checkWater(nextX, nextY)) {
+      step.blockedY = true;
+      step.y = y;
+    }
+    return step;
+  }
+
   updateBite(dt, checkWater) {
     if (!this._isBiting) return;
 
@@ -692,21 +709,12 @@ export class WaterEntity {
 
     if (this._biteMoveTimer > 0) {
       this._biteMoveTimer -= dt;
-      let nextX =
-        this._position.x + this._currentBiteMoveVelocity.x * (dt / 1000);
-      let nextY =
-        this._position.y + this._currentBiteMoveVelocity.y * (dt / 1000);
-      if (checkWater) {
-        if (!checkWater(nextX, this._position.y)) {
-          this._currentBiteMoveVelocity.x *= -1;
-          nextX = this._position.x;
-        }
-        if (!checkWater(this._position.x, nextY)) {
-          this._currentBiteMoveVelocity.y *= -1;
-          nextY = this._position.y;
-        }
-      }
-      this._position.set(nextX, nextY);
+      const step = this._resolveWaterStep(checkWater,
+        this._position.x + this._currentBiteMoveVelocity.x * (dt / 1000),
+        this._position.y + this._currentBiteMoveVelocity.y * (dt / 1000));
+      if (step.blockedX) this._currentBiteMoveVelocity.x *= -1;
+      if (step.blockedY) this._currentBiteMoveVelocity.y *= -1;
+      this._position.set(step.x, step.y);
     }
 
     this._animTimer -= dt;
