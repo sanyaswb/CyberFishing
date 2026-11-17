@@ -2,6 +2,11 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.52.13 - Double tap to the map's edge before aiming (TK-366.1)
+
+- Without an aim, a double tap in the left or right half of the screen takes the camera at once to that edge of the map; no aim starts. While aiming, a double tap removes the aim as before.
+- A finger's double tap may now have up to 450 ms between its two releases (input.touchCast.doubleTapMs); it was 300 ms, too short for a finger's hold and pause. Mouse unchanged.
+
 ## v0.52.12 - Double tap while aiming jumps to the map's edge (TK-366)
 
 - While the touch aim waits, a double tap in the left half of the screen takes the camera at once to the map's left edge, in the right half to the right edge; the aim waits at the screen's middle. A single tap still removes the aim.
@@ -41,7 +46,3 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 ## v0.52.4 - The tackle no longer gets stuck on land over a mask stair (TK-362.1)
 
 - Near a stair of the castable zone's mask the tackle could step diagonally past the stair's corner onto land during drift, a bite or a fight, and then never move again. Each step is now tested where it ends, and a tackle that is off the water comes back when reeled in. Game-cycle report unchanged.
-
-## v0.52.3 - Cast area: landings stay inside the castable zone (spec 183, TK-362)
-
-- Checked the cast area: when the accuracy area crosses the edge of the castable zone, a point outside is refused and drawn again, so the tackle never lands outside (20 000 casts on the test map, none outside). A new check keeps it that way. No game change.

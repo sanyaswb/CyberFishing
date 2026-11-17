@@ -314,7 +314,10 @@ export class InputController {
           // duration; fishing holds, drags and cancellations cannot.
           // Spec 183 D1: a touch that moved down without becoming a swipe or a scroll is not a click either.
           if (pointerWasClickCandidate && !this.#pointerReleaseCancelled && !this.#isDragging && !this.#touchSwipeMoved) {
-            if (now - this.#lastClickTime < 300) {
+            // TK-366.1: a finger's double tap needs a longer window (hold + pause) than a mouse's double click.
+            const doubleMs = this.#pointerType === "touch"
+              ? Math.max(0, Number(this.#runtimeConfig.input?.touchCast?.doubleTapMs) || 300) : 300;
+            if (now - this.#lastClickTime < doubleMs) {
               this.#isDoubleClick = true;
             } else {
 

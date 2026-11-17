@@ -194,7 +194,8 @@ export const CONFIG = {
     pullHoldMinMs: 120,
     // Spec 183 (touch only): with a ready rod a touch scrolls the map; a swipe down this long (px) aims at once; while
     // the aim waits, a still touch up to tapMaxMs is a tap (removes the aim).
-    touchCast: { swipeAimPx: 48, tapMaxMs: 300 },
+    // TK-366.1: doubleTapMs — the longest time between a finger's two tap releases that still makes a double tap.
+    touchCast: { swipeAimPx: 48, tapMaxMs: 300, doubleTapMs: 450 },
 
     // Можна використовувати e.code (KeyW, Space, ShiftLeft) або e.key (Shift)
     keys: {
