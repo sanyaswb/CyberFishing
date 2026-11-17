@@ -2,6 +2,10 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.52.3 - Cast area: landings stay inside the castable zone (spec 183, TK-362)
+
+- Checked the cast area: when the accuracy area crosses the edge of the castable zone, a point outside is refused and drawn again, so the tackle never lands outside (20 000 casts on the test map, none outside). A new check keeps it that way. No game change.
+
 ## v0.52.2 - Touch cast controls: scroll, tap to aim, no long-press re-cast (spec 183, TK-361)
 
 - On a phone with a ready rod a sideways swipe now scrolls the map instead of aiming. A tap starts aiming: the aim waits until a touch pulls down with power and casts; a release at zero power keeps it, a tap or a double tap removes it. A long swipe down aims and casts at once. The mouse works as before.
@@ -42,7 +46,3 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 ## v0.51.52 - Clip falling stars and bolide to the sky zones (TK-356)
 
 - Ordinary falling stars and the bolide now share a Pixi Graphics sky mask so tails and glow cut off cleanly at the sky zone boundary and never spill onto the world below; the mask redraws only when sky rectangles change and is removed when sky zones are off.
-
-## v0.51.51 - Ash and starfall density per location, like the rain (TK-355)
-
-- The ash count and the stars a minute are now the whole location count (the ash over the background, the stars over the whole sky), and a screen shows its visible share: a narrow phone screen shows fewer embers and stars at the same density instead of squeezing them all in. A screen that shows the whole location looks as before.

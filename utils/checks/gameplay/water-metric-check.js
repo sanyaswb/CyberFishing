@@ -331,6 +331,46 @@ function checkTestLocationProfile() {
     "the production tilt preserves reference width");
 }
 
+// Spec 183 D5 (TK-362, owner: «якщо область перекриває не ігрову зону шанс потрапляння снасті … за межами можливий»):
+// on the production test map (its masked castable zone and collisions) a cast whose accuracy area crosses the zone's
+// edge still lands inside it: every sample is checked with the castable test, a miss is drawn again, and the centre
+// fallback is checked the same way (otherwise no cast).
+function checkCastLandsInCastableZone() {
+  const { CONFIG } = runtime.importModule("src/game/config/runtime/game_config.js");
+  const { LocationMap } = runtime.importModule("src/game/domain/locations/location_map.js");
+  const { CastPowerAim } = runtime.importModule("src/game/application/casting/cast_power_aim.js");
+  const { SeededRng } = runtime.importModule("src/engine/random/seeded_rng.js");
+  const locations = JSON.parse(JSON.stringify(CONFIG.locations));
+  const map = new LocationMap("test", locations, new SeededRng("tk362:map"), { depthReader: { getDepthAtPixel: () => 2 } });
+  const bounds = map.getCastableBoundsVirtual(locations.cellSize);
+  const resolver = new LocationWaterMetricResolver({ pixelsPerMeter: CONFIG.physics.simulation.pixelsPerMeter });
+  const metric = resolver.resolve(bounds, locations.map.test.waterProjection);
+  const identity = (x, y, out = {}) => { out.x = x; out.y = y; return out; };
+  const projector = { getScale: () => 1, screenToVirtual: identity, virtualToScreen: identity,
+    getPerspective: () => ({ scale: 1, squashY: 0.6 }) };
+  let rejected = 0;
+  const checkWater = (x, y) => {
+    if (map.isCastableAt(x, y)) return { depth: 2 };
+    rejected += 1;
+    return null;
+  };
+  const rng = new SeededRng("tk362:cast");
+  const aim = new CastPowerAim({ config: { casting: { accuracyAttempts: 10 } }, projector, getWaterMetric: () => metric,
+    getViewportSize: () => ({ width: locations.baseResolution.width, height: locations.baseResolution.height }), rng });
+  let landed = 0;
+  for (let index = 0; index < 4000; index += 1) {
+    const release = { active: true, screenX: rng.range(0, locations.baseResolution.width), screenY: 0, startX: 0, startY: 0,
+      power: rng.range(0.05, 1), mode: "rod" };
+    const target = aim.resolveTarget(release, { bounds, maxDistance: metric.topBasePixels, accuracyPx: 0,
+      accuracyPercent: 25, checkWater });
+    if (!target?.success) continue;
+    landed += 1;
+    assert.ok(map.isCastableAt(target.x, target.y), `a cast lands inside the castable zone (${target.x}, ${target.y})`);
+  }
+  assert.ok(landed > 3900, "nearly every cast lands");
+  assert.ok(rejected > 100, "the accuracy areas did cross the zone's edge (samples outside were drawn and refused)");
+}
+
 // G-112: actual illustrated chum containment and calibrated landing range through each viewport.
 function checkUnifiedWaterAreas() {
   const { CONFIG } = runtime.importModule("src/game/config/runtime/game_config.js");
@@ -612,8 +652,9 @@ checkGroundPlane();
 checkResolver();
 checkSingleMetricSource();
 checkTestLocationProfile();
+checkCastLandsInCastableZone();
 checkUnifiedWaterAreas();
 checkAccuracyIndependentOfProfile();
 checkDirectPixelDepthReading();
 checkValidation();
-console.log("Water metric passed: exact authored metres/aiming, simple tilt/far scale, matching surface ellipse bonuses, full bounds, inverses/velocities/tangents, one metric source per location, save timing and buffer reuse.");
+console.log("Water metric passed: casts land in the castable zone, exact authored metres/aiming, simple tilt/far scale, matching surface ellipse bonuses, full bounds, inverses/velocities/tangents, one metric source per location, save timing and buffer reuse.");
