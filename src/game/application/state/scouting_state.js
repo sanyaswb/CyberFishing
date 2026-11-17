@@ -78,15 +78,12 @@ export class ScoutingState extends GameState {
         input.clickPos.x,
         input.clickPos.y,
       );
-      let cell = this.deps.world.checkWater(vPos.x, vPos.y);
+      const cell = this.deps.world.checkWater(vPos.x, vPos.y);
       const bounds = this.deps.world.getDynamicBounds();
 
+      // TK-362.2: God mode infiniteCasting lifts only the distance limit; the point must be on the castable water.
       const canCastAnywhere =
         this.deps.services.devFlags.isEnabled("infiniteCasting");
-
-      if (canCastAnywhere) {
-        if (!cell) cell = { depth: 2.0 };
-      }
 
       let isInside = true;
       if (!canCastAnywhere) {
@@ -100,7 +97,7 @@ export class ScoutingState extends GameState {
         );
       }
 
-      if ((cell && isInside) || canCastAnywhere) {
+      if (cell && isInside) {
         const depth = this.deps.world.getDepthAt?.(vPos.x, vPos.y) ?? cell.depth;
         this.deps.commands.castLine(vPos.x, vPos.y, depth);
       } else {

@@ -369,6 +369,21 @@ function checkCastLandsInCastableZone() {
   }
   assert.ok(landed > 3900, "nearly every cast lands");
   assert.ok(rejected > 100, "the accuracy areas did cross the zone's edge (samples outside were drawn and refused)");
+  // TK-362.2: God mode infiniteCasting (canCastAnywhere) lifts only the distance; full-power casts toward the masked
+  // top-left stairs, whose accuracy circles reach onto land, still land on the castable water.
+  let godLanded = 0;
+  const godRejectedBefore = rejected;
+  for (let index = 0; index < 2000; index += 1) {
+    const release = { active: true, screenX: rng.range(0, 900), screenY: 0, startX: 0, startY: 0, power: 1, mode: "rod" };
+    const target = aim.resolveTarget(release, { bounds, maxDistance: Infinity, accuracyPx: 0, accuracyPercent: 25,
+      canCastAnywhere: true, checkWater });
+    if (!target?.success) continue;
+    godLanded += 1;
+    assert.ok(map.isCastableAt(target.x, target.y), `a God mode cast lands inside the castable zone (${target.x}, ${target.y})`);
+  }
+  // A circle centred on land with no water among its samples is an invalid cast, as without God mode.
+  assert.ok(godLanded > 1000, "most God mode casts land");
+  assert.ok(rejected - godRejectedBefore > 100, "God mode accuracy circles did reach onto land");
 }
 
 // G-112: actual illustrated chum containment and calibrated landing range through each viewport.

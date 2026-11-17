@@ -2,6 +2,10 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.52.5 - In God mode a cast no longer lands outside the castable zone (TK-362.2)
+
+- With God mode on, its infinite-casting flag accepted any random point of the accuracy circle, land included, so a cast at the edge of the castable mask could land outside the green zone. The landing point is now always tested for water; God mode lifts only the distance limit (also for the legacy click cast). Game-cycle report unchanged.
+
 ## v0.52.4 - The tackle no longer gets stuck on land over a mask stair (TK-362.1)
 
 - Near a stair of the castable zone's mask the tackle could step diagonally past the stair's corner onto land during drift, a bite or a fight, and then never move again. Each step is now tested where it ends, and a tackle that is off the water comes back when reeled in. Game-cycle report unchanged.
@@ -42,7 +46,3 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 ## v0.51.54 - The bolide can burn out (TK-357)
 
 - A bolide may now burn out before it leaves the sky (never before 20 % of its path): its head flares and is gone, its tail stops where it was and fades smoothly, and sparks fly off the flare, slowing and falling a little. Tunable in DevTools «Конфіг» → canvas → starfall → bolide → burst.
-
-## v0.51.53 - Starfall mask on one layer (TK-356.1)
-
-- The falling stars and the bolide share one layer under one sky mask: one stencil pass a frame instead of two, and the mask can no longer show up as a white shape when it is taken off one of them. The scene checks now model Pixi masks.

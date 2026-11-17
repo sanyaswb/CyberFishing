@@ -20,6 +20,15 @@ Notes: suspected owner module, related checks.
 
 ## Open
 
+### G-139 In God mode a cast whose accuracy circle reaches onto land lands on land (P2, done in v0.52.5; owner acceptance pending)
+Found: 2026-11-17, owner, phone, v0.52.3.
+Reproduce: God mode on (`infiniteCasting` is on by default inside it); full-power cast at the edge of the test map's
+castable mask so that the accuracy circle reaches onto land.
+Expected: the tackle lands only on the castable water; God mode lifts only the distance limit (TK-268).
+Actual: the float appeared outside the green zone right after the cast.
+Notes: `CastPowerAim.resolveTarget` accepted a sample with `cell || canCastAnywhere`; the legacy click cast in
+`ScoutingState` did the same with a fake depth-2 cell. Fixed in both; check `water-metric`; TK-362.2, spec 183, incident I-28.
+
 ### G-138 The tackle steps over a stair of the castable mask onto land and cannot be reeled back (P2, done in v0.52.4; owner acceptance pending)
 Found: 2026-11-17, owner, phone screenshot, v0.52.3.
 Reproduce: cast near the top-left stairs of the test map's castable mask; drift, a bite or retrieval moves the tackle

@@ -38,11 +38,29 @@ rule as something the next change can follow.
 | R22 | Each switch of a manual control holds only its own process; never one shared freeze or a switch that sets another process. A check flips every switch in every order and asserts the others keep their course. | I-22 |
 | R23 | A DevTools section that redraws its container while a child drill-in (`depth >= MAX_INLINE_SECTION_DEPTH`) may be open must wrap the rebuild in `DevToolsUI.preserveDrill`, and UI tests of nested modules must mount at the real production section depth (e.g. `СЦЕНА WebGL` -> `ПОГОДА`). | I-23 |
 | R24 | A double of `DevToolsUI` that records what a section shows keeps its placement contract (`#insertTreeNode`: rows before nested sections and slots, whatever order they were made in) and asserts the order the user reads. A mark derived from session edits («· змінено», a reset button) follows `config-updated` in place, not only the next redraw. Found by looking at the live panel, which the fake hid. | I-24 |
+| R28 | A DEV override lifts exactly the limit it is named for. A flag that removes a distance limit does not also remove the water test; when a flag joins a condition with `||`, check what else that condition guarded. When reproducing an owner's report, ask which DEV switches were on (God mode, its sub-flags default on). | I-28 |
 | R27 | Movement on a masked area is tested at the point it ends on, not only per axis: a diagonal step can pass both axis tests and cross a corner of the mask. An entity that is already outside its area must still be able to come back. A check of such an area runs the real mask of a location (its stairs), not a rectangle. | I-27 |
 | R26 | A DevTools control that shows a live state (an on/off switch of a process that also starts and ends by itself) follows that state while the panel is open, not only the redraw caused by another control: a cheap comparison on each live update, a redraw only on change. A check changes the state without touching a control and asserts the switch at once. | I-26 |
 | R25 | A check that compares a filtered list with the list it came from keeps each item's own index (map to [value, index] before filtering); comparing by the filtered position mixes items up and can pass or fail by luck. | I-25 |
 
 <a id="i-25"></a>
+
+## I-28 · 2026-11-17 · up to v0.52.4: in God mode a cast landed outside the castable mask (TK-362.2)
+
+- **Seen:** the owner on a phone: a full-power cast released at the edge of the castable mask — the float appeared outside
+  the green zone right after landing, not after drift.
+- **Cause:** `CastPowerAim.resolveTarget` (`src/game/application/casting/cast_power_aim.js`) accepted a random sample of
+  the accuracy circle with `cell || canCastAnywhere`, and the centre fallback did the same. `canCastAnywhere` is God mode
+  `infiniteCasting`, on by default inside God mode since TK-268, whose purpose was only to lift the distance limit. So
+  with God mode on, any point of the circle — land included — became the landing point. The legacy click cast in
+  `ScoutingState` invented a depth-2 cell on land the same way. Node, real mask and water metric, power 1 near the stairs:
+  without God mode 0 of 11 504 casts outside (landing and the first 30 frames); with it 4086 of 12 000.
+- **Fix (v0.52.5):** the landing sample must be on the castable water in every mode; `canCastAnywhere` only sets the
+  distance to the whole water. Same in the legacy click cast. The dead «land depth 2 m» fallback is removed.
+- **Rule R28:** a DEV override lifts only what it is named for; read every `|| flag` for what else it bypasses. Ask which
+  DEV switches were on when a report cannot be reproduced without them.
+- **Check:** `utils/checks/gameplay/water-metric-check.js` (`checkCastLandsInCastableZone`, the God mode pass: full-power
+  casts toward the masked stairs); fails on v0.52.4.
 
 ## I-27 · 2026-11-17 · up to v0.52.3: the tackle stood on land above a stair of the castable mask (TK-362.1)
 

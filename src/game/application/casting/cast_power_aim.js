@@ -265,8 +265,10 @@ export class CastPowerAim {
       ) {
         continue;
       }
+      // TK-362.2: canCastAnywhere (God mode infiniteCasting) lifts only the distance limit; a sample of the accuracy
+      // circle that lies off the castable water is redrawn in every mode.
       const cell = checkWater?.(virtualPos.x, virtualPos.y);
-      if (cell || canCastAnywhere) {
+      if (cell) {
         return this.#targetResult({
           virtualPos,
           cell,
@@ -278,7 +280,6 @@ export class CastPowerAim {
           power: release.power,
           distance,
           maxDistance,
-          canCastAnywhere,
         });
       }
     }
@@ -296,7 +297,7 @@ export class CastPowerAim {
         originX,
         bounds.bottom,
         distance,
-      ) && (centerCell || canCastAnywhere)
+      ) && centerCell
     ) {
       return this.#targetResult({
         virtualPos: centerVirtual,
@@ -309,7 +310,6 @@ export class CastPowerAim {
         power: release.power,
         distance,
         maxDistance,
-        canCastAnywhere,
       });
     }
 
@@ -338,7 +338,6 @@ export class CastPowerAim {
     power,
     distance,
     maxDistance,
-    canCastAnywhere,
   }) {
     const ratio =
       maxDistance > 0 ? Math.max(0, Math.min(1, distance / maxDistance)) : 0;
@@ -350,7 +349,7 @@ export class CastPowerAim {
       depth:
         (typeof checkWater?.getDepth === "function"
           ? checkWater.getDepth(virtualPos.x, virtualPos.y)
-          : cell?.depth) ?? (canCastAnywhere ? 2.0 : 0),
+          : cell?.depth) ?? 0,
       originVirtualX: rodScreenX === screenX ? originX : this.#projector.screenToVirtual(rodScreenX, 0, this.#scratchA).x,
       originVirtualY: bounds.bottom,
       rodScreenX,

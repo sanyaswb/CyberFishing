@@ -1,6 +1,7 @@
 // Release notes, newest first (unshift with every patch). DEV only: no production code reads them, and in the start's
 // bundle they cost 13 KB gzip (spec 160). dev.html publishes them with the version: window.CYBER_FISHING_PROJECT_VERSION.notes.
 export const PROJECT_RELEASE_NOTES = Object.freeze([
+  "TK-362.2: in God mode (infiniteCasting) a cast no longer lands outside the castable mask; the flag lifts only the distance limit.",
   "TK-362.1: the tackle no longer steps diagonally over a stair of the castable mask onto land (WaterEntity._resolveWaterStep); a tackle off the water can be reeled back.",
   "TK-362 (spec 183 D5): a check on the real test map — every cast lands inside the castable zone even when its accuracy area crosses the edge.",
   "TK-361 (spec 183): touch with a ready rod — a sideways swipe scrolls, a tap arms the aim (a tap or a double tap removes it), a long swipe down aims at once; no long-press re-cast.",
