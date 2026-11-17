@@ -45,10 +45,7 @@ export class InputController {
   #pointerGestureId;
   #keys = {};
   #isDoubleClick = false;
-  #longPressPos = null;
-  #hasLongPressed = false;
   #lastClickTime = 0;
-  #longPressTimeout = null;
   #listeners;
   #dragControlEnabled = true;
   #fightInputActionComposer = null;
@@ -57,6 +54,12 @@ export class InputController {
   #pointerPanEnabled = false;
   #pointerPanGesture = false;
   #panGestureX = 0;
+  // Spec 183 D1: in scouting with a ready rod a touch starts as a map scroll; a long swipe down turns it into aiming.
+  #touchAimMode = "off";
+  #touchArmingGesture = false;
+  #touchAimTapGesture = false;
+  #touchSwipeMoved = false;
+  #pointerType = "";
   #activePointerId = null;
   #getOriginX;
 
@@ -105,8 +108,8 @@ export class InputController {
       retrieve: false,
       clickPos: null,
       isDoubleClick: false,
-      longPressPos: null,
       pointerDown: false,
+      pointerType: "",
       pointerPanning: false,
       dragControlActive: false,
       dragControlEnabled: true,
@@ -143,6 +146,16 @@ export class InputController {
     this.#pointerPanEnabled = enabled === true;
   }
 
+  // Spec 183 (touch only; mouse and pen presses keep their behaviour). mode:
+  // - "arming" (D1): a touch scrolls the map sideways; a long swipe down (input.touchCast.swipeAimPx) becomes an aiming
+  //   gesture from the touch point; a still tap is a click;
+  // - "armed" (D2): the aim waits; a touch aims, and a still touch up to input.touchCast.tapMaxMs is a click (a finger's
+  //   tap often outlasts pullHoldMinMs, the fishing hold's start);
+  // - "off": as before.
+  setTouchAimMode(mode) {
+    this.#touchAimMode = mode === "arming" || mode === "armed" ? mode : "off";
+  }
+
   // A form field or editable content: the browser owns its keyboard (keyup still clears a key held before the focus).
   static #isTextEntryTarget(target) {
     const tag = String(target?.tagName || "").toUpperCase();
@@ -174,7 +187,12 @@ export class InputController {
     this.#addEventListener(this.#canvas, "pointerdown", (e) => {
       if (this.#isPointerDown || (e.button !== undefined && e.button !== 0)) return;
       this.#activePointerId = e.pointerId ?? null;
-      this.#pointerPanGesture = this.#pointerPanEnabled;
+      this.#pointerType = typeof e.pointerType === "string" ? e.pointerType : "";
+      const touchAim = !this.#pointerPanEnabled && this.#pointerType === "touch";
+      this.#touchArmingGesture = touchAim && this.#touchAimMode === "arming";
+      this.#touchAimTapGesture = touchAim && this.#touchAimMode === "armed";
+      this.#touchSwipeMoved = false;
+      this.#pointerPanGesture = this.#pointerPanEnabled || this.#touchArmingGesture;
       this.#panGestureX = 0;
       // A gesture that starts on the scene keeps its pointer over HUD controls,
       // for aiming and fighting as well as map navigation.
@@ -204,20 +222,7 @@ export class InputController {
       this.#lastKeyboardRodControlUpdateMs = Date.now();
       this.#swipeDeltaY = 0;
       this.#hasSwipedThisTouch = false;
-      this.#hasLongPressed = false;
       this.#updateDirection(e);
-
-      this.#clearLongPressTimeout();
-      if (this.#pointerPanGesture) return;
-      this.#longPressTimeout = setTimeout(() => {
-        if (this.#canTriggerLongPress()) {
-          this.#longPressPos = {
-            x: this.#currentPointerX,
-            y: this.#currentPointerY,
-          };
-          this.#hasLongPressed = true;
-        }
-      }, this.#runtimeConfig.input?.longPressMs ?? 650);
     });
 
     this.#addEventListener(this.#canvas, "pointermove", (e) => {
@@ -225,8 +230,17 @@ export class InputController {
       if (this.#activePointerId !== null && e.pointerId !== undefined && e.pointerId !== this.#activePointerId) return;
 
       if (this.#pointerPanGesture) {
-        this.#updateMapPointer(this.#eventX(e), e.clientY);
-        return;
+        const step = this.#touchArmingGesture && !this.#isDragging ? this.#touchSwipeStep(this.#eventX(e), e.clientY) : "pan";
+        if (step === "wait") return;
+        if (step === "pan") {
+          this.#updateMapPointer(this.#eventX(e), e.clientY);
+          return;
+        }
+        // Spec 183 D1: a long swipe down — the same gesture aims from the touch point (its power from the swipe).
+        this.#pointerPanGesture = false;
+        this.#touchArmingGesture = false;
+        this.#lastPointerX = this.#eventX(e);
+        this.#lastPointerY = e.clientY;
       }
 
       this.#currentPointerX = this.#eventX(e);
@@ -236,12 +250,7 @@ export class InputController {
         this.#eventX(e) - this.#startX,
         e.clientY - this.#startY,
       );
-      if (dist > 5) {
-        this.#isDragging = true;
-        if (dist > this.#getLongPressMoveTolerancePx()) {
-          this.#clearLongPressTimeout();
-        }
-      }
+      if (dist > 5) this.#isDragging = true;
 
       if (this.#isDragging) {
         this.#panDeltaX += this.#lastPointerX - this.#eventX(e);
@@ -257,7 +266,6 @@ export class InputController {
 
       this.#updateRodControlPointerState();
       this.#updateDragControlState();
-      if (this.#isDragControlActive) this.#clearLongPressTimeout();
       this.#updatePointerPullState(Date.now());
       this.#updateDirection(e);
     });
@@ -267,7 +275,6 @@ export class InputController {
       // Pointer Events own captured touch gestures; another finger's touchend
       // must not finish the primary pointer's navigation.
       if (this.#pointerPanGesture && this.#activePointerId !== null && e?.type === "touchend") return;
-      if (this.#longPressTimeout) clearTimeout(this.#longPressTimeout);
 
       const isPointerEvent =
         e &&
@@ -281,9 +288,11 @@ export class InputController {
           const now = Date.now();
           const holdMs = Math.max(0, Number(this.#runtimeConfig.input?.pullHoldMinMs) || 0);
           const elapsedMs = Math.max(0, now - Number(this.#pointerDownAtMs || now));
+          const tapMaxMs = Math.max(0, Number(this.#runtimeConfig.input?.touchCast?.tapMaxMs) || 300);
           const pointerWasClickCandidate =
-            this.#pointerAction === PointerAction.PENDING &&
-            (this.#pointerPanGesture || elapsedMs < holdMs);
+            (this.#pointerAction === PointerAction.PENDING &&
+              (this.#pointerPanGesture || elapsedMs < holdMs)) ||
+            (this.#touchAimTapGesture && elapsedMs <= tapMaxMs);
           const rawClientX =
             e.clientX ?? (e.changedTouches && e.changedTouches[0]?.clientX);
           const clientX = rawClientX === undefined ? undefined : rawClientX - this.#getOriginX();
@@ -303,7 +312,8 @@ export class InputController {
 
           // A stationary navigation press can become a click regardless of its
           // duration; fishing holds, drags and cancellations cannot.
-          if (pointerWasClickCandidate && !this.#pointerReleaseCancelled && !this.#isDragging && !this.#hasLongPressed) {
+          // Spec 183 D1: a touch that moved down without becoming a swipe or a scroll is not a click either.
+          if (pointerWasClickCandidate && !this.#pointerReleaseCancelled && !this.#isDragging && !this.#touchSwipeMoved) {
             if (now - this.#lastClickTime < 300) {
               this.#isDoubleClick = true;
             } else {
@@ -322,6 +332,8 @@ export class InputController {
         this.#rodControlPointerActive = false;
         this.#rodControlDirectionX = 0;
         this.#rodControlInputRatio = 0;
+        this.#touchArmingGesture = false;
+        this.#touchAimTapGesture = false;
         this.#releasePointerCapture();
       }
 
@@ -357,7 +369,8 @@ export class InputController {
       this.#panDeltaY = 0;
       this.#clickPos = null;
       this.#isDoubleClick = false;
-      this.#longPressPos = null;
+      this.#touchArmingGesture = false;
+      this.#touchAimTapGesture = false;
       this.#hasPointerRelease = false;
       this.#releasePointerCapture();
       resetInput();
@@ -459,7 +472,6 @@ export class InputController {
     if (!this.#isDragging && Math.hypot(x - this.#startX, y - this.#startY) > threshold) {
       this.#isDragging = true;
       this.#pointerAction = PointerAction.PAN;
-      this.#clearLongPressTimeout();
     }
     if (!this.#isDragging) return;
     const config = this.#runtimeConfig.input?.mapPan || {};
@@ -500,28 +512,17 @@ export class InputController {
     }
   }
 
-  #getLongPressMoveTolerancePx() {
-    return Math.max(
-      5,
-      Number(this.#runtimeConfig.input?.longPressMoveTolerancePx) ||
-        Number(this.#runtimeConfig.input?.dragControlActivationPx) ||
-        30,
-    );
-  }
-
-  #canTriggerLongPress() {
-    if (!this.#isPointerDown || this.#isDragControlActive) return false;
-    if (this.#rodControlPointerActive) return false;
-
-    const dx = this.#currentPointerX - this.#startX;
-    const dy = this.#currentPointerY - this.#startY;
-    return Math.hypot(dx, dy) <= this.#getLongPressMoveTolerancePx();
-  }
-
-  #clearLongPressTimeout() {
-    if (!this.#longPressTimeout) return;
-    clearTimeout(this.#longPressTimeout);
-    this.#longPressTimeout = null;
+  // Spec 183 D1: where a touch of the arming gesture is going. "pan": sideways (or not yet past the threshold) — the map
+  // scrolls; "wait": mostly down but shorter than swipeAimPx — nothing yet; "aim": a long swipe down.
+  #touchSwipeStep(x, y) {
+    const dx = x - this.#startX;
+    const dy = y - this.#startY;
+    const configured = Number(this.#runtimeConfig.input?.pointerThreshold ?? 10);
+    const threshold = Number.isFinite(configured) ? Math.max(0, configured) : 10;
+    if (Math.hypot(dx, dy) <= threshold || dy <= 0 || dy < Math.abs(dx)) return "pan";
+    this.#touchSwipeMoved = true;
+    const swipeAimPx = Math.max(threshold, Number(this.#runtimeConfig.input?.touchCast?.swipeAimPx) || 48);
+    return dy >= swipeAimPx ? "aim" : "wait";
   }
 
   #updatePointerPullState(now = Date.now()) {
@@ -606,7 +607,6 @@ export class InputController {
         this.#rodControlPointerActive = true;
         this.#isDragControlActive = false;
         this.#pointerAction = PointerAction.ROD_CONTROL_X;
-        this.#clearLongPressTimeout();
       }
     }
 
@@ -732,8 +732,8 @@ export class InputController {
     state.retrieve = !state.isPulling && this.#checkKeyHeld(keys.retrieve);
     state.clickPos = this.#clickPos;
     state.isDoubleClick = this.#isDoubleClick;
-    state.longPressPos = this.#longPressPos;
     state.pointerDown = this.#isPointerDown;
+    state.pointerType = this.#pointerType;
     state.pointerPanning = this.#pointerPanGesture;
     state.dragControlActive = this.#dragControlEnabled && this.#isDragControlActive;
     state.dragControlEnabled = this.#dragControlEnabled;
@@ -767,7 +767,6 @@ export class InputController {
     this.#isDoubleClick = false;
     this.#holdToggleFlag = false;
     this.#pumpFlag = false;
-    this.#longPressPos = null;
     this.#hasPointerRelease = false;
     this.#pointerReleaseCancelled = false;
     if (!this.#isPointerDown) this.#pointerPanGesture = false;
@@ -814,10 +813,6 @@ export class InputController {
 
   dispose() {
     this.#releasePointerCapture();
-    if (this.#longPressTimeout) {
-      clearTimeout(this.#longPressTimeout);
-      this.#longPressTimeout = null;
-    }
     this.#listeners.dispose();
   }
 }

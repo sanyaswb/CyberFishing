@@ -65,7 +65,7 @@ Keyboard lateral input takes priority over pointer lateral input. While browser 
 
 These input thresholds use browser pointer/CSS coordinates. They are separate from the simulation's ground-plane distances and the rod's drawing coordinates.
 
-A horizontal gesture can also hold/pull after **120 ms** from the initial press. Thus one touch can produce both rod hold and lateral control. A vertical drag can select drag adjustment when supported; an already selected `DRAG_CONTROL` gesture does not switch to the browser's horizontal mode. Horizontal control cancels long-press detection and takes precedence over later vertical drag activation.
+A horizontal gesture can also hold/pull after **120 ms** from the initial press. Thus one touch can produce both rod hold and lateral control. A vertical drag can select drag adjustment when supported; an already selected `DRAG_CONTROL` gesture does not switch to the browser's horizontal mode. Horizontal control takes precedence over later vertical drag activation (there is no long press any more: spec 183 D4).
 
 The application action composer also supports a pointer fallback from raw displacement, using the configured **90 px** full-power distance. Normal browser-locked control has higher priority and uses the width-dependent distance above. Raw-input fixtures or integrations can therefore differ from normal canvas gestures; see the [animation reference](rod_animation_reference.md#6-input-and-configuration-caveats).
 

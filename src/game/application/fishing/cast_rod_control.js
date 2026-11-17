@@ -68,7 +68,7 @@ export class CastRodControl {
     });
   }
 
-  update({ dtMs, input, bounds, floatEntity, waterMetric, checkWater, retrieving = false, aiming = false, hasTerminalLoad = true, hasReel = true, maxLineLengthPx = null }) {
+  update({ dtMs, input, bounds, floatEntity, waterMetric, checkWater, retrieving = false, hasTerminalLoad = true, hasReel = true, maxLineLengthPx = null }) {
     this.#clearFrame();
     const cfg = this.#settings();
     if (cfg?.enabled !== true || !floatEntity || !bounds) { this.reset(); return this.#frame; }
@@ -110,7 +110,7 @@ export class CastRodControl {
         Math.hypot(this.#position.x - this.#previousRod.x, this.#position.y - this.#previousRod.y));
     }
     this.#frame.lineLengthPx = this.#lineLengthPx;
-    if (aiming || !this.isLateralInput(input)) return this.#frame;
+    if (!this.isLateralInput(input)) return this.#frame;
     const action = input.fightActions?.lateralControl;
     const direction = Math.sign(action?.directionX ?? input.rodControlDirectionX);
     const ratio = clampUnitFinite(action?.inputRatio ?? input.rodControlInputRatio);

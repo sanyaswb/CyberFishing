@@ -2,6 +2,11 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.52.2 - Touch cast controls: scroll, tap to aim, no long-press re-cast (spec 183, TK-361)
+
+- On a phone with a ready rod a sideways swipe now scrolls the map instead of aiming. A tap starts aiming: the aim waits until a touch pulls down with power and casts; a release at zero power keeps it, a tap or a double tap removes it. A long swipe down aims and casts at once. The mouse works as before.
+- The long-press re-cast is gone for touch and mouse: reel the tackle in, double tap, cast. Game-cycle report unchanged.
+
 ## v0.52.1 - DevTools weather «Керування»: live switches, sliders when on (TK-360)
 
 - «Стан і керування» is now «Керування». A strength slider shows under Дощ/Шторм/Туман/Викид/Зорепад only while it is on; «Болід зараз» is the last row and on a phone closes DevTools so the bolide is seen falling.
@@ -41,8 +46,3 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 ## v0.51.51 - Ash and starfall density per location, like the rain (TK-355)
 
 - The ash count and the stars a minute are now the whole location count (the ash over the background, the stars over the whole sky), and a screen shows its visible share: a narrow phone screen shows fewer embers and stars at the same density instead of squeezing them all in. A screen that shows the whole location looks as before.
-
-## v0.51.50 - Starfall test switch in the weather controls (TK-354.1)
-
-- DevTools «ПОГОДА» → «Стан і керування»: «Зорепад (ніч)» moves the game clock to the night and holds the starfall at «Зорепад: сила, %»; «Болід зараз» under it. «ЗОРЕПАД» keeps the night state and its settings only.
-- Measured: rain at 100 % with a storm plus a triple-dense starfall and a bolide cost about 0.1 ms of JavaScript a frame on a desktop; the starfall adds two small draw calls.

@@ -70,7 +70,7 @@ export class GameState {
     );
   }
 
-  // One rule for aiming a rod cast, the first one (scouting) and a re-cast (waiting, G-068): while the cast is aimed
+  // One rule for aiming a rod cast (scouting; spec 183 D4 removed the waiting re-cast): while the cast is aimed
   // or flying, the frame shows the CAST bar, the aim line and the accuracy preview, never the rod, line or tackle
   // (spec 099 D3: no rod before the cast). Keyed on the aim's visual and the flight, so an aim lost without a release
   // never hides the tackle. Returns whether a rod cast is in progress.

@@ -192,7 +192,9 @@ export const CONFIG = {
     swipeResistanceY: 200,
     dragControlActivationPx: 30,
     pullHoldMinMs: 120,
-    longPressMs: 950,
+    // Spec 183 (touch only): with a ready rod a touch scrolls the map; a swipe down this long (px) aims at once; while
+    // the aim waits, a still touch up to tapMaxMs is a tap (removes the aim).
+    touchCast: { swipeAimPx: 48, tapMaxMs: 300 },
 
     // Можна використовувати e.code (KeyW, Space, ShiftLeft) або e.key (Shift)
     keys: {

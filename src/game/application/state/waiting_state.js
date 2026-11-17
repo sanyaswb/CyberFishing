@@ -1,4 +1,3 @@
-import { CastPowerAim } from "../casting/cast_power_aim.js";
 import { FishingCastExposureResolver } from "../../domain/fishing/fishing_cast_exposure_resolver.js";
 import { GameState } from "./game_state.js";
 import { GroundPlaneScope } from "../world/ground_plane_scope.js";
@@ -9,14 +8,6 @@ export class WaitingState extends GameState {
   /** @param {WaitingStateDeps} deps */
   constructor(deps) {
     super(deps);
-    this.#recastAim = new CastPowerAim({
-      config: deps.config,
-      projector: deps.projector,
-      getWaterMetric: deps.world.getWaterMetric,
-      getViewportSize: deps.getViewportSize,
-      panViewport: deps.commands.panViewport,
-      rng: deps.rng,
-    });
     this.#idleRetrievePolicyResolver = new IdleRetrievePolicyResolver();
     this.#castExposureResolver = new FishingCastExposureResolver();
   }
@@ -29,40 +20,16 @@ export class WaitingState extends GameState {
   #pullDirection = new Vector2(0, 0);
   #groundPlane = new GroundPlaneScope();
   #baitCandidates = [];
-  #recastAim;
   #idleRetrievePolicyResolver;
   #castExposureResolver;
-  #isRecastAiming = false;
-  #pendingRecast = null;
 
   enter() {
     this.deps.biteSystem.reset();
-    this.#resetRecastAim();
   }
 
-  exit() {
-    this.#resetRecastAim();
-  }
-
+  // Spec 183 D4: no long-press re-cast; the tackle is reeled in and a double click takes it out (TK-263).
   handleInput(input) {
-    if (input.isDoubleClick) {
-      this.deps.commands.setState("scouting");
-      this.#resetRecastAim();
-      return;
-    }
-
-    const eq = this.deps.inventory.getEquipped();
-
-    if (input.longPressPos && this.deps.canPlayerCast()) {
-      if (this.#usePowerCasting()) {
-        this.#isRecastAiming = true;
-        input.longPressPos = null;
-        return;
-      }
-
-      this.#legacyRecast(input.longPressPos, eq);
-      input.longPressPos = null;
-    }
+    if (input.isDoubleClick) this.deps.commands.setState("scouting");
   }
 
   update(dt, bounds, envData) {
@@ -74,13 +41,12 @@ export class WaitingState extends GameState {
 
     const input = envData.input || this.deps.input.getState();
     const eq = this.deps.inventory.getEquipped();
-    this.#updatePowerRecast(dt, bounds, input, eq);
 
     const reelPower = eq?.reel?.effectiveStats?.basePower || 0;
     const isSpinning = this.deps.rules.equipment.isSpinning(eq);
 
     const effectiveInput = this.#effectiveInput;
-    effectiveInput.isPulling = !this.#isRecastAiming && this.deps.castRodControl.isPulling(input);
+    effectiveInput.isPulling = this.deps.castRodControl.isPulling(input);
     effectiveInput.pullDirection = input.pullDirection;
     effectiveInput.idleRetrieveParams = effectiveInput.isPulling
       ? this.#getIdleRetrieveParams(eq)
@@ -98,7 +64,6 @@ export class WaitingState extends GameState {
       hasTerminalLoad: eq?.hasTerminalLoad !== false,
       floatEntity: this.deps.float, waterMetric: this.deps.world.getWaterMetric(),
       checkWater: this.deps.world.checkWater, retrieving: effectiveInput.isPulling,
-      aiming: this.#isRecastAiming || this.#pendingRecast !== null,
       hasReel, maxLineLengthPx,
     });
     effectiveInput.castRodDeltaX = this.deps.config.physics?.castRodControl?.floatTilt?.enabled === true &&
@@ -187,115 +152,7 @@ export class WaitingState extends GameState {
     target.fishing.state = "waiting";
     target.fishing.bottom = bounds.bottom;
     target.fishing.startTime = this.deps.getCastStartTime();
-    this.populateRodCast(target, bounds, this.#recastAim, this.#pendingRecast !== null);
   }
-
-  #updatePowerRecast(dt, bounds, input, eq) {
-    if (this.#pendingRecast) {
-      this.#pendingRecast.timer -= dt;
-      if (this.#pendingRecast.timer <= 0) {
-        this.#commitPendingRecast();
-      }
-      return;
-    }
-
-    if (!this.#isRecastAiming) return;
-
-    const release = this.#recastAim.update(input, bounds, dt, { mode: "rod" });
-    if (!release) return;
-
-    if (this.#isCancelledRelease(release)) {
-      this.#resetRecastAim();
-      this.deps.commands.setState("scouting");
-      return;
-    }
-
-    const target = this.resolveCastTarget(this.#recastAim, release, bounds, eq);
-
-    this.#isRecastAiming = false;
-
-    if (!target?.success) {
-      this.deps.commands.setInvalidCastMarker({
-        x: release.screenX,
-        y: release.screenY,
-        timer: 500,
-      });
-      return;
-    }
-
-    this.#pendingRecast = {
-      timer: target.travelDelayMs,
-      x: target.x,
-      y: target.y,
-      depth: target.depth,
-      originVirtualX: target.originVirtualX,
-      originVirtualY: target.originVirtualY,
-      rodScreenX: target.rodScreenX,
-    };
-  }
-
-  #commitPendingRecast() {
-    const cast = this.#pendingRecast;
-    if (!cast) return;
-    this.#pendingRecast = null;
-    this.deps.castPenalty.registerCast(this.deps.clock.now);
-    this.deps.commands.castLine(cast.x, cast.y, cast.depth, {
-      rodVirtualPos: {
-        x: cast.originVirtualX,
-        y: cast.originVirtualY,
-      },
-      rodScreenX: cast.rodScreenX,
-    });
-  }
-
-  #legacyRecast(screenPos, eq) {
-    const vPos = this.deps.projector.screenToVirtual(screenPos.x, screenPos.y);
-    const cell = this.deps.world.checkWater(vPos.x, vPos.y);
-    const bounds = this.deps.world.getDynamicBounds();
-
-    const canCastAnywhere =
-      this.deps.services?.devFlags?.isEnabled?.("infiniteCasting") === true;
-    let isInside = canCastAnywhere;
-    if (!canCastAnywhere) {
-      isInside = this.deps.rules.cast.canCastAt(
-        vPos.x,
-        vPos.y,
-        eq,
-        this.deps.world.getWaterMetric(),
-        this.deps.world.getRodVirtualPos(bounds),
-      );
-    }
-
-    if ((cell || canCastAnywhere) && isInside) {
-      const depth = this.deps.world.getDepthAt?.(vPos.x, vPos.y) ?? cell?.depth ?? 2.0;
-      this.deps.castPenalty.registerCast(this.deps.clock.now);
-      this.deps.commands.castLine(vPos.x, vPos.y, depth);
-      return;
-    }
-
-    this.deps.commands.setInvalidCastMarker({
-      x: screenPos.x,
-      y: screenPos.y,
-      timer: 500,
-    });
-  }
-
-  #resetRecastAim() {
-    this.#isRecastAiming = false;
-    this.#pendingRecast = null;
-    this.#recastAim?.reset();
-  }
-
-  #usePowerCasting() {
-    return this.deps.config.casting?.enabled !== false;
-  }
-
-  #isCancelledRelease(release) {
-    const threshold = this.deps.config.casting?.cancelPowerThreshold ?? 0;
-    return release.power <= threshold;
-  }
-
-
 
   #getIdleRetrieveParams(eq) {
     const policy = this.#idleRetrievePolicyResolver.resolve({

@@ -215,4 +215,126 @@ assert.equal(casts, 0);
   assert.equal(keyInput.getState().aimLeft, false, "a key released inside a field is released for the game too");
   keyInput.dispose();
 }
-console.log("Scouting input passed: click/drag, mouse/touch/wheel, accumulated movement, inversion/distance, cancellation, equipped holds and clock shielding.");
+// Spec 183 (TK-361): touch with a ready rod. A sideways swipe scrolls; a tap arms the aim, which waits for a touch that
+// sets direction and power; a release at power 0 after a move keeps it, a tap or a double tap removes it; a long swipe
+// down aims at once from the touch point. The mouse aims on press as before; there is no long-press re-cast.
+{
+  equipment = { rod: { id: "rod" } };
+  const touchCasts = [];
+  const touchDeps = { ...deps, commands: { ...deps.commands, castLine: (...args) => touchCasts.push(args), setState() {} } };
+  const touchScouting = new ScoutingState(touchDeps);
+  touchScouting.resolveCastTarget = (aim, release) => ({ success: true, x: release.screenX, y: 100, depth: 1, travelDelayMs: 0,
+    originVirtualX: release.screenX, originVirtualY: 600, rodScreenX: release.screenX, power: release.power });
+  touchScouting.enter();
+  const touchCanvas = eventTarget();
+  const touchInput = new InputController(touchCanvas, null, { runtimeConfig: config, listeners: new EventLifecycle() });
+  const touchPans = [];
+  const touchViewport = new GameViewportFacade({ rodVisualOffsetSystem: new (runtime.importModule(
+    "src/game/application/fishing/rod_visual_offset_system.js").RodVisualOffsetSystem)(), config,
+  world: { pan: (x) => touchPans.push(x) }, projector: { screenToVirtual: (x, y, out) => out.set(x, y) } });
+  // As GameApplication.#syncInputAvailability: scouting, a ready rod, no chum — arming until the aim waits.
+  const touchFrame = () => {
+    touchInput.setTouchAimMode(touchScouting.isTouchAimArmed() ? "armed" : "arming");
+    const state = touchInput.getState();
+    touchViewport.applyPan(state, "scouting", false);
+    touchScouting.update(16, { bottom: 600 }, { input: state });
+    return state;
+  };
+  const touch = (type, fields = {}) => (type === "pointerup" ? windowTarget : touchCanvas).emit(type, { pointerType: "touch", ...fields });
+  // A tap (200 ms, as a real finger: longer than pullHoldMinMs), then an idle frame (the game syncs the input mode
+  // every frame before the next touch).
+  const tap = (x = 300, holdMs = 200) => {
+    touch("pointerdown", { clientX: x, clientY: 100 });
+    touchFrame();
+    now += holdMs;
+    touchFrame();
+    touch("pointerup", { clientX: x, clientY: 100 });
+    const released = touchFrame();
+    touchFrame();
+    return released;
+  };
+  touchFrame();
+  // A sideways swipe scrolls the map; nothing aims.
+  touch("pointerdown", { clientX: 100, clientY: 100 });
+  touch("pointermove", { clientX: 160, clientY: 104 });
+  assert.equal(touchFrame().pointerPanning, true, "a touch with a ready rod starts as a map scroll");
+  touch("pointerup", { clientX: 160, clientY: 104 });
+  touchFrame();
+  assert.ok(touchPans.length > 0 && touchPans[0] !== 0, "a sideways swipe scrolls the map");
+  assert.deepEqual([touchScouting.isTouchAimArmed(), touchCasts.length], [false, 0], "and neither aims nor casts");
+  // A tap arms the aim; a move that ends at power 0 keeps it; a tap removes it.
+  now += 1000;
+  tap();
+  assert.equal(touchScouting.isTouchAimArmed(), true, "a tap starts aiming");
+  now += 1000;
+  touch("pointerdown", { clientX: 300, clientY: 100 });
+  assert.equal(touchFrame().pointerPanning, false, "while aiming a touch aims (no scroll)");
+  touch("pointermove", { clientX: 360, clientY: 100 });
+  touchFrame();
+  touch("pointerup", { clientX: 360, clientY: 100 });
+  touchFrame();
+  assert.deepEqual([touchScouting.isTouchAimArmed(), touchCasts.length], [true, 0], "a release at power 0 after a move keeps aiming");
+  now += 1000;
+  tap();
+  assert.equal(touchScouting.isTouchAimArmed(), false, "a tap while aiming removes it");
+  // A double tap removes the aim and does not start it again.
+  now += 1000;
+  tap();
+  assert.equal(touchScouting.isTouchAimArmed(), true);
+  now += 1000;
+  tap(300, 80);
+  now += 60;
+  tap(300, 80);
+  assert.equal(touchScouting.isTouchAimArmed(), false, "a double tap removes aiming and does not start it again");
+  // Aiming, then a pull down with power casts and ends the aim.
+  now += 1000;
+  tap();
+  now += 1000;
+  touch("pointerdown", { clientX: 300, clientY: 100 });
+  touchFrame();
+  touch("pointermove", { clientX: 300, clientY: 200 });
+  touchFrame();
+  touch("pointerup", { clientX: 300, clientY: 200 });
+  touchFrame();
+  touchFrame();
+  assert.deepEqual([touchCasts.length, touchScouting.isTouchAimArmed()], [1, false], "a release with power casts; the aim ends");
+  // A long swipe down aims at once, its power from the touch point.
+  now += 1000;
+  const pansBefore = touchPans.length;
+  touch("pointerdown", { clientX: 400, clientY: 100 });
+  touch("pointermove", { clientX: 402, clientY: 130 });
+  assert.equal(touchFrame().pointerPanning, true, "a short pull down is not aiming yet");
+  touch("pointermove", { clientX: 404, clientY: 200 });
+  const swiping = touchFrame();
+  assert.deepEqual([swiping.pointerPanning, swiping.pointerStart.y], [false, 100], "a long swipe down aims from the touch point");
+  touch("pointerup", { clientX: 404, clientY: 200 });
+  touchFrame();
+  touchFrame();
+  assert.equal(touchCasts.length, 2, "and its release casts");
+  assert.equal(touchPans.length, pansBefore, "a swipe down never scrolls the map");
+  // A short move down released before the swipe length is neither a tap nor aiming.
+  now += 1000;
+  touch("pointerdown", { clientX: 300, clientY: 100 });
+  touch("pointermove", { clientX: 300, clientY: 125 });
+  touchFrame();
+  touch("pointerup", { clientX: 300, clientY: 125 });
+  const shortPull = touchFrame();
+  assert.deepEqual([shortPull.clickPos, touchScouting.isTouchAimArmed(), touchCasts.length], [null, false, 2],
+    "a short pull down is not a click and does not aim");
+  // The mouse aims on press as before (spec 183 D3).
+  now += 1000;
+  touchCanvas.emit("pointerdown", { pointerType: "mouse", clientX: 300, clientY: 100 });
+  assert.equal(touchFrame().pointerPanning, false, "a mouse press with a ready rod aims at once");
+  windowTarget.emit("pointerup", { pointerType: "mouse", clientX: 300, clientY: 100 });
+  touchFrame();
+  // D4: no long press re-cast — the input no longer reports one.
+  now += 1000;
+  touch("pointerdown", { clientX: 300, clientY: 100 });
+  now += 3000;
+  assert.equal("longPressPos" in touchFrame(), false, "a long press is not reported (no re-cast by long press)");
+  touch("pointerup", { clientX: 300, clientY: 100 });
+  touchFrame();
+  touchInput.dispose();
+  equipment = {};
+}
+console.log("Scouting input passed: click/drag, mouse/touch/wheel, accumulated movement, inversion/distance, cancellation, equipped holds and clock shielding; spec 183 touch aiming.");

@@ -96,7 +96,6 @@ export class GameApplication {
     retrieve: false,
     clickPos: null,
     isDoubleClick: false,
-    longPressPos: null,
     pointerDown: false,
     pointerStart: { x: 0, y: 0 },
     pointerCurrent: { x: 0, y: 0 },
@@ -809,6 +808,11 @@ export class GameApplication {
     const boatAiming = this.isAimingChum && !!eq.delivery;
     this.#input.setPointerPanEnabled(stateName === "scouting" &&
       (boatAiming || (!this.isAimingChum && !this.#canCast(eq))));
+    // Spec 183: with a ready rod a touch scrolls, a tap or a long swipe down aims ("arming"); while the aim waits, a
+    // touch aims and a tap removes it ("armed").
+    const touchAim = stateName === "scouting" && !this.isAimingChum && this.#canCast(eq);
+    this.#input.setTouchAimMode(!touchAim ? "off"
+      : this.#stateMachine.currentState.isTouchAimArmed() ? "armed" : "arming");
   }
 
   // A drag pans the map whenever it cannot cast (spec 076): no rod, or a rod without its reel or line. getEquipped()
@@ -829,7 +833,6 @@ export class GameApplication {
   #blockFishingInputDuringChumAim(input) {
     input.isPulling = false;
     input.pullDirection = null;
-    input.longPressPos = null;
     input.clickPos = null;
     input.isDoubleClick = false;
   }

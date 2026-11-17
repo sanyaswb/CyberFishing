@@ -36,6 +36,11 @@ export class ScoutingState extends GameState {
     this.#setUiDimmed(false);
   }
 
+  // Spec 183 D2: a touch aim waits between touches; while it does, a touch aims (the map does not scroll).
+  isTouchAimArmed() {
+    return this.#castAim.isArmed;
+  }
+
   exit() {
     this.deps.depthUI.hide();
     this.#castAim.reset();
@@ -110,6 +115,10 @@ export class ScoutingState extends GameState {
     if (!this.deps.isAimingChum() && this.#usePowerCasting()) {
       const didCast = this.#updatePowerCasting(dt, bounds, context?.input);
       if (didCast) return;
+    } else if (this.#castAim.isArmed) {
+      // Spec 183 D2: aiming the chum ends a waiting rod aim.
+      this.#castAim.reset();
+      this.#setUiDimmed(false);
     }
 
     const eq = this.deps.inventory.getEquipped();
@@ -258,6 +267,20 @@ export class ScoutingState extends GameState {
       return false;
     }
 
+    if (this.#castAim.isArmed && !this.#canStartRodCast(eq)) {
+      this.#castAim.reset();
+      this.#setUiDimmed(false);
+    }
+
+    // Spec 183 D1: a touch tap on the map (a scroll candidate that did not move) arms the aim at the tap; a double tap
+    // never does. The aim then waits for a touch that sets its direction and power.
+    if (input?.clickPos && input.pointerType === "touch" && input.pointerPanning && !this.#castAim.isArmed &&
+      !this.#pendingCast) {
+      this.#castAim.arm(input.clickPos.x);
+      this.#setUiDimmed(true);
+      return false;
+    }
+
     // Keep a navigation gesture from becoming a cast if equipment changes mid-drag.
     if (input?.pointerPanning) return false;
 
@@ -277,6 +300,12 @@ export class ScoutingState extends GameState {
     this.#setUiDimmed(false);
 
     if (this.#isCancelledRelease(release)) {
+      // Spec 183 D2: a touch aim that ended at power 0 after a move keeps waiting; a tap or a double tap removes it.
+      if (input?.pointerType === "touch" && !input.clickPos && !input.isDoubleClick) {
+        this.#castAim.arm(release.screenX);
+        this.#setUiDimmed(true);
+        return false;
+      }
       this.#castAim.reset();
       this.#pendingCast = null;
       this.deps.commands.setState("scouting");

@@ -309,12 +309,6 @@ const CHECK_DEFINITIONS = Object.freeze([
     suites: ["gameplay"],
   },
   {
-    id: "recast-aim",
-    title: "Re-cast aim hides the tackle like the first aim (G-068)",
-    file: "utils/checks/gameplay/recast-aim-check.js",
-    suites: ["gameplay"],
-  },
-  {
     id: "chum-aim-zone",
     title: "Hand chum aim immediately displays reachable cast area (G-095)",
     file: "utils/checks/gameplay/chum-aim-zone-check.js",

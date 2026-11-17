@@ -76,7 +76,6 @@ function checkMovement() {
   assert.equal(f.step(right).rodMoved, false); assert.equal(f.control.getScreenX(), 400);
   f.config.physics.castRodControl.speedPxPerSecond = 100;
   f.step(right, { dtMs: 1000 }); assert.equal(f.control.getScreenX(), 415, "stalls obey the physics delta cap at x3 while there is slack");
-  f.step(left, { aiming: true }); assert.equal(f.control.getScreenX(), 415, "recast aim is separate");
   f.control.reset(); assert.equal(f.control.getScreenX(), null);
   f.step(left, { floatEntity: { getPosition: () => new Vector2(400, 0) } }); assert.equal(f.control.getScreenX(), 395);
   const analog = fixture();

@@ -20,6 +20,15 @@ Notes: suspected owner module, related checks.
 
 ## Open
 
+### G-137 Touch: a tap on the water aims at once, the map cannot be scrolled with a rod ready (P3, done in v0.52.2; owner acceptance pending)
+Found: 2026-11-17, owner, phone, v0.52.1.
+Reproduce: a rod, reel and line equipped, scouting; swipe sideways on the water.
+Expected: a sideways swipe scrolls the map; a tap (or a long swipe down) starts aiming, which stays until a cast with
+power > 0; a tap or a double tap removes it. No long press re-cast (the tackle is reeled to the shore).
+Actual: every press with a ready rod starts aiming; the map scrolls only without a rod; a long press re-casts.
+Notes: [spec 183](../specs/183-touch-cast-controls/spec.md), TK-361, TK-362; `InputController`, `ScoutingState`,
+`CastPowerAim`, `WaitingState`; check `scouting-input`. The cast area was checked: no landing outside the castable zone.
+
 ### G-128 Living continuous wind strength (0…1), gusts, waves, rain slant and float dynamic swing (P2, done in v0.50.113; owner acceptance pending)
 Found: 2026-11-13, owner, v0.50.110.
 Reproduce: watch `Сила вітру 0…1`, waves, rain slant and float during non-storm weather or manual wind direction switches.
@@ -472,7 +481,7 @@ Found: 2026-10-18, owner, index (v0.41.2).
 Reproduce: cast, then long-press while the tackle is in the water and aim the re-cast.
 Expected: exactly the first aim: the CAST bar and the aim line, no rod, line, tackle or fight areas (spec 099 D3), also while the cast flies; the tackle shows again when it lands.
 Actual: `WaitingState.getRenderState` kept `fishing.visible` true and drew the aim over the old tackle; the aim population was duplicated in scouting and waiting.
-Notes: one rule `GameState.populateRodCast(target, bounds, aim, inFlight)` for both states, keyed on the aim's visual and the flight. `utils/checks/gameplay/recast-aim-check.js` failed first ("a re-cast aims exactly like the first cast: no rod") and passes now.
+Notes: one rule `GameState.populateRodCast(target, bounds, aim, inFlight)` for both states, keyed on the aim's visual and the flight. `utils/checks/gameplay/recast-aim-check.js` failed first ("a re-cast aims exactly like the first cast: no rod") and passes now. Superseded 2026-11-17: spec 183 D4 removed the long-press re-cast (owner), and with it `recast-aim-check.js`; `populateRodCast` serves scouting only.
 
 ### G-066 Post-cast rod speed and line feedback ignore remaining slack (P3, in progress)
 Found: 2026-10-17, owner request.

@@ -15,6 +15,8 @@ export class CastPowerAim {
   #screenY = 0;
   #power = 0;
   #keyboardActive = false;
+  // Spec 183 D2: a touch aim that waits between touches (power 0 at #screenX until the next press).
+  #armed = false;
   #leadSource;
   #zoneSource;
   #rampSource;
@@ -51,10 +53,25 @@ export class CastPowerAim {
 
   reset() {
     this.#active = false;
+    this.#armed = false;
     this.#keyboardActive = false;
     this.#power = 0;
     this.#release.active = false;
     this.#visual.active = false;
+  }
+
+  // Spec 183 D1/D2: the aim waits at screenX with power 0 (shown) until the next press aims and casts, or reset().
+  arm(screenX, mode = "rod") {
+    this.#active = false;
+    this.#keyboardActive = false;
+    this.#armed = true;
+    this.#screenX = this.#clampScreenX(screenX);
+    this.#power = 0;
+    this.#updateVisual(mode);
+  }
+
+  get isArmed() {
+    return this.#armed;
   }
 
   update(input, _bounds, dt, options = {}) {
@@ -103,6 +120,7 @@ export class CastPowerAim {
       this.#release.mode = mode;
 
       this.#active = false;
+      this.#armed = false;
       this.#keyboardActive = false;
       this.#visual.active = false;
       return this.#release;
@@ -136,7 +154,10 @@ export class CastPowerAim {
       return this.#release;
     }
 
-    if (!input?.pointerReleased) {
+    if (this.#armed) {
+      this.#power = 0;
+      this.#updateVisual(mode);
+    } else if (!input?.pointerReleased) {
       this.#visual.active = false;
     }
     return null;

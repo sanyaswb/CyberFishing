@@ -1,6 +1,7 @@
 // Release notes, newest first (unshift with every patch). DEV only: no production code reads them, and in the start's
 // bundle they cost 13 KB gzip (spec 160). dev.html publishes them with the version: window.CYBER_FISHING_PROJECT_VERSION.notes.
 export const PROJECT_RELEASE_NOTES = Object.freeze([
+  "TK-361 (spec 183): touch with a ready rod — a sideways swipe scrolls, a tap arms the aim (a tap or a double tap removes it), a long swipe down aims at once; no long-press re-cast.",
   "TK-360: DevTools «ПОГОДА» → «Керування» — live switches (refreshLive on debug-live-update), sliders only while on, «Болід зараз» last and closes the panel on a phone.",
   "v0.52.0: owner-approved minor of v0.51.1–0.51.57 — emission, player statuses, weather structure, starfall, weather review.",
   "TK-359: pre-push review — zone editor categories from ZONE_CATEGORY_COLORS, ZONE_FREE_CATEGORIES.",
