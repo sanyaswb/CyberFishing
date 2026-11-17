@@ -87,6 +87,24 @@ function checkNegativeFixtures() {
     assert(validate().errors.some(issue => issue.path === path), "invalid side compensation setting is rejected: " + key);
     context.reset(path);
   }
+  // TK-368.1 (spec 183): the touch cast gesture and the touch aim are typed, bounded and labelled.
+  for (const [path, value] of [["input.touchCast.swipeAimPx", -1], ["input.touchCast.tapMaxMs", "300"],
+    ["input.touchCast.doubleTapMs", 5000], ["casting.touchAim.startAtFullPower", "yes"],
+    ["casting.touchAim.panDeadZoneRatio", 1], ["casting.touchAim.panMaxPxPerSecond", -5],
+    ["casting.touchAim.panEasePower", 0], ["casting.touchAim.panAccelerationPxPerSecond2", "fast"],
+    ["casting.touchAim.powerZonePx", -1]]) {
+    context.set(path, value);
+    assert(validate().errors.some((issue) => issue.path === path), `an invalid touch setting is rejected: ${path} = ${value}`);
+    context.reset(path);
+  }
+  // A group's label covers its keys (#hasParameterLabel), so both the key's and the group's labels are taken away.
+  for (const key of ["input.touchCast.doubleTapMs", "casting.touchAim.powerZonePx"]) {
+    const unlabelled = { ...LABELS };
+    delete unlabelled[key];
+    delete unlabelled[key.slice(0, key.lastIndexOf("."))];
+    assert(validate({ parameterLabels: unlabelled }).errors.some((issue) => issue.path === key &&
+      /missing parameter label/u.test(issue.message)), `a touch setting without a DEV label is reported: ${key}`);
+  }
   // Spec 104 D1: the scene mode is "canvas" or "webgl".
   context.set("canvas.scene", "gl");
   assert(has(validate(), /CONFIG\.canvas\.scene: must be "canvas" or "webgl"/u), "an unknown scene mode is rejected");

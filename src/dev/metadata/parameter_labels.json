@@ -1603,6 +1603,26 @@
     "label": "GOD infinite cast distance",
     "description": "Allows casting the rod to any distance across the entire water map with any selected tackle; tackle changes do not limit cast reach."
   },
+  "input.touchCast": {
+    "label": "Touch cast gesture",
+    "description": "Spec 183: with a ready rod a touch scrolls the map, a tap or a long swipe down starts the aim, a tap removes it; a double tap without an aim jumps to the map's edge."
+  },
+  "input.touchCast.swipeAimPx": {
+    "label": "Touch: swipe down to aim, px",
+    "description": "A touch that moves down this far (more down than sideways) starts the aim at once from the touch point; shorter moves wait, sideways moves scroll the map."
+  },
+  "input.touchCast.tapMaxMs": {
+    "label": "Touch: tap on the aim, ms",
+    "description": "While the aim waits, a still touch up to this long is a tap (it removes the aim) rather than the start of aiming."
+  },
+  "input.touchCast.doubleTapMs": {
+    "label": "Touch: double tap window, ms",
+    "description": "The longest time between a finger's two tap releases that still makes a double tap (TK-366.1; the mouse keeps 300 ms)."
+  },
+  "casting.touchAim": {
+    "label": "Touch aim",
+    "description": "How a touch aim moves the map and sets the cast power (spec 183, TK-363.2, TK-363.3, TK-365)."
+  },
   "casting.touchAim.startAtFullPower": {
     "label": "Touch aim: start at full power",
     "description": "Test switch (TK-365). On: an aim switched on by a tap waits at full power, a downward swipe lowers it and back up raises it. Off: it waits at 0 and a downward swipe raises it."

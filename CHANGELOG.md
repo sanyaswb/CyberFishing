@@ -2,6 +2,10 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.52.17 - Review of the touch cast and the emission blur (TK-368)
+
+- The touch cast settings (input.touchCast) and the touch aim settings (casting.touchAim) are now checked when the game starts: a wrong value (text, a negative number, out of range) is reported instead of passing silently, and the touch cast settings have names and descriptions in DevTools. Nothing changes in play.
+
 ## v0.52.16 - The emission blurs only the world by default (TK-324.4)
 
 - The emission's blur now covers only the world by default (emission.screen.includeHud off): it is the cheaper WebGL filter of v0.52.15, and the HUD, buttons and windows stay sharp. Blurring together with the HUD stays available as the «Розмивати разом з HUD» switch.
@@ -42,7 +46,3 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 
 - With God mode infinite casting, a fish hooked beyond the tackle's normal line no longer jumps to the line's limit. A reel gets a 300 m line reserve. A pole keeps its own line and gets a virtual one beyond it: the fish takes it while you do not pull, and pulling winds it back (virtual reel, 1.5 m/s, slower under tension) down to the pole's own line.
 - DevTools → DEBUG → godMode shows a warning with these values while infinite casting is on. Values in CONFIG.debug.godMode.infiniteCastingLine. Without God mode nothing changes.
-
-## v0.52.7 - Touch aim: a still finger steers by screen half (TK-363.1)
-
-- A still finger on the left half of the screen moves the cast aim left, on the right half right; the farther from the middle, the faster, and in the very middle it stays. Before, only a narrow band at the screen edge did this.

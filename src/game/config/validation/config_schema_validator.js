@@ -64,6 +64,7 @@ export class ConfigSchemaValidator {
     this.#validateLiveBaitConfig();
     this.#validateRodSpineConfig();
     this.#validateBoatUiConfig();
+    this.#validateTouchCastConfig();
     for (const issue of InventorySelectorConfigValidator.issues(this.config.ui?.inventorySelector)) {
       this.#error("CONFIG.ui.inventorySelector", issue);
     }
@@ -192,6 +193,28 @@ export class ConfigSchemaValidator {
       ["speedMultipliers.movingFloat", cfg.speedMultipliers?.movingFloat],
       ["movementEpsilonPx", cfg.movementEpsilonPx], ["floatDrag.movementEpsilonMeters", cfg.floatDrag?.movementEpsilonMeters]]) {
       this.#requireFiniteNumberWithLabel(`${path}.${key}`, value, { min: 0 });
+    }
+  }
+
+  // Spec 183 (TK-368.1): the touch cast gesture (CONFIG.input.touchCast) and the touch aim (CONFIG.casting.touchAim).
+  #validateTouchCastConfig() {
+    const touchCast = this.config.input?.touchCast;
+    if (!touchCast || typeof touchCast !== "object") { this.#error("CONFIG.input.touchCast", "missing touch cast config"); }
+    else {
+      this.#requireParameterLabel("input.touchCast");
+      for (const [key, max] of [["swipeAimPx", 400], ["tapMaxMs", 2000], ["doubleTapMs", 2000]]) {
+        this.#requireFiniteNumberWithLabel(`input.touchCast.${key}`, touchCast[key], { min: 0, max });
+        if (typeof touchCast[key] !== "number") this.#error(`input.touchCast.${key}`, "expected number");
+      }
+    }
+    const touchAim = this.config.casting?.touchAim;
+    if (!touchAim || typeof touchAim !== "object") { this.#error("CONFIG.casting.touchAim", "missing touch aim config"); return; }
+    this.#requireParameterLabel("casting.touchAim");
+    this.#requireBooleanWithLabel("casting.touchAim.startAtFullPower", touchAim.startAtFullPower);
+    for (const [key, min, max] of [["panDeadZoneRatio", 0, 0.95], ["panMaxPxPerSecond", 0, 5000], ["panEasePower", 0.1, 10],
+      ["panAccelerationPxPerSecond2", 0, 100000], ["powerZonePx", 0, 400]]) {
+      this.#requireFiniteNumberWithLabel(`casting.touchAim.${key}`, touchAim[key], { min, max });
+      if (typeof touchAim[key] !== "number") this.#error(`casting.touchAim.${key}`, "expected number");
     }
   }
 
