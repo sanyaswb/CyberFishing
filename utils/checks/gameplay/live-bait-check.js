@@ -4,6 +4,7 @@ const assert = require("node:assert/strict");
 async function main() {
   await require("../../testing/live_bait/feed_loading_scenarios")();
   await require("../../testing/live_bait/keepnet_lifecycle_scenarios")();
+  await require("../../testing/live_bait/keepnet_radiation_scenarios")();
   await require("../../testing/live_bait/shared_feed_scenarios")();
   await require("../../testing/live_bait/inventory_feed_scenarios")();
   await require("../../testing/live_bait/feed_picker_scenarios")();
@@ -235,7 +236,7 @@ async function checkInventoryStacks({ composeLiveBait, LIVE_BAIT_CONFIG, fishDb 
   assert(view.liveBaits.filter((fish) => fish.inInventory).length === 3 && !view.liveBaits.find((fish) => fish.id === "m").inInventory);
   assert.equal(view.liveBaits.filter((fish) => fish.location === "keepnet").length, 4, "D3: the stack is a view, the fish stay in the keepnet");
   const saved = JSON.parse(values.get("fishing_game_player_live_bait_v1"));
-  assert(saved.schemaVersion === 6 && saved.inventorySpeciesIds.join() === "crucian_stalker", "saved as schema 6");
+  assert(saved.schemaVersion === 7 && saved.inventorySpeciesIds.join() === "crucian_stalker", "saved as schema 7");
   assert.equal(create().getInventoryStacks()[0].count, 3, "the stack survives a reload");
   assert.equal(service.selectBait("c-mid").ok, true);
   assert.equal(service.releaseBait("c-mid").reason, "bait_selected", "D1: the chosen live bait cannot be released");

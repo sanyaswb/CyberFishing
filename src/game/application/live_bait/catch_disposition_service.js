@@ -44,7 +44,7 @@ export class CatchDispositionService {
       isUnique: fish.isUnique === true || fish.hasAnomaly === true || (!!fish.anomaly && fish.anomaly !== "none"),
       purpose: action === "live_bait" || autoLiveBait ? "live_bait" : "catch", disposition: location,
       caughtAtMs: state.lastAppliedAtMs, sampledLifetimeMs: lifetime, remainingLifetimeMs: lifetime,
-      starvationDeadlineMs: null,
+      starvationDeadlineMs: null, radiationDose: 0,
     });
     return null;
   }

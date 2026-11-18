@@ -20,6 +20,17 @@ Notes: suspected owner module, related checks.
 
 ## Open
 
+### G-141 Radiation changes the bite and kills the keepnet's fish (P2, done in v0.52.20; owner acceptance pending)
+Found: 2026-11-14, owner, spec 179 (emission) stage G; owner answers Q11–Q14 2026-11-18.
+Reproduce: DevTools «ПОГОДА» → «Викид» → «Почати викид» with fish and live baits in the keepnet; «РАНДОМАЙЗЕР» →
+«Кльов: радіація».
+Expected: more unique and heavier fish under radiation (radiation 0 — exactly as before); keepnet fish die by their dose
+(live bait in seconds, a bigger fish later, a unique fish never), less with a better keepnet.
+Actual (before): radiation changed nothing in the bite or the keepnet.
+Notes: TK-369 — `FishRadiationBiteModifier`, `FishWeightSampler`, `KeepnetRadiationPolicy`, `KeepnetRadiationExposure`,
+`CONFIG.liveBait.keepnet`, live bait save schema 7. Checks `fish-rarity`, `live-bait`, `game-application-composition`,
+`weather`. Game-cycle unchanged (radiation 0 there).
+
 ### G-140 God mode: a fish hooked far away is pulled at once to the edge of the tackle's line (P3, done in v0.52.8; owner acceptance pending)
 Found: 2026-11-17, owner, phone, v0.52.5.
 Reproduce: God mode on (`infiniteCasting`), cast far beyond the tackle's normal reach, get a bite.

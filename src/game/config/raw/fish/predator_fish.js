@@ -26,6 +26,13 @@ export const PREDATOR_FISH = [
       fog: 2.5,
     },
 
+    // Spec 179 D7 (TK-369, owner Q11): as crucian_stalker's.
+    radiationMultipliers: {
+      unique: 4,
+      big: 1,
+      species: 0,
+    },
+
     depthConfig: {
       minDepth: 1.0,
       maxDepth: 10.0,

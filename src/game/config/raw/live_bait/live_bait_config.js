@@ -39,5 +39,17 @@ export const LIVE_BAIT_CONFIG = Object.freeze({
   displayTickMs: 1000,
   capacities: Object.freeze([5, 6, 7, 8, 16, 18, 20, 22, 24, 48]),
   keepnetCapacity: 100,
+  // Spec 179 D8 (TK-369, owner Q12–Q14): the radiation dose of the fish in the keepnet and of the live bait on the hook
+  // (dose = radiation × seconds; the aquarium in the house gets none, a unique fish never). Not frozen: DevTools edits.
+  keepnet: {
+    level: 1, // умовний рівень садка 1…10, поки покращень садка немає
+    radiationShieldByLevel: [0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9], // частка дози, що садок не пропускає
+    removeRadiationDead: true, // мертва від радіації риба зникає з садка; false — лишається з позначкою «Мертва»
+    radiationTolerance: {
+      secPerKg: 120, // секунди повної радіації, що витримує риба вагою 1 кг
+      weightExponent: 0.8, // витривалість = secPerKg × вага^weightExponent (більша риба живе довше)
+      liveBaitSec: 3, // витривалість живця (секунди повної радіації)
+    },
+  },
   prices: Object.freeze({ aquarium: 0, upgrade: 0, feed: 0, autoFeeder: 0 }),
 });

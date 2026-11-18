@@ -71,6 +71,7 @@ export class GameApplication {
   #liveBait;
   #liveBaitMotion = null;
   #liveBaitCastId = null;
+  #keepnetRadiation = null;
   #createLiveBaitMotion;
   #liveBaitCareElapsedMs = 0;
   #castRodScreenX = null;
@@ -124,6 +125,7 @@ export class GameApplication {
     chumTargets: [],
     isRaining: false,
     isFoggy: false,
+    radiation: 0, // spec 179 D7
     castSpamMultiplier: 1,
   };
   eatenBaits = [];
@@ -226,6 +228,7 @@ export class GameApplication {
     this.#sceneLayer = runtime.rendering.sceneLayer ?? null;
     this.#fishingController = runtime.fishing;
     this.#liveBait = runtime.liveBait || null;
+    this.#keepnetRadiation = runtime.keepnetRadiation || null;
     this.#createLiveBaitMotion = runtime.createLiveBaitMotion || null;
     this.#net = runtime.net;
     this.#castPenalty = runtime.castPenalty;
@@ -715,10 +718,7 @@ export class GameApplication {
       if (this.#liveBaitCareElapsedMs >= this.#config.liveBait.careTickMs) {
         this.#liveBaitCareElapsedMs = 0;
         this.#liveBait.advance();
-        if (this.#liveBaitCastId && this.#liveBait.getSelectedBait()?.fishId !== this.#liveBaitCastId) {
-          this.#liveBaitCastId = null;
-          this.#liveBaitMotion = null;
-        }
+        this.#syncLiveBaitCast();
       }
     }
     const timeScale = this.#config.debug?.timeScale || 1;
@@ -729,6 +729,8 @@ export class GameApplication {
     const bounds = this.getDynamicBounds();
 
     const envSnapshot = this.#world.update(dt, timeScale);
+    // Spec 179 D8: the keepnet's and the hook's radiation dose; a live bait it kills ends like one whose life ran out.
+    if (this.#keepnetRadiation?.update(dt, envSnapshot.radiation)) this.#syncLiveBaitCast();
     this.#castPenalty.update(dt);
     this.#timeUI.update(envSnapshot.time);
     this.#emissionScreen.update(dt);
@@ -795,6 +797,14 @@ export class GameApplication {
     if (inReach === this.#boatInNetReach) return;
     this.#boatInNetReach = inReach;
     this.#ui.updateNetButtonState(this.#hasEquippedNet, inReach);
+  }
+
+  // A live bait on the hook that died (its life, or radiation — spec 179 D8) no longer drives the cast's motion.
+  #syncLiveBaitCast() {
+    if (this.#liveBaitCastId && this.#liveBait.getSelectedBait()?.fishId !== this.#liveBaitCastId) {
+      this.#liveBaitCastId = null;
+      this.#liveBaitMotion = null;
+    }
   }
 
   #syncInputAvailability() {

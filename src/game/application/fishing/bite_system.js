@@ -1,6 +1,8 @@
 import { FishPhysicsProfile } from "../../domain/fish/fish_physics_profile.js";
 import { clampUnitFinite } from "../../../engine/math/number_normalization.js";
 import { CastRodBitePolicy } from "../../domain/fishing/cast_rod_bite_policy.js";
+import { FishRadiationBiteModifier } from "../../domain/fish/fish_radiation_bite_modifier.js";
+import { FishWeightSampler } from "../../domain/fish/fish_weight_sampler.js";
 
 export class BiteSystem {
   #fishDatabase;
@@ -24,6 +26,8 @@ export class BiteSystem {
   #tickIndex = 0;
   #runtimeConfig;
   #castRodBitePolicy = new CastRodBitePolicy();
+  #radiation = new FishRadiationBiteModifier();
+  #weightSampler = new FishWeightSampler({ radiation: this.#radiation });
   #castRodFloatMoved = false;
 
   constructor(
@@ -327,6 +331,8 @@ export class BiteSystem {
 
     if (envData.isRaining) chance *= fish.weatherMultipliers?.rain ?? 1.0;
     if (envData.isFoggy) chance *= fish.weatherMultipliers?.fog ?? 1.0;
+    // Spec 179 D7: radiation 0 — × 1 exactly.
+    chance *= this.#radiation.chanceMultiplier(fish, envData.radiation);
 
     chance *= envData.castSpamMultiplier ?? 1.0;
 
@@ -353,28 +359,11 @@ export class BiteSystem {
     return this.#applyGodModeChanceOverride(chance);
   }
 
-  #generateFishInstance(fish, currentDepth, playerGear, locationId) {
+  #generateFishInstance(fish, currentDepth, playerGear, locationId, radiation = 0) {
 
     const { depthConfig: dc, weightConfig: wc } = fish;
 
-    let t = Math.max(
-      0,
-      Math.min(1, (currentDepth - dc.minDepth) / (dc.maxDepth - dc.minDepth)),
-    );
-
-    const curMinW = this.#lerp(
-      dc.minWeightAtMinDepth,
-      dc.minWeightAtMaxDepth,
-      t,
-    );
-    const curMaxW = this.#lerp(
-      dc.maxWeightAtMinDepth,
-      dc.maxWeightAtMaxDepth,
-      t,
-    );
-
-    const genWeight =
-      curMinW + (curMaxW - curMinW) * Math.pow(this.#next(), wc.rarityCurve);
+    const genWeight = this.#weightSampler.sample(fish, currentDepth, this.#next(), radiation);
     const baitCandidates = Array.isArray(playerGear.baitCandidates)
       ? playerGear.baitCandidates
       : [];
@@ -393,6 +382,7 @@ export class BiteSystem {
       locationId,
       roll: this.#next(),
       chanceOverride: this.#resolveGodModeAnomalyChanceOverride(),
+      chanceScale: this.#radiation.anomalyChanceScale(fish, radiation),
     });
     const fishProfile = this.#fishRarityResolver.resolve({
       weightKg: genWeight,
@@ -540,6 +530,7 @@ export class BiteSystem {
         envData.hookDepth,
         playerGear,
         envData.locationId,
+        envData.radiation,
       );
     }
 
@@ -594,6 +585,7 @@ export class BiteSystem {
         ? envData.chumBonus
         : 1.0
       ).toFixed(2),
+      radiation: this.#radiation.chanceMultiplier(fish, envData.radiation).toFixed(2),
       spam: (envData.castSpamMultiplier ?? 1.0).toFixed(2),
       overDepth: (envData.lineLength > envData.bottomDepth
         ? this.#overDepthPenaltyMult

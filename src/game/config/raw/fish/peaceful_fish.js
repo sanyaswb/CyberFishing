@@ -25,6 +25,14 @@ export const PEACEFUL_FISH = [
       fog: 1.2,
     },
 
+    // Spec 179 D7 (TK-369, owner Q11): radiation r 0…1 → anomaly chance × (1 + r × unique), weight-curve exponent ÷
+    // (1 + r × big) (more big fish inside the species' range), bite chance × (1 + r × species). r 0 — as without them.
+    radiationMultipliers: {
+      unique: 4,
+      big: 1,
+      species: 0,
+    },
+
     depthConfig: {
       minDepth: 0.5,
       maxDepth: 11.0,

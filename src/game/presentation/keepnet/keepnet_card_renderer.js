@@ -93,11 +93,13 @@ export class KeepnetCardRenderer {
           if (!fish.selected) action("release", labels.release, null, row).classList.add("keepnet-section__action--wide");
           action("to-inventory", labels.toInventory, null, row).classList.add("keepnet-section__action--square");
         }
-      } else action("release", labels.release);
+      } else action("release", fish.dead ? labels.discard : labels.release);
     }
+    // Spec 179 D8: a catch killed by radiation (shown while «Мертва зникає з садка» is off) is grey; it can only go.
+    card.classList.toggle("keepnet-section__fish--dead", fish.dead === true);
     card.append(actions);
     const update = (current) => {
-      timer.textContent = current.kind === "catch" ? labels.catch :
+      timer.textContent = current.dead ? labels.dead : current.kind === "catch" ? labels.catch :
         `${current.remainingMs === null ? labels.protected : labels.lifetime(current.remainingMs)}${current.selected ? " · ✓" : ""}`;
     };
     update(fish);

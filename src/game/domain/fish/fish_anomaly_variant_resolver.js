@@ -17,6 +17,8 @@ export class FishAnomalyVariantResolver {
     locationId = "",
     roll = 1,
     chanceOverride = null,
+    // Spec 179 D7: the radiation's scale of the species' chance (an override is taken as is).
+    chanceScale = 1,
   } = {}) {
     if (!config || config.enabled === false) return this.#none();
 
@@ -33,9 +35,10 @@ export class FishAnomalyVariantResolver {
 
     const hasChanceOverride =
       chanceOverride !== null && chanceOverride !== undefined;
+    const scale = Number(chanceScale);
     const chanceSource = hasChanceOverride
       ? Number(chanceOverride)
-      : Number(config.chance);
+      : Number(config.chance) * (Number.isFinite(scale) && scale > 0 ? scale : 1);
     const chance = Math.max(
       0,
       Math.min(1, Number.isFinite(chanceSource) ? chanceSource : 0),

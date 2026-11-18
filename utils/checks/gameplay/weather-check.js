@@ -2363,6 +2363,37 @@ const step = (model, seconds, clock = null, dt = 0.1) => {
     "a seed repeats the report");
 }
 
+{
+  // Spec 179 stage G (TK-369): DevTools «РАНДОМАЙЗЕР» → «Кльов: радіація» — the bite's own weight and anomaly at radiation
+  // 0 / 50 / 100 % on the real fish: at full radiation more unique fish (unique 4 — about ×5) and a heavier mean.
+  const { BiteRadiationRandomProbe } = require("../../../src/dev/randomizer/bite_radiation_random_probe.js");
+  const { FISH_DB } = require("../../../src/game/config/databases/fish_database.js");
+  const { FishWeightSampler } = require("../../../src/game/domain/fish/fish_weight_sampler.js");
+  const { FishAnomalyVariantResolver } = require("../../../src/game/domain/fish/fish_anomaly_variant_resolver.js");
+  const { FishRadiationBiteModifier } = require("../../../src/game/domain/fish/fish_radiation_bite_modifier.js");
+  const { SeededRng } = require("../../../src/engine/random/seeded_rng.js");
+  const probe = new BiteRadiationRandomProbe({ getFishes: () => FISH_DB, getLocationId: () => "test",
+    createRng: (seed) => new SeededRng(seed), weightSampler: new FishWeightSampler(),
+    anomalyResolver: new FishAnomalyVariantResolver(), radiation: new FishRadiationBiteModifier() });
+  const report = probe.run({ count: 20000, seed: 11 });
+  for (const fish of FISH_DB) {
+    const read = (radiation) => {
+      const text = report.rows.find(([name]) => name === `${fish.name} · радіація ${radiation}%`)?.[1] ?? "";
+      return { unique: Number(text.match(/унікальних ([\d.]+)%/u)?.[1]) / 100, weight: Number(text.match(/вага ([\d.]+) кг/u)?.[1]) };
+    };
+    const calm = read(0), peak = read(100), half = read(50);
+    const chance = fish.anomalyVariant.chance;
+    assert.ok(Math.abs(calm.unique - chance) < chance * 0.5, `${fish.id}: radiation 0 — the species' anomaly chance (${calm.unique})`);
+    assert.ok(Math.abs(peak.unique - chance * (1 + fish.radiationMultipliers.unique)) < chance * 1.5,
+      `${fish.id}: full radiation — anomaly × (1 + unique) (${peak.unique})`);
+    assert.ok(calm.weight < half.weight && half.weight < peak.weight, `${fish.id}: the mean weight grows with radiation`);
+  }
+  assert.equal(report.histogram.length, FISH_DB.reduce((sum, fish) => sum + fish.weightConfig.maxLevel, 0),
+    "the histogram: every species' levels at full radiation");
+  assert.equal(JSON.stringify(probe.run({ count: 100, seed: 3 })), JSON.stringify(probe.run({ count: 100, seed: 3 })),
+    "a seed repeats the report");
+}
+
 console.log(
   "weather: independent events and timelines, per-process holds, storm and rain, lightning, fog, derived fields, held wind, the sea state, the live reading, the emission and the starfall's night OK",
 );

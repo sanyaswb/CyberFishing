@@ -111,6 +111,7 @@ class FishRarityCheck {
   run() {
     this.#checkGapLevelResolution();
     this.#checkBiteSystemGapIntegration();
+    this.#checkBiteSystemRadiation();
     this.#checkEveryLevelRange();
     this.#checkCrucianExamples();
     this.#checkHalfStarResolution();
@@ -368,6 +369,46 @@ class FishRarityCheck {
       "assets/fish-display/crucian_stalker/standart/crucian_stalker--2.webp",
       "gap weight image level",
     );
+  }
+
+  // Spec 179 D7 (TK-369): radiation 0 gives exactly the old weight and anomaly; full radiation leans the weight to the
+  // top of the range, multiplies the anomaly chance by 1 + unique and the bite chance by 1 + species. Every roll 0.03.
+  #checkBiteSystemRadiation() {
+    const fish = {
+      id: "crucian_stalker", name: "Crucian Stalker", baseChance: 0.1, maxHookSize: 6,
+      baitMultipliers: { test_bait: 1 }, timeMultipliers: { day: 1 }, dayMultipliers: { 1: 1 }, weatherMultipliers: {},
+      radiationMultipliers: { unique: 4, big: 1, species: 2 },
+      anomalyVariant: { enabled: true, anomalyId: "inside", chance: 0.01, locationIds: ["test"] },
+      depthConfig: { minDepth: 0, maxDepth: 1, minWeightAtMinDepth: 1, minWeightAtMaxDepth: 1,
+        maxWeightAtMinDepth: 5, maxWeightAtMaxDepth: 5 },
+      weightConfig: { ...this.fixture.weightConfig, rarityCurve: 1 },
+      visual: { imageAssetPattern: "fish-display.crucian_stalker.standart.crucian_stalker--{level}",
+        uniqueImageAssetPattern: "fish-display.crucian_stalker.unique.crucian_stalker--{level}-uniq" },
+      physics: {},
+    };
+    const bite = (radiation) => {
+      const system = new this.BiteSystem([fish], { fightPhysicsConfig: {}, ui: { line: {} } },
+        { next: () => 0.03, int: () => 0 }, null, this.resolver, this.anomalyVariantResolver,
+        this.visualVariantResolver, this.baitEffectivenessResolver, this.productionFlags);
+      const environment = { locationId: "test", hookDepth: 0.5, timePhase: "day", dayOfWeek: 1, zoneBonus: 1,
+        chumBonus: 1, chumTargets: [], isRaining: false, isFoggy: false, castSpamMultiplier: 1, lineLength: 1,
+        bottomDepth: 2, radiation };
+      const gear = { hookSize: 1, baitCandidates: [{ itemId: "test_bait", itemType: "bait" }], isPulling: false };
+      return { chance: system.getLiveChances(environment, gear)[0], caught: system.evaluateBite(1000, environment, gear) };
+    };
+    const calm = bite(0);
+    Assertion.equal(calm.caught.weight, 1 + 4 * 0.03, "radiation 0: the weight is the old min + (max − min) × roll");
+    Assertion.that(!calm.caught.isUnique, "radiation 0: a roll of 0.03 misses the 1 % anomaly");
+    Assertion.equal(calm.chance.chanceValue, 0.1, "radiation 0: the bite chance is unchanged");
+    Assertion.equal(calm.chance.breakdown.radiation, "1.00", "radiation 0: the breakdown's radiation × 1");
+    const peak = bite(1);
+    Assertion.equal(peak.caught.weight, 1 + 4 * Math.pow(0.03, 0.5), "radiation 1: the weight curve ÷ (1 + big)");
+    Assertion.that(peak.caught.isUnique && peak.caught.hasAnomaly, "radiation 1: the anomaly chance × 5 takes 0.03");
+    Assertion.that(Math.abs(peak.chance.chanceValue - 0.3) < 1e-12, "radiation 1: the bite chance × (1 + species)");
+    Assertion.equal(peak.chance.breakdown.radiation, "3.00", "radiation 1: the breakdown shows × 3");
+    const half = bite(0.5);
+    Assertion.that(half.caught.weight > calm.caught.weight && half.caught.weight < peak.caught.weight,
+      "radiation 0.5: the weight lies between");
   }
 
   #checkBiteSystemGapIntegration() {

@@ -3,6 +3,7 @@ import { FeedSupplyState } from "../../domain/live_bait/feed_supply_state.js";
 import { CatchDispositionService } from "./catch_disposition_service.js";
 import { CaughtFishRarity } from "../../domain/live_bait/caught_fish_rarity.js";
 import { LiveBaitSuccession } from "../../domain/live_bait/live_bait_succession.js";
+import { KeepnetRadiationPolicy } from "../../domain/live_bait/keepnet_radiation_policy.js";
 
 export class LiveBaitCommandService {
   #config;
@@ -15,7 +16,10 @@ export class LiveBaitCommandService {
   #error = null;
   #catchDisposition;
   #inventoryPort;
+  #radiation;
+  #dying = [];
   constructor({ config, fishDb, store, clock, rng, care, inventoryPort }) {
+    this.#radiation = new KeepnetRadiationPolicy(config);
     this.#config = config;
     this.#fishDb = new Map(fishDb.map((fish) => [fish.id, fish]));
     this.#store = store;
@@ -50,8 +54,29 @@ export class LiveBaitCommandService {
   convertCatch(fish, catchId = this.createCatchId()) { return this.resolveCatch(catchId, fish, "live_bait"); }
   releaseCatch(id) { return this.#commit((state) => {
     const fish = state.fish.find((item) => item.id === id);
-    if (!fish || fish.disposition !== "keepnet" || fish.purpose !== "catch") return "not_found";
+    // Spec 179 D8: a catch killed by radiation, shown while removeRadiationDead is off, can only be thrown away.
+    if (!fish || !["keepnet", "dead"].includes(fish.disposition) || fish.purpose !== "catch") return "not_found";
     fish.disposition = "released"; return null;
+  }); }
+  // Spec 179 D8 (TK-369): seconds of full radiation (before the keepnet's shield) until the next fish dies; read from the
+  // current state without a write (a frame may ask while the radiation lasts).
+  radiationHeadroomSec() {
+    return this.#error || !this.#state ? Infinity : this.#radiation.headroomSec(this.#state.fish);
+  }
+  // Spec 179 D8: the dose of a stretch of radiation (seconds of full radiation) to the keepnet and the hook; a live bait
+  // that reaches its tolerance dies as from its lifetime, a catch dies (removeRadiationDead decides whether it shows).
+  applyRadiation(doseSec) { return this.#commit((state) => {
+    if (!state.fish.some((fish) => this.#radiation.isExposed(fish))) return "nothing_exposed";
+    const dying = this.#radiation.expose(state.fish, doseSec, this.#dying);
+    for (const fish of dying) {
+      fish.disposition = "dead";
+      if (fish.purpose !== "live_bait") continue;
+      fish.remainingLifetimeMs = 0;
+      fish.starvationDeadlineMs = null;
+      LiveBaitSuccession.replace(state, fish);
+    }
+    dying.length = 0;
+    return null;
   }); }
   releaseBait(id) { return this.#commit((state) => {
     const fish = state.fish.find((item) => item.id === id);
@@ -228,8 +253,11 @@ export class LiveBaitCommandService {
     return { error: null, feedStock: Object.values(state.feedSupply.stock).reduce((sum, count) => sum + count, 0),
       feedItems: Object.values(this.#config.aquariumFeeds).map((item) => ({ ...item, count: state.feedSupply.stock[item.id] || 0 })),
       selectedFeedId: state.feedSupply.selectedFeedId, selectedBaitId: state.selectedFishId, liveBaits,
-      keepnet: state.fish.filter((fish) => fish.purpose === "catch" && fish.disposition === "keepnet")
-        .map((fish) => ({ ...this.#fishView(fish), canConvert: this.canConvert(fish) })),
+      // Spec 179 D8: a catch killed by radiation shows (marked dead, only thrown away) while removeRadiationDead is off.
+      keepnet: state.fish.filter((fish) => fish.purpose === "catch" && (fish.disposition === "keepnet" ||
+        (fish.disposition === "dead" && this.#config.keepnet.removeRadiationDead === false)))
+        .map((fish) => fish.disposition === "dead" ? { ...this.#fishView(fish), canConvert: false, dead: true }
+          : { ...this.#fishView(fish), canConvert: this.canConvert(fish) }),
       keepnetCapacity: this.#config.keepnetCapacity,
       keepnetReservedCount: state.fish.filter((fish) => fish.disposition === "hook").length,
       aquarium: { owned: aquarium.owned, level: aquarium.level, capacity: aquarium.capacity,

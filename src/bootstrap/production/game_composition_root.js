@@ -64,6 +64,7 @@ import { EmissionExposure } from "../../game/application/world/emission_exposure
 import { PlayerStatusEffects } from "../../game/application/world/player_status_effects.js";
 import { EquipmentStatusSource } from "../../game/application/world/equipment_status_source.js";
 import { RadiationStatusSource } from "../../game/application/world/radiation_status_source.js";
+import { KeepnetRadiationExposure } from "../../game/application/live_bait/keepnet_radiation_exposure.js";
 import { HudIndicatorColumn } from "../../platform/browser/ui/hud_indicator_column.js";
 import { StatusHudBadges } from "../../platform/browser/ui/status_hud_badges.js";
 import { STATUS_LABELS } from "../../game/presentation/status/status_labels.js";
@@ -870,6 +871,8 @@ export class GameCompositionRoot {
       });
       // A new fishing session has no in-flight cast to own a persisted hook fish.
       liveBait.recoverInterruptedCast();
+      // Spec 179 D8 (TK-369): the keepnet's radiation dose with the game frame.
+      const keepnetRadiation = new KeepnetRadiationExposure({ liveBait, config: this.#config.liveBait });
       const liveBaitCandidate = new LiveBaitBaitCandidatePort(
         liveBait,
         FISH_DB,
@@ -1031,6 +1034,7 @@ export class GameCompositionRoot {
       this.#startupMarks.mark(STARTUP_STAGES.scene);
       return {
         liveBait,
+        keepnetRadiation,
         liveBaitCandidate,
         createLiveBaitMotion,
         location,

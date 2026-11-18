@@ -15,7 +15,7 @@ export class LiveBaitSnapshotStore {
     const known = new Set(fishDb.map((fish) => fish.id));
     const locations = new Set(["keepnet", "aquarium", "hook", "dead", "consumed", "released"]);
     const fish = state?.fish;
-    if (![1, 2, 3, 4, 5, 6].includes(state?.schemaVersion) ||
+    if (![1, 2, 3, 4, 5, 6, 7].includes(state?.schemaVersion) ||
       (state.schemaVersion >= 6 && !this.#validInventorySpecies(state.inventorySpeciesIds, known)) ||
       (state.schemaVersion >= 4 && Object.hasOwn(state, "pendingLegacyStock")) ||
       !Number.isSafeInteger(state.revision) || state.revision < 0 ||
@@ -41,7 +41,10 @@ export class LiveBaitSnapshotStore {
         !Number.isFinite(entry.weightKg) || entry.weightKg <= 0 || !locations.has(entry.disposition) ||
         !["catch", "live_bait"].includes(entry.purpose) || !Number.isFinite(entry.caughtAtMs) ||
         entry.caughtAtMs < 0 ||
-        (entry.purpose === "catch" && !["keepnet", "released"].includes(entry.disposition)) ||
+        // Spec 179 D8 (v7): a catch can die of radiation; every fish carries its radiation dose.
+        (entry.purpose === "catch" && !(state.schemaVersion >= 7 ? ["keepnet", "released", "dead"]
+          : ["keepnet", "released"]).includes(entry.disposition)) ||
+        (state.schemaVersion >= 7 && !(Number.isFinite(entry.radiationDose) && entry.radiationDose >= 0)) ||
         (state.schemaVersion < 3 && entry.purpose === "live_bait" && (!Number.isFinite(entry.deathOrder) ||
           entry.deathOrder < 0 || entry.deathOrder >= 1)) ||
         (state.schemaVersion >= 3 && (![true, false, null].includes(entry.hasAnomaly) ||
@@ -89,6 +92,11 @@ export class LiveBaitSnapshotStore {
       state.inventorySpeciesIds = [];
       state.schemaVersion = 6;
     }
+    // Spec 179 D8 (owner Q4): a fish saved before the radiation dose has none.
+    if (state.schemaVersion === 6) {
+      for (const entry of fish) entry.radiationDose = 0;
+      state.schemaVersion = 7;
+    }
     return { ok: true, state };
   }
   save(state, changes = []) {
@@ -103,7 +111,7 @@ export class LiveBaitSnapshotStore {
     return { ok: true, revision: next.revision };
   }
   #empty(nowMs, config) {
-    return { schemaVersion: 6, revision: 0, lastAppliedAtMs: nowMs, fish: [], resolvedCatchIds: {},
+    return { schemaVersion: 7, revision: 0, lastAppliedAtMs: nowMs, fish: [], resolvedCatchIds: {},
       aquarium: { owned: false, level: 0, feed: null, starvation: null },
       feedSupply: { selectedFeedId: config.defaultFeedId, autoFeederOwned: false, autoFeederEnabled: false }, selectedFishId: null,
       inventorySpeciesIds: [] };

@@ -128,6 +128,8 @@ export class BiteEnvironmentService {
     biteEnv.chumBonus = selectedChumBonus;
     biteEnv.isRaining = env.isRaining;
     biteEnv.isFoggy = env.isFoggy;
+    // Spec 179 D7: the location's radiation (0 without an emission and without base radiation).
+    biteEnv.radiation = Number.isFinite(env.radiation) ? env.radiation : 0;
     biteEnv.castSpamMultiplier = this.#castPenalty.getBiteChanceMultiplier();
 
     const targets = biteEnv.chumTargets;

@@ -45,6 +45,11 @@
   border-color: var(--inventory-success);
   background: rgba(var(--inventory-success-rgb), 0.18);
 }
+/* Spec 179 D8: a catch killed by radiation, shown while «Мертва зникає з садка» is off. */
+.keepnet-section__fish.keepnet-section__fish--dead .keepnet-section__thumbnail {
+  filter: grayscale(1);
+  opacity: 0.6;
+}
 .keepnet-section__fish.keepnet-section__fish--previewed {
   border-color: var(--inventory-equipment-tab-border);
   /* background: var(--inventory-equipment-tab-active); */

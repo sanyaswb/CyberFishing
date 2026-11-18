@@ -499,6 +499,7 @@ export class ConfigSchemaValidator {
     for (const key of ["freeFeedPortions", "careTickMs", "displayTickMs", "keepnetCapacity"]) {
       if (!Number.isSafeInteger(cfg[key])) this.#error(`CONFIG.liveBait.${key}`, "expected safe integer");
     }
+    this.#validateKeepnetRadiation(cfg.keepnet);
     if (!Array.isArray(cfg.capacities) || cfg.capacities.length !== 10 ||
       cfg.capacities.some((value, index) => !Number.isSafeInteger(value) || value < 1 ||
         (index > 0 && value <= cfg.capacities[index - 1]))) this.#error("CONFIG.liveBait.capacities", "expected ten increasing positive integer capacities");
@@ -654,6 +655,7 @@ export class ConfigSchemaValidator {
       });
       this.#validateFiniteNumberLeaves(fish, fishPath);
       this.#validateFishPhysics(fishPath, fish?.physics);
+      this.#validateFishRadiation(fishPath, fish?.radiationMultipliers);
       this.#validateWeightConfig(fishPath, fish?.weightConfig);
     }
   }
@@ -668,6 +670,32 @@ export class ConfigSchemaValidator {
     for (const issue of issues) {
       this.#error(issue.path, issue.message);
     }
+  }
+
+  // Spec 179 D8 (TK-369): the keepnet's conditional level, its radiation shields and the fish's tolerance.
+  #validateKeepnetRadiation(keepnet) {
+    const path = "CONFIG.liveBait.keepnet";
+    if (!keepnet || typeof keepnet !== "object") { this.#error(path, "missing keepnet radiation config"); return; }
+    const shields = keepnet.radiationShieldByLevel;
+    if (!Array.isArray(shields) || shields.length !== 10 ||
+      shields.some((value) => !Number.isFinite(value) || value < 0 || value > 1))
+      this.#error(`${path}.radiationShieldByLevel`, "expected ten shares 0…1");
+    if (!Number.isSafeInteger(keepnet.level) || keepnet.level < 1 || keepnet.level > 10)
+      this.#error(`${path}.level`, "expected an integer 1…10");
+    if (typeof keepnet.removeRadiationDead !== "boolean") this.#error(`${path}.removeRadiationDead`, "expected boolean");
+    const tolerance = keepnet.radiationTolerance;
+    for (const [key, min] of [["secPerKg", 0.001], ["weightExponent", 0], ["liveBaitSec", 0.001]])
+      this.#requireFiniteNumber(`${path}.radiationTolerance.${key}`, tolerance?.[key], { min });
+  }
+
+  // Spec 179 D7 (TK-369): FISH_DB.<id>.radiationMultipliers — unique, big, species; each ≥ 0.
+  #validateFishRadiation(fishPath, multipliers) {
+    if (!multipliers || typeof multipliers !== "object") {
+      this.#error(`${fishPath}.radiationMultipliers`, "missing radiation multipliers");
+      return;
+    }
+    for (const key of ["unique", "big", "species"])
+      this.#requireFiniteNumber(`${fishPath}.radiationMultipliers.${key}`, multipliers[key], { min: 0 });
   }
 
   #validateFishPhysics(fishPath, physics) {

@@ -32,6 +32,11 @@ import { WindGustRandomProbe } from "../randomizer/wind_gust_random_probe.js";
 import { WeatherModel } from "../../game/domain/weather/weather_model.js";
 import { WindModel } from "../../game/domain/weather/wind_model.js";
 import { GAME_TIME_CONFIG } from "../../game/config/raw/time/game_time_config.js";
+import { BiteRadiationRandomProbe } from "../randomizer/bite_radiation_random_probe.js";
+import { FISH_DB } from "../../game/config/databases/fish_database.js";
+import { FishWeightSampler } from "../../game/domain/fish/fish_weight_sampler.js";
+import { FishAnomalyVariantResolver } from "../../game/domain/fish/fish_anomaly_variant_resolver.js";
+import { FishRadiationBiteModifier } from "../../game/domain/fish/fish_radiation_bite_modifier.js";
 
 const SECTION_STATES_KEY = "dev_tools_open_sections";
 const LEGACY_SECTION_STATES_KEY = "dev_tools_sections_state";
@@ -288,6 +293,10 @@ export class DevTools {
         getGeneral }),
       // Spec 182 stage B (TK-351): the starfall's nights.
       new StarfallRandomProbe({ createModel: (options) => new StarfallNight(options), createRng, getSettings }),
+      // Spec 179 stage G (TK-369): what a bite gives at radiation 0 / 50 / 100 %.
+      new BiteRadiationRandomProbe({ getFishes: () => FISH_DB, getLocationId: () => locationId, createRng,
+        weightSampler: new FishWeightSampler(), anomalyResolver: new FishAnomalyVariantResolver(),
+        radiation: new FishRadiationBiteModifier() }),
     ];
   }
 
