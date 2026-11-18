@@ -71,6 +71,7 @@ import { HudIndicatorColumn } from "../../platform/browser/ui/hud_indicator_colu
 import { StatusHudBadges } from "../../platform/browser/ui/status_hud_badges.js";
 import { STATUS_LABELS } from "../../game/presentation/status/status_labels.js";
 import { EmissionScreenEffect, sceneBlurPx } from "../../game/presentation/weather/emission_screen_effect.js";
+import { EmissionCameraShake } from "../../game/presentation/weather/emission_camera_shake.js";
 import { EmissionVeilDomRenderer } from "../../platform/browser/dom/emission_veil_dom_renderer.js";
 import { WindModel } from "../../game/domain/weather/wind_model.js";
 import { composeGameTime } from "./game_time_composition.js";
@@ -1140,6 +1141,8 @@ export class GameCompositionRoot {
       ? own(new EmissionVeilDomRenderer({ documentRef: this.#documentTarget, portalRoot: this.#uiSurface.portalRoot,
         gameCanvas: canvas }))
       : null;
+    // Visual only: the shake's jolts draw from Math.random, never a gameplay stream.
+    const cameraShake = new EmissionCameraShake({ random: Math.random });
     return Object.freeze({
       update: (dtMs) => {
         radiationStatus.update();
@@ -1147,6 +1150,10 @@ export class GameCompositionRoot {
         const record = effect.update(dtMs, emissionExposure.intensity(), this.#config.emission?.screen,
           emissionExposure.modifier("vignette"), emissionExposure.modifier("blur"), emissionExposure.modifier("blurRate"));
         veil?.apply(record, !(record.includeHud === false && sceneLayer.isActive()));
+        // Spec 179 stage J (TK-372): the emission shakes the view (a CSS move of the scene; the gas mask does not stop it).
+        const shake = cameraShake.update(dtMs, emissionExposure.intensity(), emissionExposure.atPeak(),
+          this.#config.emission?.screen?.shake);
+        sceneLayer.setViewMotion(shake.x, shake.y, shake.marginPx, shake.marginPx);
       },
     });
   }

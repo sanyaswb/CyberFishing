@@ -11,6 +11,7 @@ import { PixiAshRenderer } from "./pixi_ash_renderer.js";
 import { PixiRadiationGrainRenderer } from "./pixi_radiation_grain_renderer.js";
 import { PixiStarfallRenderer } from "./pixi_starfall_renderer.js";
 import { PixiSceneBlur } from "./pixi_scene_blur.js";
+import { SceneCanvasMotion } from "./scene_canvas_motion.js";
 import { PixiWorldEntitiesRenderer } from "./pixi_world_entities_renderer.js";
 import { SceneTextTextures } from "./scene_text_textures.js";
 import { SceneTextureCache } from "./scene_texture_cache.js";
@@ -65,6 +66,7 @@ export class PixiSceneLayer {
   #starfall = null;
   #getStarfallSettings;
   #blur = null;
+  #motion;
   #getSceneBlurPx;
   #getSceneBlurSettings;
   #fightAreaStyles;
@@ -154,6 +156,7 @@ export class PixiSceneLayer {
     this.#canvas.addEventListener("webglcontextrestored", this.#onContextRestored);
     gameCanvas.before(this.#canvas);
     gameCanvas.classList.add(OVER_SCENE_CLASS);
+    this.#motion = new SceneCanvasMotion({ element: this.#canvas });
     this.#ready = this.#init(background);
   }
 
@@ -206,6 +209,13 @@ export class PixiSceneLayer {
     return this.#app !== null && !this.#contextLost;
   }
 
+  // Spec 179 stages J, L (TK-372, TK-374): the view's offset (the emission's shake, the vodka's sway) as a CSS move of
+  // this canvas, enlarged to cover the margins (SceneCanvasMotion); the scene is not drawn again for it.
+  setViewMotion(x, y, marginX, marginY) {
+    if (this.#app === null) return;
+    this.#motion.apply(x, y, marginX, marginY, this.#width, this.#height);
+  }
+
   // Spec 105 D2: startup uploads every background phase of the location under the loading screen; the staged order of
   // render() remains for images that load later.
   prepare(assetIds) {
@@ -224,7 +234,7 @@ export class PixiSceneLayer {
     return { state, webglVersion: this.#app.renderer.context?.webGLVersion ?? null, width: this.#width,
       height: this.#height, pixelRatio: this.#pixelRatio, textures: this.#textures.size, textureBytes: this.#textures.bytes,
       water: this.#water.status, rain: this.#rain.status, ash: this.#ash.status, grain: this.#grain.status,
-      starfall: this.#starfall.status, blur: this.#blur.status };
+      starfall: this.#starfall.status, blur: this.#blur.status, motion: this.#motion.status };
   }
 
   // DEV fallback test (DevTools "СЦЕНА WebGL"): lose the context through WEBGL_lose_context until restoreContext().
@@ -257,6 +267,7 @@ export class PixiSceneLayer {
     this.#worldEntities?.dispose();
     this.#texts?.dispose();
     this.#textures?.dispose();
+    this.#motion.reset();
     this.#canvas.remove();
     this.#gameCanvas.classList.remove(OVER_SCENE_CLASS);
   }

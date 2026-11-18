@@ -1498,6 +1498,66 @@ const step = (model, seconds, clock = null, dt = 0.1) => {
     "the fish, environment and DevTools read the one session seed");
 }
 
+// Spec 179 stage J (TK-372, owner Q21): the emission's shake — rare small jolts early on, more and stronger with the
+// intensity, a constant shake at the peak whose strength wanders in a wider range; the offset never leaves its margin.
+{
+  const { EmissionCameraShake } = require("../../../src/game/presentation/weather/emission_camera_shake.js");
+  const { EmissionExposure } = require("../../../src/game/application/world/emission_exposure.js");
+  const { HousePresence } = require("../../../src/game/application/world/house_presence.js");
+  const { CONFIG } = require("../../../src/game/config/runtime/game_config.js");
+  const settings = CONFIG.emission.screen.shake;
+  assert.equal(settings.enabled, true, "the shake is on by default");
+  let seed = 11;
+  const random = () => { seed = (Math.imul(seed, 1664525) + 1013904223) >>> 0; return seed / 4294967296; };
+  const shake = new EmissionCameraShake({ random });
+  // seconds at 60 fps: jolts (rising edges), the share of frames that move, the amplitudes while moving.
+  const run = (seconds, intensity, atPeak, options = settings) => {
+    let jolts = 0, moving = 0, frames = 0, was = false, beyond = 0;
+    const amplitudes = [];
+    for (let elapsed = 0; elapsed < seconds; elapsed += 1 / 60) {
+      const record = shake.update(1000 / 60, intensity, atPeak, options);
+      const on = record.amplitudePx > 0;
+      if (on && !was) jolts += 1;
+      was = on;
+      frames += 1;
+      if (on) { moving += 1; amplitudes.push(record.amplitudePx); }
+      if (Math.abs(record.x) > record.marginPx + 1e-9 || Math.abs(record.y) > record.marginPx + 1e-9) beyond += 1;
+    }
+    return { jolts, movingShare: moving / frames, max: Math.max(0, ...amplitudes), min: Math.min(...amplitudes), beyond };
+  };
+  const none = shake.update(16, 0, false, settings);
+  assert.deepEqual([none.x, none.y, none.marginPx], [0, 0, 0], "no emission: no shake");
+  assert.equal(run(30, 1, true, { ...settings, enabled: false }).movingShare, 0, "switched off: no shake");
+  const early = run(240, 0.1, false);
+  assert.ok(early.jolts >= 240 / 9 && early.jolts <= 240 / 2.5, `early: a jolt every 3–8 s (${early.jolts} in 240 s)`);
+  assert.ok(early.movingShare < 0.2, `early: still most of the time (${early.movingShare.toFixed(2)})`);
+  assert.ok(early.max <= 3.6, `early: small jolts, up to ~3 px (${early.max.toFixed(2)})`);
+  shake.update(16, 0, false, settings);
+  const late = run(240, 0.9, false);
+  assert.ok(late.jolts > early.jolts * 2.5, `near the peak the jolts come far more often (${late.jolts} vs ${early.jolts})`);
+  assert.ok(late.max > early.max * 1.6, "and they are stronger");
+  shake.update(16, 0, false, settings);
+  run(settings.peakBlendSec + 0.5, 1, true);
+  const peak = run(60, 1, true);
+  assert.equal(peak.movingShare, 1, "at the peak the shake is constant");
+  assert.ok(peak.min < settings.peakPx[0] + 2 && peak.max > settings.peakPx[1] - 2,
+    `its strength wanders over the peak range (${peak.min.toFixed(1)}–${peak.max.toFixed(1)} px)`);
+  assert.equal(early.beyond + late.beyond + peak.beyond, 0, "the offset never leaves its margin (the scene's cover)");
+  run(settings.peakBlendSec + 0.2, 0.9, false);
+  assert.ok(run(30, 0.9, false).movingShare < 0.6, "after the peak the constant shake stops; jolts again");
+  // The exposure tells the peak; in the house there is none (its intensity is 0 too).
+  let env = { emission: { phase: "peak", intensity: 1 } };
+  const house = new HousePresence();
+  const exposure = new EmissionExposure({ getEnvironment: () => env, getEquipped: () => ({}), house,
+    statuses: { modifier: () => 1 } });
+  assert.equal(exposure.atPeak(), true);
+  env = { emission: { phase: "onset", intensity: 0.4 } };
+  assert.equal(exposure.atPeak(), false);
+  env = { emission: { phase: "peak", intensity: 1 } };
+  house.enter();
+  assert.deepEqual([exposure.atPeak(), exposure.intensity()], [false, 0], "no shake in the house");
+}
+
 // Spec 179 stage E (TK-324): exposure (gas mask, cast gate), the screen effect's curves and the DOM veil.
 {
   const { EmissionExposure } = require("../../../src/game/application/world/emission_exposure.js");

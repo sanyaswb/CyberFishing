@@ -49,6 +49,10 @@ export class DeferredSceneLayer {
     this.#layer?.restoreContext();
   }
 
+  setViewMotion(x, y, marginX, marginY) {
+    this.#layer?.setViewMotion(x, y, marginX, marginY);
+  }
+
   dispose() {
     this.#disposed = true;
     this.#layer?.dispose();

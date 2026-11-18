@@ -489,6 +489,8 @@ export class WeatherDevSection {
         this.#tree(screen?.vignette, this.#group("Затемнення", section, ["WEATHER", "emission", "vignette"]),
           ["emission", "screen", "vignette"]);
         this.#tree(screen?.blur, this.#group("Розмиття", section, ["WEATHER", "emission", "blur"]), ["emission", "screen", "blur"]);
+        // Spec 179 stage J (TK-372): the view's shake.
+        this.#tree(screen?.shake, this.#group("Тряска", section, ["WEATHER", "emission", "shake"]), ["emission", "screen", "shake"]);
         if (screen) {
           // TK-333: the screen effect's own switch (it had no control in this section).
           const enabledPath = ["CONFIG", "emission", "screen", "enabled"];

@@ -2,6 +2,11 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.52.28 - The emission shakes the view (TK-372)
+
+- During an emission the view shakes. Early on there are rare light jolts, more often and stronger as the emission grows. At the peak the shake is constant and its strength keeps swinging. The HUD stays still, the gas mask does not stop it, and in the house there is none.
+- The shake moves the scene's picture (a CSS move of its canvas, slightly enlarged so the edges stay hidden), so the scene is not drawn again for it. Its values are in DevTools «ПОГОДА» → «ВИКИД» → «Тряска».
+
 ## v0.52.27 - The gas mask mutes the radiation's hiss (TK-373)
 
 - In a gas mask the radiation's hiss on the screen is three times fainter (× 0.3). It still removes the emission's darkening and blur, as before. The share is a gas mask status modifier, adjustable in DevTools «Конфіг».
@@ -58,10 +63,3 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 ## v0.52.19 - Weather control buttons two to a line (TK-367.1)
 
 - DevTools «ПОГОДА» → «Керування»: the buttons sit two to a line with short labels — «↻ Оновити | ↺ Авто погода» on top; «Викид: пік | Викид: спад», «Порив вітру | Блискавка» and «Болід» at the bottom.
-
-## v0.52.18 - Weather controls: a switch per element, settings under it (TK-367)
-
-- DevTools «ПОГОДА» → «Керування»: «↻ Оновити» on top with «↺ Автоматична погода» under it; every element — rain, storm, fog, emission, starfall, and now the ash, wind, waves and current — has a switch that follows what is happening, and its slider, settings and «↺ авто» show only while it is on. The actions (emission, gust, lightning, bolide) are at the bottom.
-- The ash is controlled apart from the emission; the wind's direction is «← вліво | авто | вправо →» buttons; turning the ash, waves or current off holds them at zero, the wind off is calm.
-- A slider stands at the element's live value and says «· вручну» while held by hand; «↺ авто» returns that one element to its own course.
-- The current's slider now holds the current in the running game instead of changing the location's settings, so it never ends up in a weather export.

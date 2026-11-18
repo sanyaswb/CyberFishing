@@ -190,6 +190,12 @@ gameplay zones or their enable flags; hiding background also hides its displaced
     is the screen (no bounds walk), edges repeat, strength written on a quarter-pixel change, and the filter is off below a
     quarter pixel. Its shaders compile in the warm-up frame. With the HUD (`includeHud` on) only the DOM veil can blur
     the HUD and windows too, so it stays CSS (the costlier mode); without an active scene the veil blurs as before.
+    Spec 179 stages J, L (TK-372 the emission's shake, TK-374 the vodka's sway; owner Q26): the view's motion is a CSS
+    `transform` of the scene's canvas (`SceneLayer.setViewMotion` → `SceneCanvasMotion`), not a camera move — the
+    compositor moves the drawn frame, the scene draws nothing more for it, the HUD (2D canvas, DOM) stays. The canvas is
+    enlarged around its centre just enough to cover the margins the motion can reach (the "map's edge" is that cover),
+    `will-change: transform` only while it moves, the style written on a ¼ px / 0.001-scale change; no motion — no
+    transform. Without the WebGL scene (2D mode) nothing moves. Input keeps the unmoved coordinates.
     TK-349: the ash flies only in its own zones (`zones.ash`, `world.ashRegions`, apart from the rain's): new embers start
     inside a visible zone and one that drifts out fades over its fade share — no mask, so the edge stays soft.
     Spec 182 (TK-352): the starfall's stars (`PixiStarfallRenderer`) are mounted right after the background (over the

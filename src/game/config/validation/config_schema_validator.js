@@ -1400,6 +1400,10 @@ export class ConfigSchemaValidator {
         [["clearRadius", 0, 1, false], ["swayPeriodSec", 0.5, 120, false]]],
       ["blur", [["strengthPx", 0, 40], ["irregularity", 0, 1], ["sharpness", 0, 1], ["floor", 0, 1]],
         [["pulsesPerSec", 0.05, 20, false]]],
+      // Spec 179 stage J (TK-372): the view's shake.
+      ["shake", [["joltSec", 0.05, 5], ["irregularity", 0, 1], ["wanderSec", 0.1, 30], ["peakBlendSec", 0.01, 30],
+        ["frequencyHz", 0.1, 60]],
+        [["joltPx", 0, 60, false], ["joltIntervalSec", 0.05, 120, false], ["peakPx", 0, 60, true]]],
     ];
     for (const [group, numbers, pairs] of groups) {
       const section = cfg[group];

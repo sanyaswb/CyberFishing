@@ -46,6 +46,11 @@ export class EmissionExposure {
     return Number.isFinite(intensity) ? clampUnit(intensity) : 0;
   }
 
+  // Spec 179 stage J (TK-372): the emission is at its peak on the player (the view's constant shake); never in the house.
+  atPeak() {
+    return this.#getEnvironment()?.emission?.phase === "peak" && !this.#house.isInHouse();
+  }
+
   modifier(key) {
     return clampUnit(this.#statuses.modifier("emission", key));
   }

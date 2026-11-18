@@ -355,7 +355,7 @@ async function checkPorts() {
   const { InactiveSceneLayer, SCENE_LAYER_METHODS } = await importSource("src/engine/scene/inactive_scene_layer.js");
   const { FRAME_SECTIONS, FRAME_GAUGES } = await importSource("src/engine/diagnostics/inactive_frame_probe.js");
   assert.deepEqual(SCENE_LAYER_METHODS, ["render", "isActive", "whenReady", "prepare", "getStatus", "loseContext",
-    "restoreContext", "dispose"]);
+    "restoreContext", "setViewMotion", "dispose"]);
   const inactive = new InactiveSceneLayer();
   for (const method of SCENE_LAYER_METHODS) assert.equal(typeof inactive[method], "function", `inactive ${method}`);
   assert.equal(inactive.isActive(), false);
@@ -375,7 +375,8 @@ async function checkPorts() {
   const layerReady = deferred();
   const loaded = { render: (frame) => frames.push(frame), isActive: () => active, whenReady: () => layerReady.promise,
     getStatus: () => ({ state: "active" }), loseContext: () => calls.push("lose"), restoreContext: () => calls.push("restore"),
-    prepare: (assetIds) => calls.push(`prepare ${assetIds}`), dispose: () => { disposals += 1; } };
+    prepare: (assetIds) => calls.push(`prepare ${assetIds}`), dispose: () => { disposals += 1; },
+    setViewMotion: (...args) => calls.push(`motion ${args}`) };
   const gate = deferred();
   const unavailable = [];
   const layer = new DeferredSceneLayer({ load: () => gate.promise, onUnavailable: (error) => unavailable.push(error) });
@@ -398,7 +399,8 @@ async function checkPorts() {
   layer.loseContext();
   layer.restoreContext();
   layer.prepare(["day", "night"]);
-  assert.deepEqual([calls, layer.getStatus().state], [["lose", "restore", "prepare day,night"], "active"],
+  layer.setViewMotion(1, 2, 3, 4);
+  assert.deepEqual([calls, layer.getStatus().state], [["lose", "restore", "prepare day,night", "motion 1,2,3,4"], "active"],
     "DEV methods and prepare reach the loaded layer; nothing before it arrives");
   layer.dispose();
   layer.render("after");
@@ -709,12 +711,26 @@ async function checkPixiSceneLayer() {
     rain: { active: false, drops: 0, rings: 0, dropPool: 0, ringPool: 0, slantDeg: 0, stepMs: 0 },
     ash: { active: false, embers: 0, pool: 0, stepMs: 0 }, grain: { active: false, opacity: 0, cells: 0 },
     starfall: { active: false, stars: 0, pool: 0, bolide: false, burst: false, sparks: 0 },
-    blur: { on: false, strength: 0, resolution: 0.5, quality: 2 } },
+    blur: { on: false, strength: 0, resolution: 0.5, quality: 2 }, motion: { moving: false, x: 0, y: 0, scale: 1 } },
   "no castable zones in this frame: still water; no emission: no ash; no radiation: no hiss; no starfall night: no stars; " +
   "no blur after the warm-up");
   base.x = -20;
   layer.render(frame);
   assert.equal(app.renders, 3, "a camera move presents one frame");
+  // Spec 179 stages J, L (TK-372, TK-374): the view's motion is a CSS move of the scene's canvas, enlarged to cover the
+  // margins; the scene is not drawn again for it and the style is written only on a visible change.
+  layer.setViewMotion(3.1, -2, 8, 8);
+  assert.deepEqual([canvas.style.transform, canvas.style.willChange, app.renders],
+    ["translate3d(3px, -2px, 0) scale(1.04)", "transform", 3], "8 px of margin on a 400 px side: scaled 1.04, no frame");
+  assert.ok((1.04 - 1) * 400 / 2 >= 8, "the enlarged canvas covers the margin on its narrow side");
+  canvas.style.transform = "written";
+  layer.setViewMotion(3.05, -2.1, 8, 8);
+  assert.equal(canvas.style.transform, "written", "under ¼ px nothing is written");
+  layer.setViewMotion(0, 0, 0, 0);
+  assert.deepEqual([canvas.style.transform, canvas.style.willChange, layer.getStatus().motion.moving], ["", "", false],
+    "no motion: the transform and the compositor hint are gone");
+  layer.render(frame);
+  assert.equal(app.renders, 3, "the motion never asked the scene for a frame");
 
   metrics.width = 816;
   metrics.height = 400;
