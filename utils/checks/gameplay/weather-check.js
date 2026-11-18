@@ -1558,6 +1558,97 @@ const step = (model, seconds, clock = null, dt = 0.1) => {
   assert.deepEqual([exposure.atPeak(), exposure.intensity()], [false, 0], "no shake in the house");
 }
 
+// Spec 179 stage L (TK-374, owner Q24 starting values): the vodka without radiation — the world's blur and a figure-of-
+// eight sway, stronger with each bottle (1 → 5); under radiation both fade out smoothly and come back after it.
+{
+  const { IntoxicationEffect } = require("../../../src/game/presentation/status/intoxication_effect.js");
+  const { CONFIG } = require("../../../src/game/config/runtime/game_config.js");
+  const settings = CONFIG.canvas.intoxication;
+  const maxStacks = CONFIG.statusEffects.vodka.maxStacks;
+  const width = 1000;
+  const near = (value, expected, tolerance = 1e-6) => Math.abs(value - expected) < tolerance;
+  const sample = (effect, seconds, stacks, underRadiation, options = settings) => {
+    let maxX = 0, maxY = 0, beyond = 0, record = null;
+    for (let elapsed = 0; elapsed < seconds; elapsed += 1 / 60) {
+      record = effect.update(1000 / 60, stacks, maxStacks, underRadiation, width, options);
+      maxX = Math.max(maxX, Math.abs(record.x));
+      maxY = Math.max(maxY, Math.abs(record.y));
+      if (Math.abs(record.x) > record.marginX + 1e-9 || Math.abs(record.y) > record.marginY + 1e-9) beyond += 1;
+    }
+    return { maxX, maxY, beyond, blurPx: record.blurPx, level: record.level, x: record.x, margin: record.marginX };
+  };
+  const sober = new IntoxicationEffect();
+  assert.equal(sample(sober, 5, 0, false).blurPx, 0, "no vodka: sober");
+  assert.equal(sample(sober, 5, 3, false, { ...settings, enabled: false }).maxX, 0, "switched off: no intoxication");
+  const one = new IntoxicationEffect();
+  sample(one, settings.fadeSec + 0.1, 1, false);
+  const oneSway = sample(one, 20, 1, false);
+  assert.ok(near(oneSway.blurPx, settings.blurPx[0]), "one bottle: the smallest blur");
+  assert.ok(near(oneSway.maxX, settings.swayShare[0] * width, 0.05), "one bottle: the smallest sway (1 % of the width)");
+  assert.ok(oneSway.maxY > oneSway.maxX * 0.4 && oneSway.maxY < oneSway.maxX * 0.6, "a figure of eight: half as high");
+  const five = new IntoxicationEffect();
+  sample(five, settings.fadeSec + 0.1, maxStacks, false);
+  const fiveSway = sample(five, 20, maxStacks, false);
+  assert.ok(near(fiveSway.blurPx, settings.blurPx[1]) && near(fiveSway.maxX, settings.swayShare[1] * width, 0.2),
+    "five bottles: the strongest blur and sway");
+  const three = new IntoxicationEffect();
+  sample(three, settings.fadeSec + 0.1, 3, false);
+  const threeBlur = sample(three, 1, 3, false).blurPx;
+  assert.ok(threeBlur > oneSway.blurPx && threeBlur < fiveSway.blurPx, "more bottles — stronger");
+  assert.equal(oneSway.beyond + fiveSway.beyond, 0, "the sway never leaves its margins (the scene's cover)");
+  // Radiation: a smooth fade, then the vodka is only the buff; the radiation gone, the intoxication comes back.
+  const halfway = sample(five, settings.fadeSec / 2, maxStacks, true);
+  assert.ok(halfway.blurPx > 0 && halfway.blurPx < settings.blurPx[1], "under radiation it fades, not cut off");
+  const gone = sample(five, settings.fadeSec, maxStacks, true);
+  assert.deepEqual([gone.blurPx, gone.x, gone.margin, gone.level], [0, 0, 0, 0], "then no blur and no sway under radiation");
+  const back = sample(five, settings.fadeSec + 0.1, maxStacks, false);
+  assert.ok(near(back.blurPx, settings.blurPx[1]), "the radiation over and the vodka still on: drunk again");
+  // The vodka ends: the last strength fades out.
+  const ending = sample(five, settings.fadeSec / 2, 0, false);
+  assert.ok(ending.blurPx > settings.blurPx[0], "after the last bottle's time the intoxication fades from its strength");
+
+  // The frame's composition (stages E, J, L): the drunk bottles and the «Радіація» status reach the sway, the emission's
+  // peak the shake, both one move of the scene; the gas mask does not stop the shake.
+  const { composeEmissionScreen } = require("../../../src/bootstrap/production/emission_screen_composition.js");
+  const { EmissionScreenEffect } = require("../../../src/game/presentation/weather/emission_screen_effect.js");
+  const { EmissionCameraShake } = require("../../../src/game/presentation/weather/emission_camera_shake.js");
+  const { EmissionExposure } = require("../../../src/game/application/world/emission_exposure.js");
+  const { RadiationStatusSource } = require("../../../src/game/application/world/radiation_status_source.js");
+  const { PlayerStatusEffects } = require("../../../src/game/application/world/player_status_effects.js");
+  const { HousePresence } = require("../../../src/game/application/world/house_presence.js");
+  let env = { emission: { phase: "idle", intensity: 0 }, radiation: 0 };
+  let equipped = {};
+  const house = new HousePresence();
+  const statuses = new PlayerStatusEffects({ now: () => 0, getDefinitions: () => CONFIG.statusEffects,
+    scheduler: { setTimeout: () => 1, clearTimeout() {} } });
+  const motions = [];
+  const sceneLayer = { isActive: () => true, setViewMotion: (...args) => motions.push(args) };
+  const intoxication = new IntoxicationEffect();
+  const frameScreen = composeEmissionScreen({ effect: new EmissionScreenEffect({ random: () => 0.5 }), veil: null,
+    cameraShake: new EmissionCameraShake({ random: () => 0.5 }), intoxication, sceneLayer,
+    emissionExposure: new EmissionExposure({ getEnvironment: () => env, getEquipped: () => equipped, statuses, house }),
+    radiationStatus: new RadiationStatusSource({ getEnvironment: () => env, statuses, house }), statuses,
+    getViewWidth: () => width, getConfig: () => CONFIG });
+  const frames = (seconds) => { for (let elapsed = 0; elapsed < seconds; elapsed += 1 / 60) frameScreen.update(1000 / 60); };
+  frames(1);
+  assert.ok(motions.every(([x, y, mx, my]) => x === 0 && y === 0 && mx === 0 && my === 0), "sober, no emission: no motion");
+  for (let bottle = 0; bottle < 5; bottle += 1) statuses.apply("vodka");
+  motions.length = 0;
+  frames(settings.fadeSec + 2);
+  assert.ok(motions.some(([x]) => Math.abs(x) > settings.swayShare[0] * width), "five bottles: the scene sways");
+  assert.ok(near(intoxication.record.blurPx, settings.blurPx[1]), "and the world's blur is the five bottles' one");
+  assert.ok(motions.every(([x, y, mx, my]) => Math.abs(x) <= mx + 1e-9 && Math.abs(y) <= my + 1e-9), "within the margins");
+  env = { emission: { phase: "peak", intensity: 1 }, radiation: 0.8 };
+  equipped = { gasMask: { id: "mask" } };
+  frames(settings.fadeSec + 0.5);
+  assert.equal(statuses.has("radiation"), true, "the radiation's status is held first");
+  assert.equal(intoxication.record.level, 0, "under radiation the sway and the drunk blur are gone");
+  motions.length = 0;
+  frames(2);
+  assert.ok(motions.every(([x, y, mx]) => mx >= CONFIG.emission.screen.shake.peakPx[0] - 1e-9) &&
+    motions.some(([x]) => x !== 0), "the peak shakes the scene, in the gas mask too");
+}
+
 // Spec 179 stage E (TK-324): exposure (gas mask, cast gate), the screen effect's curves and the DOM veil.
 {
   const { EmissionExposure } = require("../../../src/game/application/world/emission_exposure.js");
@@ -1608,32 +1699,43 @@ const step = (model, seconds, clock = null, dt = 0.1) => {
   env = { emission: { phase: "fade", intensity: 0.01 } };
   assert.equal(exposure.isCastBlocked(), true, "casting stays closed to the emission's very end");
 
-  // Spec 181 stage A (TK-341): the vodka is a status (CONFIG.statusEffects.vodka) — half the screen effect for 10 minutes;
-  // no cast; another bottle renews the time, never adds up; the gas mask still wins; events only on a change.
+  // Spec 181 stage A (TK-341), spec 179 stage L (TK-374, owner Q23, Q25): the vodka is a status (CONFIG.statusEffects.vodka)
+  // for 10 minutes; no cast; each bottle adds a stack (up to 5) and starts the 10 minutes again, all stacks end together;
+  // the protection by the bottles 30 / 45 / 60 % (4 and 5 add none); the gas mask still wins; events only on a change.
   const { ITEM_DB } = require("../../../src/game/config/raw/items/item_database.js");
   const vodka = ITEM_DB.drinks.vodka_bottle.gameplayStats.use;
   assert.equal(JSON.stringify(vodka), JSON.stringify({ statusId: "vodka" }), "the bottle names its status");
   const vodkaStatus = CONFIG.statusEffects.vodka;
-  assert.equal(JSON.stringify([vodkaStatus.kind, vodkaStatus.durationSec, vodkaStatus.stacking, vodkaStatus.timeBase,
-    vodkaStatus.modifiers.emission]), JSON.stringify(["buff", 600, "renew", "real", { vignette: 0.5, blur: 0.5, blurRate: 1 }]),
-  "owner Q8: −50 % for 10 minutes, real time (spec 181 Q1)");
+  assert.equal(JSON.stringify([vodkaStatus.kind, vodkaStatus.durationSec, vodkaStatus.stacking, vodkaStatus.maxStacks,
+    vodkaStatus.timeBase]), JSON.stringify(["buff", 600, "add", 5, "real"]),
+  "owner Q23: up to 5 bottles, all gone 10 minutes after the last; real time (spec 181 Q1)");
   assert.equal(ITEM_DB.gasMasks.gas_mask_basic.itemType, "gas_mask", "the gas mask fits its slot");
   const events = [];
   const unsubscribe = statuses.subscribe((event) => events.push(`${event.type}:${event.id}`));
   env = { emission: { phase: "peak", intensity: 1 } };
+  const near2 = (value, expected) => Math.abs(value - expected) < 1e-9;
   assert.equal(statuses.apply("vodka", { source: "vodka_bottle" }), true, "a drink takes effect");
-  assert.deepEqual([exposure.modifier("vignette"), exposure.modifier("blur"), exposure.isCastBlocked()], [0.5, 0.5, true],
-    "vodka: half the effect, still no cast");
+  assert.ok(near2(exposure.modifier("vignette"), 0.7) && near2(exposure.modifier("blur"), 0.7) && exposure.isCastBlocked(),
+    "one bottle: 30 % protection, still no cast");
+  assert.equal(statuses.stacks("vodka"), 1);
   for (let frame = 0; frame < 120; frame++) { clockMs += 16; exposure.modifier("vignette"); statuses.list(); }
   assert.equal(events.join(), "start:vodka", "reads every frame emit nothing");
   advance(300000);
   assert.equal(statuses.apply("vodka"), true);
-  assert.equal(statuses.modifier("emission", "vignette"), 0.5, "a second bottle does not add up");
-  assert.equal(statuses.list().length, 1, "one status, renewed");
+  assert.ok(near2(statuses.modifier("emission", "vignette"), 0.55), "two bottles: 45 %");
+  assert.equal(statuses.list().length, 1, "one status, two stacks");
+  statuses.apply("vodka");
+  assert.ok(near2(statuses.modifier("emission", "blur"), 0.4), "three bottles: 60 %");
+  statuses.apply("vodka"); statuses.apply("vodka"); statuses.apply("vodka");
+  assert.equal(statuses.stacks("vodka"), 5, "at most 5 bottles count");
+  assert.ok(near2(statuses.modifier("emission", "vignette"), 0.4), "4 and 5 bottles add no protection (owner Q25)");
+  assert.equal(statuses.modifier("emission", "blurRate"), 1, "the pulses keep the emission's rhythm");
   advance(300000 + 599000);
-  assert.equal(exposure.modifier("vignette"), 0.5, "and renews the time (10 minutes from the second one)");
+  assert.ok(near2(exposure.modifier("vignette"), 0.4), "the last bottle started the 10 minutes again");
   advance(300000 + 600001);
-  assert.equal(events.join(), "start:vodka,update:vodka,end:vodka", "the timer ends it with one event");
+  assert.equal(events.join(), "start:vodka,update:vodka,update:vodka,update:vodka,update:vodka,update:vodka,end:vodka",
+    "all the stacks end together, with one event");
+  assert.equal(statuses.stacks("vodka"), 0, "sober");
   assert.deepEqual([exposure.modifier("vignette"), exposure.intensity()], [1, 1], "over: the full effect again");
   assert.equal(timers.size, 0, "no timer once nothing is timed");
   assert.equal(statuses.apply("unknown"), false, "an unknown status does nothing");
@@ -1664,6 +1766,11 @@ const step = (model, seconds, clock = null, dt = 0.1) => {
   assert.equal(rules.modifier("emission", "blur"), 0.5 * 0.25, "the product over statuses, a share per stack");
   defs.long.modifiers.emission.blur = 1;
   assert.equal(rules.modifier("emission", "blur"), 0.25, "a live edit reaches the modifier at once");
+  // TK-374: a list of shares is read by the number of stacks (not a power), its last value past its end.
+  defs.stack.modifiers.emission.blur = [0.9, 0.6];
+  assert.equal(rules.modifier("emission", "blur"), 0.6, "two stacks: the list's second share");
+  defs.stack.modifiers.emission.blur = [0.9];
+  assert.equal(rules.modifier("emission", "blur"), 0.9, "past the list's end its last share stays");
   rules.dispose();
   // Spec 181 D4 (TK-345, owner Q2): the debuff «Радіація» is held while the location's radiation is above zero, without a
   // timer and modifiers; it calls the statuses only when the state changes.

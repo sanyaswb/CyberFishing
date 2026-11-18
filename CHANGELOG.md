@@ -2,6 +2,12 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.52.29 - Vodka stacks and makes you drunk (TK-374)
+
+- Each bottle of vodka adds to the effect (up to 5) and starts its 10 minutes again; all of it ends 10 minutes after the last bottle.
+- Under radiation the vodka protects from the emission's screen effects: 30 % for one bottle, 45 % for two, 60 % for three or more.
+- Without radiation the player gets drunk: the world blurs and the view sways slowly in a figure of eight, stronger with each bottle. When radiation comes, the drunkenness fades smoothly and the vodka works as protection; after the radiation it comes back. The HUD stays sharp and still. The values are in DevTools «Конфіг» → canvas → intoxication.
+
 ## v0.52.28 - The emission shakes the view (TK-372)
 
 - During an emission the view shakes. Early on there are rare light jolts, more often and stronger as the emission grows. At the peak the shake is constant and its strength keeps swinging. The HUD stays still, the gas mask does not stop it, and in the house there is none.
@@ -59,7 +65,3 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 - A fish killed by radiation leaves the keepnet. With «Мертва зникає з садка» (removeRadiationDead) off it stays, grey and marked «Мертва · радіація», and can only be thrown away.
 - Live bait saves move to schema 7; fish saved earlier start with no dose.
 - DevTools «РАНДОМАЙЗЕР» has a new test, «Кльов: радіація». It runs the game's own bite rolls for each species at radiation 0, 50 and 100 % and reports the unique share, the mean weight and the levels.
-
-## v0.52.19 - Weather control buttons two to a line (TK-367.1)
-
-- DevTools «ПОГОДА» → «Керування»: the buttons sit two to a line with short labels — «↻ Оновити | ↺ Авто погода» on top; «Викид: пік | Викид: спад», «Порив вітру | Блискавка» and «Болід» at the bottom.

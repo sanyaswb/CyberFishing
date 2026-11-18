@@ -167,6 +167,11 @@ opening suspends the base, a lazy factory creates the screen, closing disposes i
 is such a screen: `bootstrap/production/house_screen_composition.js` mounts `HOUSE_SCREEN_MARKUP` into the page's UI
 surface and composes the House over the session's live bait service and game clock
 (`GameCompositionRoot.getSessionServices()`), so no second config runtime, clock or storage owner exists.
+Spec 179 stages E, J, L: `bootstrap/production/emission_screen_composition.js` is the screen's per-frame update — the
+«Радіація» status, the emission's veil, then one view motion for the scene (`SceneLayer.setViewMotion`): the emission's
+shake (`EmissionCameraShake`) plus the vodka's sway without radiation (`IntoxicationEffect`, whose blur joins the scene's
+blur). Presentation computes numbers; the platform's `SceneCanvasMotion` moves the scene's canvas by CSS.
+
 Spec 179 D12 (TK-371): `bootstrap/production/house_visit_composition.js` composes the House on both pages — production's HUD
 house button (`HouseEntryControl`, top-left, `entryControl: true`; dev.html keeps its DevTools button there, TK-371.3) asks `Game.requestHouseEntry()` (tackle put away), and the base's
 suspend/resume are `Game.enterHouse()/leaveHouse()`: the game loop keeps running but only steps the location's world

@@ -99,6 +99,12 @@ export class PlayerStatusEffects {
     return this.#list;
   }
 
+  // TK-374: how many times an active status has stacked (the bottles drunk); 0 — not active.
+  stacks(id) {
+    this.#expire(this.#now());
+    return this.#entries.get(id)?.stacks ?? 0;
+  }
+
   remainingSec(id) {
     const entry = this.#entries.get(id);
     if (!entry) return 0;

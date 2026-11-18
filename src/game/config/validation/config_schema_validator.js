@@ -535,6 +535,7 @@ export class ConfigSchemaValidator {
     this.#validateRainConfig();
     this.#validateAshConfig();
     this.#validateRadiationGrainConfig();
+    this.#validateIntoxicationConfig();
     this.#validateStarfallConfig();
     this.#validateGeigerConfig();
     this.#validateGeneralWeatherConfig();
@@ -1468,7 +1469,12 @@ export class ConfigSchemaValidator {
         if (!keys || typeof keys !== "object") { this.#error(`CONFIG.${path}.modifiers.${system}`, "must be an object"); continue; }
         this.#requireParameterLabel(`${path}.modifiers.${system}`);
         for (const [key, share] of Object.entries(keys)) {
-          this.#requireFiniteNumber(`CONFIG.${path}.modifiers.${system}.${key}`, share, { min: 0, max: 1 });
+          // TK-374: a share, or a list of shares by the number of stacks (1, 2, …; the last one stays).
+          if (Array.isArray(share)) {
+            if (share.length === 0 || share.length > 99) this.#error(`CONFIG.${path}.modifiers.${system}.${key}`, "expected 1…99 shares");
+            share.forEach((value, index) =>
+              this.#requireFiniteNumber(`CONFIG.${path}.modifiers.${system}.${key}[${index}]`, value, { min: 0, max: 1 }));
+          } else this.#requireFiniteNumber(`CONFIG.${path}.modifiers.${system}.${key}`, share, { min: 0, max: 1 });
           this.#requireParameterLabel(`${path}.modifiers.${system}.${key}`);
         }
       }
@@ -1545,6 +1551,17 @@ export class ConfigSchemaValidator {
     if (!cfg.edges || typeof cfg.edges !== "object") { this.#error(`CONFIG.${path}.edges`, "missing"); return; }
     this.#requireParameterLabel(`${path}.edges`);
     this.#requireRangeNumbers(`${path}.edges`, cfg.edges, [["centerShare", 0, 1], ["clearRadius", 0, 1], ["feather", 0.01, 2]]);
+  }
+
+  // Spec 179 stage L (TK-374): the vodka's intoxication (CONFIG.canvas.intoxication).
+  #validateIntoxicationConfig() {
+    const path = "canvas.intoxication";
+    const cfg = this.config.canvas?.intoxication;
+    if (!cfg || typeof cfg !== "object") { this.#error(`CONFIG.${path}`, "missing intoxication config"); return; }
+    this.#requireParameterLabel(path);
+    this.#requireBooleanWithLabel(`${path}.enabled`, cfg.enabled);
+    this.#requireRangeNumbers(path, cfg, [["fadeSec", 0.1, 60]]);
+    this.#requireRangePairs(path, cfg, [["blurPx", 0, 40, false], ["swayShare", 0, 0.2, false], ["swayPeriodSec", 0.5, 60, true]]);
   }
 
   // Spec 182 stage C (TK-352): the starfall's ordinary stars (CONFIG.canvas.starfall).

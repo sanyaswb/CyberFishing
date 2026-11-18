@@ -72,6 +72,8 @@ import { StatusHudBadges } from "../../platform/browser/ui/status_hud_badges.js"
 import { STATUS_LABELS } from "../../game/presentation/status/status_labels.js";
 import { EmissionScreenEffect, sceneBlurPx } from "../../game/presentation/weather/emission_screen_effect.js";
 import { EmissionCameraShake } from "../../game/presentation/weather/emission_camera_shake.js";
+import { IntoxicationEffect } from "../../game/presentation/status/intoxication_effect.js";
+import { composeEmissionScreen } from "./emission_screen_composition.js";
 import { EmissionVeilDomRenderer } from "../../platform/browser/dom/emission_veil_dom_renderer.js";
 import { WindModel } from "../../game/domain/weather/wind_model.js";
 import { composeGameTime } from "./game_time_composition.js";
@@ -702,6 +704,8 @@ export class GameCompositionRoot {
       // Spec 179 stage E: the emission's darkening and blur. Made before the scene: with includeHud off the scene blurs
       // the world itself (TK-324.3). Visual only: the blur's irregular pulses draw from Math.random, never a gameplay stream.
       const emissionScreenEffect = new EmissionScreenEffect({ random: Math.random });
+      // Spec 179 stage L (TK-374): the vodka's intoxication — its blur goes through the scene's blur too.
+      const intoxicationEffect = new IntoxicationEffect();
       // The scene layer before the 2D surface: its mode decides whether the 2D canvas is transparent (spec 104 D6).
       const { sceneLayer, sceneRouter, transparentCanvas } = composeSceneLayer({
         config: this.#config,
@@ -718,7 +722,7 @@ export class GameCompositionRoot {
         preload: this.#preload,
         // Spec 180 D16: the location is composed later; its look overrides are read live once it is known.
         getLookOverrides: () => this.#config.locations?.map?.[this.#lookLocationId]?.weather?.look ?? null,
-        getSceneBlurPx: () => sceneBlurPx(emissionScreenEffect.record),
+        getSceneBlurPx: () => sceneBlurPx(emissionScreenEffect.record) + intoxicationEffect.record.blurPx,
       });
       own(sceneLayer);
       contracts.requireMethods(sceneLayer, "sceneLayer", SCENE_LAYER_METHODS);
@@ -1042,7 +1046,8 @@ export class GameCompositionRoot {
       // Spec 181 D4: the debuff «Радіація» while the location's radiation is above zero (checked with the frame).
       const radiationStatus = new RadiationStatusSource({ getEnvironment: () => systems.env.getSnapshot(),
         statuses: this.#playerStatuses(), house: housePresence });
-      const emissionScreen = this.#composeEmissionScreen({ canvas, effect: emissionScreenEffect, sceneLayer,
+      const emissionScreen = this.#composeEmissionScreen({ canvas, canvasMetrics, effect: emissionScreenEffect,
+        intoxication: intoxicationEffect, sceneLayer,
         emissionExposure, own, radiationStatus });
       // Spec 179 D10 (TK-370): the radiation wears the items with a condition (its own `:wear` stream of the session).
       const emissionWear = new EmissionWearExposure({ inventory: systems.inventory,
@@ -1136,26 +1141,15 @@ export class GameCompositionRoot {
   // Spec 179 stage E: the emission's darkening and blur, one DOM veil updated once a frame (a page without a UI surface
   // has no veil: the effect still runs, nothing is drawn). TK-324.3: with includeHud off and the WebGL scene active the
   // scene blurs the world (PixiSceneBlur) and the veil only darkens; otherwise the veil's backdrop-filter blurs.
-  #composeEmissionScreen({ canvas, effect, sceneLayer, emissionExposure, own, radiationStatus }) {
+  #composeEmissionScreen({ canvas, canvasMetrics, effect, intoxication, sceneLayer, emissionExposure, own, radiationStatus }) {
     const veil = this.#uiSurface
       ? own(new EmissionVeilDomRenderer({ documentRef: this.#documentTarget, portalRoot: this.#uiSurface.portalRoot,
         gameCanvas: canvas }))
       : null;
     // Visual only: the shake's jolts draw from Math.random, never a gameplay stream.
-    const cameraShake = new EmissionCameraShake({ random: Math.random });
-    return Object.freeze({
-      update: (dtMs) => {
-        radiationStatus.update();
-        // Spec 181 D2: the full intensity, weakened at the output by the statuses' shares.
-        const record = effect.update(dtMs, emissionExposure.intensity(), this.#config.emission?.screen,
-          emissionExposure.modifier("vignette"), emissionExposure.modifier("blur"), emissionExposure.modifier("blurRate"));
-        veil?.apply(record, !(record.includeHud === false && sceneLayer.isActive()));
-        // Spec 179 stage J (TK-372): the emission shakes the view (a CSS move of the scene; the gas mask does not stop it).
-        const shake = cameraShake.update(dtMs, emissionExposure.intensity(), emissionExposure.atPeak(),
-          this.#config.emission?.screen?.shake);
-        sceneLayer.setViewMotion(shake.x, shake.y, shake.marginPx, shake.marginPx);
-      },
-    });
+    return composeEmissionScreen({ effect, veil, cameraShake: new EmissionCameraShake({ random: Math.random }), intoxication,
+      sceneLayer, emissionExposure, radiationStatus, statuses: this.#playerStatuses(), getViewWidth: () => canvasMetrics.width,
+      getConfig: () => this.#config });
   }
 
   // Canvas surface, image assets, offscreen canvases and the location asset loaders.

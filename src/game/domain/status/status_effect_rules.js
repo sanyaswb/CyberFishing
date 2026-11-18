@@ -38,10 +38,17 @@ export function stackTimedStatus(entry, definition, nowMs, active) {
   return entry;
 }
 
-// The share of a system's effect that stays under one status: its modifier (missing: 1), once per stack.
+// The share of a system's effect that stays under one status: its modifier (missing: 1), once per stack; a list is the
+// share by the number of stacks (spec 179 Q25, TK-374: the vodka 1 bottle 0.7, 2 — 0.55, 3 and more — 0.4; past its
+// end the last value stays).
 export function statusModifierShare(definition, system, key, stacks) {
   const raw = definition?.modifiers?.[system]?.[key];
   if (raw === undefined || raw === null) return 1;
+  if (Array.isArray(raw)) {
+    if (raw.length === 0) return 1;
+    const index = Math.min(raw.length, Math.max(1, Math.floor(finiteOr(stacks, 1)))) - 1;
+    return Math.min(1, Math.max(0, finiteOr(raw[index], 1)));
+  }
   const share = Math.min(1, Math.max(0, finiteOr(raw, 1)));
   return stacks > 1 ? share ** stacks : share;
 }

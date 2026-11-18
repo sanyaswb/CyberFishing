@@ -20,6 +20,18 @@ Notes: suspected owner module, related checks.
 
 ## Open
 
+### G-144 The vodka stacks and makes the player drunk without radiation (P2, done in v0.52.29; owner acceptance pending)
+Found: 2026-11-18, owner, spec 179 stage L; owner answers Q23, Q25, Q26 2026-11-18.
+Reproduce: drink several bottles of vodka with and without radiation; watch the screen and the emission's effects.
+Expected: each bottle adds a stack (up to 5) and starts its 10 minutes again, all gone together 10 minutes after the
+last; under radiation the protection from the emission's screen effects is 30 / 45 / 60 % for 1 / 2 / 3+ bottles;
+without radiation the player is drunk — the world blurs and the view sways, stronger with each bottle; the radiation
+coming, the drunkenness fades smoothly and comes back after it.
+Actual (before): another bottle only renewed the time; −50 % at any count; no intoxication.
+Notes: TK-374 — `statusEffects.vodka` (`add`, `maxStacks` 5, modifiers as lists by the stacks), `IntoxicationEffect`,
+`CONFIG.canvas.intoxication`, `composeEmissionScreen`; the sway is a CSS move of the scene (`SceneCanvasMotion`). Check
+`weather`. Game-cycle unchanged.
+
 ### G-143 The house stops the game; no house in production (P2, done in v0.52.22; owner acceptance pending)
 Found: 2026-11-14, owner, spec 179 (emission) stage I; owner answers Q18–Q20 2026-11-18.
 Reproduce: open the house during an emission (DEV only before), wait, come back.
@@ -27,8 +39,8 @@ Expected: the location's world goes on (time, weather, the emission) while the p
 the player stop there; the house is entered from the HUD with the tackle put away, in production too.
 Actual (before): opening the house stopped the whole game loop (the emission froze); production had no house entry.
 Notes: TK-371 — `HousePresence`, `HouseEntryPolicy`, `GameApplication.enterHouse/leaveHouse/requestHouseEntry` (world
-steps of `CONFIG.houseVisit.worldTickMs`, no drawing), `composeHouseVisit`, `HouseEntryControl`; DEV DevTools from the
-screen edge. Checks `game-application-composition`, `weather`, `config-runtime`. Game-cycle unchanged.
+steps of `CONFIG.houseVisit.worldTickMs`, no drawing), `composeHouseVisit`, `HouseEntryControl` (production only — TK-371.3: dev.html keeps its DevTools
+button and opens the house from DevTools). Checks `game-application-composition`, `weather`, `config-runtime`. Game-cycle unchanged.
 
 ### G-142 Radiation wears the items; a broken item cannot cast (P2, done in v0.52.21; owner acceptance pending)
 Found: 2026-11-14, owner, spec 179 (emission) stage H; owner answers Q15–Q17 2026-11-18.

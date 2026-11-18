@@ -4,6 +4,7 @@
 // mask in its slot) is shown but not given or taken here: its source decides.
 // statuses: the DEV port { list(), definition(id), remainingSec(id), apply(id, { source }), remove(id), clear() }.
 import { STATUS_LABELS } from "../../../game/presentation/status/status_labels.js";
+import { statusModifierShare } from "../../../game/domain/status/status_effect_rules.js";
 
 const KIND_LABELS = Object.freeze({ buff: "баф", debuff: "дебаф" });
 
@@ -63,7 +64,11 @@ export class StatusEffectsModule {
     const stacks = entry.stacks > 1 ? ` · ×${entry.stacks}` : "";
     const modifiers = [];
     for (const [system, keys] of Object.entries(definition?.modifiers || {})) {
-      for (const [key, share] of Object.entries(keys || {})) modifiers.push(`${system}.${key} ${share}`);
+      // TK-374: the share in effect now (by the stacks: a list of shares, or a share per stack), rounded for reading.
+      for (const key of Object.keys(keys || {})) {
+        const share = statusModifierShare(definition, system, key, entry.stacks);
+        modifiers.push(`${system}.${key} ${Math.round(share * 1000) / 1000}`);
+      }
     }
     return `${KIND_LABELS[entry.kind] ?? entry.kind} · ${time}${stacks}${modifiers.length ? ` · ${modifiers.join(", ")}` : ""}`;
   }
