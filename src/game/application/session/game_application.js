@@ -969,6 +969,10 @@ export class GameApplication {
       this.#showMissingReelInventoryWarning();
     } else if (result?.reason === "missing_line") {
       this.#showMissingLineInventoryWarning();
+    } else if (result?.reason === "broken_tackle") {
+      // Spec 179 D10 (TK-370.1): the inventory opens with the readiness' own text («Снасть зламана …»).
+      this.#inventoryUI.open();
+      this.#inventoryUI.showWarning(result.readiness?.warning);
     }
     return result;
   }

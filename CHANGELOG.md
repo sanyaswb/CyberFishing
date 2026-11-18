@@ -2,6 +2,10 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.52.24 - A broken tackle says it is broken (TK-370.1)
+
+- A cast with a broken item in the tackle opened the inventory with «Спочатку споряди ліску для закидання». It now shows «Снасть зламана — закинути не можна.».
+
 ## v0.52.23 - The house's code in the game's bundle (TK-371.1)
 
 - The production game page loads the house's code with the rest of the game instead of on the first visit.
@@ -61,7 +65,3 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 ## v0.52.15 - Emission blur of the world alone through WebGL (TK-324.3)
 
 - With «Розмивати разом з HUD» (emission.screen.includeHud) off, the emission's blur of the world is now drawn by the WebGL scene at half resolution with two passes (emission.screen.blur.scene) instead of the browser's backdrop-filter at the screen's full resolution: the same pulses at a fraction of the cost. The darkening stays as it was. With the HUD blurred too, nothing changes.
-
-## v0.52.14 - Full-power touch aim start off by default (TK-365.2)
-
-- An aim switched on by a tap waits at power 0 again and a downward swipe raises the power; the full-power start stays as a DevTools switch (casting.touchAim.startAtFullPower).

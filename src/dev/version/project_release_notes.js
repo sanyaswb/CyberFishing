@@ -1,6 +1,7 @@
 // Release notes, newest first (unshift with every patch). DEV only: no production code reads them, and in the start's
 // bundle they cost 13 KB gzip (spec 160). dev.html publishes them with the version: window.CYBER_FISHING_PROJECT_VERSION.notes.
 export const PROJECT_RELEASE_NOTES = Object.freeze([
+  "TK-370.1 (review before push): a cast refused for broken tackle reports broken_tackle with its own warning, not missing_line.",
   "TK-371.1: the house's code is in the production page bundle (a lazy import() split shared modules into 14 start JS files, over spec 160's 10).",
   "TK-371 (spec 179 stage I): the house does not stop the game (world steps of houseVisit.worldTickMs, no drawing); in the house no emission effects, dose, wear or radiation debuff; entry with the tackle put away; HUD house button in production and DEV; DevTools from the screen edge in dev.html.",
   "TK-370 (spec 179 stage H): items with a condition wear while radiation > 0 (one mean full emission = the quality's range, rods/reels immunity 0.5); worn quality; condition 0 — broken: no cast, a broken gas mask does not protect, grey card; CONFIG.emission.wear.",

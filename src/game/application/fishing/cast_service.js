@@ -168,6 +168,8 @@ export class CastService {
     const warningCode = String(readiness?.warningCode || "");
     if (warningCode === "rod-required") return "missing_rod";
     if (warningCode === "reel-required") return "missing_reel";
+    // Spec 179 D10 (TK-370.1): a broken item in the tackle — its own reason, not «no line».
+    if (warningCode === "broken-tackle") return "broken_tackle";
     return "missing_line";
   }
 }

@@ -200,6 +200,15 @@ class DefinitiveCastReadinessCheck {
         assert(result.readiness === readiness, "the domain readiness result must be preserved");
         assert(readinessCalls === 1, "the canonical readiness policy must run once per cast attempt");
         assert(BaitFactory.createCount === 0, "a rejected cast must not create a bait entity");
+        // Spec 179 D10 (TK-370.1): a broken item has its own reason (it was reported as «no line»).
+        const broken = Object.freeze({ canCast: false, shouldOpenInventory: true, warningCode: "broken-tackle",
+          warning: "Broken" });
+        const brokenService = new CastService({ config: {}, rng: {}, clock: { now: 123 }, equipmentRules,
+          baitRules: new BaitRules(), getRodVirtualPos: () => ({ x: 0, y: 0 }), getDynamicBounds: () => ({}),
+          castReadinessEvaluator: () => broken });
+        const brokenResult = brokenService.cast(10, 10, 2, { equipment: blockedEquipment, currentHookDepth: 1 });
+        assert(brokenResult.reason === "broken_tackle", "broken tackle must not read as a missing line");
+        assert(brokenResult.readiness === broken, "the broken readiness keeps its warning");
 
         const fallbackService = new CastService({
           config: {},
