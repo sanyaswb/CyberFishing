@@ -309,6 +309,7 @@ function checkDevelopmentInputs() {
   assert.equal(toolsUi.args[0], toggle);
   assert.equal(toolsUi.args[4], uiSurface, "DEV dragging shares the production logical coordinate space");
   assert.equal(toolsUi.args[5], developmentMount, "DEV controls retain their independent outcome visibility branch");
+  assert.equal(toolsUi.args[6], developmentMount, "TK-371.3: dev.html keeps its DevTools button (the house button is production's)");
   assert.equal(toolsUi.args[7].options.scheduler.host, window, "dependency feedback uses the composed browser scheduler");
   assert.equal(toolsUi.args[7].options.durationMs, 3000, "bootstrap owns the three-second feedback duration");
   assert.deepEqual(renderedVersions, [toolsUi.footer], "the DevTools footer shows the project version badge (TK-035)");
@@ -774,6 +775,28 @@ function checkLocationMapConfigChanges() {
   first.update(16,12);assert.equal(first.getRevision(),2);
 }
 
+// Spec 179 D12 (owner Q20): production's HUD house button goes in only with the tackle put away; TK-371.3: without
+// entryControl (dev.html) there is no button, and the flag is required.
+async function checkHouseVisitEntryControl() {
+  const controls=[];let disposedControls=0,allowed=false,requests=0,enters=0,leaves=0,screens=0,close=null;
+  const source=new SourceRuntime({moduleStubs:{'src/platform/browser/ui/house_entry_control.js':{HouseEntryControl:class{
+    constructor(options){controls.push(options);}dispose(){disposedControls++;}}}}});
+  const {composeHouseVisit}=source.importModule('src/bootstrap/production/house_visit_composition.js');
+  const options=(entryControl)=>({documentTarget:{},uiSurface:{mountRoot:{}},logger:{error(error){throw error;}},entryControl,
+    game:{requestHouseEntry(){requests++;return allowed;},enterHouse(){enters++;},leaveHouse(){leaves++;}},
+    createHouseScreen:async({close:onClose})=>{screens++;close=onClose;return{dispose(){}};}});
+  assert.throws(()=>composeHouseVisit(options(undefined)),/entryControl/,"the HUD button is an explicit choice of the page");
+  composeHouseVisit(options(false)).dispose();
+  assert.equal(controls.length,0,"without entryControl the page gets no house button");
+  const visit=composeHouseVisit(options(true));
+  assert.equal(controls.length,1);assert.equal(controls[0].label,"Будинок");
+  controls[0].onEnter();await Promise.resolve();await Promise.resolve();
+  assert.equal(screens,0,"tackle still out: the HUD button does not open the House");assert.equal(requests,1);
+  allowed=true;controls[0].onEnter();for(let i=0;i<4;i++)await Promise.resolve();
+  assert.equal(screens,1,"tackle put away: the HUD button opens the House");assert.equal(enters,1);
+  close();await Promise.resolve();await Promise.resolve();assert.equal(leaves,1);
+  visit.dispose();assert.equal(disposedControls,1);
+}
 async function checkNativeDevelopmentLifecycle() {
   const startupErrors = [];
   const counts={root:0,start:0,stop:0,gameDispose:0,consoleDispose:0,overlayDispose:0,balanceDispose:0,watchdogDispose:0,surfaces:0,surfaceDispose:0};
@@ -872,13 +895,9 @@ async function checkNativeDevelopmentLifecycle() {
   closeHouse();await Promise.resolve();await Promise.resolve();
   assert.equal(houseDisposals,1);assert.equal(counts.houseLeave,1,"closing the House brings the player back once");
   assert.equal(counts.start,1,"the loop was never stopped, so it is not started again");
-  // Spec 179 D12 (owner Q20): the HUD's house button goes in only with the tackle put away.
-  assert.equal(houseControl.label,"Будинок");
-  houseControl.onEnter();await Promise.resolve();await Promise.resolve();
-  assert.equal(houseScreens,1,"tackle still out: the HUD button does not open the House");assert.equal(counts.houseRequests,1);
-  houseAllowed=true;houseControl.onEnter();await Promise.resolve();await Promise.resolve();await Promise.resolve();
-  assert.equal(houseScreens,2,"tackle put away: the HUD button opens the House");assert.equal(counts.houseEnter,2);
-  closeHouse();await Promise.resolve();await Promise.resolve();assert.equal(counts.houseLeave,2);
+  // TK-371.3 (owner): the HUD's house button is production's only; dev.html opens the house from DevTools.
+  assert.equal(houseControl,null,"dev.html has no HUD house button");
+  await checkHouseVisitEntryControl();
   configRuntime.resetAll();
   assert.equal(configRuntime.baseConfig.debug.godMode.enabled,true,'DEV explicitly enables its balance default before freezing the base');
   assert.equal(configRuntime.baseConfig.debug.fixedCatch.enabled,true);

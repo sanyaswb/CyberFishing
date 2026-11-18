@@ -101,7 +101,7 @@ async function startGame() {
   // page's bundle (TK-371.1: a lazy import() split the modules it shares with the game into more start chunks, 14 JS
   // files instead of at most 10, spec 160) and its stylesheet in the page's one stylesheet (the game server's release
   // ships no source files to link later).
-  houseVisit = composeHouseVisit({ documentTarget, uiSurface, game, logger: new ConsoleLogger(),
+  houseVisit = composeHouseVisit({ documentTarget, uiSurface, game, logger: new ConsoleLogger(), entryControl: true,
     createHouseScreen: async ({ close }) => {
       return composeHouseScreen({ documentTarget, windowTarget, uiSurface, ...compositionRoot.getSessionServices(),
         onExit: close });

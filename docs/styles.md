@@ -216,8 +216,8 @@ Editor tab thumbnails use the same skin `visibleHeight`/`focusX` scaling and bot
 owned by `item-cards.css`; their placement inside the tab belongs to `assembly-editor.css`.
 
 Spec 179 D12 (TK-371): `house.css` is a production stylesheet now (the game page opens the House); the HUD's house
-button `game-control--house` (`hud/game-controls.css`) is fixed in the top-left corner. The DEV page has no DevTools
-button: `devtools__edge` (`dev-tools.css`) is shown at all times, not only in the zone editor.
+button `game-control--house` (`hud/game-controls.css`) is fixed in the top-left corner — production only (TK-371.3,
+owner): the DEV page keeps its DevTools button there, and `devtools__edge` is shown only in the zone editor again.
 
 Spec 179 D10 (TK-370): a broken item (condition 0) adds `inventory-item-card--broken` (`item-cards.css`): the whole
 card grey (`filter: grayscale(1)` — art, frame and background) under a grey semi-transparent `::after` veil (`z-index` 4,

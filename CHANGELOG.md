@@ -2,6 +2,10 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.52.26 - dev.html keeps its DevTools button (TK-371.3)
+
+- The house button (⌂) is in the released game only. dev.html has its DevTools button in the top-left corner again, and the strip along the screen's edge opens DevTools only in the zone editor, as before v0.52.22. In dev.html the house opens from DevTools («Будинок») or `?screen=house`.
+
 ## v0.52.25 - The Geiger counter is quiet in the house (TK-371.2)
 
 - The Geiger counter kept clicking while the player was in the house during an emission (the location's world goes on there). In the house nothing of the location reaches the player, so the counter is silent now. Back outside, it clicks with the current radiation.
@@ -61,7 +65,3 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 ## v0.52.17 - Review of the touch cast and the emission blur (TK-368)
 
 - The touch cast settings (input.touchCast) and the touch aim settings (casting.touchAim) are now checked when the game starts: a wrong value (text, a negative number, out of range) is reported instead of passing silently, and the touch cast settings have names and descriptions in DevTools. Nothing changes in play.
-
-## v0.52.16 - The emission blurs only the world by default (TK-324.4)
-
-- The emission's blur now covers only the world by default (emission.screen.includeHud off): it is the cheaper WebGL filter of v0.52.15, and the HUD, buttons and windows stay sharp. Blurring together with the HUD stays available as the «Розмивати разом з HUD» switch.

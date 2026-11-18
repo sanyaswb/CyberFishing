@@ -1,7 +1,7 @@
 import { UiEventShield } from "../dom/ui_event_shield.js";
 
-// Spec 179 D12 (TK-371, owner Q2): the HUD's house button in the top-left corner (where the DEV page had its DevTools
-// button). A click asks to go into the house; whether the player may (the tackle put away) is the caller's.
+// Spec 179 D12 (TK-371, owner Q2): production's HUD house button in the top-left corner (dev.html keeps its DevTools
+// button there, TK-371.3). A click asks to go into the house; whether the player may (the tackle put away) is the caller's.
 export class HouseEntryControl {
   #onClick;
 

@@ -1057,10 +1057,8 @@
 .game-shell--zone-editor .devtools__toggle { visibility: hidden; }
 /* TK-092: aiming a cast hides the game's UI (game-shell.css); the DevTools button lives in the portals, so it hides here. */
 .game-shell--pointer-hold .devtools__toggle { visibility: hidden; }
-/* Spec 179 D12 (TK-371, owner Q2): the game page has no DevTools button (the house button has its corner), so the edge
-   strip opens the panel at all times, not only in the zone editor. */
 .devtools__edge {
-  display: block;
+  display: none;
   position: fixed;
   top: 0;
   left: 0;
@@ -1069,6 +1067,7 @@
   z-index: var(--ui-layer-panel);
   touch-action: none;
 }
+.game-shell--zone-editor .devtools__edge { display: block; }
 .devtools__edge.devtools__edge--right { left: auto; right: 0; }
 /* Spec 173 TK-280: a red notice among a section's controls (DevToolsUI.createAlert): zones past the map. */
 .devtools__alert {

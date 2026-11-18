@@ -1,6 +1,7 @@
 // Release notes, newest first (unshift with every patch). DEV only: no production code reads them, and in the start's
 // bundle they cost 13 KB gzip (spec 160). dev.html publishes them with the version: window.CYBER_FISHING_PROJECT_VERSION.notes.
 export const PROJECT_RELEASE_NOTES = Object.freeze([
+  "TK-371.3 (owner): composeHouseVisit({ entryControl }) — the HUD house button in production only; dev.html keeps its DevTools button, the edge strip only in the zone editor.",
   "TK-371.2 (review before push): the Geiger counter reads HousePresence.feltRadiation — silent in the house.",
   "TK-370.1 (review before push): a cast refused for broken tackle reports broken_tackle with its own warning, not missing_line.",
   "TK-371.1: the house's code is in the production page bundle (a lazy import() split shared modules into 14 start JS files, over spec 160's 10).",

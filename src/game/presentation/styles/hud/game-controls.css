@@ -45,7 +45,7 @@
   transition: opacity 280ms ease, visibility 0s;
 }
 
-/* Spec 179 D12 (TK-371, owner Q2): the house button in the top-left corner (the DEV page's former DevTools corner). */
+/* Spec 179 D12 (TK-371, owner Q2): production's house button in the top-left corner (dev.html keeps its DevTools button there, TK-371.3). */
 .game-control--house {
   position: fixed;
   top: var(--ui-edge-top);

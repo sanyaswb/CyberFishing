@@ -247,12 +247,14 @@ async function startGame() {
   let zoneEditorDrag = null;
   let compositionRoot = null;
   // The House is a screen of this page (spec 084), composed over the session's live bait and clock. Spec 179 D12
-  // (TK-371): the game goes on under it (the world without drawing); the HUD's house button checks the tackle is put
-  // away, DevTools («Відкрити будинок», ?screen=house) opens it directly for testing.
+  // (TK-371): the game goes on under it (the world without drawing). The HUD's house button is production's only
+  // (TK-371.3, owner): this page keeps its DevTools button in that corner and opens the house from DevTools
+  // («Відкрити будинок», ?screen=house) directly for testing.
   const houseVisit = composeHouseVisit({
     documentTarget,
     uiSurface,
     logger: new ConsoleLogger(),
+    entryControl: false,
     game: {
       requestHouseEntry: () => game?.requestHouseEntry() === true,
       enterHouse: () => game?.enterHouse(),
@@ -453,9 +455,7 @@ async function startGame() {
               storageCache,
               uiSurface,
               developmentMount,
-              // Spec 179 D12 (owner Q2): no DevTools button on the game page — the house button has its corner; the
-              // panel opens from the screen's edge.
-              null,
+              developmentMount,
               feedback,
               () => zoneEditorDrag?.gestureActive === true,
             );

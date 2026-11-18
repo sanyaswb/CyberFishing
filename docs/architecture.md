@@ -167,8 +167,8 @@ opening suspends the base, a lazy factory creates the screen, closing disposes i
 is such a screen: `bootstrap/production/house_screen_composition.js` mounts `HOUSE_SCREEN_MARKUP` into the page's UI
 surface and composes the House over the session's live bait service and game clock
 (`GameCompositionRoot.getSessionServices()`), so no second config runtime, clock or storage owner exists.
-Spec 179 D12 (TK-371): `bootstrap/production/house_visit_composition.js` composes the House on both pages — the HUD's
-house button (`HouseEntryControl`, top-left) asks `Game.requestHouseEntry()` (tackle put away), and the base's
+Spec 179 D12 (TK-371): `bootstrap/production/house_visit_composition.js` composes the House on both pages — production's HUD
+house button (`HouseEntryControl`, top-left, `entryControl: true`; dev.html keeps its DevTools button there, TK-371.3) asks `Game.requestHouseEntry()` (tackle put away), and the base's
 suspend/resume are `Game.enterHouse()/leaveHouse()`: the game loop keeps running but only steps the location's world
 (`GameApplication`, every `CONFIG.houseVisit.worldTickMs`, no drawing), while `HousePresence` stops the location's effects
 on the player (emission screen, keepnet dose, item wear, the radiation debuff). The House's code is in the page bundle
