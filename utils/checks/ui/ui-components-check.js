@@ -370,5 +370,39 @@ assert.equal(tiles.children.length, 1);
   for (const symbol of new Set(asked)) assert(symbols.has(symbol), `"${symbol}" is a symbol of the inventory sprite`);
   net.dispose(); clock.dispose(); chum.dispose();
 }
+// Spec 184 D4 (TK-376): the HUD drink button — hidden without a drink, the drink's art and count, a tap drinks, the DOM
+// written only on a change.
+{
+  const { TestDocument } = require("../../testing/keepnet/test_document.js");
+  const { DrinkHudControl } = require("../../../src/platform/browser/ui/drink_hud_control.js");
+  const documentRef = new TestDocument();
+  const mountNode = documentRef.body;
+  let drunk = 0;
+  const control = new DrinkHudControl({ documentRef, mountNode, assets: { pathOf: (id) => `/${id}.svg` },
+    labels: { drinkAction: (name, count) => `${name}:${count}` }, onDrink: () => { drunk += 1; } });
+  const button = documentRef.byClass("game-toolbar-button--drink")[0];
+  control.update(null);
+  assert.equal(button.hidden, true, "no drink in the slot: no button");
+  button.click();
+  assert.equal(drunk, 0, "a hidden button drinks nothing");
+  const vodka = { name: "Горілка", quantity: 3, iconAsset: "items.drinks.vodka--1" };
+  control.update(vodka);
+  assert.equal(button.hidden, false, "a drink in the slot shows the button");
+  assert.equal(documentRef.byClass("drink-control__image")[0].src, "/items.drinks.vodka--1.svg", "with the drink's art");
+  assert.equal(documentRef.byClass("drink-control__count")[0].textContent, "3", "and how many are left");
+  assert.equal(button.getAttribute("aria-label"), "Горілка:3", "the label names the drink and the count");
+  button.click();
+  assert.equal(drunk, 1, "a tap drinks");
+  const image = documentRef.byClass("drink-control__image")[0];
+  image.src = "touched";
+  control.update({ ...vodka });
+  assert.equal(image.src, "touched", "the same drink and count write nothing");
+  control.update({ ...vodka, quantity: 2 });
+  assert.equal(documentRef.byClass("drink-control__count")[0].textContent, "2", "one less after a drink");
+  control.update(null);
+  assert.equal(button.hidden, true, "the last bottle hides the button");
+  control.dispose();
+  assert.equal(documentRef.byClass("game-toolbar-button--drink").length, 0, "dispose removes the button");
+}
 
 console.log("UI components passed: shared close/switch callbacks, semantic controls, host mixes, disabled/compact states, stable artwork, cached measurement and disposal.");

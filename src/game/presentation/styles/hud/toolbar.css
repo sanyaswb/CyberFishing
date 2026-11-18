@@ -59,6 +59,26 @@
 .game-toolbar-button--chum { order: 1; }
 .game-toolbar-button--net { order: 2; }
 .game-toolbar-button--keepnet { order: 3; }
+/* Spec 184 D4 (TK-376): the drink button, mounted after the keepnet's: the same order puts it right before the selector. */
+.game-toolbar-button--drink { order: 3; }
+.drink-control__image {
+  grid-area: 1 / 1;
+  width: 70%;
+  height: 70%;
+  object-fit: contain;
+  pointer-events: none;
+}
+/* How many are left, in the button's lower right corner (the same grid cell as the art). */
+.drink-control__count {
+  grid-area: 1 / 1;
+  align-self: end;
+  justify-self: end;
+  margin: 0 calc(3px / var(--game-toolbar-render-scale, 1)) calc(2px / var(--game-toolbar-render-scale, 1)) 0;
+  color: var(--ui-text);
+  font: 700 calc(12px / var(--game-toolbar-render-scale, 1))/1 var(--ui-font-mono);
+  text-shadow: 0 0 3px rgba(0, 0, 0, 0.9);
+  pointer-events: none;
+}
 .game-toolbar-button--inventory { order: 4; }
 /* Wide toolbars (TK-253): the actions stand right beside the closed selector, the float leftmost; no reserve for the
    open fan. The open corner fan keeps the closed footprint and grows up and left over its neighbours, which fade out

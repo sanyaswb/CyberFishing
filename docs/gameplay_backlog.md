@@ -20,6 +20,19 @@ Notes: suspected owner module, related checks.
 
 ## Open
 
+### G-146 A drink slot beside the gas mask and a HUD drink button (P2, done in v0.52.32; owner acceptance pending)
+Found: 2026-11-18, owner, spec 184.
+Reproduce: put vodka into the equipment; fish; drink.
+Expected: a drink slot beside the gas mask takes the bottles as one stack; while it holds any, a HUD button left of the
+item selector shows the drink and how many are left, and a tap drinks one — also while fishing.
+Actual (before): no drink slot; a bottle could be drunk only from its editor in the backpack, never while fishing (the
+inventory is locked then).
+Notes: TK-376 — `EquipmentSlotId.DRINK` (`takesWholeStack`), `InventoryItemUse` (one use: the status, then −1; shared
+by the editor's «Випити» and `InventoryGameplayCommands.useEquipped`), `PlayerInventory.useEquipped("drink")` (not behind
+the tackle lock), `DrinkHudControl`. A tap on a bottle in the backpack now puts it into the drink slot (like the gas
+mask); «Випити» is in the slot's editor. Save: the equipment's `drink` key is new, missing in older saves → empty.
+Checks `player-inventory`, `ui-components`, `inventory-equipment`. Game-cycle unchanged.
+
 ### G-145 A pack of hand chum is one throw; identical bottles lie apart (P2, done in v0.52.31; owner acceptance pending)
 Found: 2026-11-18, owner, spec 184.
 Reproduce: put a pack of 100 hand chum into its slot and throw; grant five vodka bottles in the DEV shop.

@@ -215,7 +215,7 @@ const flush = async () => { for (let index = 0; index < 10; index += 1) await Pr
   const first = groupIds("layer-one");
   assert.deepEqual(first.location, ["locations.test.bg_test--day", "locations.test.test-depth"]);
   assert.deepEqual(first.scene, ["items.floats.float-day--scene", "items.floats.float-day-glow--scene"]);
-  assert.equal(first["slot-icons"].length, 13, "the thirteen slot placeholders (the hook is the sprite symbol, TK-238)");
+  assert.equal(first["slot-icons"].length, 14, "the fourteen slot placeholders (the drink, spec 184; the hook is the sprite symbol, TK-238)");
   // Before stage D the start finished 20 assets: these 18 preloads, plus the sections sprite and the status icons that
   // the page's markup requests (measure:startup assetsBeforePlay). Since D4b the current phase starts from its low copy
   // (readyOn "low"); the depth map has none and loads whole.
@@ -228,7 +228,7 @@ const flush = async () => { for (let index = 0; index < 10; index += 1) await Pr
   assert.deepEqual(startFiles, ["assets/items/floats/float-day-glow--scene.webp", "assets/items/floats/float-day--scene.webp",
     "assets/items/rods/bamboo-rod-v1--scene--low.webp",
     "assets/locations/test/bg_test--day--low.webp", "assets/locations/test/test-depth.webp",
-    ...["bait", "battery", "boat", "chum", "float", "gas-mask", "keepnet", "line", "net", "radio", "reel", "rod",
+    ...["bait", "battery", "boat", "chum", "drink", "float", "gas-mask", "keepnet", "line", "net", "radio", "reel", "rod",
       "weight"].map((name) => `assets/ui/inventory/${name}.svg`)].sort(), "layer-one is the pre-D start plus the rod's start picture (TK-181), without tackle.svg (TK-238)");
   // Spec 160: a later priority of the first layer waits for the earlier one and is one more request wave of the start.
   assert.deepEqual([...new Set(production.layer("layer-one").groups.map((group) => group.priority))], [1],

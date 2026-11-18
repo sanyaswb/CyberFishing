@@ -1,6 +1,7 @@
 // Release notes, newest first (unshift with every patch). DEV only: no production code reads them, and in the start's
 // bundle they cost 13 KB gzip (spec 160). dev.html publishes them with the version: window.CYBER_FISHING_PROJECT_VERSION.notes.
 export const PROJECT_RELEASE_NOTES = Object.freeze([
+  "Spec 184 D3-D5 (TK-376): EquipmentSlotId.DRINK (takesWholeStack), InventoryItemUse shared by «Випити» and useEquipped (not behind the tackle lock), DrinkHudControl, ui.inventory.drink.",
   "Spec 184 D1, D2 (TK-375): takesWholeStack slots (hand chum) hold the whole stack, refill by stack, allowsStack for their roots; stacksAsOne (drink, aquarium feed) on grant and on load.",
   "Review before push (TK-372.1, TK-374.1): EmissionCameraShake without a per-frame closure (same random order); stale vodka comments; rendering.md — the intoxication's blur cost.",
   "Spec 179 L (TK-374): vodka add ×5, modifiers as lists by stacks (30/45/60 %); IntoxicationEffect (blur + figure-of-eight sway, fades under radiation); composeEmissionScreen.",

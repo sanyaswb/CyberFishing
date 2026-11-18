@@ -61,6 +61,7 @@ import { StartingInventorySnapshotFactory } from "../../game/application/invento
 import { InventoryGrantLedger } from "../../game/domain/inventory/inventory_grant_ledger.js";
 import { InventoryOneTimeGrantService } from "../../game/application/inventory/inventory_one_time_grant_service.js";
 import { InventoryStackConsolidation } from "../../game/application/inventory/inventory_stack_consolidation.js";
+import { InventoryItemUse } from "../../game/application/inventory/inventory_item_use.js";
 import { InventorySnapshotMigration } from "../../game/application/inventory/persistence/inventory_snapshot_migration.js";
 import { InventorySubfilterResolver } from "../../game/presentation/inventory/inventory_subfilter_resolver.js";
 import { InventoryTransactionCoordinator } from "../../game/application/inventory/inventory_transaction_coordinator.js";
@@ -443,6 +444,8 @@ export class InventoryCompositionRoot {
       loadouts,
       now,
     });
+    // Spec 184 D4 (TK-376): one use of an item, from its editor and from the HUD drink button.
+    const itemUse = new InventoryItemUse({ repository, hydrator, itemRemoval, transaction });
     const commands = new InventoryCommandService({
       consumableTargets,
       consumablePlacement,
@@ -473,6 +476,7 @@ export class InventoryCompositionRoot {
       now,
       uiState: new InventoryUiState({ sortConfig: INVENTORY_SORT_CONFIG }),
       itemRemoval,
+      itemUse,
       slotVisibilityPolicy: visibilityPolicy,
       pickSubfilterIds: uiState => viewModels.createPickSubfilterIds(uiState),
     });
@@ -497,6 +501,7 @@ export class InventoryCompositionRoot {
         : null,
       itemWear: new ApplyItemWearService({ repository, hydrator }),
       hydrator,
+      itemUse,
     });
     const gameplayBridge = new InventoryGameplayBridge({
       repository,

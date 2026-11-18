@@ -15,6 +15,8 @@ export const HUD_LABELS = Object.freeze({
   landingNet: "Підсака",
   chumAction: "Прикормка",
   chumActionCount: (count) => `Прикормка · ${count} порцій`,
+  // Spec 184 D4 (TK-376): the HUD drink button.
+  drinkAction: (name, count) => `Випити: ${name} · ${count} шт`,
   chumBoatAction: "Кораблик для прикормки",
   continueAfterOutcome: "ПРОДОВЖИТИ",
 });

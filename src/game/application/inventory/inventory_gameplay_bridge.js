@@ -72,6 +72,13 @@ export class InventoryGameplayBridge {
     );
   }
 
+  // Spec 184 D4 (TK-376): use one piece of the stack in slotId (the HUD drink button); the command result.
+  useEquipped(slotId) {
+    const result = this.#gameplayCommands.useEquipped(slotId);
+    if (result?.success) this.#afterMutation?.(result);
+    return result;
+  }
+
   consumeEquipped(slotPath, amount = 1, unequipAfterConsume = true) {
     return this.#booleanMutation(
       this.#gameplayCommands.consumeEquipped(

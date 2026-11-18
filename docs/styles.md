@@ -341,6 +341,10 @@ degradation colour of that charge), written only when the whole percent changes.
 Index and DEV compose
 `GameToolbar`; its version badge stays aligned with the bottom actions, keeps their height and clips
 excess text while shrinking horizontally. Hidden actions consume no row space.
+Spec 184 D4 (TK-376): the drink button (`DrinkHudControl`, `game-toolbar-button--drink`, `toolbar.css`) shares the
+keepnet's `order: 3` and is mounted after it, so it stands right before the item selector; the drink's art
+(`drink-control__image`) and the count (`drink-control__count`) share the button's one grid cell, the count in the lower
+right corner. The button is hidden while the drink slot is empty.
 House's footer remains accessible as compact icon buttons. One upward gesture reveals all names;
 choosing a section leaves the other buttons miniature and permits direct switching. A shared handle
 supports up/down/tap for the footer, and the backdrop accepts downward dismissal of an open sheet.

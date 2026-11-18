@@ -2,6 +2,11 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.52.32 - A drink slot and a HUD drink button (TK-376)
+
+- A new «Напій» slot beside the gas mask takes the bottles as one stack; a tap on a bottle in the backpack puts it there, «Випити» is in the slot's editor.
+- While the slot holds a drink, a button left of the item selector shows it and how many are left; a tap drinks one, also while fishing. The last bottle hides the button.
+
 ## v0.52.31 - A pack of hand chum is many throws; identical bottles are one stack (TK-375)
 
 - A pack of hand chum put into its slot goes there whole: a pack of 100 is 100 throws, each takes one; the auto-refill puts in the next whole pack. Taking it off returns the rest to the backpack.
@@ -44,13 +49,3 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 - The production game page loads the house's code with the rest of the game instead of on the first visit.
 - The lazy load split the modules the house shares with the game into four more start files: 14 JavaScript files at start, over the limit of 10.
 - The start is back to its own files. The house's art still loads only when the house is shown.
-
-## v0.52.22 - The house during an emission; a house button in the game (TK-371)
-
-- The house no longer stops the game. While the player is inside, the location's world goes on: game time, weather, wind, zones and the emission. It steps every 250 ms and nothing of the location is drawn.
-- Coming back out, the location continues from its current state: an emission that was running has moved on.
-- Inside the house nothing of the location reaches the player: no darkening or blur, no radiation debuff, no dose for the fish in the keepnet and no wear of the items. Whatever had gathered before entering is applied first.
-- A house button ⌂ sits in the top-left corner of the game, now also in the production game (index.html).
-- The player goes in only with the tackle put away. Otherwise the inventory opens with «Спершу складіть снасті в інвентар». The gas mask, landing net, radio and hand chum may stay.
-- dev.html has no DevTools button any more (the house button took its corner). DevTools opens from the screen's left edge: rest the cursor there or swipe right with a finger. DevTools → «Будинок» and ?screen=house still open the house directly.
-- The house's styles are now part of the game page's stylesheet, about 4 KB gzip at start. The house's code still loads on the first visit.

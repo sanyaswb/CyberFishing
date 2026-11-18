@@ -134,6 +134,12 @@ export class PlayerInventory {
     return this.#gameplayBridge.consumeItem(instanceId, amount);
   }
 
+  // Spec 184 D4 (TK-376): the HUD drink button drinks one bottle from the drink slot; not blocked by the tackle lock
+  // (equipment does not change, only its stack). Returns the command result ({ success, warning }).
+  useEquipped(slotId) {
+    return this.#gameplayBridge.useEquipped(slotId);
+  }
+
   // Adds new catalog items to the inventory (used by the DEV item grant); not blocked by the tackle lock because
   // equipment does not change.
   grantCatalogItem(itemId, quantity = 1) {

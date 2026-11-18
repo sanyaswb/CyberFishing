@@ -81,6 +81,9 @@ Styles live in `src/game/presentation/styles/`; DEV metric/parameter description
   stack there, each use takes one from it, and the repository accepts such a root as a stack
   (`InventoryItemReservationPolicy.allowsStack`). Items kept as one stack (`stacksAsOne`: drinks, aquarium feed) join an
   identical loose stack on a grant (`InventoryItemGrantService`) and on load (`InventoryStackConsolidation`).
+  TK-376: `InventoryItemUse` is one use of an item (its status, then −1), shared by the editor's «Випити»
+  (`InventoryCommandService`) and the HUD drink button (`InventoryGameplayCommands.useEquipped` →
+  `PlayerInventory.useEquipped`, not behind the tackle lock); `DrinkHudControl` (platform) is redrawn on inventory changes.
 - `PlayerInventory` is what the game uses: lock while tackle is in the water, cached equipment with the rod's cast
   display stats (`RodCastDisplayStatsWriter`, labels from presentation), tackle load limit (`TackleLoadLimitPolicy`),
   change events, consumption and gameplay events.

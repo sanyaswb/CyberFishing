@@ -18,5 +18,7 @@ export const EQUIPMENT_SLOT_PRESENTATION = Object.freeze({
     label: "Протигаз",
     lockedWarning: "Протигаз ще не розблоковано.",
   }),
+  // Spec 184 D3 (TK-376).
+  drink: Object.freeze({ label: "Напій" }),
   radio: Object.freeze({ label: "Радіо" }),
 });

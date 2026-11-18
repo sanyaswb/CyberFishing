@@ -40,7 +40,7 @@ export class InventoryCommandService {
   #busyDevices = null;
   #liveBaitHook = null;
   #liveBaitStacks = null;
-  #itemEffects = null;
+  #itemUse;
   #busySignature = new BusyDeviceSignature();
 
   constructor({
@@ -71,6 +71,7 @@ export class InventoryCommandService {
     now = null,
     uiState,
     itemRemoval,
+    itemUse,
     consumableTargets,
     consumablePlacement,
     slotVisibilityPolicy,
@@ -102,6 +103,8 @@ export class InventoryCommandService {
     this.#actionTypes = actionTypes;
     this.#uiState = uiState;
     this.#itemRemoval = itemRemoval;
+    if (typeof itemUse?.use !== "function") throw new TypeError("InventoryCommandService requires itemUse");
+    this.#itemUse = itemUse;
     this.#consumableTargets = consumableTargets;
     this.#consumablePlacement = consumablePlacement;
     this.#slotVisibility = slotVisibilityPolicy;
@@ -119,7 +122,7 @@ export class InventoryCommandService {
   setLiveBaitStacks(stacks) { this.#liveBaitStacks = stacks || null; }
   // Spec 179 stage F (TK-340), spec 181: what a used item does (PlayerStatusEffects: apply(statusId, { source })),
   // composed after the inventory.
-  setItemEffects(effects) { this.#itemEffects = effects || null; }
+  setItemEffects(effects) { this.#itemUse.setEffects(effects); }
 
   // Spec 151: devices away from the player (a bait boat on the water) report their roots here.
   setBusyDevices(source) {
@@ -764,18 +767,16 @@ export class InventoryCommandService {
     return result;
   }
 
-  // TK-340, spec 181: an item with gameplayStats.use ({ statusId }) is used whole: its status starts (or stacks by its
-  // rule) and one is consumed. The status goes first, so a refused use keeps the item; the editor closes when the last one is gone.
+  // TK-340, spec 181: an item with gameplayStats.use ({ statusId }) is used (InventoryItemUse: the status first, then
+  // one piece); the editor closes when the last one is gone.
   #useItem(instanceId) {
-    const source = this.#repository.get(instanceId);
-    if (!source) return this.#failure(this.#messages.itemNotFound);
-    // The hydrated item carries its gameplay stats as effectiveStats (authored stats with the instance's overrides).
-    const use = this.#hydrate(source)?.effectiveStats?.use;
-    if (!use || typeof use !== "object" || typeof use.statusId !== "string") return this.#failure(this.#messages.itemNotUsable);
-    if (!this.#itemEffects?.apply(use.statusId, { source: source.itemId })) return this.#failure(this.#messages.itemUseUnavailable);
-    this.#transaction.runAtomic(() => this.#itemRemoval.consume(instanceId, 1));
-    if (!this.#repository.has(instanceId)) this.#uiState.showLoadoutPanel();
-    return this.#success({ used: true, statusId: use.statusId });
+    const result = this.#itemUse.use(instanceId);
+    if (!result.used) {
+      return this.#failure({ "not-found": this.#messages.itemNotFound, "not-usable": this.#messages.itemNotUsable,
+        unavailable: this.#messages.itemUseUnavailable }[result.reason]);
+    }
+    if (result.gone) this.#uiState.showLoadoutPanel();
+    return this.#success({ used: true, statusId: result.statusId });
   }
 
   #disassembleAssembly(rootInstanceId) {

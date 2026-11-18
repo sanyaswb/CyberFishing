@@ -69,6 +69,7 @@ import { EmissionWearExposure } from "../../game/application/world/emission_wear
 import { HousePresence } from "../../game/application/world/house_presence.js";
 import { HudIndicatorColumn } from "../../platform/browser/ui/hud_indicator_column.js";
 import { StatusHudBadges } from "../../platform/browser/ui/status_hud_badges.js";
+import { DrinkHudControl } from "../../platform/browser/ui/drink_hud_control.js";
 import { STATUS_LABELS } from "../../game/presentation/status/status_labels.js";
 import { EmissionScreenEffect, sceneBlurPx } from "../../game/presentation/weather/emission_screen_effect.js";
 import { EmissionCameraShake } from "../../game/presentation/weather/emission_camera_shake.js";
@@ -2440,6 +2441,7 @@ export class GameCompositionRoot {
         rng,
         appPorts,
       });
+      this.#composeDrinkControl({ own, runtime });
 
       const { frameBuilder } = this.#rendering.composeFrameBuilders({
         runtime,
@@ -2735,6 +2737,26 @@ export class GameCompositionRoot {
       }),
     );
     return { chumController };
+  }
+
+  // Spec 184 D4 (TK-376): the HUD drink button over the drink slot: redrawn on each inventory change, a tap drinks one
+  // (also while fishing); a refused drink shows its warning like the chum button's.
+  #composeDrinkControl({ own, runtime }) {
+    const inventory = runtime.inventory;
+    const control = own(new DrinkHudControl({
+      documentRef: this.#documentTarget,
+      mountNode: this.#toolbarMountNode || this.#uiSurface?.mountRoot || this.#documentTarget.body,
+      assets: this.#assets,
+      labels: HUD_LABELS,
+      onDrink: () => {
+        const result = inventory.useEquipped("drink");
+        if (!result?.success && result?.warning) runtime.inventoryUI?.showWarning(result.warning);
+      },
+    }));
+    const refresh = () => control.update(inventory.getEquipped()?.drink ?? null);
+    const stop = inventory.onInventoryChanged(refresh);
+    own({ dispose: () => stop?.() });
+    refresh();
   }
 
   #validateRarityConfiguration() {

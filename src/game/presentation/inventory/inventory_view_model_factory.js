@@ -519,15 +519,16 @@ export class InventoryViewModelFactory {
       showUnequip: equipped,
       canDisassemble: !equipped && hasAssembly && !rootView?.loadoutMembership && hasAttachedComponents,
       showDisassemble: !equipped && hasAssembly && !rootView?.loadoutMembership && hasAttachedComponents,
-      // Spec 179 stage F (TK-340): an item used whole from its editor (a drink: «Випити»); it is never equipped.
+      // Spec 179 stage F (TK-340): an item used from its editor (a drink: «Випити»); spec 184 D3 (TK-376): the drink is
+      // also equipped into its slot, so «Спорядити» stays beside it.
       ...this.#useAction(rootView),
     };
   }
 
-  // TK-340: the use button of an item that is used rather than equipped; the label is the item type's (presentation).
+  // TK-340: the use button of an item that is used; the label is the item type's (presentation).
   #useAction(rootView) {
     const useLabel = ITEM_USE_LABELS[this.#itemType(rootView)] ?? null;
-    return useLabel ? { showUse: true, useLabel, showEquip: false } : { showUse: false, useLabel: null };
+    return useLabel ? { showUse: true, useLabel } : { showUse: false, useLabel: null };
   }
 
   // Spec 165 A2: a bait's editor button follows the same plan as its card: «Замінити» while every cell holds another bait

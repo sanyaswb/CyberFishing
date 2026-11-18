@@ -34,6 +34,8 @@ export class EquipmentReadModelFactory {
     const radio = this.#rootItem(equipmentState, "radio");
     // Spec 179 stage E: the gas mask in its slot (protection from the emission).
     const gasMask = this.#rootItem(equipmentState, "gasMask");
+    // Spec 184 D3 (TK-376): the drink in its slot (the HUD drink button), the whole stack.
+    const drink = this.#rootItem(equipmentState, "drink");
 
     const reelLine = reel
       ? this.#child(this.#instanceId(reel), "line", 0)
@@ -78,6 +80,7 @@ export class EquipmentReadModelFactory {
       radio,
       radioBattery,
       gasMask,
+      drink,
     });
   }
 

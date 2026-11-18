@@ -364,10 +364,14 @@ function checkDrinkUse() {
   const granted = inventory.grantCatalogItem("vodka_bottle");
   assert.equal(granted.success, true, "the DEV shop can grant the vodka");
   const bottleId = granted.instanceId;
+  // Spec 184 D3 (TK-376): a tap puts the bottle into the drink slot (as the gas mask); its slot opens its editor with
+  // «Випити» and «Зняти».
   assert.equal(inventory.dispatchInventoryAction({ type: actions.INVENTORY_ITEM_ACTIVATE, instanceId: bottleId }).success, true);
+  assert.equal(inventory.getEquipped().drink?.instanceId, bottleId, "a tap puts the bottle into the drink slot");
+  assert.equal(inventory.dispatchInventoryAction({ type: actions.EQUIPMENT_SLOT_ACTIVATE, slotId: "drink" }).success, true);
   const editor = facade.getViewModel().panel?.assembly;
-  assert.equal(JSON.stringify([editor?.showUse, editor?.useLabel, editor?.showEquip]), JSON.stringify([true, "Випити", false]),
-    "a drink's editor offers «Випити», not «Спорядити»");
+  assert.equal(JSON.stringify([editor?.showUse, editor?.useLabel, editor?.showUnequip]), JSON.stringify([true, "Випити", true]),
+    "the drink slot's editor offers «Випити» and «Зняти»");
   const refused = inventory.dispatchInventoryAction({ type: actions.ITEM_USE, rootInstanceId: bottleId });
   assert.equal(refused.success, false, "no effects composed: the use is refused");
   assert.equal(inventory.inventoryFacade.getViewModel().panel?.assembly?.rootInstanceId, bottleId, "and the bottle stays");
@@ -383,6 +387,36 @@ function checkDrinkUse() {
   assert.equal(facade.getViewModel().panel?.mode ?? "loadout", "loadout", "the empty editor closes");
   const notUsable = inventory.dispatchInventoryAction({ type: actions.ITEM_USE, rootInstanceId: inventory.getEquipped().gasMask.instanceId });
   assert.equal(notUsable.success, false, "a gas mask is not drunk");
+}
+
+// Spec 184 D3, D4 (TK-376): the bottles go into the drink slot as one stack; the HUD button drinks one at a time, also
+// while fishing (the inventory UI is locked then); the last one leaves the slot empty.
+function checkDrinkSlot() {
+  const { inventory, actions } = compose();
+  const facade = inventory.inventoryFacade;
+  const first = inventory.grantCatalogItem("vodka_bottle");
+  inventory.grantCatalogItem("vodka_bottle");
+  inventory.grantCatalogItem("vodka_bottle");
+  assert.equal(inventory.dispatchInventoryAction({ type: actions.INVENTORY_ITEM_ACTIVATE, instanceId: first.instanceId })
+    .success, true, "a tap puts the bottles into the drink slot");
+  const drink = () => inventory.getEquipped().drink;
+  assert.equal(drink()?.itemId, "vodka_bottle", "the drink slot holds the vodka");
+  assert.equal(drink()?.quantity, 3, "all three bottles");
+  assert.equal(JSON.stringify([drink()?.name, drink()?.iconAsset]), JSON.stringify(["Горілка «Зона»", "items.drinks.vodka--1"]),
+    "the HUD button reads the drink's name and art from the equipped item");
+  assert.equal(items(inventory).some((item) => item.itemId === "vodka_bottle"), false, "none left in the backpack");
+  assert.equal(inventory.useEquipped("drink").success, false, "no effects composed: the HUD drink is refused");
+  assert.equal(drink()?.quantity, 3, "and the bottles stay");
+  const applied = [];
+  facade.setItemEffects({ apply: (statusId) => { applied.push(statusId); return true; } });
+  inventory.setLock(true);
+  assert.equal(inventory.useEquipped("drink").success, true, "the HUD button drinks while fishing");
+  assert.equal(drink()?.quantity, 2, "one bottle less in the slot");
+  inventory.useEquipped("drink");
+  assert.equal(inventory.useEquipped("drink").success, true, "the last bottle");
+  assert.equal(drink() ?? null, null, "leaves the drink slot empty");
+  assert.equal(inventory.useEquipped("drink").success, false, "an empty slot drinks nothing");
+  assert.equal(JSON.stringify(applied), JSON.stringify(["vodka", "vodka", "vodka"]), "three bottles, three vodka statuses");
 }
 
 // Spec 184 D2 (TK-375): identical bottles are one stack — granted one by one, and an older save's separate ones on load.
@@ -440,6 +474,7 @@ function checkHandChumStack() {
 checkFreshStart();
 checkDrinkUse();
 checkDrinkStacks();
+checkDrinkSlot();
 checkHandChumStack();
 checkInstalledLineFit();
 checkStartingInventory();

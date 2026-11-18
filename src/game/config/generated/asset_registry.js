@@ -109,6 +109,7 @@ export const ASSET_REGISTRY = Object.freeze({
   "ui.inventory.battery": Object.freeze({ kind: "image", path: "assets/ui/inventory/battery.svg", bytes: 256, sha256: "728c965775c4db7a", tags: Object.freeze(["ui","inventory"]), label: "" }),
   "ui.inventory.boat": Object.freeze({ kind: "image", path: "assets/ui/inventory/boat.svg", bytes: 396, sha256: "a1dc4d817b5f27ef", tags: Object.freeze(["ui","inventory"]), label: "" }),
   "ui.inventory.chum": Object.freeze({ kind: "image", path: "assets/ui/inventory/chum.svg", bytes: 385, sha256: "6fcef9ad71548076", tags: Object.freeze(["ui","inventory"]), label: "" }),
+  "ui.inventory.drink": Object.freeze({ kind: "image", path: "assets/ui/inventory/drink.svg", bytes: 422, sha256: "d649d9784247024e", tags: Object.freeze(["ui","inventory"]), label: "" }),
   "ui.inventory.float": Object.freeze({ kind: "image", path: "assets/ui/inventory/float.svg", bytes: 399, sha256: "b33a2f0d0a896d0b", tags: Object.freeze(["ui","inventory"]), label: "" }),
   "ui.inventory.gas-mask": Object.freeze({ kind: "image", path: "assets/ui/inventory/gas-mask.svg", bytes: 402, sha256: "fdff1b636ad07a78", tags: Object.freeze(["ui","inventory"]), label: "" }),
   "ui.inventory.keepnet": Object.freeze({ kind: "image", path: "assets/ui/inventory/keepnet.svg", bytes: 661, sha256: "6c76fead4704932f", tags: Object.freeze(["ui","inventory"]), label: "" }),

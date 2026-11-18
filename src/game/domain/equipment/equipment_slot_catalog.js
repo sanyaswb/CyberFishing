@@ -14,6 +14,7 @@ export const EquipmentSlotId = Object.freeze({
   NET: "net",
   DELIVERY: "delivery",
   GAS_MASK: "gasMask",
+  DRINK: "drink",
   RADIO: "radio",
 });
 
@@ -30,6 +31,7 @@ export const EQUIPMENT_AUXILIARY_SLOT_IDS = Object.freeze([
   EquipmentSlotId.NET,
   EquipmentSlotId.DELIVERY,
   EquipmentSlotId.GAS_MASK,
+  EquipmentSlotId.DRINK,
   EquipmentSlotId.RADIO,
 ]);
 
@@ -101,6 +103,14 @@ export const EQUIPMENT_SLOT_CONFIG = Object.freeze({
     acceptTypes: Object.freeze(["gas_mask"]),
   }),
   // Spec 142: the field radio receiver.
+  // Spec 184 D3 (TK-376): the drink beside the gas mask, drunk from the HUD one bottle at a time — it holds the stack.
+  [EquipmentSlotId.DRINK]: Object.freeze({
+    id: EquipmentSlotId.DRINK,
+    group: "auxiliary",
+    visibility: "always",
+    acceptTypes: Object.freeze(["drink"]),
+    takesWholeStack: true,
+  }),
   [EquipmentSlotId.RADIO]: Object.freeze({
     id: EquipmentSlotId.RADIO,
     group: "auxiliary",

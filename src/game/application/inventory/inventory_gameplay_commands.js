@@ -17,6 +17,7 @@ export class InventoryGameplayCommands {
   #batteryDrain;
   #itemWear;
   #hydrator;
+  #itemUse;
 
   constructor({
     messages,
@@ -31,7 +32,10 @@ export class InventoryGameplayCommands {
     batteryDrain = null,
     itemWear,
     hydrator,
+    itemUse,
   }) {
+    if (typeof itemUse?.use !== "function") throw new TypeError("InventoryGameplayCommands requires itemUse");
+    this.#itemUse = itemUse;
     if (typeof itemWear?.apply !== "function") throw new TypeError("InventoryGameplayCommands requires itemWear");
     this.#itemWear = itemWear;
     this.#messages = messages;
@@ -58,6 +62,15 @@ export class InventoryGameplayCommands {
     } catch (error) {
       return this.#failure(error.message, error);
     }
+  }
+
+  // Spec 184 D4 (TK-376): the HUD drink button — one piece of the stack in slotId is used (its status, −1); works while
+  // fishing (the inventory UI lock is not involved). Returns { used, statusId, gone } or a failure.
+  useEquipped(slotId) {
+    const result = this.#itemUse.use(this.#equipmentState.getRootInstanceId(slotId));
+    return result.used
+      ? inventoryCommandSuccess({ used: true, statusId: result.statusId, gone: result.gone })
+      : this.#failure(result.reason === "unavailable" ? this.#messages.itemUseUnavailable : this.#messages.slotHasNothingToConsume);
   }
 
   consumeEquipped(slotPath, amount = 1, unequipAfterConsume = true) {
