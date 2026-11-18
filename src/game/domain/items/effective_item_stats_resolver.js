@@ -1,13 +1,18 @@
+import { wornQuality } from "./condition/item_condition_quality.js";
+
 export class EffectiveItemStatsResolver {
   #overridePolicy;
+  #qualityCurve;
 
-  constructor({ overridePolicy } = {}) {
+  // qualityCurve(): the exponent of the condition's effect on the quality (CONFIG.emission.wear.qualityCurve, read live).
+  constructor({ overridePolicy, qualityCurve = () => 1 } = {}) {
     if (!overridePolicy || typeof overridePolicy.normalize !== "function") {
       throw new TypeError(
         "EffectiveItemStatsResolver requires ItemStatOverridePolicy",
       );
     }
     this.#overridePolicy = overridePolicy;
+    this.#qualityCurve = qualityCurve;
   }
 
   resolve({ definition = {}, instanceState = {} } = {}) {
@@ -19,7 +24,18 @@ export class EffectiveItemStatsResolver {
     const resolved = this.#clone(authoredStats);
 
     this.#applyOverrides(resolved, explicitOverrides);
+    this.#applyWear(resolved);
     return this.#deepFreeze(resolved);
+  }
+
+  // Spec 179 D10 (owner Q15): a worn item works with a lower quality; baseQuality keeps the quality before wear (the
+  // wear's own range is rolled from it). Condition 100 (every new item) changes nothing.
+  #applyWear(stats) {
+    const condition = Number(stats.durability);
+    const quality = Number(stats.quality);
+    if (!Number.isFinite(condition) || !Number.isFinite(quality) || condition >= 100) return;
+    stats.baseQuality = quality;
+    stats.quality = wornQuality(quality, condition, Number(this.#qualityCurve()));
   }
 
   #applyOverrides(target, overrides) {

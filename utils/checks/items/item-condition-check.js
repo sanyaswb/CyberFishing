@@ -179,8 +179,9 @@ class ItemConditionCheck {
         Assertion.equal(condition.percent, 100, `${item.id} starts at full condition`);
       }
     }
-    Assertion.equal(gameplayCount, 10, "only durability-backed item groups are covered");
-    Assertion.equal(authoredCount, 10, "condition-enabled items author durability explicitly");
+    // Spec 179 stage H (TK-370): the gas mask has a condition too.
+    Assertion.equal(gameplayCount, 11, "only durability-backed item groups are covered");
+    Assertion.equal(authoredCount, 11, "condition-enabled items author durability explicitly");
   }
 
   #checkFreshnessCapability() {
@@ -245,3 +246,8 @@ class ItemConditionCheck {
 }
 
 new ItemConditionCheck(new RuntimeLoader().load()).run();
+// Spec 179 D10 (TK-370): the radiation's wear of the items with a condition.
+require("../../testing/items/emission_wear_scenarios")().catch((error) => {
+  console.error(error);
+  process.exitCode = 1;
+});

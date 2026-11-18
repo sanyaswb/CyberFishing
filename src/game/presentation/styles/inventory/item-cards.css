@@ -90,6 +90,20 @@
   background: transparent;
   box-shadow: none;
 }
+/* Spec 179 D10 (TK-370, owner): a broken item (condition 0) — grey art, frame and background under a grey veil, so
+   colourful items turn dull. */
+.inventory-item-card.inventory-item-card--broken {
+  filter: grayscale(1);
+}
+.inventory-item-card.inventory-item-card--broken::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 4;
+  border-radius: inherit;
+  background: rgba(var(--inventory-broken-veil-rgb, 92, 98, 102), 0.5);
+  pointer-events: none;
+}
 .ui-surface:not(.ui-surface--desktop-hover) .inventory-item-card:active:not(:disabled) {
   border-color: var(--inventory-accent);
 }

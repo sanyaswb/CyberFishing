@@ -539,6 +539,7 @@ export class ConfigSchemaValidator {
     this.#validateGeigerConfig();
     this.#validateGeneralWeatherConfig();
     this.#validateEmissionScreenConfig();
+    this.#validateEmissionWearConfig();
     this.#validateStatusEffectsConfig();
     const cfg = this.config.ui?.rod?.spine;
     const path = "CONFIG.ui.rod.spine";
@@ -1362,6 +1363,23 @@ export class ConfigSchemaValidator {
     this.#requireParameterLabel(`${path}.rings.ripple.strength`);
     this.#requireFiniteNumber(`CONFIG.${path}.rings.ripple.radiusScale`, ripple.radiusScale, { min: 0, max: 10 });
     this.#requireParameterLabel(`${path}.rings.ripple.radiusScale`);
+  }
+
+  // Spec 179 D10 (TK-370): the radiation's wear of the items (CONFIG.emission.wear).
+  #validateEmissionWearConfig() {
+    const cfg = this.config.emission?.wear;
+    const path = "emission.wear";
+    if (!cfg || typeof cfg !== "object") { this.#error(`CONFIG.${path}`, "missing emission wear config"); return; }
+    this.#requireParameterLabel(path);
+    this.#requireBooleanWithLabel(`${path}.enabled`, cfg.enabled);
+    for (const [key, min, max] of [["wearScale", 0, 100], ["qualityCurve", 0.01, 10], ["applyEverySec", 0.1, 600]])
+      this.#requireFiniteNumberWithLabel(`${path}.${key}`, cfg[key], { min, max });
+    for (const key of ["rangeAtQuality1", "rangeAtQuality10"]) {
+      const pair = cfg[key];
+      if (!Array.isArray(pair) || pair.length !== 2 || !pair.every((value) => Number.isFinite(value) && value >= 0 &&
+        value <= 100) || pair[0] > pair[1]) this.#error(`CONFIG.${path}.${key}`, "expected [min, max] 0…100, min ≤ max");
+      this.#requireParameterLabel(`${path}.${key}`);
+    }
   }
 
   // Spec 179 stage E: the emission's darkening and blur (CONFIG.emission.screen).

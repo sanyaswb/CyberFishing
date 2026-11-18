@@ -1,5 +1,6 @@
 import { EquipmentSlotId } from "./equipment_slot_catalog.js";
 import { RodCapabilityResolver } from "./rod_capability_resolver.js";
+import { isItemBroken } from "../items/condition/item_condition_quality.js";
 
 export class FishingReadinessPolicy {
   #itemReader;
@@ -64,7 +65,7 @@ export class FishingReadinessPolicy {
           "reel-line-required",
         );
       }
-      return this.#castResult(true);
+      return this.#brokenTackleResult(equipmentState);
     }
 
     const lineRootId = this.#root(
@@ -78,7 +79,25 @@ export class FishingReadinessPolicy {
         "terminal-line-required",
       );
     }
+    return this.#brokenTackleResult(equipmentState);
+  }
+
+  // Spec 179 D10 (owner Q15): a broken item (condition 0) anywhere in the cast's tackle — the rod, the reel and its line,
+  // the terminal line, the rig and their parts — forbids the cast.
+  #brokenTackleResult(equipmentState) {
+    for (const key of ["ROD", "REEL", "TERMINAL_LINE", "TACKLE"]) {
+      const rootId = this.#root(equipmentState, EquipmentSlotId[key]);
+      if (!rootId) continue;
+      if (isItemBroken(this.#item(rootId))) return this.#brokenTackle();
+      for (const child of this.#assemblyReader?.listDescendants?.(rootId) ?? []) {
+        if (isItemBroken(this.#item(child?.instanceId))) return this.#brokenTackle();
+      }
+    }
     return this.#castResult(true);
+  }
+
+  #brokenTackle() {
+    return this.#castResult(false, this.#messages.brokenTackle, "broken-tackle");
   }
 
   #castResult(canCast, warning = null, warningCode = null) {

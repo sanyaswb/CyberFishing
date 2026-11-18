@@ -1,3 +1,5 @@
+import { isItemBroken } from "../../domain/items/condition/item_condition_quality.js";
+
 // Spec 179 stage E (TK-324), spec 181: how the emission reaches the player.
 // - intensity(): the emission's intensity now, 0…1; 0 outside an emission.
 // - modifier(key): the share of the emission's screen effect that stays under the player's statuses (spec 181 D1:
@@ -23,8 +25,10 @@ export class EmissionExposure {
     this.#statuses = statuses;
   }
 
+  // Spec 179 D10: a broken gas mask (condition 0) does not protect.
   hasGasMask() {
-    return Boolean(this.#getEquipped()?.gasMask);
+    const gasMask = this.#getEquipped()?.gasMask;
+    return Boolean(gasMask) && !isItemBroken(gasMask);
   }
 
   isActive() {

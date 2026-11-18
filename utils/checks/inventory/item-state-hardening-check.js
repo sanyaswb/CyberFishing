@@ -109,7 +109,9 @@ class ItemStateHardeningCheck {
     });
     Assertion.equal(resolved.lengthMeters, 12, "mutable line length is applied");
     Assertion.equal(resolved.durability, 80, "mutable durability is applied");
-    Assertion.equal(resolved.quality, 8, "mutable instance quality is applied");
+    // Spec 179 D10 (TK-370): the quality an item works with falls with its condition: 1 + (8 − 1) × 0.8.
+    Assertion.equal(resolved.baseQuality, 8, "mutable instance quality is applied");
+    Assertion.that(Math.abs(resolved.quality - 6.6) < 1e-9, "a worn item works with a lower quality");
     Assertion.equal(resolved.maxLoadKg, 1, "authored balance remains definition-owned");
     Assertion.that(
       Object.isFrozen(resolved),

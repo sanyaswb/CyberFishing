@@ -72,6 +72,7 @@ export class GameApplication {
   #liveBaitMotion = null;
   #liveBaitCastId = null;
   #keepnetRadiation = null;
+  #emissionWear = null;
   #createLiveBaitMotion;
   #liveBaitCareElapsedMs = 0;
   #castRodScreenX = null;
@@ -229,6 +230,7 @@ export class GameApplication {
     this.#fishingController = runtime.fishing;
     this.#liveBait = runtime.liveBait || null;
     this.#keepnetRadiation = runtime.keepnetRadiation || null;
+    this.#emissionWear = runtime.emissionWear || null;
     this.#createLiveBaitMotion = runtime.createLiveBaitMotion || null;
     this.#net = runtime.net;
     this.#castPenalty = runtime.castPenalty;
@@ -731,6 +733,8 @@ export class GameApplication {
     const envSnapshot = this.#world.update(dt, timeScale);
     // Spec 179 D8: the keepnet's and the hook's radiation dose; a live bait it kills ends like one whose life ran out.
     if (this.#keepnetRadiation?.update(dt, envSnapshot.radiation)) this.#syncLiveBaitCast();
+    // Spec 179 D10: the radiation's wear of the items with a condition.
+    this.#emissionWear?.update(dt, envSnapshot.radiation);
     this.#castPenalty.update(dt);
     this.#timeUI.update(envSnapshot.time);
     this.#emissionScreen.update(dt);

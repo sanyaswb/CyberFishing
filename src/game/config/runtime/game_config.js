@@ -53,6 +53,18 @@ export const CONFIG = {
         },
       },
     },
+    // Spec 179 D10 (TK-370, owner Q5, Q15–Q17): items with a condition wear while the location's radiation is above 0.
+    // One average full emission of the location (its emission and radiation settings) takes from an item a share of its
+    // full condition rolled in the range of its quality — quality 1: 80–100 %, 10: 20–40 % (linear between); a new roll
+    // per item every emission. Condition 0 — the item is broken (no casting with it; a gas mask stops protecting).
+    wear: {
+      enabled: true,
+      wearScale: 1, // множник зносу (баланс): 2 — удвічі швидше
+      rangeAtQuality1: [80, 100], // знос за один повний викид, % стану, якість 1
+      rangeAtQuality10: [20, 40], // те саме, якість 10
+      qualityCurve: 1, // ефективна якість = 1 + (якість − 1) × (стан / 100)^qualityCurve (1 — лінійно)
+      applyEverySec: 5, // як часто знос записується в інвентар, поки йде
+    },
   },
   // Spec 181 D1: the player's buffs and debuffs (status_effects.js); PlayerStatusEffects reads them live.
   statusEffects: STATUS_EFFECTS,

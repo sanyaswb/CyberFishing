@@ -126,6 +126,13 @@ export class InventoryGameplayBridge {
     return result?.success ? result.reading : null;
   }
 
+  // Spec 179 D10: the number of items the radiation wore (0 — nothing changed, nothing to redraw).
+  applyRadiationWear(exposure, rollFor, settings) {
+    const result = this.#gameplayCommands.applyRadiationWear(exposure, rollFor, settings);
+    if (result?.success && result.worn > 0) this.#afterMutation?.(result);
+    return result?.success ? result.worn : 0;
+  }
+
   evaluateCastReadiness() {
     return this.#readinessPolicy.evaluateCast({
       equipmentState: this.#equipmentState,

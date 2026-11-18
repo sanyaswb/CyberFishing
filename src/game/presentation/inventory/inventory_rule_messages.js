@@ -30,6 +30,7 @@ export const INVENTORY_RULE_MESSAGES = (() => {
     reelRequired: "Для цієї вудки потрібна котушка.",
     reelLineRequired: "У котушку потрібно встановити ліску.",
     terminalLineRequired: "Для закидання потрібно спорядити ліску.",
+    brokenTackle: "Снасть зламана — закинути не можна.", // spec 179 D10
     // Equipment transitions and inventory capacity.
     inventoryCapacityExceeded: "Недостатньо місця в інвентарі.",
     // Line allocation.

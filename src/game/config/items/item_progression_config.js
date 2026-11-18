@@ -63,7 +63,10 @@ export const ITEM_PROGRESSION_CONFIG = (() => {
       "storage.backpack": {}, // Artwork item; no capacity or upgrade gameplay contract yet.
       "aquarium.feed": {}, // Packs have authored rarity; no upgrade, condition or freshness metric.
       "device.radio": {}, // Spec 142: the radio's power is its battery's charge; no condition or upgrade metric.
-      "protection.gas_mask": {}, // Spec 179 stage F: no condition yet (the emission's wear, stage H, adds it).
+      // Spec 179 stage H (TK-370): the gas mask's condition falls with the radiation; at 0 it does not protect.
+      "protection.gas_mask": {
+        condition: condition("EmissionExposure"),
+      },
       "consumable.drink": {}, // Spec 179 stage F: drunk whole; no condition or upgrade metric.
       // Spec 143: a battery's charge only falls while a device consumes it (DevicePowerService).
       "power.battery": {

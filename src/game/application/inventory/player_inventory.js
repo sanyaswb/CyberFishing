@@ -155,6 +155,11 @@ export class PlayerInventory {
     return this.#gameplayBridge.drainBattery(instanceId, units);
   }
 
+  // Spec 179 D10 port for EmissionWearExposure: the radiation's wear of the items with a condition.
+  applyRadiationWear(exposure, rollFor, settings) {
+    return this.#gameplayBridge.applyRadiationWear(exposure, rollFor, settings);
+  }
+
   consumeHandChum() {
     return this.consumeEquipped("handChum", 1, true);
   }

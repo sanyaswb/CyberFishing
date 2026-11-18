@@ -1,6 +1,7 @@
 import { createInventorySlotIcon } from "./inventory_slot_icons.js";
 import { createItemPlaceholderIcon } from "./inventory_icons.js";
 import { applyArtSize } from "../ui/art_size.js";
+import { isItemBroken } from "../../domain/items/condition/item_condition_quality.js";
 
 export class InventoryItemCardRenderer {
   #dom;
@@ -170,6 +171,8 @@ export class InventoryItemCardRenderer {
       "",
     );
     card.classList.toggle("inventory-item-card--frameless", frameless);
+    // Spec 179 D10: a broken item (condition 0) is grey under a grey veil.
+    card.classList.toggle("inventory-item-card--broken", isItemBroken(item));
     card.dataset.instanceId = String(item.instanceId || "");
     card.setAttribute("aria-label", String(item.name || "Предмет"));
     const content = this.#dom.element("span", "inventory-item-card__content");

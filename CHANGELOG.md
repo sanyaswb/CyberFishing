@@ -2,6 +2,18 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.52.21 - Radiation wears the items; a broken item cannot cast (TK-370)
+
+- Items with a condition now wear while the location's radiation is above zero. These are rods, reels, lines, leaders, hooks and the gas mask, in the backpack, in assemblies or equipped.
+- One average full emission takes from each item a share of its condition, rolled in the range of its quality: quality 1 loses 80–100 %, quality 10 loses 20–40 %. Each item gets a new roll every emission.
+- Rods and reels take half (radiation immunity 0.5).
+- The wear is gradual and written to the inventory every 5 seconds.
+- The worse an item's condition, the lower the quality it works with. Condition 0 is quality 1.
+- A broken item (condition 0) cannot be cast with: «Снасть зламана — закинути не можна.»
+- A broken gas mask no longer protects from the emission.
+- In the inventory a broken item is grey, art, frame and background alike, under a grey veil.
+- Settings in DevTools «Конфіг» → emission.wear: on/off, wear multiplier, ranges by quality, how the condition lowers the quality, how often the wear is written.
+
 ## v0.52.20 - Radiation changes the bite and kills fish in the keepnet (TK-369)
 
 - Radiation now changes the bite (spec 179 stage G): at full radiation a crucian or a perch is about five times more likely to be unique, and the catch leans to the heavy end of the species' weight range. Each species has its own multipliers (FISH_DB radiationMultipliers: unique, big, species; species is 0 for now). Without radiation the bite is exactly as before.
@@ -47,7 +59,3 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 
 - While the touch aim waits, a double tap in the left half of the screen takes the camera at once to the map's left edge, in the right half to the right edge; the aim waits at the screen's middle. A single tap still removes the aim.
 - A tap on an aim waiting at full power (casting.touchAim.startAtFullPower) now removes it as a tap should, instead of casting.
-
-## v0.52.11 - Touch cast power only near the aim line (TK-363.3)
-
-- A touch that begins within 25 px of the aim line (casting.touchAim.powerZonePx) sets both direction and power; a touch farther away only moves the aim, an accidental downward slip does not change the power, and its release keeps the aim without casting.

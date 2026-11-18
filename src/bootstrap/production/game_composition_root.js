@@ -65,6 +65,7 @@ import { PlayerStatusEffects } from "../../game/application/world/player_status_
 import { EquipmentStatusSource } from "../../game/application/world/equipment_status_source.js";
 import { RadiationStatusSource } from "../../game/application/world/radiation_status_source.js";
 import { KeepnetRadiationExposure } from "../../game/application/live_bait/keepnet_radiation_exposure.js";
+import { EmissionWearExposure } from "../../game/application/world/emission_wear_exposure.js";
 import { HudIndicatorColumn } from "../../platform/browser/ui/hud_indicator_column.js";
 import { StatusHudBadges } from "../../platform/browser/ui/status_hud_badges.js";
 import { STATUS_LABELS } from "../../game/presentation/status/status_labels.js";
@@ -637,6 +638,8 @@ export class GameCompositionRoot {
       });
       const effectiveItemStatsResolver = new EffectiveItemStatsResolver({
         overridePolicy: itemStatOverridePolicy,
+        // Spec 179 D10: how the condition lowers the quality (live).
+        qualityCurve: () => this.#config.emission.wear.qualityCurve,
       });
       this.#validateRarityConfiguration();
       this.#validateItemProgressionConfiguration(effectiveItemStatsResolver);
@@ -1029,12 +1032,17 @@ export class GameCompositionRoot {
         statuses: this.#playerStatuses() });
       const emissionScreen = this.#composeEmissionScreen({ canvas, effect: emissionScreenEffect, sceneLayer,
         emissionExposure, own, radiationStatus });
+      // Spec 179 D10 (TK-370): the radiation wears the items with a condition (its own `:wear` stream of the session).
+      const emissionWear = new EmissionWearExposure({ inventory: systems.inventory,
+        getWeather: () => this.#config.locations?.map?.[location.id]?.weather ?? null,
+        getSettings: () => this.#config.emission.wear, rng: new SeededRng(`${this.#sessionSeed()}:wear`) });
       // The game is ready only once the plan's first layer has loaded (spec 157 R15).
       await this.#preload.whenLayer("layer-one");
       this.#startupMarks.mark(STARTUP_STAGES.scene);
       return {
         liveBait,
         keepnetRadiation,
+        emissionWear,
         liveBaitCandidate,
         createLiveBaitMotion,
         location,

@@ -20,6 +20,17 @@ Notes: suspected owner module, related checks.
 
 ## Open
 
+### G-142 Radiation wears the items; a broken item cannot cast (P2, done in v0.52.21; owner acceptance pending)
+Found: 2026-11-14, owner, spec 179 (emission) stage H; owner answers Q15–Q17 2026-11-18.
+Reproduce: equip tackle and a gas mask, DevTools «ПОГОДА» → «Викид» → «Почати викид», wait for its end.
+Expected: items with a condition lose a share of it rolled by quality (one full emission: quality 1 — 80–100 %,
+quality 10 — 20–40 %; rods and reels half); the quality falls with the condition; at 0 the item is broken — no cast,
+a gas mask stops protecting, the card is grey.
+Actual (before): nothing in the game lowered an item's condition.
+Notes: TK-370 — `ItemRadiationWearPolicy`, `meanFullEmissionDoseSec`, `ApplyItemWearService`, `EmissionWearExposure`,
+`EffectiveItemStatsResolver` worn quality, `FishingReadinessPolicy` broken tackle, `CONFIG.emission.wear`. Checks
+`item-condition`, `game-application-composition`, `item-state-hardening`. Game-cycle unchanged.
+
 ### G-141 Radiation changes the bite and kills the keepnet's fish (P2, done in v0.52.20; owner acceptance pending)
 Found: 2026-11-14, owner, spec 179 (emission) stage G; owner answers Q11–Q14 2026-11-18.
 Reproduce: DevTools «ПОГОДА» → «Викид» → «Почати викид» with fish and live baits in the keepnet; «РАНДОМАЙЗЕР» →

@@ -15,6 +15,7 @@ export class InventoryGameplayCommands {
   #autoRefillCoordinator;
   #baitExposureService;
   #batteryDrain;
+  #itemWear;
   #hydrator;
 
   constructor({
@@ -28,8 +29,11 @@ export class InventoryGameplayCommands {
     autoRefillCoordinator,
     baitExposureService = null,
     batteryDrain = null,
+    itemWear,
     hydrator,
   }) {
+    if (typeof itemWear?.apply !== "function") throw new TypeError("InventoryGameplayCommands requires itemWear");
+    this.#itemWear = itemWear;
     this.#messages = messages;
     this.#transaction = transaction;
     this.#itemRemoval = itemRemoval;
@@ -145,6 +149,16 @@ export class InventoryGameplayCommands {
       return reading
         ? inventoryCommandSuccess({ reading })
         : this.#failure(this.#messages.itemMissingOrInsufficient);
+    } catch (error) {
+      return this.#failure(error.message, error);
+    }
+  }
+
+  // Spec 179 D10: the radiation's wear of every item with a condition, in one inventory transaction (its commit saves).
+  applyRadiationWear(exposure, rollFor, settings) {
+    try {
+      const worn = this.#transaction.runAtomic(() => this.#itemWear.apply(exposure, rollFor, settings));
+      return inventoryCommandSuccess({ worn });
     } catch (error) {
       return this.#failure(error.message, error);
     }

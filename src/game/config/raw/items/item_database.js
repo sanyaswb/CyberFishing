@@ -104,6 +104,8 @@ export const ITEM_DB = {
         holdTensionRatio: 1.0,
         durability: 100,
         durabilityMaxLoadLossPerPercent: 0.001,
+        // Spec 179 D10 (TK-370, owner Q17): the share of the radiation's wear this item does not take.
+        radiationImmunity: 0.5,
         hasReel: true,
       },
     },
@@ -157,6 +159,8 @@ export const ITEM_DB = {
         holdTensionRatio: 1.0,
         durability: 100,
         durabilityMaxLoadLossPerPercent: 0.001,
+        // Spec 179 D10 (TK-370, owner Q17): the share of the radiation's wear this item does not take.
+        radiationImmunity: 0.5,
         hasReel: true,
       },
     },
@@ -239,6 +243,8 @@ export const ITEM_DB = {
         holdTensionRatio: 1.0,
         durability: 100,
         durabilityMaxLoadLossPerPercent: 0.001,
+        // Spec 179 D10 (TK-370, owner Q17): the share of the radiation's wear this item does not take.
+        radiationImmunity: 0.5,
         hasReel: false,
       },
     },
@@ -284,6 +290,8 @@ export const ITEM_DB = {
         quality: 6,
         durability: 100,
         durabilityMaxLoadLossPerPercent: 0.001,
+        // Spec 179 D10 (TK-370, owner Q17): the share of the radiation's wear this item does not take.
+        radiationImmunity: 0.5,
       },
     },
 
@@ -327,6 +335,8 @@ export const ITEM_DB = {
         quality: 4,
         durability: 100,
         durabilityMaxLoadLossPerPercent: 0.001,
+        // Spec 179 D10 (TK-370, owner Q17): the share of the radiation's wear this item does not take.
+        radiationImmunity: 0.5,
       },
     },
   },
@@ -1367,8 +1377,14 @@ export const ITEM_DB = {
       iconAsset: "items.gas-masks.gas-mask--1",
       rarityProfile: { mode: "authored", tier: 1, maxTier: 5, isUnique: false },
       progressionProfile: { groupId: "protection.gas_mask" },
-      displayStats: {},
-      gameplayStats: {},
+      displayStats: {
+        durability: "Стан: %",
+      },
+      // Spec 179 D10 (TK-370, owner Q16): the gas mask wears with the radiation; broken (0) it does not protect.
+      gameplayStats: {
+        durability: 100,
+        quality: 5,
+      },
     },
   },
 

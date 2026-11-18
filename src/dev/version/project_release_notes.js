@@ -1,6 +1,7 @@
 // Release notes, newest first (unshift with every patch). DEV only: no production code reads them, and in the start's
 // bundle they cost 13 KB gzip (spec 160). dev.html publishes them with the version: window.CYBER_FISHING_PROJECT_VERSION.notes.
 export const PROJECT_RELEASE_NOTES = Object.freeze([
+  "TK-370 (spec 179 stage H): items with a condition wear while radiation > 0 (one mean full emission = the quality's range, rods/reels immunity 0.5); worn quality; condition 0 — broken: no cast, a broken gas mask does not protect, grey card; CONFIG.emission.wear.",
   "TK-369 (spec 179 stage G): radiation multiplies the anomaly chance and leans the weight up (radiationMultipliers); keepnet and hook fish take a dose and die by tolerance (unique never); 10 conditional keepnet levels with shields; removeRadiationDead; live bait save schema 7; RANDOMIZER «Кльов: радіація».",
   "TK-367.1: DevTools «Керування» buttons two to a line with short labels (DevToolsUI.createButtonGrid).",
   "TK-367: DevTools «ПОГОДА» → «Керування» — refresh and automatic weather on top, a live switch per element (ash, wind, waves, current too), sliders at live values with «· вручну» and per-element «↺ авто», wind direction buttons, settings under each element, actions at the bottom; the current held in the game.",

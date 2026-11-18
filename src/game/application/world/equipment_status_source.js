@@ -1,3 +1,5 @@
+import { isItemBroken } from "../../domain/items/condition/item_condition_quality.js";
+
 // Spec 181 D1: statuses held by worn equipment — an item in its slot holds its status (the gas mask in `gasMask` holds
 // the status `gasMask`, Q3: without a badge) and takes it off when it leaves the slot. It reacts to inventory changes
 // only (never per frame) and reads the equipment once when built, so a loaded save holds its statuses at once.
@@ -19,9 +21,13 @@ export class EquipmentStatusSource {
     this.sync();
   }
 
+  // Spec 179 D10: a broken item (condition 0) in its slot holds no status (a broken gas mask does not protect).
   sync() {
     const equipped = this.#inventory.getEquipped() || {};
-    for (const [slot, statusId] of this.#slots) this.#statuses.hold(statusId, Boolean(equipped[slot]), { source: slot });
+    for (const [slot, statusId] of this.#slots) {
+      const item = equipped[slot];
+      this.#statuses.hold(statusId, Boolean(item) && !isItemBroken(item), { source: slot });
+    }
   }
 
   dispose() {
