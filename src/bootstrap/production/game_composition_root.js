@@ -922,7 +922,9 @@ export class GameCompositionRoot {
         getSettings: () => this.#config.canvas?.water?.seaState,
       });
       // Spec 172 / 180: what the scene's weather effects read each frame; one instance, so DevTools can hold the ash.
-      const weatherRenderModel = new WeatherRenderModelBuilder({ getEnvironment: () => worldSystems?.env?.getSnapshot() ?? null });
+      // TK-373: the statuses' share of the radiation's hiss (the gas mask mutes it).
+      const weatherRenderModel = new WeatherRenderModelBuilder({ getEnvironment: () => worldSystems?.env?.getSnapshot() ?? null,
+        getGrainShare: () => this.#playerStatuses().modifier("radiation", "grain") });
       // Spec 128: the float's rocking, shared by the render model and the DEV scene section (its live status).
       const floatRocking = new FloatWaveRocking({
         getSettings: () => this.#config.canvas?.water,

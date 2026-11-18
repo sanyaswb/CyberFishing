@@ -46,6 +46,10 @@ export const STATUS_EFFECTS = {
         blur: 0,
         blurRate: 1,
       },
+      // Spec 179 етап K (TK-373): шипіння радіації на екрані в протигазі приглушене (частка, що лишається).
+      radiation: {
+        grain: 0.3,
+      },
     },
   },
 };

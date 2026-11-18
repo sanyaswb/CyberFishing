@@ -68,7 +68,8 @@ export class PixiRadiationGrainRenderer {
     const from = clampUnit(finiteOr(settings.fromRadiation, 0));
     const radiation = clampUnit(finiteOr(world.weather?.radiation, 0));
     const share = radiation <= from ? 0 : clampUnit((radiation - from) / Math.max(1e-6, 1 - from));
-    const alpha = clampUnit(finiteOr(settings.maxOpacity, 0)) * smooth(share);
+    // Spec 179 stage K (TK-373): the gas mask mutes the hiss (world.weather.grainShare — the share that stays).
+    const alpha = clampUnit(finiteOr(settings.maxOpacity, 0)) * smooth(share) * clampUnit(finiteOr(world.weather?.grainShare, 1));
     if (alpha <= 0.001) return this.#hide();
     const grainPx = Math.max(1, finiteOr(settings.grainPx, 2));
     const cellSize = FRAME * grainPx;

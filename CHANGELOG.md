@@ -2,6 +2,10 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.52.27 - The gas mask mutes the radiation's hiss (TK-373)
+
+- In a gas mask the radiation's hiss on the screen is three times fainter (× 0.3). It still removes the emission's darkening and blur, as before. The share is a gas mask status modifier, adjustable in DevTools «Конфіг».
+
 ## v0.52.26 - dev.html keeps its DevTools button (TK-371.3)
 
 - The house button (⌂) is in the released game only. dev.html has its DevTools button in the top-left corner again, and the strip along the screen's edge opens DevTools only in the zone editor, as before v0.52.22. In dev.html the house opens from DevTools («Будинок») or `?screen=house`.
@@ -61,7 +65,3 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 - The ash is controlled apart from the emission; the wind's direction is «← вліво | авто | вправо →» buttons; turning the ash, waves or current off holds them at zero, the wind off is calm.
 - A slider stands at the element's live value and says «· вручну» while held by hand; «↺ авто» returns that one element to its own course.
 - The current's slider now holds the current in the running game instead of changing the location's settings, so it never ends up in a weather export.
-
-## v0.52.17 - Review of the touch cast and the emission blur (TK-368)
-
-- The touch cast settings (input.touchCast) and the touch aim settings (casting.touchAim) are now checked when the game starts: a wrong value (text, a negative number, out of range) is reported instead of passing silently, and the touch cast settings have names and descriptions in DevTools. Nothing changes in play.

@@ -1261,16 +1261,31 @@ const step = (model, seconds, clock = null, dt = 0.1) => {
   // (b) WeatherRenderModelBuilder forwards windGust (gustStrength) for rain gust slant.
   const { WeatherRenderModelBuilder } = require("../../../src/game/presentation/rendering/weather_render_model_builder.js");
   const gustRenderTarget = { rain: 0, storm: 0, fog: 0, cloud: 0, windDirection: 0, windStrength: 0, windGust: 0 };
-  new WeatherRenderModelBuilder({
+  let grainShare = 1;
+  const gustBuilder = new WeatherRenderModelBuilder({
     getEnvironment: () => ({
       weather: { rain: 0.8, storm: 0, fog: 0, cloud: 0.8 },
       wind: { direction: -1, strength: 0.85, gustStrength: 0.26 },
     }),
-  }).buildInto(gustRenderTarget);
+    getGrainShare: () => grainShare,
+  });
+  gustBuilder.buildInto(gustRenderTarget);
   assert(
     Math.abs(gustRenderTarget.windGust - 0.26) < 1e-6,
     `WeatherRenderModelBuilder copies wind.gustStrength into target.windGust (got ${gustRenderTarget.windGust})`,
   );
+  // Spec 179 stage K (TK-373): the statuses' share of the hiss reaches the scene (the gas mask: 0.3).
+  assert.equal(gustRenderTarget.grainShare, 1, "no gas mask: the full hiss");
+  grainShare = 0.3;gustBuilder.buildInto(gustRenderTarget);
+  assert.equal(gustRenderTarget.grainShare, 0.3, "the gas mask's share of the hiss reaches the scene");
+  const { PlayerStatusEffects } = require("../../../src/game/application/world/player_status_effects.js");
+  const { CONFIG: statusConfig } = require("../../../src/game/config/runtime/game_config.js");
+  const maskStatuses = new PlayerStatusEffects({ now: () => 0, getDefinitions: () => statusConfig.statusEffects,
+    scheduler: { setTimeout() { return 1; }, clearTimeout() {} } });
+  assert.equal(maskStatuses.modifier("radiation", "grain"), 1);
+  maskStatuses.hold("gasMask", true);
+  assert.equal(maskStatuses.modifier("radiation", "grain"), 0.3, "the gas mask in its slot mutes the hiss to 0.3");
+  maskStatuses.hold("gasMask", false);
 }
 
 // Spec 179 stage A: the emission's parts, intensity, intervals, radiation, its storm hold and the environment's fields.

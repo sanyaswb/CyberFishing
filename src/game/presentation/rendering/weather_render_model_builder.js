@@ -8,12 +8,16 @@ const share = (value) => {
 
 export class WeatherRenderModelBuilder {
   #getEnvironment;
+  #getGrainShare;
   #ashHold = null;
 
-  // getEnvironment: () => EnvironmentSystem's snapshot ({ weather, wind }) or null.
-  constructor({ getEnvironment }) {
+  // getEnvironment: () => EnvironmentSystem's snapshot ({ weather, wind }) or null; getGrainShare: () => the share of
+  // the radiation's hiss that stays under the player's statuses (spec 179 stage K, TK-373: the gas mask 0.3).
+  constructor({ getEnvironment, getGrainShare }) {
     if (typeof getEnvironment !== "function") throw new TypeError("WeatherRenderModelBuilder requires getEnvironment");
+    if (typeof getGrainShare !== "function") throw new TypeError("WeatherRenderModelBuilder requires getGrainShare");
     this.#getEnvironment = getEnvironment;
+    this.#getGrainShare = getGrainShare;
   }
 
   // Spec 180 D10: the ash's strength 0…1 held by hand (DevTools «Керування»), null: it follows the emission.
@@ -48,6 +52,8 @@ export class WeatherRenderModelBuilder {
     target.ash = this.#ashHold ?? target.emission;
     // Spec 179 stage D (TK-338): the location's radiation 0…1 (the hiss over the scene).
     target.radiation = share(environment?.radiation);
+    // Spec 179 stage K (TK-373): how much of the hiss the player sees (the gas mask mutes it).
+    target.grainShare = share(this.#getGrainShare());
     // Spec 182 (TK-352): the starfall's strength now (StarfallNight; 0 outside its nights and during an emission) and
     // the bolides that fell.
     target.starfall = share(environment?.starfall?.strength);

@@ -182,6 +182,8 @@ gameplay zones or their enable flags; hiding background also hides its displaced
     TK-338.1: the tile is cut into 32 px frames made once; each cell takes a random frame and flip at a jump and its
     alpha from its distance to the screen's centre (`radiationGrain.edges`: denser at the edges, `centerShare` 1 — even).
     Smaller cells mean more sprites (one batch, one texture); alpha is written only at a jump.
+    Spec 179 stage K (TK-373): the opacity is also × `world.weather.grainShare` — the statuses' share of the hiss
+    (`statusEffects.gasMask.modifiers.radiation.grain` 0.3, `WeatherRenderModelBuilder` reads it); no new pass.
     TK-324.3: the emission's blur of the world alone (`emission.screen.includeHud` off) is one Pixi `BlurFilter` on the
     stage (`PixiSceneBlur`), not the DOM veil's `backdrop-filter`, which blurs every frame at the full device resolution:
     the stage renders at `emission.screen.blur.scene.resolution` (0.5 logical) with `quality` passes per axis, `filterArea`

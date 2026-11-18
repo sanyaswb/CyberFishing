@@ -2583,6 +2583,14 @@
     "label": "Частота пульсів",
     "description": "Частка частоти пульсів розмиття (1 — ритм викиду той самий)."
   },
+  "statusEffects.gasMask.modifiers.radiation": {
+    "label": "Радіація на екрані",
+    "description": "Як статус змінює шипіння радіації (spec 179 етап K, TK-373)."
+  },
+  "statusEffects.gasMask.modifiers.radiation.grain": {
+    "label": "Шипіння",
+    "description": "Частка непрозорості шипіння радіації, що лишається (0,3 — у протигазі шипіння втричі тихіше)."
+  },
   "statusEffects.radiation": {
     "label": "Радіація",
     "description": "Дебаф без таймера, поки радіація локації > 0 (spec 181 D4): червоний значок у HUD; ефекти задає сам викид."

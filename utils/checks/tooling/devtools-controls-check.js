@@ -2874,7 +2874,7 @@ function choiceRow(options, value, path) {
     ["vodka", "gasMask", "активні"].includes(row.children[0].dataset.devtoolsKey))
     .map((row) => `${row.children[0].dataset.devtoolsKey}=${byClass("devtools__value", row)[0]?.innerText}`);
   assert.equal(JSON.stringify(activeText()), JSON.stringify(["gasMask=баф · без таймера (gasMask) · emission.vignette 0, " +
-    "emission.blur 0, emission.blurRate 1"]), "the gas mask held by its slot is shown");
+    "emission.blur 0, emission.blurRate 1, radiation.grain 0.3"]), "the gas mask held by its slot is shown");
   assert.ok(button("Видати: vodka") && !button("Видати: gasMask") && !button("Зняти: gasMask"),
     "a timed status can be given; a held one belongs to its source");
   button("Видати: vodka").click();
