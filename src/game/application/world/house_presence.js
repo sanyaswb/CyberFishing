@@ -10,4 +10,9 @@ export class HousePresence {
   enter() { this.#inHouse = true; }
 
   leave() { this.#inHouse = false; }
+
+  // TK-371.2: the location's radiation as the player feels it — none in the house (the Geiger counter's sound).
+  feltRadiation(radiation) {
+    return this.#inHouse ? 0 : radiation;
+  }
 }

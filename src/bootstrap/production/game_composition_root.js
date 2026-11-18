@@ -228,6 +228,9 @@ export class GameCompositionRoot {
   #createDevTools;
   #createTimeDisplay;
   #sessionServices = null;
+  // Spec 179 D12 (TK-371): the player in the house — one per game, read by the emission's effects, the radiation
+  // debuff and (TK-371.2) the Geiger counter's sound.
+  #housePresence = new HousePresence();
   #weatherStatus = null;
   // Spec 157 R11: loads that wait until the game is ready (startDeferredAssetLoads), registered during create().
   #deferredAssetLoads = [];
@@ -1030,7 +1033,7 @@ export class GameCompositionRoot {
       own(this.#playerStatuses());
       own(new EquipmentStatusSource({ inventory: systems.inventory, statuses: this.#playerStatuses(), slots: { gasMask: "gasMask" } }));
       // Spec 179 D12 (TK-371): the player in the house — the location's effects on them stop, the world goes on.
-      const housePresence = new HousePresence();
+      const housePresence = this.#housePresence;
       const emissionExposure = new EmissionExposure({ getEnvironment: () => systems.env.getSnapshot(),
         getEquipped: () => systems.inventory.getEquipped(), statuses: this.#playerStatuses(), house: housePresence });
       // Spec 181 D4: the debuff «Радіація» while the location's radiation is above zero (checked with the frame).
@@ -2072,7 +2075,8 @@ export class GameCompositionRoot {
       windowRef: this.#windowTarget,
       planner: new GeigerClickPlanner({ rng: random }),
       getSettings: () => this.#config.ui?.audio?.geiger ?? null,
-      getRadiation: () => environment.getSnapshot()?.radiation ?? 0,
+      // TK-371.2: nothing of the location reaches the player in the house — the counter is quiet there.
+      getRadiation: () => this.#housePresence.feltRadiation(environment.getSnapshot()?.radiation ?? 0),
       random,
     }));
     own(new MonotonicIntervalTicker({ windowRef: this.#windowTarget, intervalMs: 50,

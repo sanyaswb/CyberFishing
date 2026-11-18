@@ -1518,8 +1518,13 @@ const step = (model, seconds, clock = null, dt = 0.1) => {
   assert.deepEqual([exposure.intensity(), exposure.modifier("vignette"), exposure.isCastBlocked()], [0.5, 1, true], "an emission without a gas mask: effect and no cast");
   house.enter();
   assert.equal(exposure.intensity(), 0, "spec 179 D12: in the house the emission's screen effects stop");
+  // TK-371.2: the Geiger counter's sound reads the felt radiation — none in the house (it clicked on before).
+  assert.equal(house.feltRadiation(0.8), 0, "in the house no radiation is felt");
+  assert.ok(require("node:fs").readFileSync(require("node:path").join(__dirname, "../../../src/bootstrap/production/game_composition_root.js"), "utf8")
+    .includes("getRadiation: () => this.#housePresence.feltRadiation("), "the Geiger counter is composed over the felt radiation");
   house.leave();
   assert.equal(exposure.intensity(), 0.5, "back on the location: the effects at the emission's current strength");
+  assert.equal(house.feltRadiation(0.8), 0.8, "on the location the radiation is felt");
   equip({ gasMask: { id: "mask" } });
   assert.deepEqual([statuses.has("gasMask"), exposure.modifier("vignette"), exposure.modifier("blur"), exposure.isCastBlocked()], [true, 0, 0, false],
     "a gas mask holds its status: no effect and casting allowed");
