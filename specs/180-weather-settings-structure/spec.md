@@ -552,3 +552,4 @@ storm switch off    rain  rain 0.70 storm 0.00 frozen true
   `DevToolsUI.createButtonGrid` по дві в ряд: «↻ Оновити | ↺ Авто погода» вгорі; «Викид: пік | Викид: спад», «Порив
   вітру | Блискавка», «Болід» унизу. Перевірки `weather` і `devtools-controls` (справжній DevToolsUI, CSS двох колонок) —
   падають на v0.52.18.
+- [ ] Огляд перед push не проводився для TK-367, TK-367.1 (власник, 2026-11-18, push e23bc306).
