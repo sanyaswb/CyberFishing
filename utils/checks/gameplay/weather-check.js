@@ -1646,12 +1646,53 @@ const step = (model, seconds, clock = null, dt = 0.1) => {
   }
   assert.ok(jump < 0.1 && previousBlur >= levelPx(3) - 0.05, "from one bottle to five: eased (at most 0.1 px a frame, not 3 px at once) into level 3 and up");
 
+  // TK-374.3 (owner): from four bottles the frame waves (a CSS skew and stretch) — long, uneven waves never in step, their
+  // strength wandering from almost none to full; five bottles a little stronger; none up to three.
+  const warpSettings = settings.warp;
+  const waves = (stacks, seconds = 600) => {
+    const effect = make(40 + stacks);
+    sample(effect, settings.fadeSec + warpSettings.stageBlendSec * 4, stacks, false);
+    const frames = Math.round(seconds * 60), window = 180;
+    let maxSkew = 0, sumSkew = 0, sameSign = 0, negativeStretch = 0, maxStep = 0, previous = null;
+    let windowMax = 0, quietest = Infinity, loudest = 0;
+    for (let frame = 0; frame < frames; frame++) {
+      const record = effect.update(1000 / 60, stacks, maxStacks, false, width, settings);
+      const skew = Math.abs(record.skewX);
+      maxSkew = Math.max(maxSkew, skew, Math.abs(record.skewY));
+      sumSkew += skew;
+      if (Math.sign(record.skewX) === Math.sign(record.skewY)) sameSign += 1;
+      if (record.stretchX < 0 || record.stretchY < 0) negativeStretch += 1;
+      if (previous !== null) maxStep = Math.max(maxStep, Math.abs(record.skewX - previous));
+      previous = record.skewX;
+      windowMax = Math.max(windowMax, skew);
+      if ((frame + 1) % window === 0) {
+        quietest = Math.min(quietest, windowMax);
+        loudest = Math.max(loudest, windowMax);
+        windowMax = 0;
+      }
+    }
+    return { maxSkew, meanSkew: sumSkew / frames, sameSign: sameSign / frames, negativeStretch, maxStep, quietest, loudest };
+  };
+  for (const stacks of [1, 2, 3]) assert.equal(waves(stacks, 60).maxSkew, 0, `${stacks} bottles: no waves`);
+  const four = waves(4);
+  const fiveWaves = waves(5);
+  assert.ok(four.loudest > 0.6 * warpSettings.skewDeg && four.quietest < 0.15 * warpSettings.skewDeg,
+    "four bottles: the waves swing from strong to almost none");
+  assert.ok(fiveWaves.meanSkew > four.meanSkew * 1.15, "five bottles: the same waves, a little stronger");
+  assert.ok(four.sameSign > 0.2 && four.sameSign < 0.8, "the axes are not in step (not symmetric)");
+  assert.equal(four.negativeStretch + fiveWaves.negativeStretch, 0, "the stretch only grows an axis (never below the cover)");
+  assert.ok(four.maxStep < 0.05 && fiveWaves.maxStep < 0.05, "long, smooth waves (no jumps)");
+  const switchedOff = make(9);
+  sample(switchedOff, 8, 5, false, { ...settings, warp: { ...warpSettings, enabled: false } });
+  assert.equal(switchedOff.record.skewX + switchedOff.record.stretchX, 0, "switched off: no waves");
+
   // Radiation: a smooth fade, then the vodka is only the buff; the radiation gone, the intoxication comes back.
   const strongest = sample(five, 1, maxStacks, false).blurPx;
   const halfway = sample(five, settings.fadeSec / 2, maxStacks, true);
   assert.ok(halfway.blurPx > 0 && halfway.blurPx < strongest, "under radiation it fades, not cut off");
   const gone = sample(five, settings.fadeSec, maxStacks, true);
-  assert.deepEqual([gone.blurPx, gone.x, gone.margin, gone.level], [0, 0, 0, 0], "then no blur and no sway under radiation");
+  assert.deepEqual([gone.blurPx, gone.x, gone.margin, gone.level, five.record.skewX, five.record.stretchY], [0, 0, 0, 0, 0, 0],
+    "then no blur, no sway and no waves under radiation");
   const back = sample(five, settings.fadeSec + blur.stageBlendSec * 4, maxStacks, false);
   assert.ok(back.blurPx >= levelPx(3) - 0.05, "the radiation over and the vodka still on: drunk again");
   // The vodka ends: the last strength fades out.
@@ -1690,6 +1731,7 @@ const step = (model, seconds, clock = null, dt = 0.1) => {
   assert.ok(motions.some(([x]) => Math.abs(x) > settings.swayShare[0] * width), "five bottles: the scene sways");
   assert.ok(intoxication.record.blurPx >= levelPx(3) - 0.05, "and the world is defocused at least at the five bottles' level 3");
   assert.ok(motions.every(([x, y, mx, my]) => Math.abs(x) <= mx + 1e-9 && Math.abs(y) <= my + 1e-9), "within the margins");
+  assert.ok(motions.some((motion) => motion[4] !== 0 && motion[6] > 0), "and the five bottles' waves reach the scene (TK-374.3)");
   env = { emission: { phase: "peak", intensity: 1 }, radiation: 0.8 };
   equipped = { gasMask: { id: "mask" } };
   frames(settings.fadeSec + 0.5);

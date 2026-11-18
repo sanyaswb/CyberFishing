@@ -211,9 +211,10 @@ export class PixiSceneLayer {
 
   // Spec 179 stages J, L (TK-372, TK-374): the view's offset (the emission's shake, the vodka's sway) as a CSS move of
   // this canvas, enlarged to cover the margins (SceneCanvasMotion); the scene is not drawn again for it.
-  setViewMotion(x, y, marginX, marginY) {
+  // TK-374.3: the drunk waves — a skew (degrees) and an uneven stretch (shares) of the same canvas.
+  setViewMotion(x, y, marginX, marginY, skewXDeg, skewYDeg, stretchX, stretchY) {
     if (this.#app === null) return;
-    this.#motion.apply(x, y, marginX, marginY, this.#width, this.#height);
+    this.#motion.apply(x, y, marginX, marginY, this.#width, this.#height, skewXDeg, skewYDeg, stretchX, stretchY);
   }
 
   // Spec 105 D2: startup uploads every background phase of the location under the loading screen; the staged order of

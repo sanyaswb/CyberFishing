@@ -1573,6 +1573,16 @@ export class ConfigSchemaValidator {
     this.#requireStageLists(blurPath, blur, [["floorLevel", 0, levels], ["peakLevel", 0, levels]]);
     this.#requireRangePairs(blurPath, blur, [["depth", 0, 1], ["riseSec", 0.05, 60], ["fallSec", 0.05, 60]]);
     this.#requireRangeNumbers(blurPath, blur, [["stageBlendSec", 0.05, 30]]);
+    // TK-374.3: the drunk waves (a CSS skew and stretch of the scene) — their strength by the bottles.
+    const warpPath = `${path}.warp`;
+    const warp = cfg.warp;
+    if (!warp || typeof warp !== "object") { this.#error(`CONFIG.${warpPath}`, "missing waves config"); return; }
+    this.#requireParameterLabel(warpPath);
+    this.#requireBooleanWithLabel(`${warpPath}.enabled`, warp.enabled);
+    this.#requireStageLists(warpPath, warp, [["strength", 0, 5]]);
+    this.#requireRangeNumbers(warpPath, warp, [["skewDeg", 0, 10], ["stretch", 0, 0.2], ["minShare", 0, 1],
+      ["stageBlendSec", 0.05, 30]]);
+    this.#requireRangePairs(warpPath, warp, [["periodSec", 0.5, 120], ["wanderSec", 0.2, 120]]);
   }
 
   // TK-374.2: [key, min, max] rows — a list of 1…99 values by the bottles, each within the range, with a label.

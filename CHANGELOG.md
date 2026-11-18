@@ -2,6 +2,11 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.52.35 - Drunk waves from four bottles (TK-374.3)
+
+- From four bottles the world slowly waves: the picture skews and stretches unevenly in long waves that never repeat and never move in step, now strong, now almost still; five bottles a little stronger. The HUD stays still and no scene edge shows.
+- It is a CSS warp of the scene's picture (no filter, the scene is not redrawn). The values are in DevTools «Конфіг» → canvas → intoxication → «Хвилі».
+
 ## v0.52.34 - Drunk blur comes and goes like a defocus (TK-374.2)
 
 - The vodka's blur is no longer constant: it comes and clears smoothly, each time for a different while and strength. One bottle — mostly sharp, now and then a light defocus; two — more often; from three on there is always some defocus with stronger, more frequent and longer episodes, strongest at five.
@@ -45,7 +50,3 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 ## v0.52.26 - dev.html keeps its DevTools button (TK-371.3)
 
 - The house button (⌂) is in the released game only. dev.html has its DevTools button in the top-left corner again, and the strip along the screen's edge opens DevTools only in the zone editor, as before v0.52.22. In dev.html the house opens from DevTools («Будинок») or `?screen=house`.
-
-## v0.52.25 - The Geiger counter is quiet in the house (TK-371.2)
-
-- The Geiger counter kept clicking while the player was in the house during an emission (the location's world goes on there). In the house nothing of the location reaches the player, so the counter is silent now. Back outside, it clicks with the current radiation.

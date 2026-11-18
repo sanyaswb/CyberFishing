@@ -202,6 +202,10 @@ gameplay zones or their enable flags; hiding background also hides its displaced
     TK-374.2: the blur comes and goes as a defocus (`IntoxicationBlur`, `canvas.intoxication.blur`): its strength
     changes smoothly, and the scene's blur writes it only on a ¼ px change, so an episode costs a few redraws, not one a
     frame; with one or two bottles the world is sharp between episodes and the filter is off then (below ¼ px).
+    TK-374.3 (owner chose the CSS way over a WebGL displacement, which would draw the scene every frame and add a
+    full-screen filter pass): from four bottles the same transform also skews and unevenly stretches the canvas
+    (`IntoxicationWarp`, `canvas.intoxication.warp`; `SceneLayer.setViewMotion(…, skewX, skewY, stretchX, stretchY)`);
+    each axis gets its own scale, large enough to cover what the skew shears in; still no scene frame.
     TK-349: the ash flies only in its own zones (`zones.ash`, `world.ashRegions`, apart from the rain's): new embers start
     inside a visible zone and one that drifts out fades over its fade share — no mask, so the edge stays soft.
     Spec 182 (TK-352): the starfall's stars (`PixiStarfallRenderer`) are mounted right after the background (over the

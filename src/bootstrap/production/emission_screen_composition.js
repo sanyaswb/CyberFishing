@@ -20,7 +20,7 @@ export function composeEmissionScreen({ effect, veil, cameraShake, intoxication,
       const drunk = intoxication.update(dtMs, statuses.stacks("vodka"), statuses.definition("vodka")?.maxStacks,
         statuses.has("radiation"), getViewWidth(), config.canvas?.intoxication);
       sceneLayer.setViewMotion(shake.x + drunk.x, shake.y + drunk.y, shake.marginPx + drunk.marginX,
-        shake.marginPx + drunk.marginY);
+        shake.marginPx + drunk.marginY, drunk.skewX, drunk.skewY, drunk.stretchX, drunk.stretchY);
     },
   });
 }

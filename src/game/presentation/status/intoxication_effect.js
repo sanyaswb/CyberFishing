@@ -3,7 +3,8 @@
 // радіаційний вплив під час сп'яніння то похитування плавно закінчується і починає діяти як баф».
 // - The strength by the bottles (stacks 1…maxStacks): the sway's amplitude from swayShare[0] to [1] of the screen's
 //   width (owner Q24 starting values: 1 → 5 %); the world's blur is a defocus that comes and goes by the bottles
-//   (IntoxicationBlur, TK-374.2; settings.blur).
+//   (IntoxicationBlur, TK-374.2; settings.blur); from four bottles the frame waves — a skew and an uneven stretch
+//   (IntoxicationWarp, TK-374.3; settings.warp), faded with the rest.
 // - The sway: a slow figure of eight (x: one swing, y: half as high and twice as fast), its period wandering between
 //   swayPeriodSec[0] and [1] on a slower drift, so the rhythm never settles.
 // - Under radiation (the «Радіація» status) the blur and the sway fade out over fadeSec — the vodka works as the buff
@@ -13,6 +14,7 @@
 // amplitude, for the scene's cover).
 import { clampUnit, finiteOr, pairBetween } from "../../../engine/math/number_normalization.js";
 import { IntoxicationBlur } from "./intoxication_blur.js";
+import { IntoxicationWarp } from "./intoxication_warp.js";
 const TWO_PI = Math.PI * 2;
 // The sway's period drifts on a slower wave with this period (s).
 const PERIOD_DRIFT_SEC = 29;
@@ -24,11 +26,13 @@ export class IntoxicationEffect {
   #phase = 0;
   #driftPhase = 0;
   #blur;
-  #record = { blurPx: 0, x: 0, y: 0, marginX: 0, marginY: 0, level: 0 };
+  #warp;
+  #record = { blurPx: 0, x: 0, y: 0, marginX: 0, marginY: 0, level: 0, skewX: 0, skewY: 0, stretchX: 0, stretchY: 0 };
 
   // random: () => 0…1 for the blur's episodes (Math.random: visual only).
   constructor({ random }) {
     this.#blur = new IntoxicationBlur({ random });
+    this.#warp = new IntoxicationWarp({ random });
   }
 
   get record() {
@@ -59,6 +63,11 @@ export class IntoxicationEffect {
     record.y = amplitude * 0.5 * Math.sin(this.#phase * 2);
     record.marginX = amplitude;
     record.marginY = amplitude * 0.5;
+    const warp = this.#warp.update(dt, Math.min(this.#stacksShown, top), level, settings?.warp);
+    record.skewX = warp.skewX;
+    record.skewY = warp.skewY;
+    record.stretchX = warp.stretchX;
+    record.stretchY = warp.stretchY;
     return record;
   }
 
@@ -66,6 +75,11 @@ export class IntoxicationEffect {
     const record = this.#record;
     this.#phase = 0;
     this.#blur.reset();
+    this.#warp.reset();
+    record.skewX = 0;
+    record.skewY = 0;
+    record.stretchX = 0;
+    record.stretchY = 0;
     record.level = 0;
     record.blurPx = 0;
     record.x = 0;

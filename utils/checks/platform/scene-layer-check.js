@@ -399,8 +399,8 @@ async function checkPorts() {
   layer.loseContext();
   layer.restoreContext();
   layer.prepare(["day", "night"]);
-  layer.setViewMotion(1, 2, 3, 4);
-  assert.deepEqual([calls, layer.getStatus().state], [["lose", "restore", "prepare day,night", "motion 1,2,3,4"], "active"],
+  layer.setViewMotion(1, 2, 3, 4, 5, 6, 7, 8);
+  assert.deepEqual([calls, layer.getStatus().state], [["lose", "restore", "prepare day,night", "motion 1,2,3,4,5,6,7,8"], "active"],
     "DEV methods and prepare reach the loaded layer; nothing before it arrives");
   layer.dispose();
   layer.render("after");
@@ -711,7 +711,7 @@ async function checkPixiSceneLayer() {
     rain: { active: false, drops: 0, rings: 0, dropPool: 0, ringPool: 0, slantDeg: 0, stepMs: 0 },
     ash: { active: false, embers: 0, pool: 0, stepMs: 0 }, grain: { active: false, opacity: 0, cells: 0 },
     starfall: { active: false, stars: 0, pool: 0, bolide: false, burst: false, sparks: 0 },
-    blur: { on: false, strength: 0, resolution: 0.5, quality: 2 }, motion: { moving: false, x: 0, y: 0, scale: 1 } },
+    blur: { on: false, strength: 0, resolution: 0.5, quality: 2 }, motion: { moving: false, x: 0, y: 0, scaleX: 1, scaleY: 1, skewX: 0, skewY: 0 } },
   "no castable zones in this frame: still water; no emission: no ash; no radiation: no hiss; no starfall night: no stars; " +
   "no blur after the warm-up");
   base.x = -20;
@@ -726,6 +726,17 @@ async function checkPixiSceneLayer() {
   canvas.style.transform = "written";
   layer.setViewMotion(3.05, -2.1, 8, 8);
   assert.equal(canvas.style.transform, "written", "under ¼ px nothing is written");
+  // TK-374.3: the drunk waves — a skew and an uneven stretch of the same canvas; the scale covers what the skew shears in.
+  layer.setViewMotion(0, 0, 0, 0, 1, 0.5, 0.02, 0.01);
+  const waved = layer.getStatus().motion;
+  const { width: sideX, height: sideY } = layer.getStatus();
+  const tan = (deg) => Math.tan(deg * Math.PI / 180);
+  assert.ok(canvas.style.transform.endsWith(`scale(${waved.scaleX}, ${waved.scaleY}) skew(1deg, 0.5deg)`),
+    "the waves skew and stretch the canvas by CSS");
+  assert.ok(waved.scaleX * (sideX / 2 - tan(1) * sideY / 2) >= sideX / 2 * 1.02 - 1e-9 &&
+    waved.scaleY * (sideY / 2 - tan(0.5) * sideX / 2) >= sideY / 2 * 1.01 - 1e-9,
+    "each axis covers the screen after the skew's shear, the stretch on top");
+  assert.equal(app.renders, 3, "the waves draw no frame");
   layer.setViewMotion(0, 0, 0, 0);
   assert.deepEqual([canvas.style.transform, canvas.style.willChange, layer.getStatus().motion.moving], ["", "", false],
     "no motion: the transform and the compositor hint are gone");
