@@ -237,9 +237,11 @@ export class FlatInventoryItemRepository {
       quantity,
       location,
     };
+    // Spec 184 D1 (TK-375): a slot that holds stacks (hand chum, drink) keeps its whole stack.
     if (
       quantity !== 1 &&
-      this.#reservationPolicy?.isReserved?.(normalized)
+      this.#reservationPolicy?.isReserved?.(normalized) &&
+      this.#reservationPolicy?.allowsStack?.(normalized) !== true
     ) {
       throw new Error(
         `Reserved inventory root ${item.instanceId} must have quantity 1`,

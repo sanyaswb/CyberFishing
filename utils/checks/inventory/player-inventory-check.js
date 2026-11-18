@@ -385,8 +385,62 @@ function checkDrinkUse() {
   assert.equal(notUsable.success, false, "a gas mask is not drunk");
 }
 
+// Spec 184 D2 (TK-375): identical bottles are one stack — granted one by one, and an older save's separate ones on load.
+function checkDrinkStacks() {
+  const key = "player_inventory_v2";
+  const { inventory, cache } = compose();
+  const bottles = () => cache.values.get(key).items.filter((item) => item.itemId === "vodka_bottle");
+  const first = inventory.grantCatalogItem("vodka_bottle");
+  for (let index = 0; index < 4; index++) inventory.grantCatalogItem("vodka_bottle");
+  assert.equal(bottles().length, 1, "five bottles granted one by one are one stack");
+  assert.equal(bottles()[0].quantity, 5, "of five");
+  assert.equal(bottles()[0].instanceId, first.instanceId, "the first bottle's stack takes the others");
+  const worms = cache.values.get(key).items.filter((item) => item.itemId === "oil_worm_25").length;
+  inventory.grantCatalogItem("oil_worm_25", 25);
+  inventory.grantCatalogItem("oil_worm_25", 25);
+  assert.equal(cache.values.get(key).items.filter((item) => item.itemId === "oil_worm_25").length, worms + 2,
+    "packs stay one card each");
+  // An older save: each bottle apart. The next start joins them into one stack and saves it.
+  const saved = cache.values.get(key);
+  saved.items = saved.items.filter((item) => item.itemId !== "vodka_bottle");
+  for (let index = 0; index < 3; index++) {
+    saved.items.push({ instanceId: `old-vodka-${index}`, itemId: "vodka_bottle", quantity: 1, location: { kind: "INVENTORY" } });
+  }
+  cache.set(key, saved);
+  compose({ cache });
+  assert.equal(bottles().length, 1, "an older save's separate bottles join into one stack on load");
+  assert.equal(bottles()[0].quantity, 3, "of all three");
+}
+
+// Spec 184 D1 (TK-375): a pack of 100 put into the hand-chum slot is 100 throws, each takes one from the slot.
+function checkHandChumStack() {
+  const { inventory, actions } = compose();
+  const before = items(inventory).filter((item) => item.itemId === "carp_mix_basic_100")
+    .reduce((sum, item) => sum + item.quantity, 0);
+  const granted = inventory.grantCatalogItem("carp_mix_basic_100", 100);
+  assert.equal(inventory.dispatchInventoryAction({ type: actions.INVENTORY_ITEM_ACTIVATE, instanceId: granted.instanceId })
+    .success, true, "the pack of 100 equips");
+  const equipped = () => inventory.getEquipped().handChum;
+  assert.equal(equipped()?.instanceId, granted.instanceId, "the whole pack goes into the slot");
+  assert.equal(equipped()?.quantity, 100, "with all 100");
+  assert.equal(items(inventory).some((item) => item.instanceId === granted.instanceId), false,
+    "and is not in the backpack any more");
+  for (let throwIndex = 0; throwIndex < 3; throwIndex++) {
+    assert.equal(inventory.consumeItem(granted.instanceId, 1), true, "a throw takes one");
+  }
+  assert.equal(equipped()?.quantity, 97, "three throws leave 97 in the slot");
+  assert.equal(inventory.dispatchInventoryAction({ type: actions.ASSEMBLY_UNEQUIP, rootInstanceId: granted.instanceId })
+    .success, true, "the pack comes off");
+  assert.equal(equipped() ?? null, null, "the slot is empty");
+  const packs = () => items(inventory).filter((item) => item.itemId === "carp_mix_basic_100");
+  assert.equal(packs().reduce((sum, item) => sum + item.quantity, 0), before + 97,
+    "the 97 left are back in the backpack (joined with an identical pack there, if any)");
+}
+
 checkFreshStart();
 checkDrinkUse();
+checkDrinkStacks();
+checkHandChumStack();
 checkInstalledLineFit();
 checkStartingInventory();
 checkBoatOnWaterGuard();

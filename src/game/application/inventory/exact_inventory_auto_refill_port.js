@@ -10,6 +10,9 @@ export class ExactInventoryAutoRefillPort extends AutoRefillPort {
     if (typeof inventoryPort?.takeOneExact !== "function") {
       throw new TypeError("ExactInventoryAutoRefillPort requires takeOneExact()");
     }
+    if (typeof inventoryPort?.takeStackExact !== "function") {
+      throw new TypeError("ExactInventoryAutoRefillPort requires takeStackExact()");
+    }
     if (typeof targetWriter?.fillTarget !== "function") {
       throw new TypeError("ExactInventoryAutoRefillPort requires fillTarget()");
     }
@@ -19,7 +22,10 @@ export class ExactInventoryAutoRefillPort extends AutoRefillPort {
   }
 
   refillExact(target, signature) {
-    const item = this.#inventoryPort.takeOneExact(signature);
+    // Spec 184 D1 (TK-375): a slot that holds stacks takes the whole one.
+    const item = target?.wholeStack === true
+      ? this.#inventoryPort.takeStackExact(signature)
+      : this.#inventoryPort.takeOneExact(signature);
     if (!item) return Object.freeze({ success: false, reason: "not-found" });
     if (!this.#signaturePolicy?.matches?.(item, signature)) {
       this.#inventoryPort.returnOne?.(item);

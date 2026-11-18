@@ -78,6 +78,8 @@ export const EQUIPMENT_SLOT_CONFIG = Object.freeze({
     group: "auxiliary",
     visibility: "always",
     acceptTypes: Object.freeze(["chum_mix"]),
+    // Spec 184 D1 (TK-375): a slot spent one at a time holds the whole stack (a pack of 100 — 100 throws).
+    takesWholeStack: true,
   }),
   [EquipmentSlotId.NET]: Object.freeze({
     id: EquipmentSlotId.NET,
@@ -106,3 +108,8 @@ export const EQUIPMENT_SLOT_CONFIG = Object.freeze({
     acceptTypes: Object.freeze(["radio"]),
   }),
 });
+
+// Spec 184 D1 (TK-375): whether equipping into slotId takes the whole inventory stack instead of one piece.
+export function slotTakesWholeStack(slotId) {
+  return EQUIPMENT_SLOT_CONFIG[slotId]?.takesWholeStack === true;
+}

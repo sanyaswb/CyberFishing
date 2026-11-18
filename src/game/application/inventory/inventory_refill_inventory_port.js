@@ -37,6 +37,14 @@ export class InventoryRefillInventoryPort {
     return source ? this.#repository.splitOne(source.instanceId) : null;
   }
 
+  // Spec 184 D1 (TK-375): the whole matching stack, for a slot that holds stacks (the hand chum).
+  takeStackExact(signature) {
+    const candidates = this.#repository.list().filter(
+      (item) => this.#isCandidate(item, signature),
+    );
+    return this.#candidatePolicy.select(candidates) ?? null;
+  }
+
   countExact(signature) {
     let count = 0;
     for (const item of this.#repository.list()) {

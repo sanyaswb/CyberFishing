@@ -2918,6 +2918,7 @@ vm.runInContext(
       raw("bait-similar", "bait", 5, { rarity: "rare", recipe: "maggot" }),
       raw("tackle-chum", "chum", 2, { rarity: "common", recipe: "bread" }),
       raw("hand-chum", "chum", 2, { rarity: "rare", recipe: "hand" }),
+      raw("hand-chum-next", "chum", 3, { rarity: "rare", recipe: "hand" }),
       raw("boat-refill", "boat"),
       raw("boat-current", "boat"),
       raw("boat-a", "chum", 2, { rarity: "common", recipe: "a" }),
@@ -3001,18 +3002,30 @@ vm.runInContext(
     instanceId: "hand-chum",
   });
   assertIntegration(handEquip.success === true, "hand chum equips");
-  const firstHandChumId = refill.equipmentState.getRootInstanceId("handChum");
+  // Spec 184 D1 (TK-375): the hand-chum slot holds the whole stack; each throw (consumeItem, as EquipmentService does)
+  // takes one from it, the slot empties with the last one; the refill then takes the next whole stack.
   assertIntegration(
-    refill.gameplayCommands.consumeEquipped("handChum", 1).success === true &&
+    refill.equipmentState.getRootInstanceId("handChum") === "hand-chum" &&
+      refill.repository.get("hand-chum")?.quantity === 2,
+    "hand chum equips its whole stack",
+  );
+  assertIntegration(
+    refill.gameplayCommands.consumeItem("hand-chum", 1).success === true &&
+      refill.equipmentState.getRootInstanceId("handChum") === "hand-chum" &&
+      refill.repository.get("hand-chum")?.quantity === 1,
+    "a throw takes one from the equipped stack",
+  );
+  assertIntegration(
+    refill.gameplayCommands.consumeItem("hand-chum", 1).success === true &&
       refill.equipmentState.getRootInstanceId("handChum") === null,
-    "used hand chum leaves its equipment slot empty",
+    "the last throw leaves the hand-chum slot empty",
   );
   const handReport = refill.gameplayBridge.handChumUsed();
   assertIntegration(
     handReport.filled === 1 &&
-      refill.equipmentState.getRootInstanceId("handChum") !== null &&
-      refill.equipmentState.getRootInstanceId("handChum") !== firstHandChumId,
-    "hand chum auto-refills from its exact remembered variant",
+      refill.equipmentState.getRootInstanceId("handChum") === "hand-chum-next" &&
+      refill.repository.get("hand-chum-next")?.quantity === 3,
+    "hand chum auto-refills the next whole stack of its exact remembered variant",
   );
 
   const refillBoat = refill.assemblyService.startAssembly("boat-refill");
@@ -3174,12 +3187,12 @@ vm.runInContext(
   const custodyHandRefill = custody.gameplayBridge.handChumUsed();
   const custodyRefilledHandId =
     custody.equipmentState.getRootInstanceId("handChum");
+  // Spec 184 D1 (TK-375): the hand-chum slot takes the safe loose stack whole.
   assertIntegration(
     custodyHandRefill.filled === 1 &&
-      custodyRefilledHandId !== null &&
-      custody.repository.require(custodyRefilledHandId).quantity === 1 &&
-      custody.repository.require("custody-safe-chum").quantity === 1,
-    "auto-refill consumes a safe loose unit and preserves the active-root invariant",
+      custodyRefilledHandId === "custody-safe-chum" &&
+      custody.repository.require(custodyRefilledHandId).quantity === 2,
+    "auto-refill takes a safe loose stack whole and preserves the active-root invariant",
   );
   let activeAttachmentBlocked = false;
   try {
@@ -3196,7 +3209,7 @@ vm.runInContext(
     activeAttachmentBlocked &&
       custody.equipmentState.getRootInstanceId("handChum") ===
         custodyRefilledHandId &&
-      custody.repository.require(custodyRefilledHandId).quantity === 1,
+      custody.repository.require(custodyRefilledHandId).quantity === 2,
     "an active root cannot be reused as an assembly source",
   );
 
@@ -3263,13 +3276,14 @@ vm.runInContext(
     "the same terminal line fully merges after a real unequip unreserves it",
   );
 
+  // Spec 184 D1 (TK-375): only a slot that holds stacks (the hand chum) may keep a multi-unit root.
   let corruptEquipmentWarning = "";
   try {
     makeComposition({
-      items: [raw("corrupt-active-root", "chum", 2)],
+      items: [raw("corrupt-active-root", "net", 2)],
       equipment: {
         ...emptyEquipment(),
-        handChum: "corrupt-active-root",
+        net: "corrupt-active-root",
       },
     });
   } catch (error) {
@@ -3278,6 +3292,15 @@ vm.runInContext(
   assertIntegration(
     corruptEquipmentWarning.includes("must have quantity 1"),
     "a damaged snapshot with a multi-unit equipment root is rejected explicitly",
+  );
+  const savedHandStack = makeComposition({
+    items: [raw("saved-hand-stack", "chum", 100)],
+    equipment: { ...emptyEquipment(), handChum: "saved-hand-stack" },
+  });
+  assertIntegration(
+    savedHandStack.equipmentState.getRootInstanceId("handChum") === "saved-hand-stack" &&
+      savedHandStack.repository.get("saved-hand-stack")?.quantity === 100,
+    "a saved hand-chum stack of 100 loads in its slot",
   );
 
   let corruptLoadoutWarning = "";

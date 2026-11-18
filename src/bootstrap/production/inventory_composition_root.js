@@ -60,6 +60,7 @@ import { InventorySnapshotFactory } from "../../game/application/inventory/persi
 import { StartingInventorySnapshotFactory } from "../../game/application/inventory/persistence/starting_inventory_snapshot_factory.js";
 import { InventoryGrantLedger } from "../../game/domain/inventory/inventory_grant_ledger.js";
 import { InventoryOneTimeGrantService } from "../../game/application/inventory/inventory_one_time_grant_service.js";
+import { InventoryStackConsolidation } from "../../game/application/inventory/inventory_stack_consolidation.js";
 import { InventorySnapshotMigration } from "../../game/application/inventory/persistence/inventory_snapshot_migration.js";
 import { InventorySubfilterResolver } from "../../game/presentation/inventory/inventory_subfilter_resolver.js";
 import { InventoryTransactionCoordinator } from "../../game/application/inventory/inventory_transaction_coordinator.js";
@@ -233,6 +234,8 @@ export class InventoryCompositionRoot {
     new InventoryOneTimeGrantService({
       ledger: grantLedger, repository, transaction, definitionLookup, instanceIdFactory, capacity: backpackSlots,
     }).apply(oneTimeGrants);
+    // Spec 184 D2 (TK-375): an older save's separate identical bottles join into one stack.
+    new InventoryStackConsolidation({ repository, transaction, definitionLookup, stackingPolicy, reservationPolicy }).apply();
 
     const capabilityResolver = new RodCapabilityResolver();
     const visibilityPolicy = new EquipmentSlotVisibilityPolicy({
@@ -547,6 +550,7 @@ export class InventoryCompositionRoot {
       hydrator,
       itemSnapshotMapper,
       reservationPolicy,
+      stackingPolicy,
     });
   }
 

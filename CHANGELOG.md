@@ -2,6 +2,11 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.52.31 - A pack of hand chum is many throws; identical bottles are one stack (TK-375)
+
+- A pack of hand chum put into its slot goes there whole: a pack of 100 is 100 throws, each takes one; the auto-refill puts in the next whole pack. Taking it off returns the rest to the backpack.
+- Identical bottles of vodka are one stack: a new bottle joins the ones already in the backpack, and separate bottles from an older save join on load.
+
 ## v0.52.30 - Review before push (TK-372.1, TK-374.1)
 
 - The emission's shake no longer allocates on every frame; it shakes exactly as before.
@@ -49,15 +54,3 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 - The player goes in only with the tackle put away. Otherwise the inventory opens with «Спершу складіть снасті в інвентар». The gas mask, landing net, radio and hand chum may stay.
 - dev.html has no DevTools button any more (the house button took its corner). DevTools opens from the screen's left edge: rest the cursor there or swipe right with a finger. DevTools → «Будинок» and ?screen=house still open the house directly.
 - The house's styles are now part of the game page's stylesheet, about 4 KB gzip at start. The house's code still loads on the first visit.
-
-## v0.52.21 - Radiation wears the items; a broken item cannot cast (TK-370)
-
-- Items with a condition now wear while the location's radiation is above zero. These are rods, reels, lines, leaders, hooks and the gas mask, in the backpack, in assemblies or equipped.
-- One average full emission takes from each item a share of its condition, rolled in the range of its quality: quality 1 loses 80–100 %, quality 10 loses 20–40 %. Each item gets a new roll every emission.
-- Rods and reels take half (radiation immunity 0.5).
-- The wear is gradual and written to the inventory every 5 seconds.
-- The worse an item's condition, the lower the quality it works with. Condition 0 is quality 1.
-- A broken item (condition 0) cannot be cast with: «Снасть зламана — закинути не можна.»
-- A broken gas mask no longer protects from the emission.
-- In the inventory a broken item is grey, art, frame and background alike, under a grey veil.
-- Settings in DevTools «Конфіг» → emission.wear: on/off, wear multiplier, ranges by quality, how the condition lowers the quality, how often the wear is written.

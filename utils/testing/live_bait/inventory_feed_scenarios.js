@@ -10,6 +10,7 @@ module.exports = async function checkInventoryFeed() {
   const { BrowserSnapshotTransaction } = await import("../../../src/platform/browser/storage/browser_snapshot_transaction.js");
   const { InventoryItemGrantService } = await import("../../../src/game/application/inventory/inventory_item_grant_service.js");
   const { BackpackSlotCount } = await import("../../../src/game/domain/inventory/backpack_slot_count.js");
+  const { ItemAssemblyStackingPolicy } = await import("../../../src/game/domain/inventory/item_assembly_stacking_policy.js");
   const featureKey = "fishing_game_player_live_bait_v1", inventoryKey = "fishing_game_player_inventory_v2";
   const journalKey = "fishing_game_aquarium_feed_transaction_v1";
   const simple = LIVE_BAIT_CONFIG.defaultFeedId, premium = "aquarium_feed_premium_500";
@@ -80,7 +81,8 @@ module.exports = async function checkInventoryFeed() {
   let id = 0;
   const grant = new InventoryItemGrantService({ repository: granted, transaction: { runAtomic: (operation) => operation() },
     definitionLookup: (itemId) => ITEM_DB.aquariumFeeds[itemId], instanceIdFactory: () => `grant-${++id}`, notify() {},
-    capacity: new BackpackSlotCount({ definitionOf: (itemId) => ITEM_DB.aquariumFeeds[itemId] || null }) });
+    capacity: new BackpackSlotCount({ definitionOf: (itemId) => ITEM_DB.aquariumFeeds[itemId] || null }),
+    stackingPolicy: new ItemAssemblyStackingPolicy(), reservationPolicy: { isReserved: () => false } });
   grant.grant(simple); grant.grant(simple); grant.grant(simple);
   assert.equal(granted.size, 1, "identical packs form one inventory quantity stack");
   assert.equal(granted.list()[0].quantity, 3);

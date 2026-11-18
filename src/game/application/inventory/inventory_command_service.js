@@ -1,6 +1,6 @@
 import { LiveBaitStackId } from "../../domain/live_bait/live_bait_stack_id.js";
 import { BusyDeviceSignature } from "./busy_device_signature.js";
-import { EQUIPMENT_ALL_SLOT_IDS, EQUIPMENT_MAIN_SLOT_IDS } from "../../domain/equipment/equipment_slot_catalog.js";
+import { EQUIPMENT_ALL_SLOT_IDS, EQUIPMENT_MAIN_SLOT_IDS, slotTakesWholeStack } from "../../domain/equipment/equipment_slot_catalog.js";
 import { InventoryApplicationError } from "./inventory_application_error.js";
 import { InventoryItemLocation } from "../../domain/inventory/inventory_item_location.js";
 import { inventoryCommandFailure, inventoryCommandSuccess } from "./inventory_command_result.js";
@@ -1010,7 +1010,10 @@ export class InventoryCommandService {
       }
       const savedRoot = InventoryItemLocation.isLoadout(source.location);
       const preparedLine = savedRoot ? null : this.#prepareLooseLineForEquipment(source, slotId);
-      const root = preparedLine || (savedRoot ? source : this.#repository.splitOne(source.instanceId));
+      // Spec 184 D1 (TK-375): a slot spent one at a time (hand chum, drink) takes the whole stack.
+      const wholeStack = !savedRoot && !preparedLine && slotTakesWholeStack(slotId) &&
+        this.#repository.getChildren(source.instanceId).length === 0;
+      const root = preparedLine || (savedRoot || wholeStack ? source : this.#repository.splitOne(source.instanceId));
       // Every equipped root that owns sockets needs its assembly profile, even when picked by repeating a cell.
       if (!savedRoot && this.#isAssemblyCapable(root)) {
         this.#assemblyService.startAssembly(root.instanceId);

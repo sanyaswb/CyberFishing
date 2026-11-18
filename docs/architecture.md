@@ -76,6 +76,11 @@ Styles live in `src/game/presentation/styles/`; DEV metric/parameter description
   `InventoryCommandService` (player actions from the UI), `InventoryUiState` (navigation state),
   `InventoryGameplayCommands` (consumption, line breaks, auto-refill), `InventoryItemRemovalService`,
   `InventoryGameplayBridge` (read models and readiness for gameplay) and `InventoryFacade` (view model + dispatch).
+- Spec 184 (TK-375): an equipped root is one piece, except in a slot that holds stacks (`takesWholeStack` in
+  `EQUIPMENT_SLOT_CONFIG`, `slotTakesWholeStack`: the hand chum, the drink): equipping and the auto-refill put the whole
+  stack there, each use takes one from it, and the repository accepts such a root as a stack
+  (`InventoryItemReservationPolicy.allowsStack`). Items kept as one stack (`stacksAsOne`: drinks, aquarium feed) join an
+  identical loose stack on a grant (`InventoryItemGrantService`) and on load (`InventoryStackConsolidation`).
 - `PlayerInventory` is what the game uses: lock while tackle is in the water, cached equipment with the rod's cast
   display stats (`RodCastDisplayStatsWriter`, labels from presentation), tackle load limit (`TackleLoadLimitPolicy`),
   change events, consumption and gameplay events.

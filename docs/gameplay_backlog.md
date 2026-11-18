@@ -20,6 +20,19 @@ Notes: suspected owner module, related checks.
 
 ## Open
 
+### G-145 A pack of hand chum is one throw; identical bottles lie apart (P2, done in v0.52.31; owner acceptance pending)
+Found: 2026-11-18, owner, spec 184.
+Reproduce: put a pack of 100 hand chum into its slot and throw; grant five vodka bottles in the DEV shop.
+Expected: the pack in the slot is 100 throws, each takes one from the slot; five identical bottles are one stack.
+Actual (before): equipping took one piece (`splitOne`), so the slot held 1 and emptied after one throw (the next piece
+came only with the auto-refill on); every grant except aquarium feed added a new card.
+Notes: TK-375 — `EQUIPMENT_SLOT_CONFIG.handChum.takesWholeStack` (`slotTakesWholeStack`): equipping and the auto-refill
+take the whole stack, the repository lets only such a slot's root be a stack (`InventoryItemReservationPolicy.allowsStack`;
+every other reserved root stays one piece). `stacksAsOne` (drinks, aquarium feed): a grant joins an identical loose
+stack, an older save's separate bottles join on load (`InventoryStackConsolidation`). Packs (worms, chum) stay one card
+each. Save format unchanged (a slot's root may now hold more than one). Checks `player-inventory`,
+`inventory-integration`. Game-cycle unchanged.
+
 ### G-144 The vodka stacks and makes the player drunk without radiation (P2, done in v0.52.29; owner acceptance pending)
 Found: 2026-11-18, owner, spec 179 stage L; owner answers Q23, Q25, Q26 2026-11-18.
 Reproduce: drink several bottles of vodka with and without radiation; watch the screen and the emission's effects.

@@ -1,4 +1,5 @@
 import { InventoryItemLocation } from "./inventory_item_location.js";
+import { slotTakesWholeStack } from "../equipment/equipment_slot_catalog.js";
 
 /**
  * Resolves whether a flat inventory root is reserved by equipment or a saved
@@ -28,6 +29,15 @@ export class InventoryItemReservationPolicy {
 
   canMerge(item) {
     return !this.isReserved(item);
+  }
+
+  // Spec 184 D1 (TK-375): a reserved root may be a stack only as the root of a slot that holds stacks (the hand chum,
+  // the drink); every other reserved root is one piece.
+  allowsStack(itemOrInstanceId) {
+    const instanceId = typeof itemOrInstanceId === "object" ? itemOrInstanceId?.instanceId : itemOrInstanceId;
+    if (!instanceId || !this.#equipmentState?.getSlotIds) return false;
+    return this.#equipmentState.getSlotIds().some((slotId) => slotTakesWholeStack(slotId) &&
+      this.#equipmentState.getRootInstanceId(slotId) === instanceId);
   }
 
   #isEquipped(instanceId) {

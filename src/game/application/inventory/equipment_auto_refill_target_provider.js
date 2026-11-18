@@ -66,6 +66,8 @@ export class EquipmentAutoRefillTargetProvider {
       scope: AutoRefillScope.HAND_CHUM,
       slotId: "handChum",
       path: "handChum",
+      // Spec 184 D1 (TK-375): the slot takes the next whole stack, as equipping does.
+      wholeStack: true,
       signature,
     })];
   }

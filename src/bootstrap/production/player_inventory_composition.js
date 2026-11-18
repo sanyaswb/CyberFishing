@@ -121,6 +121,8 @@ export function createPlayerInventory({
       instanceIdFactory: (prefix) => instanceIds.create(prefix),
       notify: () => inventory.facade.notify(),
       capacity: inventory.backpackSlots,
+      stackingPolicy: inventory.stackingPolicy,
+      reservationPolicy: inventory.reservationPolicy,
     }),
     backpackSlots: inventory.backpackSlots,
     catalogItemSync: new InventoryCatalogItemSync({ repository: inventory.repository,

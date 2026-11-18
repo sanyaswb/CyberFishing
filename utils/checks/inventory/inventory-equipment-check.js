@@ -472,6 +472,7 @@ class InventoryEquipmentCheck {
         const index = remaining.findIndex((item) => signaturePolicy.matches(item, signature));
         return index < 0 ? null : remaining.splice(index, 1)[0];
       },
+      takeStackExact: () => null,
       returnOne: (item) => returned.push(item),
     };
     const fillOrder = [];
