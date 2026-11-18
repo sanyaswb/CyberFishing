@@ -68,7 +68,9 @@ without radiation the player is drunk — the world blurs and the view sways, st
 coming, the drunkenness fades smoothly and comes back after it.
 Actual (before): another bottle only renewed the time; −50 % at any count; no intoxication.
 Notes: TK-374 — `statusEffects.vodka` (`add`, `maxStacks` 5, modifiers as lists by the stacks), `IntoxicationEffect`,
-`CONFIG.canvas.intoxication`, `composeEmissionScreen`; the sway is a CSS move of the scene (`SceneCanvasMotion`). Check
+`CONFIG.canvas.intoxication`, `composeEmissionScreen`; TK-374.2 (v0.52.34, owner): the blur is a defocus in 5 stages
+by the bottles (`IntoxicationBlur`, `canvas.intoxication.blur`: a constant floor level and episodes up to a peak
+level, irregular in time and depth); the sway is a CSS move of the scene (`SceneCanvasMotion`). Check
 `weather`. Game-cycle unchanged.
 
 ### G-143 The house stops the game; no house in production (P2, done in v0.52.22; owner acceptance pending)

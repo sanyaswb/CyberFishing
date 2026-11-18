@@ -1577,35 +1577,87 @@ const step = (model, seconds, clock = null, dt = 0.1) => {
     }
     return { maxX, maxY, beyond, blurPx: record.blurPx, level: record.level, x: record.x, margin: record.marginX };
   };
-  const sober = new IntoxicationEffect();
+  // TK-374.2: the blur's episodes draw from a seeded random here (Math.random in the game).
+  const seeded = (seed) => () => { seed = (seed * 1664525 + 1013904223) >>> 0; return seed / 4294967296; };
+  const make = (seed = 11) => new IntoxicationEffect({ random: seeded(seed) });
+  const sober = make();
   assert.equal(sample(sober, 5, 0, false).blurPx, 0, "no vodka: sober");
   assert.equal(sample(sober, 5, 3, false, { ...settings, enabled: false }).maxX, 0, "switched off: no intoxication");
-  const one = new IntoxicationEffect();
+  const one = make();
   sample(one, settings.fadeSec + 0.1, 1, false);
   const oneSway = sample(one, 20, 1, false);
-  assert.ok(near(oneSway.blurPx, settings.blurPx[0]), "one bottle: the smallest blur");
   assert.ok(near(oneSway.maxX, settings.swayShare[0] * width, 0.05), "one bottle: the smallest sway (1 % of the width)");
   assert.ok(oneSway.maxY > oneSway.maxX * 0.4 && oneSway.maxY < oneSway.maxX * 0.6, "a figure of eight: half as high");
-  const five = new IntoxicationEffect();
+  const five = make();
   sample(five, settings.fadeSec + 0.1, maxStacks, false);
   const fiveSway = sample(five, 20, maxStacks, false);
-  assert.ok(near(fiveSway.blurPx, settings.blurPx[1]) && near(fiveSway.maxX, settings.swayShare[1] * width, 0.2),
-    "five bottles: the strongest blur and sway");
-  const three = new IntoxicationEffect();
-  sample(three, settings.fadeSec + 0.1, 3, false);
-  const threeBlur = sample(three, 1, 3, false).blurPx;
-  assert.ok(threeBlur > oneSway.blurPx && threeBlur < fiveSway.blurPx, "more bottles — stronger");
+  assert.ok(near(fiveSway.maxX, settings.swayShare[1] * width, 0.2), "five bottles: the strongest sway");
   assert.equal(oneSway.beyond + fiveSway.beyond, 0, "the sway never leaves its margins (the scene's cover)");
+
+  // TK-374.2 (owner): the blur is a defocus that comes and goes, by the bottles. Level N is levelsPx[N - 1], 0 — sharp.
+  const blur = settings.blur;
+  const levelPx = (level) => (level <= 0 ? 0 : blur.levelsPx[level - 1]);
+  const defocus = (stacks, seconds = 600) => {
+    const effect = make(7 + stacks);
+    sample(effect, settings.fadeSec + blur.stageBlendSec * 4, stacks, false);
+    const floor = levelPx(blur.floorLevel[stacks - 1]);
+    const peak = levelPx(blur.peakLevel[stacks - 1]);
+    const frames = Math.round(seconds * 60);
+    let min = Infinity, max = 0, clear = 0, nearPeak = 0, episodes = 0, maxStep = 0, previous = null, high = false;
+    for (let frame = 0; frame < frames; frame++) {
+      const value = effect.update(1000 / 60, stacks, maxStacks, false, width, settings).blurPx;
+      min = Math.min(min, value);
+      max = Math.max(max, value);
+      if (value < 0.05) clear += 1;
+      if (value >= floor + 0.55 * (peak - floor)) nearPeak += 1;
+      const rising = value >= floor + 0.25 * (peak - floor);
+      if (rising && !high) episodes += 1;
+      high = rising;
+      if (previous !== null) maxStep = Math.max(maxStep, Math.abs(value - previous));
+      previous = value;
+    }
+    return { min, max, clear: clear / frames, nearPeak: nearPeak / frames, episodes, maxStep, floor, peak };
+  };
+  const stage = [null, defocus(1), defocus(2), defocus(3), defocus(4), defocus(5)];
+  assert.ok(stage[1].min < 0.01 && stage[1].max <= levelPx(1) + 1e-9 && stage[1].max > 0.5 * levelPx(1),
+    "one bottle: from sharp to level 1");
+  assert.ok(stage[1].clear > 0.5, "one bottle: sharp longer than blurred");
+  assert.ok(stage[2].min < 0.01 && stage[2].max <= levelPx(2) + 1e-9 && stage[2].max > levelPx(1),
+    "two bottles: from sharp to level 2");
+  assert.ok(stage[2].episodes > stage[1].episodes && stage[2].clear < stage[1].clear, "two bottles: defocused more often");
+  for (const [stacks, floorLevel, peakLevel] of [[3, 1, 3], [4, 2, 4], [5, 3, 5]]) {
+    assert.ok(stage[stacks].min >= levelPx(floorLevel) - 0.01, `${stacks} bottles: never sharper than level ${floorLevel}`);
+    assert.ok(stage[stacks].max <= levelPx(peakLevel) + 1e-9 && stage[stacks].max > levelPx(peakLevel - 1),
+      `${stacks} bottles: now and then up to level ${peakLevel}`);
+  }
+  assert.ok(stage[4].episodes > stage[3].episodes, "four bottles: stronger defocus more often than three");
+  assert.ok(stage[5].episodes > stage[3].episodes, "five bottles: more often than three");
+  assert.ok(stage[3].nearPeak < stage[4].nearPeak && stage[4].nearPeak < stage[5].nearPeak,
+    "from three bottles on the defocus stays longer at its top, longest at five");
+  assert.ok(stage.slice(1).every((entry) => entry.maxStep < 0.05), "the defocus comes and clears smoothly (no jumps)");
+  // Another bottle: the defocus eases into the new stage, no jump.
+  const drinking = make(3);
+  sample(drinking, settings.fadeSec + 1, 1, false);
+  let previousBlur = drinking.record.blurPx, jump = 0;
+  for (let frame = 0; frame < 600; frame++) {
+    const value = drinking.update(1000 / 60, 5, maxStacks, false, width, settings).blurPx;
+    jump = Math.max(jump, Math.abs(value - previousBlur));
+    previousBlur = value;
+  }
+  assert.ok(jump < 0.1 && previousBlur >= levelPx(3) - 0.05, "from one bottle to five: eased (at most 0.1 px a frame, not 3 px at once) into level 3 and up");
+
   // Radiation: a smooth fade, then the vodka is only the buff; the radiation gone, the intoxication comes back.
+  const strongest = sample(five, 1, maxStacks, false).blurPx;
   const halfway = sample(five, settings.fadeSec / 2, maxStacks, true);
-  assert.ok(halfway.blurPx > 0 && halfway.blurPx < settings.blurPx[1], "under radiation it fades, not cut off");
+  assert.ok(halfway.blurPx > 0 && halfway.blurPx < strongest, "under radiation it fades, not cut off");
   const gone = sample(five, settings.fadeSec, maxStacks, true);
   assert.deepEqual([gone.blurPx, gone.x, gone.margin, gone.level], [0, 0, 0, 0], "then no blur and no sway under radiation");
-  const back = sample(five, settings.fadeSec + 0.1, maxStacks, false);
-  assert.ok(near(back.blurPx, settings.blurPx[1]), "the radiation over and the vodka still on: drunk again");
+  const back = sample(five, settings.fadeSec + blur.stageBlendSec * 4, maxStacks, false);
+  assert.ok(back.blurPx >= levelPx(3) - 0.05, "the radiation over and the vodka still on: drunk again");
   // The vodka ends: the last strength fades out.
   const ending = sample(five, settings.fadeSec / 2, 0, false);
-  assert.ok(ending.blurPx > settings.blurPx[0], "after the last bottle's time the intoxication fades from its strength");
+  assert.ok(ending.blurPx > 0 && ending.blurPx < back.blurPx + levelPx(5),
+    "after the last bottle's time the intoxication fades from its strength");
 
   // The frame's composition (stages E, J, L): the drunk bottles and the «Радіація» status reach the sway, the emission's
   // peak the shake, both one move of the scene; the gas mask does not stop the shake.
@@ -1623,7 +1675,7 @@ const step = (model, seconds, clock = null, dt = 0.1) => {
     scheduler: { setTimeout: () => 1, clearTimeout() {} } });
   const motions = [];
   const sceneLayer = { isActive: () => true, setViewMotion: (...args) => motions.push(args) };
-  const intoxication = new IntoxicationEffect();
+  const intoxication = make(5);
   const frameScreen = composeEmissionScreen({ effect: new EmissionScreenEffect({ random: () => 0.5 }), veil: null,
     cameraShake: new EmissionCameraShake({ random: () => 0.5 }), intoxication, sceneLayer,
     emissionExposure: new EmissionExposure({ getEnvironment: () => env, getEquipped: () => equipped, statuses, house }),
@@ -1636,7 +1688,7 @@ const step = (model, seconds, clock = null, dt = 0.1) => {
   motions.length = 0;
   frames(settings.fadeSec + 2);
   assert.ok(motions.some(([x]) => Math.abs(x) > settings.swayShare[0] * width), "five bottles: the scene sways");
-  assert.ok(near(intoxication.record.blurPx, settings.blurPx[1]), "and the world's blur is the five bottles' one");
+  assert.ok(intoxication.record.blurPx >= levelPx(3) - 0.05, "and the world is defocused at least at the five bottles' level 3");
   assert.ok(motions.every(([x, y, mx, my]) => Math.abs(x) <= mx + 1e-9 && Math.abs(y) <= my + 1e-9), "within the margins");
   env = { emission: { phase: "peak", intensity: 1 }, radiation: 0.8 };
   equipped = { gasMask: { id: "mask" } };

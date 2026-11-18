@@ -712,7 +712,7 @@ export class GameCompositionRoot {
       // the world itself (TK-324.3). Visual only: the blur's irregular pulses draw from Math.random, never a gameplay stream.
       const emissionScreenEffect = new EmissionScreenEffect({ random: Math.random });
       // Spec 179 stage L (TK-374): the vodka's intoxication — its blur goes through the scene's blur too.
-      const intoxicationEffect = new IntoxicationEffect();
+      const intoxicationEffect = new IntoxicationEffect({ random: Math.random });
       // The scene layer before the 2D surface: its mode decides whether the 2D canvas is transparent (spec 104 D6).
       const { sceneLayer, sceneRouter, transparentCanvas } = composeSceneLayer({
         config: this.#config,

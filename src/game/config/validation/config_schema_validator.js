@@ -1561,7 +1561,31 @@ export class ConfigSchemaValidator {
     this.#requireParameterLabel(path);
     this.#requireBooleanWithLabel(`${path}.enabled`, cfg.enabled);
     this.#requireRangeNumbers(path, cfg, [["fadeSec", 0.1, 60]]);
-    this.#requireRangePairs(path, cfg, [["blurPx", 0, 40, false], ["swayShare", 0, 0.2, false], ["swayPeriodSec", 0.5, 60, true]]);
+    this.#requireRangePairs(path, cfg, [["swayShare", 0, 0.2, false], ["swayPeriodSec", 0.5, 60, true]]);
+    // TK-374.2: the defocus — lists by the bottles (1…99 values), its levels numbered in levelsPx (0 — sharp).
+    const blurPath = `${path}.blur`;
+    const blur = cfg.blur;
+    if (!blur || typeof blur !== "object") { this.#error(`CONFIG.${blurPath}`, "missing defocus config"); return; }
+    this.#requireParameterLabel(blurPath);
+    this.#requireStageLists(blurPath, blur, [["levelsPx", 0, 40], ["intervalMinSec", 0.1, 600], ["intervalMaxSec", 0.1, 600],
+      ["holdMinSec", 0, 120], ["holdMaxSec", 0, 120]]);
+    const levels = Array.isArray(blur.levelsPx) ? blur.levelsPx.length : 0;
+    this.#requireStageLists(blurPath, blur, [["floorLevel", 0, levels], ["peakLevel", 0, levels]]);
+    this.#requireRangePairs(blurPath, blur, [["depth", 0, 1], ["riseSec", 0.05, 60], ["fallSec", 0.05, 60]]);
+    this.#requireRangeNumbers(blurPath, blur, [["stageBlendSec", 0.05, 30]]);
+  }
+
+  // TK-374.2: [key, min, max] rows — a list of 1…99 values by the bottles, each within the range, with a label.
+  #requireStageLists(path, record, rows) {
+    for (const [key, min, max] of rows) {
+      const list = record?.[key];
+      if (!Array.isArray(list) || list.length === 0 || list.length > 99) {
+        this.#error(`CONFIG.${path}.${key}`, "expected a list of 1…99 values by the bottles");
+        continue;
+      }
+      list.forEach((value, index) => this.#requireFiniteNumber(`CONFIG.${path}.${key}[${index}]`, value, { min, max }));
+      this.#requireParameterLabel(`${path}.${key}`);
+    }
   }
 
   // Spec 182 stage C (TK-352): the starfall's ordinary stars (CONFIG.canvas.starfall).

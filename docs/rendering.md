@@ -199,6 +199,9 @@ gameplay zones or their enable flags; hiding background also hides its displaced
     The vodka's blur (TK-374) is the same `PixiSceneBlur` (its px added to the emission's): while drunk — up to 10 min
     after the last bottle — every scene frame goes through the filter, the way it does only at the emission's blur
     otherwise; that is the intoxication's real cost (the sway itself is the compositor's), measured on the phone.
+    TK-374.2: the blur comes and goes as a defocus (`IntoxicationBlur`, `canvas.intoxication.blur`): its strength
+    changes smoothly, and the scene's blur writes it only on a ¼ px change, so an episode costs a few redraws, not one a
+    frame; with one or two bottles the world is sharp between episodes and the filter is off then (below ¼ px).
     TK-349: the ash flies only in its own zones (`zones.ash`, `world.ashRegions`, apart from the rain's): new embers start
     inside a visible zone and one that drifts out fades over its fade share — no mask, so the edge stays soft.
     Spec 182 (TK-352): the starfall's stars (`PixiStarfallRenderer`) are mounted right after the background (over the
