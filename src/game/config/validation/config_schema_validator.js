@@ -540,6 +540,9 @@ export class ConfigSchemaValidator {
     this.#validateGeneralWeatherConfig();
     this.#validateEmissionScreenConfig();
     this.#validateEmissionWearConfig();
+    // Spec 179 D12 (TK-371): the location's world step while the player is in the house.
+    this.#requireParameterLabel("houseVisit");
+    this.#requireFiniteNumberWithLabel("houseVisit.worldTickMs", this.config.houseVisit?.worldTickMs, { min: 16, max: 5000 });
     this.#validateStatusEffectsConfig();
     const cfg = this.config.ui?.rod?.spine;
     const path = "CONFIG.ui.rod.spine";

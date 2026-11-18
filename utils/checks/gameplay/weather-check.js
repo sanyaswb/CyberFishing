@@ -1509,10 +1509,17 @@ const step = (model, seconds, clock = null, dt = 0.1) => {
     onInventoryChanged: (fn) => { inventoryListeners.add(fn); return () => inventoryListeners.delete(fn); } },
   statuses, slots: { gasMask: "gasMask" } });
   const equip = (value) => { equipped = value; for (const fn of inventoryListeners) fn(); };
-  const exposure = new EmissionExposure({ getEnvironment: () => env, getEquipped: () => equipped, statuses });
+  // Spec 179 D12 (TK-371): the player's presence in the house.
+  const { HousePresence } = require("../../../src/game/application/world/house_presence.js");
+  const house = new HousePresence();
+  const exposure = new EmissionExposure({ getEnvironment: () => env, getEquipped: () => equipped, statuses, house });
   assert.deepEqual([exposure.intensity(), exposure.isCastBlocked()], [0, false], "no emission: no effect, casting allowed");
   env = { emission: { phase: "onset", intensity: 0.5 } };
   assert.deepEqual([exposure.intensity(), exposure.modifier("vignette"), exposure.isCastBlocked()], [0.5, 1, true], "an emission without a gas mask: effect and no cast");
+  house.enter();
+  assert.equal(exposure.intensity(), 0, "spec 179 D12: in the house the emission's screen effects stop");
+  house.leave();
+  assert.equal(exposure.intensity(), 0.5, "back on the location: the effects at the emission's current strength");
   equip({ gasMask: { id: "mask" } });
   assert.deepEqual([statuses.has("gasMask"), exposure.modifier("vignette"), exposure.modifier("blur"), exposure.isCastBlocked()], [true, 0, 0, false],
     "a gas mask holds its status: no effect and casting allowed");
@@ -1587,7 +1594,7 @@ const step = (model, seconds, clock = null, dt = 0.1) => {
   let radiationEnv = { radiation: 0 };
   const radiationEvents = [];
   const stopRadiationEvents = statuses.subscribe((event) => radiationEvents.push(`${event.type}:${event.id}`));
-  const radiationSource = new RadiationStatusSource({ getEnvironment: () => radiationEnv, statuses });
+  const radiationSource = new RadiationStatusSource({ getEnvironment: () => radiationEnv, statuses, house });
   radiationSource.update();
   assert.equal(statuses.has("radiation"), false, "no radiation: no debuff");
   radiationEnv = { radiation: 0.02 };
@@ -1595,16 +1602,23 @@ const step = (model, seconds, clock = null, dt = 0.1) => {
   assert.equal(statuses.has("radiation"), true, "radiation above zero holds the debuff");
   assert.equal(statuses.remainingSec("radiation"), Infinity, "without a timer");
   assert.equal(statuses.modifier("emission", "vignette"), 1, "it changes no effect of the emission");
+  house.enter();
+  radiationSource.update();
+  assert.equal(statuses.has("radiation"), false, "spec 179 D12, spec 181 Q5: in the house the debuff does not act (no badge)");
+  house.leave();
+  radiationSource.update();
+  assert.equal(statuses.has("radiation"), true, "back under radiation: held again");
   radiationEnv = { radiation: 0 };
   radiationSource.update();
   radiationSource.update();
-  assert.equal(radiationEvents.join(), "start:radiation,end:radiation", "one start and one end, never per frame");
+  assert.equal(radiationEvents.join(), "start:radiation,end:radiation,start:radiation,end:radiation",
+    "start, out in the house, back, end — once each, never per frame");
   stopRadiationEvents();
   // TK-358: a radiation without its description (removed in DevTools) is picked up once the description is back.
   const liveDefs = { ...CONFIG.statusEffects };
   delete liveDefs.radiation;
   const lateStatuses = new PlayerStatusEffects({ now: () => clockMs, getDefinitions: () => liveDefs, scheduler });
-  const lateSource = new RadiationStatusSource({ getEnvironment: () => ({ radiation: 0.5 }), statuses: lateStatuses });
+  const lateSource = new RadiationStatusSource({ getEnvironment: () => ({ radiation: 0.5 }), statuses: lateStatuses, house });
   lateSource.update();
   assert.equal(lateStatuses.has("radiation"), false, "no description: nothing held");
   liveDefs.radiation = CONFIG.statusEffects.radiation;

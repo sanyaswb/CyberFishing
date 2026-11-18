@@ -45,6 +45,16 @@
   transition: opacity 280ms ease, visibility 0s;
 }
 
+/* Spec 179 D12 (TK-371, owner Q2): the house button in the top-left corner (the DEV page's former DevTools corner). */
+.game-control--house {
+  position: fixed;
+  top: var(--ui-edge-top);
+  left: var(--ui-edge-left);
+  z-index: var(--ui-layer-controls);
+  display: grid;
+  font-size: 22px;
+}
+
 .game-control--net {
   display: none;
   transform: scale(0.85);

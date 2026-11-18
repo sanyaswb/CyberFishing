@@ -13,16 +13,19 @@ export class EmissionExposure {
   #getEnvironment;
   #getEquipped;
   #statuses;
+  #house;
 
   // getEnvironment: () => EnvironmentSystem's snapshot ({ emission }); getEquipped: () => the equipment read model;
-  // statuses: PlayerStatusEffects (spec 181).
-  constructor({ getEnvironment, getEquipped, statuses }) {
+  // statuses: PlayerStatusEffects (spec 181); house: HousePresence — in the house the emission reaches nobody (D12).
+  constructor({ getEnvironment, getEquipped, statuses, house }) {
     if (typeof getEnvironment !== "function") throw new TypeError("EmissionExposure requires getEnvironment");
     if (typeof getEquipped !== "function") throw new TypeError("EmissionExposure requires getEquipped");
     if (typeof statuses?.modifier !== "function") throw new TypeError("EmissionExposure requires statuses");
+    if (typeof house?.isInHouse !== "function") throw new TypeError("EmissionExposure requires house");
     this.#getEnvironment = getEnvironment;
     this.#getEquipped = getEquipped;
     this.#statuses = statuses;
+    this.#house = house;
   }
 
   // Spec 179 D10: a broken gas mask (condition 0) does not protect.
@@ -36,8 +39,9 @@ export class EmissionExposure {
     return typeof phase === "string" && phase !== "idle";
   }
 
+  // The emission's strength on the player: 0 outside an emission and in the house (spec 179 D12).
   intensity() {
-    if (!this.isActive()) return 0;
+    if (!this.isActive() || this.#house.isInHouse()) return 0;
     const intensity = Number(this.#getEnvironment()?.emission?.intensity);
     return Number.isFinite(intensity) ? clampUnit(intensity) : 0;
   }

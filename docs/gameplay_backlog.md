@@ -20,6 +20,16 @@ Notes: suspected owner module, related checks.
 
 ## Open
 
+### G-143 The house stops the game; no house in production (P2, done in v0.52.22; owner acceptance pending)
+Found: 2026-11-14, owner, spec 179 (emission) stage I; owner answers Q18–Q20 2026-11-18.
+Reproduce: open the house during an emission (DEV only before), wait, come back.
+Expected: the location's world goes on (time, weather, the emission) while the player is in the house; its effects on
+the player stop there; the house is entered from the HUD with the tackle put away, in production too.
+Actual (before): opening the house stopped the whole game loop (the emission froze); production had no house entry.
+Notes: TK-371 — `HousePresence`, `HouseEntryPolicy`, `GameApplication.enterHouse/leaveHouse/requestHouseEntry` (world
+steps of `CONFIG.houseVisit.worldTickMs`, no drawing), `composeHouseVisit`, `HouseEntryControl`; DEV DevTools from the
+screen edge. Checks `game-application-composition`, `weather`, `config-runtime`. Game-cycle unchanged.
+
 ### G-142 Radiation wears the items; a broken item cannot cast (P2, done in v0.52.21; owner acceptance pending)
 Found: 2026-11-14, owner, spec 179 (emission) stage H; owner answers Q15–Q17 2026-11-18.
 Reproduce: equip tackle and a gas mask, DevTools «ПОГОДА» → «Викид» → «Почати викид», wait for its end.

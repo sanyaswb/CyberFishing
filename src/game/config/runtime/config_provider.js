@@ -41,6 +41,10 @@ export class ConfigProvider {
   get liveBait() {
     return this.#config.liveBait || null;
   }
+  // Spec 179 D12: the location's world step while the player is in the house.
+  get houseVisit() {
+    return this.#config.houseVisit;
+  }
   get raw() {
     return this.#config;
   }

@@ -164,7 +164,7 @@ module.exports = async function checkEmissionWear() {
   source.sync();
   assert.deepEqual(held.at(-1), ["gasMask", false], "a broken gas mask holds no status");
   const exposure = new EmissionExposure({ getEnvironment: () => ({ emission: { phase: "peak", intensity: 1 } }),
-    getEquipped: () => equipped, statuses });
+    getEquipped: () => equipped, statuses, house: { isInHouse: () => false } });
   assert.equal(exposure.hasGasMask(), false, "a broken gas mask is no gas mask");
   equipped = { gasMask: mask(1) };
   assert.equal(exposure.hasGasMask(), true);

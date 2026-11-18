@@ -2,6 +2,16 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.52.22 - The house during an emission; a house button in the game (TK-371)
+
+- The house no longer stops the game. While the player is inside, the location's world goes on: game time, weather, wind, zones and the emission. It steps every 250 ms and nothing of the location is drawn.
+- Coming back out, the location continues from its current state: an emission that was running has moved on.
+- Inside the house nothing of the location reaches the player: no darkening or blur, no radiation debuff, no dose for the fish in the keepnet and no wear of the items. Whatever had gathered before entering is applied first.
+- A house button ⌂ sits in the top-left corner of the game, now also in the production game (index.html).
+- The player goes in only with the tackle put away. Otherwise the inventory opens with «Спершу складіть снасті в інвентар». The gas mask, landing net, radio and hand chum may stay.
+- dev.html has no DevTools button any more (the house button took its corner). DevTools opens from the screen's left edge: rest the cursor there or swipe right with a finger. DevTools → «Будинок» and ?screen=house still open the house directly.
+- The house's styles are now part of the game page's stylesheet, about 4 KB gzip at start. The house's code still loads on the first visit.
+
 ## v0.52.21 - Radiation wears the items; a broken item cannot cast (TK-370)
 
 - Items with a condition now wear while the location's radiation is above zero. These are rods, reels, lines, leaders, hooks and the gas mask, in the backpack, in assemblies or equipped.
@@ -54,8 +64,3 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 
 - Without an aim, a double tap in the left or right half of the screen takes the camera at once to that edge of the map; no aim starts. While aiming, a double tap removes the aim as before.
 - A finger's double tap may now have up to 450 ms between its two releases (input.touchCast.doubleTapMs); it was 300 ms, too short for a finger's hold and pause. Mouse unchanged.
-
-## v0.52.12 - Double tap while aiming jumps to the map's edge (TK-366)
-
-- While the touch aim waits, a double tap in the left half of the screen takes the camera at once to the map's left edge, in the right half to the right edge; the aim waits at the screen's middle. A single tap still removes the aim.
-- A tap on an aim waiting at full power (casting.touchAim.startAtFullPower) now removes it as a tap should, instead of casting.

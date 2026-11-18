@@ -20,6 +20,19 @@ export class Game {
     this.#app?.stop();
   }
 
+  // Spec 179 D12 (TK-371): the house over the game — the tackle must be put away to go in; inside the world goes on.
+  requestHouseEntry() {
+    return this.#app?.requestHouseEntry() === true;
+  }
+
+  enterHouse() {
+    this.#app?.enterHouse();
+  }
+
+  leaveHouse() {
+    this.#app?.leaveHouse();
+  }
+
   dispose() {
     this.#app?.dispose();
   }

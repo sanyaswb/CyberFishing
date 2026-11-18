@@ -49,9 +49,10 @@ function validatePageStyleComposition(projectRoot = DEFAULT_ROOT) {
   const development = readPageStylesheets({ projectRoot, page: "dev.html" });
   const productionPaths = production.map(({ file }) => file);
   const reused = development.filter(({ file }) => file.startsWith(PRODUCTION_STYLES)).map(({ file }) => file);
-  if (JSON.stringify(reused) !== JSON.stringify([...productionPaths, `${PRODUCTION_STYLES}house.css`]) ||
+  // Spec 179 D12 (TK-371): the production page has the House too (house.css), so DEV adds only its own styles.
+  if (JSON.stringify(reused) !== JSON.stringify(productionPaths) ||
       JSON.stringify(development.slice(0, production.length).map(({ file }) => file)) !== JSON.stringify(productionPaths)) {
-    throw new Error("DEV must reuse production CSS in the same order, followed by House and DEV styles");
+    throw new Error("DEV must reuse production CSS in the same order, followed by DEV styles");
   }
   if (!development.some(({ file }) => file.startsWith(DEV_STYLES))) throw new Error("DEV page has no DEV stylesheet");
   const version = JSON.parse(fs.readFileSync(path.join(projectRoot, "package.json"), "utf8")).version;

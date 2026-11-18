@@ -11,6 +11,7 @@ export const HUD_LABELS = Object.freeze({
   castLimit: (meters) => `${meters} м`,
   holdActive: "УТРИМАННЯ",
   fullscreen: "На весь екран",
+  house: "Будинок", // spec 179 D12
   landingNet: "Підсака",
   chumAction: "Прикормка",
   chumActionCount: (count) => `Прикормка · ${count} порцій`,

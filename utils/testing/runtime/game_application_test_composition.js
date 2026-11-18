@@ -27,7 +27,7 @@ async function checkGameApplicationComposition(diagnostics = true) {
     source.load('src/game/application/fishing/game_fishing_facade.js', { expose: ['GameFishingFacade'] });
   function target(){const handlers=new Map();return{handlers,addEventListener(type,fn){const list=handlers.get(type)||[];list.push(fn);handlers.set(type,list);},removeEventListener(type,fn){handlers.set(type,(handlers.get(type)||[]).filter(item=>item!==fn));},emit(type,detail){for(const fn of handlers.get(type)||[])fn({detail});}};}
   const windowTarget=target(),documentTarget=target(),clock={now:1000},bounds={left:0,right:800,top:0,bottom:600};
-  const config={ui:{rod:{x:'center'}},casting:{enabled:true},debug:{timeScale:2},locations:{lake:{enabled:true}},physics:{fight:{rodControl:{}}}};
+  const config={ui:{rod:{x:'center'}},casting:{enabled:true},debug:{timeScale:2},houseVisit:{worldTickMs:250},locations:{lake:{enabled:true}},physics:{fight:{rodControl:{}}}};
   const input={panDeltaX:3,panDeltaY:9,pointerDown:false,isPulling:false},physics={},biteEnv={},fightDebug={};
   let equipment={rod:{variant:'float',effectiveStats:{hasReel:true}},reel:{effectiveStats:{hasDrag:true}},baits:[{instanceId:'original-bait'}]};
   let lineEquipped=true;
@@ -49,11 +49,11 @@ async function checkGameApplicationComposition(diagnostics = true) {
     env:{getPhysicsEnv:()=>physics,getSnapshot:()=>({time:5})},input:{getState:()=>input,setDragControlEnabled(value){assert.equal(value,true);},setPointerPanEnabled(value){this.pointerPanEnabled=value;},setTouchAimMode(value){this.touchAimMode=value;},dispose(){disposed.push('input');}},
     ui:{updateNetButtonState(){},dispose(){disposed.push('ui');}},inventoryUI:{updateDynamicProgression(dt){assert.equal(dt,16);events.push('inventory-ui');},open(){events.push('open');},showWarning(message){warnings.push(message);},dispose(){disposed.push('inventory-ui');}},
     chum:{getBoats:()=>[],getChumDataAt:()=>({bonus:1,targets:[]}),dispose(){disposed.push('chum');}},bite:{setFishDatabase(value){assert.equal(value,source.context.FISH_DB);events.push('fish-db');}},
-    world:{refreshViewport(){events.push('viewport');},refreshLocationConfig(value,resources){assert.equal(value,config.locations);assert.equal(resources,locationResources);events.push('location');},pan(x,y){assert.equal(y,0);if(x!==3){assert.equal(x,-50,'spec 153: the resize keeps the rod at its world point (400) while the centre moves 400 -> 450');events.push('recentre');return;}events.push('pan');},getWaterMetric:()=>null,update(dt,scale){assert.equal(dt,16);assert.equal(scale,config.debug.timeScale);events.push('world');return{time:5,radiation:0.4};}},
+    world:{refreshViewport(){events.push('viewport');},refreshLocationConfig(value,resources){assert.equal(value,config.locations);assert.equal(resources,locationResources);events.push('location');},pan(x,y){assert.equal(y,0);if(x!==3){assert.equal(x,-50,'spec 153: the resize keeps the rod at its world point (400) while the centre moves 400 -> 450');events.push('recentre');return;}events.push('pan');},getWaterMetric:()=>null,update(dt,scale){if(!runtime.housePresence.isInHouse())assert.equal(dt,16);assert.equal(scale,config.debug.timeScale);events.push(['world',dt].join(':'));return{time:5,radiation:0.4};}},
     rendering:{assetPreloadCoordinator,locationAssetLoader:{load:()=>Promise.resolve(locationResources)}},
     fishing:{consumeWetFeederChum(eq,exposure){assert.equal(eq,equipment);events.push(['wet',exposure]);}},castPenalty:{update(dt){assert.equal(dt,16);events.push('cast');}},
     equipmentRules:{getMaxHookDepth:()=>8,getRodDisplayName:()=> 'Test rod'},baitRules:{isActiveLure:()=>false},playerCastRules:{canPlayerCast:(eq,boat)=>eq===equipment&&boat===null},
-    depthUI:{updateMax(value){assert.equal(value,8);},dispose(){disposed.push('depth');}},timeUI:{update(value){assert.equal(value,5);events.push('time');},dispose(){disposed.push('time');}},holdUI:{dispose(){disposed.push('hold');}},emissionScreen:{update(){events.push('emission');}},keepnetRadiation:{update(dt,radiation){assert.equal(dt,16);assert.equal(radiation,0.4,'spec 179 D8: the keepnet gets the frame\'s radiation');events.push('keepnet-radiation');return false;}},emissionWear:{update(dt,radiation){assert.equal(dt,16);assert.equal(radiation,0.4,'spec 179 D10: the items wear with the frame\'s radiation');events.push('item-wear');return false;}},emissionExposure:{isCastBlocked:()=>false}};
+    depthUI:{updateMax(value){assert.equal(value,8);},dispose(){disposed.push('depth');}},timeUI:{update(value){assert.equal(value,5);events.push('time');},dispose(){disposed.push('time');}},holdUI:{dispose(){disposed.push('hold');}},emissionScreen:{update(){events.push('emission');}},housePresence:new (source.importModule('src/game/application/world/house_presence.js').HousePresence)(),keepnetRadiation:{update(dt,radiation){assert.equal(dt,16);assert.equal(radiation,0.4,'spec 179 D8: the keepnet gets the frame\'s radiation');events.push('keepnet-radiation');return false;},flush(){events.push('keepnet-flush');return false;}},emissionWear:{update(dt,radiation){assert.equal(dt,16);assert.equal(radiation,0.4,'spec 179 D10: the items wear with the frame\'s radiation');events.push('item-wear');return false;},flush(){events.push('wear-flush');return false;}},emissionExposure:{isCastBlocked:()=>false}};
   const compositionRoot={create(){throw new Error('Injected runtime must be reused');},createApplicationServices(options){appPorts=options.appPorts;assert.equal(options.runtime,runtime);assert.equal(options.runtimeConfig,config);assert.equal(options.clock,clock);assert.equal(options.rng,rng);return{loop,fightService,debugService:diagnostics === 'malformed' ? {} : diagnostics ? {update(context){debugContext??=context;assert.equal(context,debugContext);assert.equal(context.getEquipment(),equipment);assert.equal(context.getInputState(),input);events.push('debug');}} : null,chumController,stateMachine,renderCoordinator,
     viewportFacade:new source.context.GameViewportFacade({rodVisualOffsetSystem:new source.context.RodVisualOffsetSystem(),world:options.runtime.world,projector:options.runtime.projector,canvasMetrics:options.canvasMetrics,config:options.config,
       biteEnvironmentService:{getDynamicBounds:()=>bounds,checkWater:(x,y)=>({x,y,depth:2}),getBiteEnvData:()=>biteEnv}}),
@@ -94,7 +94,30 @@ async function checkGameApplicationComposition(diagnostics = true) {
   assert.equal(app.clock,clock);assert.equal(app.rng,rng);assert.equal(app.config.raw,config);assert.equal(app.net,net);assert.equal(app.locationId,'lake');assert.equal(app.chumCastDistance,300);assert.equal(app.start(),true);
   assert.equal(listenerCounter.getActiveCount(),dev?3:2,'production subscribes no DEV hook');
   const viewport=app.getViewportSize(),rod=app.getRodVirtualPos(bounds),base=app.getBaseRodVirtualPos(bounds);
-  for(let frame=0;frame<120;frame++){events.length=0;clock.now+=16;appPorts.update(16);appPorts.draw();assert.equal(app.lastTime,clock.now);assert.equal(app.getViewportSize(),viewport);assert.equal(app.getRodVirtualPos(bounds),rod);assert.equal(app.getBaseRodVirtualPos(bounds),base);assert.deepEqual(events,['pan','world','keepnet-radiation','item-wear','cast','time','emission','chum-ui','boat','input','state','inventory-ui',...(diagnostics?['debug']:[]),'draw']);}
+  for(let frame=0;frame<120;frame++){events.length=0;clock.now+=16;appPorts.update(16);appPorts.draw();assert.equal(app.lastTime,clock.now);assert.equal(app.getViewportSize(),viewport);assert.equal(app.getRodVirtualPos(bounds),rod);assert.equal(app.getBaseRodVirtualPos(bounds),base);assert.deepEqual(events,['pan','world:16','keepnet-radiation','item-wear','cast','time','emission','chum-ui','boat','input','state','inventory-ui',...(diagnostics?['debug']:[]),'draw']);}
+  // Spec 179 D12 (TK-371): the house. With tackle in its slots the inventory opens with the hint; put away, the player
+  // goes in: what the keepnet and the items gathered is applied, the veil settles, then frames only step the world every
+  // houseVisit.worldTickMs — no input, fishing, keepnet dose, wear or drawing; back out, the frame is the full one again.
+  {
+    const presence=runtime.housePresence;
+    warnings.length=0;events.length=0;
+    assert.equal(app.requestHouseEntry(),false,'a rod in its slot: no house');
+    assert.deepEqual(warnings,[source.context.FISHING_MESSAGES.stowTackleForHouse]);assert.deepEqual(events,['open']);
+    const ready=equipment;equipment={gasMask:{id:'mask'},net:{id:'net'},radio:{id:'radio'},handChum:{id:'chum'}};
+    assert.equal(app.requestHouseEntry(),true,'gas mask, net, radio and hand chum may stay');
+    equipment=ready;events.length=0;
+    app.enterHouse();assert.equal(presence.isInHouse(),true);
+    assert.deepEqual(events,['keepnet-flush','wear-flush','emission'],'gathered dose and wear applied, the veil settles');
+    events.length=0;
+    for(let frame=0;frame<30;frame++){clock.now+=16;appPorts.update(16);appPorts.draw();}
+    assert.deepEqual(events,['world:256','emission'],'30 frames in the house: one world step of 16 frames, no drawing');
+    app.enterHouse();assert.deepEqual(events,['world:256','emission'],'entering twice does nothing');
+    app.leaveHouse();assert.equal(presence.isInHouse(),false);
+    events.length=0;clock.now+=16;appPorts.update(16);appPorts.draw();
+    assert.deepEqual(events.slice(0,4),['pan','world:16','keepnet-radiation','item-wear'],'back out: the full frame');
+    assert.equal(events.at(-1),'draw');
+    warnings.length=0;
+  }
   assert.equal(app.canPlayerCast(),true);assert.equal(app.getEnvDataForBite(),biteEnv);assert.equal(app.getMaxHookDepth(),8);assert.equal(app.getRodScreenX(),400);assert.equal(app.getScreenOffsetRatio({x:600,y:200}),200/1280); // Spec 153 D2: 200 map px from the rod at 400 over half the reference 2560 px (the old null playable bound pinned the rod at the left padding).
   events.length=0;
   for(let event=0;event<100;event++)windowTarget.emit('resize');
@@ -103,7 +126,7 @@ async function checkGameApplicationComposition(diagnostics = true) {
   appPorts.update(16);
   assert.equal(resizeCalls,1,'the next game frame consumes one pending viewport resize');
   assert.equal(events.filter(value=>value==='viewport').length,1);
-  assert.equal(events.indexOf('viewport')<events.indexOf('world'),true,'new viewport is applied before world/input update');
+  assert.equal(events.indexOf('viewport')<events.indexOf('world:16'),true,'new viewport is applied before world/input update');
   assert.equal(events.filter(value=>value==='recentre').length,1,'spec 153 D3: one camera recentring per consumed resize keeps the rod at its world place');
   assert.equal(app.getViewportSize().width,900);assert.equal(app.getViewportSize(),viewport);
   appPorts.update(16);assert.equal(resizeCalls,1,'stable game frames perform no viewport resize');

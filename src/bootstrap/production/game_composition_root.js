@@ -66,6 +66,7 @@ import { EquipmentStatusSource } from "../../game/application/world/equipment_st
 import { RadiationStatusSource } from "../../game/application/world/radiation_status_source.js";
 import { KeepnetRadiationExposure } from "../../game/application/live_bait/keepnet_radiation_exposure.js";
 import { EmissionWearExposure } from "../../game/application/world/emission_wear_exposure.js";
+import { HousePresence } from "../../game/application/world/house_presence.js";
 import { HudIndicatorColumn } from "../../platform/browser/ui/hud_indicator_column.js";
 import { StatusHudBadges } from "../../platform/browser/ui/status_hud_badges.js";
 import { STATUS_LABELS } from "../../game/presentation/status/status_labels.js";
@@ -906,6 +907,9 @@ export class GameCompositionRoot {
         openRoomLevel: (level) => {
           void this.#preload.setProgress({ openedRoomLevel: level });
         },
+        // Spec 179 D12 (TK-371): the location's world as it goes on while the player is in the house (weather, the
+        // emission) — the port for the house's future window layer; nothing reads it yet.
+        getEnvironment: () => worldSystems?.env?.getSnapshot() ?? null,
       });
       // Spec 172 D7: one sea state (wind, night, storm) for the water's waves and the float's rocking. The environment
       // is composed with the world systems below, so it is read lazily.
@@ -1025,11 +1029,13 @@ export class GameCompositionRoot {
       // TK-358: the statuses' end timer goes with the game.
       own(this.#playerStatuses());
       own(new EquipmentStatusSource({ inventory: systems.inventory, statuses: this.#playerStatuses(), slots: { gasMask: "gasMask" } }));
+      // Spec 179 D12 (TK-371): the player in the house — the location's effects on them stop, the world goes on.
+      const housePresence = new HousePresence();
       const emissionExposure = new EmissionExposure({ getEnvironment: () => systems.env.getSnapshot(),
-        getEquipped: () => systems.inventory.getEquipped(), statuses: this.#playerStatuses() });
+        getEquipped: () => systems.inventory.getEquipped(), statuses: this.#playerStatuses(), house: housePresence });
       // Spec 181 D4: the debuff «Радіація» while the location's radiation is above zero (checked with the frame).
       const radiationStatus = new RadiationStatusSource({ getEnvironment: () => systems.env.getSnapshot(),
-        statuses: this.#playerStatuses() });
+        statuses: this.#playerStatuses(), house: housePresence });
       const emissionScreen = this.#composeEmissionScreen({ canvas, effect: emissionScreenEffect, sceneLayer,
         emissionExposure, own, radiationStatus });
       // Spec 179 D10 (TK-370): the radiation wears the items with a condition (its own `:wear` stream of the session).
@@ -1043,6 +1049,7 @@ export class GameCompositionRoot {
         liveBait,
         keepnetRadiation,
         emissionWear,
+        housePresence,
         liveBaitCandidate,
         createLiveBaitMotion,
         location,

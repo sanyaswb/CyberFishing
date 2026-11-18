@@ -6,6 +6,7 @@ import { GameFishingFacade } from "../fishing/game_fishing_facade.js";
 import { InventoryItemLocation } from "../../domain/inventory/inventory_item_location.js";
 import { Vector2 } from "../../../engine/math/vector2.js";
 import { defaultHookDepthMeters } from "../../domain/fishing/default_hook_depth.js";
+import { HouseEntryPolicy } from "../../domain/equipment/house_entry_policy.js";
 
 export class GameApplication {
   #messages;
@@ -73,6 +74,9 @@ export class GameApplication {
   #liveBaitCastId = null;
   #keepnetRadiation = null;
   #emissionWear = null;
+  #house = null;
+  #houseEntry = new HouseEntryPolicy();
+  #houseElapsedMs = 0;
   #createLiveBaitMotion;
   #liveBaitCareElapsedMs = 0;
   #castRodScreenX = null;
@@ -231,6 +235,9 @@ export class GameApplication {
     this.#liveBait = runtime.liveBait || null;
     this.#keepnetRadiation = runtime.keepnetRadiation || null;
     this.#emissionWear = runtime.emissionWear || null;
+    // Spec 179 D12: the player in the house; the tackle must be put away to go in.
+    this.#house = runtime.housePresence;
+    if (typeof this.#house?.isInHouse !== "function") throw new TypeError("GameApplication requires runtime.housePresence");
     this.#createLiveBaitMotion = runtime.createLiveBaitMotion || null;
     this.#net = runtime.net;
     this.#castPenalty = runtime.castPenalty;
@@ -690,6 +697,10 @@ export class GameApplication {
   }
 
   update(dt) {
+    if (this.#house.isInHouse()) {
+      this.#updateInHouse(dt);
+      return;
+    }
     // Consume the latest size once before input/world update; resize events never draw independently.
     if (this.#viewportResizePending) {
       this.#viewportResizePending = false;
@@ -896,7 +907,21 @@ export class GameApplication {
   }
 
   draw() {
+    // Spec 179 D12: in the house only the house is shown.
+    if (this.#house.isInHouse()) return;
     this.#renderCoordinator.render();
+  }
+
+  // Spec 179 D12 (owner: «логіка інші світ постійно змінюються … показується тільки те що треба»): in the house the world
+  // goes on in steps of CONFIG.houseVisit.worldTickMs — game time, weather, wind, zones and the emission — and the emission's
+  // veil settles (nothing reaches the player there); no input, fishing, keepnet dose, wear or drawing.
+  #updateInHouse(dt) {
+    this.#houseElapsedMs += Math.max(0, dt);
+    if (this.#houseElapsedMs < this.#config.houseVisit.worldTickMs) return;
+    const step = this.#houseElapsedMs;
+    this.#houseElapsedMs = 0;
+    this.#world.update(step, this.#config.debug?.timeScale || 1);
+    this.#emissionScreen.update(step);
   }
 
   castLine(vx, vy, cellDepth, options = {}) {
@@ -1074,6 +1099,30 @@ export class GameApplication {
   #showGasMaskRequiredWarning() {
     this.#inventoryUI.open();
     this.#inventoryUI.showWarning(this.#messages.gasMaskRequiredToCast);
+  }
+
+  // Spec 179 D12 (TK-371, owner Q20): whether the player may go into the house now — the tackle put away (gas mask,
+  // landing net, radio, hand chum may stay); otherwise the inventory opens with the hint and the answer is false.
+  requestHouseEntry() {
+    if (this.#houseEntry.canEnter(this.#inventory.getEquipped())) return true;
+    this.#inventoryUI.open();
+    this.#inventoryUI.showWarning(this.#messages.stowTackleForHouse);
+    return false;
+  }
+
+  // Spec 179 D12: the house over the game. The location's effects on the player stop (what the keepnet and the items
+  // gathered is applied first); the loop keeps running the world (time, weather, wind, the emission) without drawing.
+  enterHouse() {
+    if (this.#house.isInHouse()) return;
+    if (this.#keepnetRadiation?.flush()) this.#syncLiveBaitCast();
+    this.#emissionWear?.flush();
+    this.#house.enter();
+    this.#houseElapsedMs = 0;
+    this.#emissionScreen.update(0);
+  }
+
+  leaveHouse() {
+    this.#house.leave();
   }
 
   start() {

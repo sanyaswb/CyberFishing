@@ -445,6 +445,8 @@ async function checkNativeProductionStartup() {
       ["getBrowserStartupEnvironment", "publishBrowserStartupConfig", "activateBrowserStartupInterface"],
       { window: windowTarget, document: documentTarget, initEngineInterface() { activations++; } });
     const imports = [];
+    const houseVisits = [];
+    let houseVisitDisposals = 0;
     let resolveBuild;
     const buildReady = new Promise(resolve => { resolveBuild = resolve; });
     const app = { start() { starts++;return true; }, dispose() { disposals++; } };
@@ -477,6 +479,7 @@ async function checkNativeProductionStartup() {
       GameCompositionRoot: Root, ActiveGameLoopGuard, UiSurfaceAdapter: Surface, GameToolbar: Toolbar, ...composition, ...platform,
       PerformanceStartupMarks, STARTUP_STAGES, markStartupReady, BrowserOfflineCache: { fromPage: () => null },
       GameVersionBadge: { mountById() { mounts++; } }, ConsoleLogger: class { error(error) { throw error; } },
+      composeHouseVisit(options) { houseVisits.push(options); return { dispose() { houseVisitDisposals++; } }; },
       importModule(specifier) { imports.push(specifier);return Promise.resolve({}); },
     });
     const first = startup.startProductionGame(), second = startup.startProductionGame();
@@ -504,6 +507,8 @@ async function checkNativeProductionStartup() {
     else assert.equal(documentListeners.size, 0);
     assert.equal(mounts, 1);assert.equal(windowListeners.size, 1);assert.equal(pagehideAdds, 1);
     const cleanup = windowListeners.get("pagehide");assert.equal(cleanup, windowTarget.CYBER_FISHING_GAME_CLEANUP);cleanup();cleanup();
+    // Spec 179 D12 (TK-371, owner Q18): production composes the house over its game and disposes it with the page.
+    assert.equal(houseVisits.length, 1);assert.equal(houseVisits[0].game, game);assert.equal(houseVisitDisposals, 1);
     assert.equal(disposals, 1);assert.equal(windowListeners.size, 0);assert.equal(windowTarget.game, null);assert.equal(windowTarget.CYBER_FISHING_MEMORY_WATCHDOG, null);
     assert.equal(surfaces, 1);assert.equal(surfaceDisposals, 1, "page cleanup disposes the coordinate surface exactly once");
     assert.equal(toolbars, 1);assert.equal(toolbarDisposals, 1, "page cleanup disposes the shared toolbar exactly once");
@@ -516,6 +521,7 @@ async function checkNativeProductionStartup() {
       GameCompositionRoot: RootClass, ActiveGameLoopGuard, UiSurfaceAdapter: Surface, GameToolbar: Toolbar, ...composition, ...platform,
       PerformanceStartupMarks, STARTUP_STAGES, markStartupReady, BrowserOfflineCache: { fromPage: () => null }, showStartupFailure() { failures++; },
       GameVersionBadge: { mountById() {} }, ConsoleLogger: class { error(...args) { logged.push(args); } },
+      composeHouseVisit() { return { dispose() {} }; },
     }).startProductionGame();
     const rootThat = (build) => class { build = build; getRuntimeConfig() { return config; } startDeferredAssetLoads() { assert.fail("no ready after a failure"); } };
     const criticalAsset = new Error("location:lake critical assets failed");
@@ -782,7 +788,10 @@ async function checkNativeDevelopmentLifecycle() {
   let configRuntime;
   let resolveBuild,rejectBuild,buildReady;
   const resetBuild=()=>{buildReady=new Promise((resolve,reject)=>{resolveBuild=resolve;rejectBuild=reject;});};
-  const app={start(){counts.start++;return true;},stop(){counts.stop++;},dispose(){counts.gameDispose++;}};
+  let houseAllowed=false,houseControl=null;
+  const app={start(){counts.start++;return true;},stop(){counts.stop++;},dispose(){counts.gameDispose++;},
+    requestHouseEntry(){counts.houseRequests=(counts.houseRequests||0)+1;return houseAllowed;},
+    enterHouse(){counts.houseEnter=(counts.houseEnter||0)+1;},leaveHouse(){counts.houseLeave=(counts.houseLeave||0)+1;}};
   let rootPorts;
   class Root { constructor(config,options){counts.root++;this.options=options;rootPorts=options;}build(){return buildReady;}getSessionServices(){return sessionServices;}getMemoryWatchdogConfig(){return config.debug.memoryWatchdog;}printStorageUsage(){}startDeferredAssetLoads(){} }
   const resource=key=>({dispose(){counts[key]++;}});
@@ -811,6 +820,7 @@ async function checkNativeDevelopmentLifecycle() {
     'src/dev/tools/dev_tools.js':{DevTools:class{constructor(config,synchronizer,options){this.options=options;}}},
     'src/bootstrap/development/dev_house_screen_composition.js':{createDevHouseScreenFactory:options=>{houseFactoryOptions=options;
       return async({close})=>{closeHouse=close;houseScreens++;return{dispose(){houseDisposals++;}};};}},
+    'src/platform/browser/ui/house_entry_control.js':{HouseEntryControl:class{constructor(options){houseControl=options;}dispose(){counts.houseControlDispose=(counts.houseControlDispose||0)+1;}}},
     'src/game/config/runtime/game_config.js':{CONFIG:config},
     'src/bootstrap/production/game_config_composition.js':{createProductionConfigContext(initialize){configRuntime=composition.createProductionConfigContext(initialize);return configRuntime;}},
     'src/bootstrap/production/game_composition_root.js':{GameCompositionRoot:Root},
@@ -856,10 +866,19 @@ async function checkNativeDevelopmentLifecycle() {
   assert.equal(houseFactoryOptions.getDevTools(),navigationTools,"the House header toggles the page DevTools");
   await navigationTools.options.openHouse();
   assert.equal(houseScreens,1);assert.equal(frames.length,0,"the House is a screen, not a frame");
-  assert.equal(counts.stop,1,"opening the DEV House stops the location loop");
+  assert.equal(counts.houseEnter,1,"spec 179 D12: opening the House puts the player in it");
+  assert.equal(counts.stop||0,0,"spec 179 D12: the location's loop goes on under the House");
   await navigationTools.options.openHouse();assert.equal(houseScreens,1,"an open House is not created twice");
   closeHouse();await Promise.resolve();await Promise.resolve();
-  assert.equal(houseDisposals,1);assert.equal(counts.start,2,"closing the House resumes the loop exactly once");
+  assert.equal(houseDisposals,1);assert.equal(counts.houseLeave,1,"closing the House brings the player back once");
+  assert.equal(counts.start,1,"the loop was never stopped, so it is not started again");
+  // Spec 179 D12 (owner Q20): the HUD's house button goes in only with the tackle put away.
+  assert.equal(houseControl.label,"Будинок");
+  houseControl.onEnter();await Promise.resolve();await Promise.resolve();
+  assert.equal(houseScreens,1,"tackle still out: the HUD button does not open the House");assert.equal(counts.houseRequests,1);
+  houseAllowed=true;houseControl.onEnter();await Promise.resolve();await Promise.resolve();await Promise.resolve();
+  assert.equal(houseScreens,2,"tackle put away: the HUD button opens the House");assert.equal(counts.houseEnter,2);
+  closeHouse();await Promise.resolve();await Promise.resolve();assert.equal(counts.houseLeave,2);
   configRuntime.resetAll();
   assert.equal(configRuntime.baseConfig.debug.godMode.enabled,true,'DEV explicitly enables its balance default before freezing the base');
   assert.equal(configRuntime.baseConfig.debug.fixedCatch.enabled,true);
@@ -878,7 +897,7 @@ async function checkNativeDevelopmentLifecycle() {
   resetBuild();const second=startup.startDevelopmentGame();assert.notEqual(second,first);resolveBuild(app);await second;windowTarget.CYBER_FISHING_GAME_CLEANUP();
   assert.equal(config.debug.godMode.enabled,false,'restart preserves the live override instead of reapplying DEV defaults');
   assert.equal(config.debug.fixedCatch.enabled,false);
-  assert.equal(counts.root,2);assert.equal(counts.start,3);assert.equal(counts.gameDispose,2);assert.equal(windowTarget.CYBER_FISHING_CONFIG_RUNTIME,configRuntime);
+  assert.equal(counts.root,2);assert.equal(counts.start,2,'two starts: the House no longer restarts the loop (spec 179 D12)');assert.equal(counts.gameDispose,2);assert.equal(windowTarget.CYBER_FISHING_CONFIG_RUNTIME,configRuntime);
   assert.equal(startupErrors.length, 0, 'successful startup reports no errors');
   resetBuild();const failed=startup.startDevelopmentGame();assert.equal(startup.startDevelopmentGame(), failed);
   const startupFailure = new Error('fixture build failure');rejectBuild(startupFailure);await assert.rejects(failed,/fixture build failure/);
@@ -887,7 +906,7 @@ async function checkNativeDevelopmentLifecycle() {
   assert(startupErrors[0].includes(startupFailure), 'startup reports the original error with its stack');
   assert.equal(listeners.size,0);assert.equal(windowTarget.game,null);assert.equal(counts.consoleDispose,3);assert.equal(counts.overlayDispose,3);
   resetBuild();const hidden=startup.startDevelopmentGame();listeners.get('pagehide')();resolveBuild(app);await hidden;
-  assert.equal(counts.start,3,'pagehide during a pending build never starts a late game loop');assert.equal(counts.gameDispose,3);
+  assert.equal(counts.start,2,'pagehide during a pending build never starts a late game loop');assert.equal(counts.gameDispose,3);
   assert.equal(counts.consoleDispose,4);assert.equal(counts.overlayDispose,4);assert.equal(counts.watchdogDispose,2);
   assert.equal(counts.balanceDispose,4,'every DEV cleanup disposes the balance windows');
   assert.equal(counts.surfaces,4);assert.equal(counts.surfaceDispose,4, "DEV restart, failed build and pagehide clean every surface exactly once");

@@ -66,6 +66,11 @@ export const CONFIG = {
       applyEverySec: 5, // як часто знос записується в інвентар, поки йде
     },
   },
+  // Spec 179 D12 (TK-371): while the player is in the house the location's world goes on in these steps without drawing
+  // (game time, weather, wind, zones, the emission); a longer step is cheaper, a shorter one keeps the world finer.
+  houseVisit: {
+    worldTickMs: 250, // крок світу локації, поки гравець у будинку, мс
+  },
   // Spec 181 D1: the player's buffs and debuffs (status_effects.js); PlayerStatusEffects reads them live.
   statusEffects: STATUS_EFFECTS,
   canvas: {

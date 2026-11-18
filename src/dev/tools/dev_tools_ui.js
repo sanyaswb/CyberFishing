@@ -1208,6 +1208,9 @@ export class DevToolsUI {
 
 
   #initBtn(config) {
+    // Spec 179 D12 (TK-371, owner Q2): the game page has no DevTools button — its corner is the house button's; the
+    // panel opens from the screen's edge (DevToolsEdgeOpener). Another screen may still mount a toggle in its header.
+    if (!this.#toggleMountNode) return;
     this.#btn = document.createElement("button");
     this.#btn.appendChild(createDevIcon(document, "gear", "devtools__toggle-icon"));
     this.#btn.className = "hud-control hud-control--square devtools__toggle";

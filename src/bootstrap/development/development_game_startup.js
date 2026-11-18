@@ -71,7 +71,7 @@ import { createAssetLoadSources } from "../production/asset_load_sources.js";
 import { createProductionConfigContext } from "../production/game_config_composition.js";
 import { UiSurfaceAdapter } from "../../platform/browser/dom/ui_surface_adapter.js";
 import { composeDevTimeDisplay } from "./dev_time_composition.js";
-import { ScreenHost } from "../../engine/screens/screen_host.js";
+import { composeHouseVisit } from "../production/house_visit_composition.js";
 import { createDevHouseScreenFactory } from "./dev_house_screen_composition.js";
 import { FrameProfiler } from "../../dev/diagnostics/frame_profiler.js";
 import { PerformanceStartupMarks } from "../../platform/browser/diagnostics/performance_startup_marks.js";
@@ -246,26 +246,29 @@ async function startGame() {
   });
   let zoneEditorDrag = null;
   let compositionRoot = null;
-  const resumeGame = () => {
-    void game?.start().catch((error) => windowTarget.console.error(error));
-  };
-  // The House is a screen of this page (spec 084), composed over the session's live bait and clock.
-  const screens = new ScreenHost({
-    base: { suspend: () => game?.stop(), resume: resumeGame },
-    factories: {
-      house: createDevHouseScreenFactory({
-        documentTarget,
-        windowTarget,
-        uiSurface,
-        config: CONFIG,
-        getSessionServices: () => compositionRoot.getSessionServices(),
-        getGameTimeControl: () => timeControl,
-        getDevTools: () => devTools,
-      }),
+  // The House is a screen of this page (spec 084), composed over the session's live bait and clock. Spec 179 D12
+  // (TK-371): the game goes on under it (the world without drawing); the HUD's house button checks the tackle is put
+  // away, DevTools («Відкрити будинок», ?screen=house) opens it directly for testing.
+  const houseVisit = composeHouseVisit({
+    documentTarget,
+    uiSurface,
+    logger: new ConsoleLogger(),
+    game: {
+      requestHouseEntry: () => game?.requestHouseEntry() === true,
+      enterHouse: () => game?.enterHouse(),
+      leaveHouse: () => game?.leaveHouse(),
     },
+    createHouseScreen: createDevHouseScreenFactory({
+      documentTarget,
+      windowTarget,
+      uiSurface,
+      config: CONFIG,
+      getSessionServices: () => compositionRoot.getSessionServices(),
+      getGameTimeControl: () => timeControl,
+      getDevTools: () => devTools,
+    }),
   });
-  const openHouse = () =>
-    screens.open("house").catch((error) => windowTarget.console.error(error));
+  const openHouse = () => houseVisit.openDirect();
   let gameReady = false;
   let disposed = false;
   const cleanup = () => {
@@ -273,7 +276,7 @@ async function startGame() {
     disposed = true;
     cheatInput.dispose();
     browserLifecycle.removePagehideListener(cleanup);
-    screens.dispose();
+    houseVisit.dispose();
     zoneEditorDrag?.dispose();
     watchdog?.dispose();
     balanceWindows?.dispose();
@@ -450,7 +453,9 @@ async function startGame() {
               storageCache,
               uiSurface,
               developmentMount,
-              developmentMount,
+              // Spec 179 D12 (owner Q2): no DevTools button on the game page — the house button has its corner; the
+              // panel opens from the screen's edge.
+              null,
               feedback,
               () => zoneEditorDrag?.gestureActive === true,
             );

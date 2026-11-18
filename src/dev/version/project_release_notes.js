@@ -1,6 +1,7 @@
 // Release notes, newest first (unshift with every patch). DEV only: no production code reads them, and in the start's
 // bundle they cost 13 KB gzip (spec 160). dev.html publishes them with the version: window.CYBER_FISHING_PROJECT_VERSION.notes.
 export const PROJECT_RELEASE_NOTES = Object.freeze([
+  "TK-371 (spec 179 stage I): the house does not stop the game (world steps of houseVisit.worldTickMs, no drawing); in the house no emission effects, dose, wear or radiation debuff; entry with the tackle put away; HUD house button in production and DEV; DevTools from the screen edge in dev.html.",
   "TK-370 (spec 179 stage H): items with a condition wear while radiation > 0 (one mean full emission = the quality's range, rods/reels immunity 0.5); worn quality; condition 0 — broken: no cast, a broken gas mask does not protect, grey card; CONFIG.emission.wear.",
   "TK-369 (spec 179 stage G): radiation multiplies the anomaly chance and leans the weight up (radiationMultipliers); keepnet and hook fish take a dose and die by tolerance (unique never); 10 conditional keepnet levels with shields; removeRadiationDead; live bait save schema 7; RANDOMIZER «Кльов: радіація».",
   "TK-367.1: DevTools «Керування» buttons two to a line with short labels (DevToolsUI.createButtonGrid).",

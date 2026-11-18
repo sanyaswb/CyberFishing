@@ -97,7 +97,8 @@ export function composeHouseScreen({ documentTarget, windowTarget, uiSurface, li
   presenter = new HousePresenter({ liveBait, room, gameTime, view, labels: HOUSE_LABELS });
   const refresh = () => { presenter.refresh(); timeDisplay.update(gameTime.getHours()); };
   refresh();
-  // The game loop is suspended while the House is open, so the House advances live bait care itself.
+  // The game loop only ticks the location's world while the House is open (spec 179 D12), so the House advances live
+  // bait care itself.
   const careTimer = windowTarget.setInterval(() => { liveBait.advance(); refresh(); }, CONFIG.liveBait.careTickMs);
   const displayTimer = windowTarget.setInterval(refresh, CONFIG.liveBait.displayTickMs);
   // The clock follows every game minute (spec 081); the view refresh above keeps its own interval.

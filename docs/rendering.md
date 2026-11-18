@@ -149,6 +149,9 @@ overdraw and texture memory, not from game code.
 13. Static or slow content (the background between camera moves, a future parallax layer between offset changes)
     belongs in its own layer at its own resolution, redrawn only when it changes. Per-frame redraw is fine only
     while the measured budget holds.
+    A screen over the game (the House, spec 179 D12) does not stop the loop: the game draws nothing
+    (`GameApplication.draw` returns while `HousePresence.isInHouse()`), and its update only steps the location's world
+    every `CONFIG.houseVisit.worldTickMs` (250 ms) — the frame's cost is the screen's own DOM.
 
 ## Draw order
 

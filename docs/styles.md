@@ -215,6 +215,10 @@ saved-preview and list surfaces mix in `inventory-panel`.
 Editor tab thumbnails use the same skin `visibleHeight`/`focusX` scaling and bottom crop as backpack item cards,
 owned by `item-cards.css`; their placement inside the tab belongs to `assembly-editor.css`.
 
+Spec 179 D12 (TK-371): `house.css` is a production stylesheet now (the game page opens the House); the HUD's house
+button `game-control--house` (`hud/game-controls.css`) is fixed in the top-left corner. The DEV page has no DevTools
+button: `devtools__edge` (`dev-tools.css`) is shown at all times, not only in the zone editor.
+
 Spec 179 D10 (TK-370): a broken item (condition 0) adds `inventory-item-card--broken` (`item-cards.css`): the whole
 card grey (`filter: grayscale(1)` — art, frame and background) under a grey semi-transparent `::after` veil (`z-index` 4,
 above the card's own layers, no pointer events). Spec 179 D8 (TK-369): a catch killed by radiation in the keepnet adds
