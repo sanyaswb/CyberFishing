@@ -46,15 +46,14 @@ export class EmissionCameraShake {
     const dt = Math.max(0, finiteOr(dtMs, 0)) / 1000;
     this.#time += dt;
     const irregularity = clampUnit(finiteOr(settings.irregularity, 0));
-    const spread = () => 1 + (this.#random() * 2 - 1) * irregularity;
     // Jolts.
-    if (this.#nextJoltSec === null) this.#nextJoltSec = this.#interval(level, settings, spread);
+    if (this.#nextJoltSec === null) this.#nextJoltSec = this.#interval(level, settings, irregularity);
     this.#nextJoltSec -= dt;
     if (this.#nextJoltSec <= 0) {
       this.#joltAge = 0;
-      this.#joltSec = Math.max(0.05, finiteOr(settings.joltSec, 0.45) * spread());
+      this.#joltSec = Math.max(0.05, finiteOr(settings.joltSec, 0.45) * this.#spread(irregularity));
       this.#joltPx = this.#joltMaxPx(level, settings) * lerp(0.6, 1, this.#random());
-      this.#nextJoltSec = this.#interval(level, settings, spread);
+      this.#nextJoltSec = this.#interval(level, settings, irregularity);
     } else this.#joltAge += dt;
     const joltShare = this.#joltAge < this.#joltSec ? Math.sin(Math.PI * this.#joltAge / this.#joltSec) : 0;
     // The peak's constant shake, its size wandering.
@@ -64,7 +63,7 @@ export class EmissionCameraShake {
     const peakHigh = Math.max(peakLow, pairValue(settings.peakPx, 1, peakLow));
     this.#wanderLeftSec -= dt;
     if (this.#wanderLeftSec <= 0) {
-      this.#wanderLeftSec = Math.max(0.1, finiteOr(settings.wanderSec, 1.2) * spread());
+      this.#wanderLeftSec = Math.max(0.1, finiteOr(settings.wanderSec, 1.2) * this.#spread(irregularity));
       this.#wanderTargetPx = lerp(peakLow, peakHigh, this.#random());
     }
     const ease = 1 - Math.exp(-dt * 3 / Math.max(0.1, finiteOr(settings.wanderSec, 1.2)));
@@ -73,9 +72,9 @@ export class EmissionCameraShake {
     const amplitude = Math.max(joltShare * this.#joltPx, peakPx);
     // Direction: unrelated sines, so the path never settles into a pattern.
     const omega = TWO_PI * Math.max(0.1, finiteOr(settings.frequencyHz, 14)) * this.#time;
-    const [a, b, c, d] = this.#phases;
-    record.x = amplitude * (0.6 * Math.sin(omega + a) + 0.4 * Math.sin(omega * 1.73 + b));
-    record.y = amplitude * (0.6 * Math.sin(omega * 1.13 + c) + 0.4 * Math.sin(omega * 2.11 + d));
+    const phases = this.#phases;
+    record.x = amplitude * (0.6 * Math.sin(omega + phases[0]) + 0.4 * Math.sin(omega * 1.73 + phases[1]));
+    record.y = amplitude * (0.6 * Math.sin(omega * 1.13 + phases[2]) + 0.4 * Math.sin(omega * 2.11 + phases[3]));
     record.amplitudePx = amplitude;
     record.marginPx = Math.max(this.#joltMaxPx(level, settings), this.#peakShare * peakHigh);
     return record;
@@ -85,9 +84,14 @@ export class EmissionCameraShake {
     return Math.max(0, lerp(pairValue(settings.joltPx, 0, 3), pairValue(settings.joltPx, 1, 8), level));
   }
 
-  #interval(level, settings, spread) {
+  #interval(level, settings, irregularity) {
     const mean = lerp(pairValue(settings.joltIntervalSec, 0, 5.5), pairValue(settings.joltIntervalSec, 1, 1.2), level);
-    return Math.max(0.05, mean * spread());
+    return Math.max(0.05, mean * this.#spread(irregularity));
+  }
+
+  // 1 ± irregularity, one random draw (a method, not a per-frame closure: the update allocates nothing).
+  #spread(irregularity) {
+    return 1 + (this.#random() * 2 - 1) * irregularity;
   }
 
   #rest() {

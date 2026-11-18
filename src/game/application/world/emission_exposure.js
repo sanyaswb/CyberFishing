@@ -3,7 +3,8 @@ import { isItemBroken } from "../../domain/items/condition/item_condition_qualit
 // Spec 179 stage E (TK-324), spec 181: how the emission reaches the player.
 // - intensity(): the emission's intensity now, 0…1; 0 outside an emission.
 // - modifier(key): the share of the emission's screen effect that stays under the player's statuses (spec 181 D1:
-//   emission.vignette, .blur, .blurRate — the vodka 0.5, the gas mask in its slot 0; the product over the statuses).
+//   emission.vignette, .blur, .blurRate — the vodka 0.7 / 0.55 / 0.4 by the bottles (TK-374), the gas mask in its slot
+//   0; the product over the statuses).
 // - isCastBlocked(): from the emission's start to its end a cast needs a gas mask (the vodka does not allow it); a fight
 //   that is already on continues (owner, Q10), only new casts are refused.
 // It reads the environment's snapshot, the equipment and the statuses live, allocates nothing and keeps no state.

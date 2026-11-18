@@ -2,6 +2,11 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.52.30 - Review before push (TK-372.1, TK-374.1)
+
+- The emission's shake no longer allocates on every frame; it shakes exactly as before.
+- Descriptions brought up to date: the vodka stacks, and the real cost of being drunk (the scene's blur on every frame).
+
 ## v0.52.29 - Vodka stacks and makes you drunk (TK-374)
 
 - Each bottle of vodka adds to the effect (up to 5) and starts its 10 minutes again; all of it ends 10 minutes after the last bottle.
@@ -56,12 +61,3 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 - A broken gas mask no longer protects from the emission.
 - In the inventory a broken item is grey, art, frame and background alike, under a grey veil.
 - Settings in DevTools «Конфіг» → emission.wear: on/off, wear multiplier, ranges by quality, how the condition lowers the quality, how often the wear is written.
-
-## v0.52.20 - Radiation changes the bite and kills fish in the keepnet (TK-369)
-
-- Radiation now changes the bite (spec 179 stage G): at full radiation a crucian or a perch is about five times more likely to be unique, and the catch leans to the heavy end of the species' weight range. Each species has its own multipliers (FISH_DB radiationMultipliers: unique, big, species; species is 0 for now). Without radiation the bite is exactly as before.
-- Fish in the keepnet and a live bait on the hook take a radiation dose. A live bait dies in about 3 seconds of full radiation, a 0.3 kg fish in about 46 seconds, a 1 kg fish in 2 minutes. A unique fish never dies, and the aquarium is safe.
-- The keepnet has 10 conditional levels, each keeping out its own share of the dose (0 to 90 %). For now the level is set in DevTools (CONFIG.liveBait.keepnet.level).
-- A fish killed by radiation leaves the keepnet. With «Мертва зникає з садка» (removeRadiationDead) off it stays, grey and marked «Мертва · радіація», and can only be thrown away.
-- Live bait saves move to schema 7; fish saved earlier start with no dose.
-- DevTools «РАНДОМАЙЗЕР» has a new test, «Кльов: радіація». It runs the game's own bite rolls for each species at radiation 0, 50 and 100 % and reports the unique share, the mean weight and the levels.

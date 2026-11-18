@@ -1,6 +1,7 @@
 // Release notes, newest first (unshift with every patch). DEV only: no production code reads them, and in the start's
 // bundle they cost 13 KB gzip (spec 160). dev.html publishes them with the version: window.CYBER_FISHING_PROJECT_VERSION.notes.
 export const PROJECT_RELEASE_NOTES = Object.freeze([
+  "Review before push (TK-372.1, TK-374.1): EmissionCameraShake without a per-frame closure (same random order); stale vodka comments; rendering.md — the intoxication's blur cost.",
   "Spec 179 L (TK-374): vodka add ×5, modifiers as lists by stacks (30/45/60 %); IntoxicationEffect (blur + figure-of-eight sway, fades under radiation); composeEmissionScreen.",
   "Spec 179 J (TK-372): EmissionCameraShake (jolts → constant at the peak) → SceneLayer.setViewMotion → SceneCanvasMotion (CSS transform of the scene canvas).",
   "Spec 179 K (TK-373): gasMask modifiers.radiation.grain 0.3 → world.weather.grainShare → the hiss's opacity.",

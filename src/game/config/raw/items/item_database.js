@@ -1389,8 +1389,9 @@ export const ITEM_DB = {
   },
 
   // Spec 179 stage F (TK-340), spec 181: drinks used from the backpack («Випити»). use.statusId starts the player's status
-  // (CONFIG.statusEffects: the vodka — the emission's screen effects weaker for 10 minutes; another bottle renews the
-  // time, never adds up, owner Q8). It does not allow casting: that needs a gas mask.
+  // (CONFIG.statusEffects: the vodka — the emission's screen effects weaker for 10 minutes; since TK-374 each bottle adds
+  // a stack, up to 5, and starts the 10 minutes again; without radiation it makes the player drunk). It does not allow
+  // casting: that needs a gas mask.
   drinks: {
     vodka_bottle: {
       id: "vodka_bottle",
