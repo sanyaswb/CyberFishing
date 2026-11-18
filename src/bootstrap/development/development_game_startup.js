@@ -1,3 +1,4 @@
+import { DEVELOPMENT_PLAYER_START } from "../../dev/data/development_player_start.js";
 import { RadioEffectTuning } from "../../dev/radio/radio_effect_tuning.js";
 import { ConsoleLogger } from "../../platform/browser/diagnostics/console_logger.js";
 import { LocalStorageCache } from "../../platform/browser/storage/local_storage_cache.js";
@@ -336,6 +337,8 @@ async function startGame() {
     });
     compositionRoot = new GameCompositionRoot(CONFIG, {
       itemDb: itemCatalog,
+      // Spec 184 D6 (TK-377): dev.html starts a new player with every test item, 10 vodka and a gas mask.
+      playerStart: DEVELOPMENT_PLAYER_START,
       assetLoadPlan: assetLoadPlanStore.plan(),
       documentTarget,
       windowTarget,

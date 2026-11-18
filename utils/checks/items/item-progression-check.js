@@ -151,7 +151,7 @@ class ItemProgressionCheck {
       }
     }
     // TK-249: + carp_mix_basic_25/_50/_100. TK-340: + gas_mask_basic and vodka_bottle.
-    Assertion.equal(gameplay, 42, "all catalog items including live bait, backpack, battery, radio, chum packs, the gas mask and the vodka have explicit profiles");
+    Assertion.equal(gameplay, 43, "all catalog items including live bait, backpack, battery, radio, chum packs, the gas mask, the vodka and the 15 m line have explicit profiles");
     Assertion.equal(technical, 1, "all technical records explicitly excluded");
     for (const [groupId, group] of Object.entries(
       this.#runtime.CONFIGURATION.groups,

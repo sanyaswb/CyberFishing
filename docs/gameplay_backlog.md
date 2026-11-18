@@ -20,6 +20,19 @@ Notes: suspected owner module, related checks.
 
 ## Open
 
+### G-147 The production player starts with a short set; dev.html with every test item, vodka and a gas mask (P2, done in v0.52.33; owner acceptance pending)
+Found: 2026-11-18, owner, spec 184 Q1, Q2.
+Reproduce: start as a new player (no save) on index.html and on dev.html; open a DEV save made before.
+Expected: production — the bamboo rod, the day float, a 15 m line, the basic hook and 15 oil worms, nothing else;
+dev.html — every test item plus 10 vodka (one stack) and a gas mask; a DEV save from before gets the 10 bottles and the
+mask once.
+Actual (before): both pages started with every test item, without vodka or a gas mask.
+Notes: TK-377 — `CONFIG.player` is the production set (new `line_basic_15`; on the reel-less bamboo rod TK-288 leaves
+10 m on the rod and 5 m in the backpack), `DEVELOPMENT_PLAYER_START` + `playerStartConfig`, one-time grants
+`spec184-dev-vodka` (`evenIfHeld`) and `spec184-dev-gas-mask`. Only new players and the DEV grants are affected; saves
+keep their items. Checks `player-inventory`, `config-runtime`, `item-progression`, `item-condition`. Game-cycle
+unchanged.
+
 ### G-146 A drink slot beside the gas mask and a HUD drink button (P2, done in v0.52.32; owner acceptance pending)
 Found: 2026-11-18, owner, spec 184.
 Reproduce: put vodka into the equipment; fish; drink.

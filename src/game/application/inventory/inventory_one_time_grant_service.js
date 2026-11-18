@@ -1,7 +1,7 @@
 import { InventoryItemLocation } from "../../domain/inventory/inventory_item_location.js";
 
-// Configured one-time grants ({ id, itemId, quantity }) for saves made before an item existed (spec 143 D-P7: the
-// first battery). Each grant adds a new inventory item (or, when the item is already there, adds nothing) and marks
+// Configured one-time grants ({ id, itemId, quantity, evenIfHeld? }) for saves made before an item existed (spec 143
+// D-P7: the first battery). Each grant adds a new inventory item (or, when the item is already there, adds nothing) and marks
 // its id in one inventory transaction, whose commit saves both; a marked grant is never applied again.
 export class InventoryOneTimeGrantService {
   #ledger;
@@ -27,8 +27,9 @@ export class InventoryOneTimeGrantService {
       grant?.id && !this.#ledger.has(grant.id) && this.#definitionLookup(grant.itemId));
     if (pending.length === 0) return Object.freeze([]);
     return Object.freeze(this.#transaction.runAtomic(() => pending.map((grant) => {
-      // An inventory that already holds the item (a start or an earlier conversion with it) is only marked.
-      if (this.#repository.find((entry) => entry.itemId === grant.itemId).length > 0) {
+      // An inventory that already holds the item (a start or an earlier conversion with it) is only marked; a grant with
+      // evenIfHeld (spec 184 Q2, the DEV bottles) adds its items anyway.
+      if (grant.evenIfHeld !== true && this.#repository.find((entry) => entry.itemId === grant.itemId).length > 0) {
         this.#ledger.mark(grant.id);
         return Object.freeze({ grantId: grant.id, instanceId: null });
       }

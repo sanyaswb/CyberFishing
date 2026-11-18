@@ -370,6 +370,34 @@ export const ITEM_DB = {
       },
     },
 
+    // Spec 184 Q1 (TK-377): the production player's starting line — 15 m (the first line's other stats).
+    line_basic_15: {
+      id: "line_basic_15",
+      name: "Ліска 15 м",
+      itemType: "fishing_line",
+      icon: "line",
+      rarityProfile: {
+        mode: "authored",
+        tier: 1,
+        maxTier: 5,
+        isUnique: false,
+      },
+      progressionProfile: { groupId: "line.fishing" },
+      displayStats: {
+        lengthMeters: "Довжина: м.",
+        diameterMm: "Товщина: мм",
+        maxLoadKg: "Макс. навантаження: кг.",
+        durability: "Стан: %",
+      },
+      gameplayStats: {
+        lengthMeters: 15,
+        diameterMm: 0.22,
+        maxLoadKg: 1,
+        quality: 5,
+        durability: 100,
+        durabilityMaxLoadLossPerPercent: 0.001,
+      },
+    },
     line_test_2: {
       id: "line_test_2",
       name: "Test line II",

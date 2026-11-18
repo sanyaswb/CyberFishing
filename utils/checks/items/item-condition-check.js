@@ -180,8 +180,8 @@ class ItemConditionCheck {
       }
     }
     // Spec 179 stage H (TK-370): the gas mask has a condition too.
-    Assertion.equal(gameplayCount, 11, "only durability-backed item groups are covered");
-    Assertion.equal(authoredCount, 11, "condition-enabled items author durability explicitly");
+    Assertion.equal(gameplayCount, 12, "only durability-backed item groups are covered (the 15 m line, spec 184)");
+    Assertion.equal(authoredCount, 12, "condition-enabled items author durability explicitly");
   }
 
   #checkFreshnessCapability() {

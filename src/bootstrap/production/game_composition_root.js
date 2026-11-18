@@ -75,6 +75,7 @@ import { EmissionScreenEffect, sceneBlurPx } from "../../game/presentation/weath
 import { EmissionCameraShake } from "../../game/presentation/weather/emission_camera_shake.js";
 import { IntoxicationEffect } from "../../game/presentation/status/intoxication_effect.js";
 import { composeEmissionScreen } from "./emission_screen_composition.js";
+import { playerStartConfig } from "./player_start_config.js";
 import { EmissionVeilDomRenderer } from "../../platform/browser/dom/emission_veil_dom_renderer.js";
 import { WindModel } from "../../game/domain/weather/wind_model.js";
 import { composeGameTime } from "./game_time_composition.js";
@@ -257,6 +258,7 @@ export class GameCompositionRoot {
   #storageCache;
   #rendering;
   #uiSurface;
+  #playerStart;
   #toolbarMountNode;
   #tackleMountNode;
   #depthMountNode;
@@ -292,6 +294,9 @@ export class GameCompositionRoot {
       createDiagnosticsLogger = null,
       // Spec 171 stage 4: the release's offline cache ({ enable() }), enabled after the full load; null without a worker.
       offlineCache = null,
+      // DEV (spec 184 D6, TK-377): a new player's start ({ equipment, assemblies, inventory, oneTimeGrants }) instead of
+      // CONFIG.player's production set; its grants join the production ones. Production passes none.
+      playerStart = null,
       createFightDiagnosticsBuilder,
       createInventorySplitSource,
       createFrameProbe,
@@ -389,6 +394,7 @@ export class GameCompositionRoot {
       );
     }
     this.#offlineCache = offlineCache;
+    this.#playerStart = playerStart;
     this.#createFightDiagnosticsBuilder = createFightDiagnosticsBuilder;
     this.#uiSurface = uiSurface;
     this.#toolbarMountNode = toolbarMountNode;
@@ -1585,7 +1591,8 @@ export class GameCompositionRoot {
     const inventory = own(
       createPlayerInventory({
         itemDB: this.#itemDb,
-        playerConfig: this.#config.player,
+        // Spec 184 D6 (TK-377): DEV starts a new player with its own set.
+        playerConfig: playerStartConfig(this.#config.player, this.#playerStart),
         events: new InventoryEventBridge(
           new BrowserEventTargetAdapter(this.#documentTarget),
         ),

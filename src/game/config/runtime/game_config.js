@@ -470,6 +470,10 @@ export const CONFIG = {
   itemStatOverrides: ITEM_STAT_OVERRIDE_CONFIG,
   degradationColors: null,
 
+  // Spec 184 Q1 (TK-377, owner): what a new production player starts with — «бамбукова вудка, простий поплавок, ліска
+  // 15м і 15 червяків масляних, крючок звичайний, і все»: the tackle assembled and equipped, one worm on the hook and 14 in
+  // the jar. On the bamboo rod (no reel) the installed line is cut to what the rod takes (TK-288), the rest lies in the
+  // backpack. dev.html starts with DEVELOPMENT_PLAYER_START (src/dev/data) instead.
   player: {
     equipment: {
       rodId: "uuid-rod-float",
@@ -478,7 +482,7 @@ export const CONFIG = {
       tackleId: "uuid-hook",
       floatId: "uuid-float",
       handChumId: null,
-      netId: "uuid-net",
+      netId: null,
       deliveryId: null,
       gasMaskId: null,
     },
@@ -498,55 +502,21 @@ export const CONFIG = {
     },
 
     inventory: [
-      { instanceId: "uuid-rod-spin", itemId: "rod_test_spin", quantity: 1 },
-      { instanceId: "uuid-rod-feeder", itemId: "rod_test_feeder", quantity: 1 },
       { instanceId: "uuid-rod-float", itemId: "rod_test_float", quantity: 1 },
-      { instanceId: "uuid-reel", itemId: "reel_test", quantity: 1 },
-      { instanceId: "uuid-reel-nodrag", itemId: "reel_bolognese_nodrag", quantity: 1 },
-      { instanceId: "uuid-line", itemId: "line_test_1", quantity: 1 },
-      { instanceId: "uuid-line-2", itemId: "line_test_2", quantity: 1 },
-      { instanceId: "uuid-line-3", itemId: "line_test_3", quantity: 1 },
-      { instanceId: "uuid-leader", itemId: "leader_test_025", quantity: 1 },
+      { instanceId: "uuid-line", itemId: "line_basic_15", quantity: 1 },
       { instanceId: "uuid-hook", itemId: "hook_basic", quantity: 1 },
-      { instanceId: "uuid-live-crucian", itemId: "live_crucian", quantity: 1 },
-      { instanceId: "uuid-spring", itemId: "feeder_spring_basic", quantity: 1 },
       {
         instanceId: "uuid-worm-attached",
         itemId: "oil_worm",
         quantity: 1,
         location: { kind: "ATTACHED", parentInstanceId: "uuid-hook", slotId: "bait", slotIndex: 0 },
       },
-      { instanceId: "uuid-worm", itemId: "oil_worm", quantity: 50 },
-      { instanceId: "uuid-worm-25", itemId: "oil_worm_25", quantity: 25 },
-      { instanceId: "uuid-worm-50", itemId: "oil_worm_50", quantity: 50 },
-      { instanceId: "uuid-worm-75", itemId: "oil_worm_75", quantity: 75 },
-      { instanceId: "uuid-worm-100", itemId: "oil_worm_100", quantity: 100 },
-      { instanceId: "uuid-bread", itemId: "bread", quantity: 25 },
-      { instanceId: "uuid-bread-10", itemId: "bread_10", quantity: 10 },
-      { instanceId: "uuid-bread-25", itemId: "bread_25", quantity: 25 },
-      { instanceId: "uuid-bread-50", itemId: "bread_50", quantity: 50 },
-      { instanceId: "uuid-spinner", itemId: "test_spinner", quantity: 1 },
-      { instanceId: "uuid-wob-susp", itemId: "test_wobbler_suspend", quantity: 1 },
-      { instanceId: "uuid-wob-sink", itemId: "test_wobbler_sinking", quantity: 1 },
-      { instanceId: "uuid-jig", itemId: "test_jig", quantity: 1 },
+      { instanceId: "uuid-worm", itemId: "oil_worm", quantity: 14 },
       { instanceId: "uuid-float", itemId: "float_day", quantity: 1 },
-      { instanceId: "uuid-float-night", itemId: "float_night", quantity: 1 },
-      { instanceId: "uuid-float-sliding", itemId: "float_sliding", quantity: 1 },
-      { instanceId: "uuid-net", itemId: "net_basic", quantity: 1 },
-      { instanceId: "uuid-chum", itemId: "carp_mix_basic", quantity: 15 },
-      { instanceId: "uuid-chum-25", itemId: "carp_mix_basic_25", quantity: 25 },
-      { instanceId: "uuid-chum-50", itemId: "carp_mix_basic_50", quantity: 50 },
-      { instanceId: "uuid-chum-100", itemId: "carp_mix_basic_100", quantity: 100 },
-      { instanceId: "uuid-boat", itemId: "boat_lvl3", quantity: 1 },
-      { instanceId: "uuid-battery", itemId: "battery_basic", quantity: 1 },
-      { instanceId: "uuid-battery-2", itemId: "battery_volt_2", quantity: 1 },
-      { instanceId: "uuid-battery-3", itemId: "battery_volt_3", quantity: 1 },
-      { instanceId: "uuid-battery-4", itemId: "battery_volt_4", quantity: 1 },
-      { instanceId: "uuid-radio", itemId: "radio_receiver_basic", quantity: 1 },
-      { instanceId: "uuid-backpack", itemId: "backpack_basic", quantity: 1 },
     ],
 
-    // Spec 143 D-P7: a save made before batteries existed gets one battery once (new players have it above).
+    // Spec 143 D-P7: a save made before batteries existed gets one battery once (a new player's start marks it as given:
+    // since spec 184 Q1 production starts without one).
     oneTimeGrants: [
       { id: "spec143-first-battery", itemId: "battery_basic", quantity: 1 },
     ],

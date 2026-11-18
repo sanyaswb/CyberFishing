@@ -2,6 +2,11 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.52.33 - The production start is a short set; dev.html keeps every test item, with vodka and a gas mask (TK-377)
+
+- A new player in the game starts with the bamboo rod, the day float, a 15 m line, the basic hook and 15 oil worms (one on the hook) — nothing else. The bamboo rod without a reel takes 10 m of the line; the other 5 m lie in the backpack.
+- dev.html starts a new player with every test item plus 10 vodka (one stack) and a gas mask; a dev.html save from before gets the 10 bottles and the mask once.
+
 ## v0.52.32 - A drink slot and a HUD drink button (TK-376)
 
 - A new «Напій» slot beside the gas mask takes the bottles as one stack; a tap on a bottle in the backpack puts it there, «Випити» is in the slot's editor.
@@ -43,9 +48,3 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 ## v0.52.24 - A broken tackle says it is broken (TK-370.1)
 
 - A cast with a broken item in the tackle opened the inventory with «Спочатку споряди ліску для закидання». It now shows «Снасть зламана — закинути не можна.».
-
-## v0.52.23 - The house's code in the game's bundle (TK-371.1)
-
-- The production game page loads the house's code with the rest of the game instead of on the first visit.
-- The lazy load split the modules the house shares with the game into four more start files: 14 JavaScript files at start, over the limit of 10.
-- The start is back to its own files. The house's art still loads only when the house is shown.

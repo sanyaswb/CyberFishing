@@ -14,12 +14,18 @@ class MemoryCache {
 }
 
 // Composes PlayerInventory with the production modules, the way GameCompositionRoot does.
-function compose({ cache = new MemoryCache(), playerConfig = null, makeRandomId = () => null,
+// production: start from CONFIG.player's production set instead of the DEV start (no vodka, no gas mask).
+function compose({ cache = new MemoryCache(), playerConfig = null, production = false, makeRandomId = () => null,
   itemProgressionResolver = { resolve: () => ({ available: false }) } } = {}) {
   const runtime = new SourceRuntime();
   const load = (file) => runtime.importModule(file);
   const { createPlayerInventory } = load("src/bootstrap/production/player_inventory_composition.js");
   const { CONFIG } = load("src/game/config/runtime/game_config.js");
+  // Spec 184 D6 (TK-377): the scenarios use the DEV start (every test item), as dev.html does; checkProductionStart
+  // covers CONFIG.player's own production set.
+  const { playerStartConfig } = load("src/bootstrap/production/player_start_config.js");
+  const { DEVELOPMENT_PLAYER_START } = load("src/dev/data/development_player_start.js");
+  const devPlayer = playerStartConfig(CONFIG.player, DEVELOPMENT_PLAYER_START);
   const { ITEM_DB } = load("src/game/config/databases/item_catalog.js");
   const { CastDistanceCalculator } = load("src/game/domain/casting/cast_distance_calculator.js");
   const { FightPhysicsConfigAdapter } = load("src/game/config/physics/fight_physics_config_adapter.js");
@@ -41,7 +47,7 @@ function compose({ cache = new MemoryCache(), playerConfig = null, makeRandomId 
   const forwarded = [];
   const inventory = createPlayerInventory({
     itemDB: ITEM_DB,
-    playerConfig: playerConfig || CONFIG.player,
+    playerConfig: playerConfig || (production ? CONFIG.player : devPlayer),
     events: new InventoryEventBridge({ emit: (type, detail) => forwarded.push({ type, detail }) }),
     castDistanceCalculator: new CastDistanceCalculator(CONFIG),
     lineRules: new LineCompatibilityRules(physicsConfig.getLineConfig(), { messages: INVENTORY_RULE_MESSAGES }),
@@ -59,7 +65,7 @@ function compose({ cache = new MemoryCache(), playerConfig = null, makeRandomId 
     makeRandomId,
     now: () => NOW,
   });
-  return { inventory, cache, forwarded, actions: InventoryActionType, TackleLoadLimitPolicy, runtime, CONFIG };
+  return { inventory, cache, forwarded, actions: InventoryActionType, TackleLoadLimitPolicy, runtime, CONFIG, devPlayer };
 }
 
 const items = (inventory) => inventory.inventoryFacade.getViewModel().inventory.items;
@@ -84,14 +90,59 @@ function checkFreshStart() {
   assert.equal(loose.find((i) => i.itemId === "oil_worm_100")?.quantity, 100, "oil_worm_100 pack has 100 items");
 }
 
+// Spec 184 Q1, Q2 (TK-377): a new production player has only the bamboo rod, the day float, the 15 m line, the basic hook
+// and 15 oil worms (one on the hook); the DEV start keeps every test item plus 10 vodka and a gas mask, and a DEV save
+// from before gets them once.
+function checkProductionStart() {
+  const { CONFIG, devPlayer } = compose();
+  const { inventory } = compose({ playerConfig: CONFIG.player });
+  const equipped = inventory.getEquipped();
+  assert.equal(JSON.stringify([equipped.rod?.itemId, equipped.line?.itemId, equipped.float?.itemId, equipped.hooks?.[0]?.itemId,
+    equipped.baits?.[0]?.itemId]), JSON.stringify(["rod_test_float", "line_basic_15", "float_day", "hook_basic", "oil_worm"]),
+    "production starts with the bamboo rod, the 15 m line, the day float and the hook with a worm, equipped");
+  assert.equal(equipped.net ?? null, null, "and no landing net");
+  // TK-288: the bamboo rod (no reel) takes 10 m; the other 5 m of the 15 m line lie in the backpack.
+  assert.equal(equipped.line?.effectiveStats?.lengthMeters, 10, "the rod holds 10 m of the line");
+  assert.equal(JSON.stringify(inventory.inventoryFacade.getViewModel().inventory.items.filter((item) => item.itemId === "line_basic_15")
+    .map((item) => item.effectiveStats?.lengthMeters)), JSON.stringify([5]), "the other 5 m are in the backpack");
+  const owned = inventory.inventoryFacade.getViewModel().inventory.items;
+  const worms = owned.filter((item) => item.itemId === "oil_worm").reduce((sum, item) => sum + item.quantity, 0);
+  assert.equal(worms + 1, 15, "15 oil worms: 14 in the jar and one on the hook");
+  const ownedIds = new Set(owned.map((item) => item.itemId));
+  for (const itemId of ["rod_test_spin", "reel_test", "boat_lvl3", "battery_basic", "vodka_bottle", "gas_mask_basic", "net_basic"]) {
+    assert.equal(ownedIds.has(itemId), false, `production starts without ${itemId}`);
+  }
+  assert.equal(CONFIG.player.inventory.length, 6, "and nothing else");
+  const dev = compose();
+  const devItems = items(dev.inventory);
+  assert.equal(devItems.find((item) => item.itemId === "vodka_bottle")?.quantity, 10, "DEV starts with 10 vodka in one stack");
+  assert.equal(devItems.filter((item) => item.itemId === "gas_mask_basic").length, 1, "and one gas mask");
+  assert(devItems.some((item) => item.itemId === "boat_lvl3"), "beside every test item");
+  // A DEV save from before spec 184 (here: the production start plus two bottles): the next DEV start adds 10 bottles
+  // (into the same stack) and the mask once.
+  // Each session names its new items apart, as the browser's random ids do.
+  const cache = new MemoryCache();
+  const ids = (session) => { let next = 0; return (prefix) => `${prefix}-${session}-${++next}`; };
+  const old = compose({ cache, playerConfig: CONFIG.player, makeRandomId: ids("old") });
+  old.inventory.grantCatalogItem("vodka_bottle", 2);
+  compose({ cache, playerConfig: devPlayer, makeRandomId: ids("dev") });
+  const again = compose({ cache, playerConfig: devPlayer, makeRandomId: ids("again") });
+  const granted = items(again.inventory);
+  assert.equal(granted.filter((item) => item.itemId === "vodka_bottle").length, 1, "the DEV bottles join the save's stack");
+  assert.equal(granted.find((item) => item.itemId === "vodka_bottle")?.quantity, 12, "10 more, once (evenIfHeld)");
+  assert.equal(granted.filter((item) => item.itemId === "gas_mask_basic").length, 1, "and the gas mask once");
+}
+
 function checkStartingInventory() {
   const key = "player_inventory_v2";
-  const { CONFIG } = compose();
+  const { devPlayer, CONFIG } = compose();
+  // The production grants only: a DEV grant with evenIfHeld (spec 184 Q2) adds its bottles to a converted save by design.
   const flatConfig = {
-    ...CONFIG.player,
+    ...devPlayer,
+    oneTimeGrants: CONFIG.player.oneTimeGrants,
     equipment: {},
     assemblies: [],
-    inventory: CONFIG.player.inventory.map((item) => ({ ...item, location: { kind: "INVENTORY" } })),
+    inventory: devPlayer.inventory.map((item) => ({ ...item, location: { kind: "INVENTORY" } })),
   };
   const direct = compose({ playerConfig: flatConfig });
   // A classic save key forces the legacy conversion of the same configured items.
@@ -103,7 +154,7 @@ function checkStartingInventory() {
   assert.deepEqual(direct.cache.writes, [key], "a new player's start writes only the current save");
   const equippedDirect = compose();
   assert.equal(equippedDirect.inventory.getEquipped().rod?.itemId, "rod_test_float", "default starting equipment is equipped");
-  const settings = compose({ playerConfig: { ...CONFIG.player, inventorySettings: { autoBait: true, autoChum: "yes" } } });
+  const settings = compose({ playerConfig: { ...devPlayer, inventorySettings: { autoBait: true, autoChum: "yes" } } });
   assert.deepEqual(settings.cache.values.get(key).settings, { autoBait: true, autoChum: false, refillMemory: {} });
 }
 
@@ -124,12 +175,12 @@ function checkLegacySaveMigration() {
 }
 
 function checkPlayerInventoryPort() {
-  const { CONFIG } = compose();
+  const { devPlayer } = compose();
   const flatConfig = {
-    ...CONFIG.player,
+    ...devPlayer,
     equipment: {},
     assemblies: [],
-    inventory: CONFIG.player.inventory.map((item) => ({ ...item, location: { kind: "INVENTORY" } })),
+    inventory: devPlayer.inventory.map((item) => ({ ...item, location: { kind: "INVENTORY" } })),
   };
   const { inventory, forwarded, actions, TackleLoadLimitPolicy } = compose({ playerConfig: flatConfig });
   const changes = [];
@@ -353,7 +404,7 @@ function checkInstalledLineFit() {
 // Spec 179 stage F (TK-340): the gas mask goes into its slot; the vodka opens its editor with «Випити», which applies its
 // effect and consumes the bottle; a refused effect keeps it; an item without a use refuses.
 function checkDrinkUse() {
-  const { inventory, actions } = compose();
+  const { inventory, actions } = compose({ production: true });
   const facade = inventory.inventoryFacade;
   const mask = inventory.grantCatalogItem("gas_mask_basic");
   assert.equal(mask.success, true, "the DEV shop can grant the gas mask");
@@ -392,7 +443,7 @@ function checkDrinkUse() {
 // Spec 184 D3, D4 (TK-376): the bottles go into the drink slot as one stack; the HUD button drinks one at a time, also
 // while fishing (the inventory UI is locked then); the last one leaves the slot empty.
 function checkDrinkSlot() {
-  const { inventory, actions } = compose();
+  const { inventory, actions } = compose({ production: true });
   const facade = inventory.inventoryFacade;
   const first = inventory.grantCatalogItem("vodka_bottle");
   inventory.grantCatalogItem("vodka_bottle");
@@ -422,7 +473,7 @@ function checkDrinkSlot() {
 // Spec 184 D2 (TK-375): identical bottles are one stack — granted one by one, and an older save's separate ones on load.
 function checkDrinkStacks() {
   const key = "player_inventory_v2";
-  const { inventory, cache } = compose();
+  const { inventory, cache } = compose({ production: true });
   const bottles = () => cache.values.get(key).items.filter((item) => item.itemId === "vodka_bottle");
   const first = inventory.grantCatalogItem("vodka_bottle");
   for (let index = 0; index < 4; index++) inventory.grantCatalogItem("vodka_bottle");
@@ -441,7 +492,7 @@ function checkDrinkStacks() {
     saved.items.push({ instanceId: `old-vodka-${index}`, itemId: "vodka_bottle", quantity: 1, location: { kind: "INVENTORY" } });
   }
   cache.set(key, saved);
-  compose({ cache });
+  compose({ cache, production: true });
   assert.equal(bottles().length, 1, "an older save's separate bottles join into one stack on load");
   assert.equal(bottles()[0].quantity, 3, "of all three");
 }
@@ -478,6 +529,7 @@ checkDrinkSlot();
 checkHandChumStack();
 checkInstalledLineFit();
 checkStartingInventory();
+checkProductionStart();
 checkBoatOnWaterGuard();
 checkCatalogItemGrant();
 checkLegacySaveMigration();

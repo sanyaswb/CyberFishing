@@ -69,7 +69,10 @@ Styles live in `src/game/presentation/styles/`; DEV metric/parameter description
 
 - Without its own save (`fishing_game_player_inventory_v2`, schema 4, or a previous schema) the inventory starts
   in one of two ways. A new player gets the configured starting items directly in the current format
-  (`StartingInventorySnapshotFactory`; starting equipment and build templates are rejected). A player with the
+  (`StartingInventorySnapshotFactory`; starting equipment and build templates are rejected). Spec 184 D6 (TK-377): the
+  configured set is `CONFIG.player` in production (the short production start); dev.html passes
+  `DEVELOPMENT_PLAYER_START` (`src/dev/data`) as the root's `playerStart`, merged by `playerStartConfig` (its items,
+  equipment and assemblies; its one-time grants after the production ones, `evenIfHeld` adding even to held items). A player with the
   classic save keys (`player_inventory`, `player_equipment`) goes through `LegacyInventorySaveSource`, which
   migrates and seeds them, and then `InventoryLegacyMigration`. The legacy source is read only in that case.
 - `InventoryCompositionRoot` builds the repository, assemblies, equipment state, loadouts, transactions and:
