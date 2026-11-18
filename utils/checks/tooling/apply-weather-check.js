@@ -258,6 +258,7 @@ const tick = () => new Promise((resolve) => setTimeout(resolve, 0));
       addParameter(parent, options) { if (options?.path) parameters.set(options.path.join("."), options); },
       createInputRow() {},
       createButtonRow(label, parent, onClick) { buttons.set(label, onClick); },
+      createButtonGrid: (parent) => parent,
       showExportCommand(host, options) { exportNotices.push({ host, ...options }); },
     };
     const model = {

@@ -587,6 +587,21 @@
   border-top: 1px solid var(--devtools-line);
 }
 
+/* TK-367.1 (owner): short actions two to a line (DevToolsUI.createButtonGrid); a last odd button takes the whole line.
+   The grid is one block between rows: the same line above it as between rows, none inside it. */
+.devtools__button-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: calc(var(--ui-toolbar-gap) / 2);
+  padding: 6px 0;
+}
+.devtools__row + .devtools__button-grid,
+.devtools__button-grid + .devtools__row,
+.devtools__button-grid + .devtools__button-grid { border-top: 1px solid var(--devtools-line); }
+.devtools__button-grid > .devtools__row { min-width: 0; padding: 0; border-top: 0; }
+.devtools__button-grid > .devtools__row:last-child:nth-child(odd) { grid-column: 1 / -1; }
+.devtools__button-grid .devtools__action { min-width: 0; text-align: center; overflow-wrap: anywhere; }
+
 .devtools__pages { display: grid; gap: calc(var(--ui-toolbar-gap) / 2); }
 .devtools__pages .devtools__row--navigation { padding: 0; border-top: 0; }
 

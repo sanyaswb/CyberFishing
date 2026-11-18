@@ -23,7 +23,9 @@ import {
 //   direction «← вліво | авто | вправо →», «↺ авто» (this element back to its own course) while it is held, and its
 //   settings collapsed under it — the rain's and the ash's look at strength 100 (D16), the others' config trees. The
 //   ash, waves, current and wind: on holds the slider's value, off holds 0 (the wind calm). The actions (emission parts,
-//   a gust, a strike) come last, «Болід зараз» at the very end (on a phone it closes the panel, so the bolide is seen).
+//   a gust, a strike) come last, «Болід» at the very end (on a phone it closes the panel, so the bolide is seen).
+//   TK-367.1 (owner): the buttons two to a line with short labels (DevToolsUI.createButtonGrid): «↻ Оновити | ↺ Авто
+//   погода» on top; «Викид: пік | Викид: спад», «Порив вітру | Блискавка», «Болід» at the bottom.
 // - TK-360: the switches follow the live state. While the panel is open, refreshLive() (each live update) compares
 //   which elements are on — one integer — with what the section shows, and redraws it only when that changed: a fog
 //   that started by itself shows at once, not at the next redraw caused by another control.
@@ -43,8 +45,8 @@ const EVENTS = Object.freeze([["rain", "Дощ"], ["storm", "Шторм"], ["fog
 const EMISSION_LABELS = Object.freeze({ idle: "немає", onset: "початок", peak: "пік", fade: "затихання" });
 // TK-327.1: starting and ending the emission is its switch; these jump within the running one.
 const EMISSION_ACTIONS = Object.freeze([
-  Object.freeze(["Викид: пік зараз", "peak"]),
-  Object.freeze(["Викид: затихання зараз", "fade"]),
+  Object.freeze(["Викид: пік", "peak"]),
+  Object.freeze(["Викид: спад", "fade"]),
 ]);
 // TK-367 (owner): the wind's direction as buttons «← вліво | авто | вправо →»; calm is the wind's switch off.
 const WIND_CHOICES = Object.freeze([
@@ -835,8 +837,10 @@ export class WeatherDevSection {
     const weather = model.snapshot;
     const controls = this.#createSection("Керування", content, ["WEATHER", "controls"]);
     this.#shownLive = this.#liveState();
-    this.#ui.createButtonRow("↻ Оновити", controls, () => this.#fill(), false, "", ["WEATHER", "controls", "refresh"]);
-    this.#ui.createButtonRow("↺ Автоматична погода", controls, () => {
+    // TK-367.1 (owner): the buttons two to a line with short labels.
+    const top = this.#ui.createButtonGrid(controls);
+    this.#ui.createButtonRow("↻ Оновити", top, () => this.#fill(), false, "", ["WEATHER", "controls", "refresh"]);
+    this.#ui.createButtonRow("↺ Авто погода", top, () => {
       this.#automaticWeather(model);
       this.#fill();
     }, false, "", ["WEATHER", "controls", "auto"]);
@@ -853,8 +857,9 @@ export class WeatherDevSection {
     this.#ui.createInputRow("перехід, с", this.#fadeSec, controls, "number", (value) => {
       this.#fadeSec = Math.max(0, Number(value) || 0);
     }, ["WEATHER", "controls", "fadeSec"]);
-    this.#renderActions(model, emission, controls);
-    this.#renderBolide(controls);
+    const actions = this.#ui.createButtonGrid(controls);
+    this.#renderActions(model, emission, actions);
+    this.#renderBolide(actions);
   }
 
   // D10: every hold released — each element returns to its own course.
@@ -1088,7 +1093,7 @@ export class WeatherDevSection {
   #renderBolide(controls) {
     const starfall = this.#weather.getStarfallModel?.() ?? null;
     if (!starfall) return;
-    this.#ui.createButtonRow("Болід зараз", controls, () => {
+    this.#ui.createButtonRow("Болід", controls, () => {
       starfall.bolideNow();
       this.#closeOnPhone();
     }, false, "", ["WEATHER", "controls", "bolide"]);
@@ -1105,12 +1110,12 @@ export class WeatherDevSection {
       }
     }
     if (this.#weather.triggerWindGust) {
-      this.#ui.createButtonRow("Порив вітру зараз", controls, () => {
+      this.#ui.createButtonRow("Порив вітру", controls, () => {
         this.#weather.triggerWindGust();
         this.#fill();
       }, false, "", ["WEATHER", "controls", "gust"]);
     }
-    this.#ui.createButtonRow("Удар блискавки зараз", controls, () => {
+    this.#ui.createButtonRow("Блискавка", controls, () => {
       model.strike();
       this.#fill();
     }, false, "", ["WEATHER", "controls", "strike"]);

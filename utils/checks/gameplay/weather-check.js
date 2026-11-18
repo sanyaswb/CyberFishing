@@ -882,6 +882,7 @@ const step = (model, seconds, clock = null, dt = 0.1) => {
   };
   // TK-367: the rows in the order they are made (the order the user reads in «Керування»).
   const rowOrder = [];
+  const buttonGridRows = [];
   try {
     const fakeUi = {
       syncCalls: [],
@@ -892,7 +893,16 @@ const step = (model, seconds, clock = null, dt = 0.1) => {
         return body;
       },
       createInfoRow() {},
+      // DevToolsUI's contract (TK-367.1): the container the button rows of a two-column grid go into.
+      createButtonGrid(parent) {
+        const grid = fakeNode();
+        grid.buttonGrid = true;
+        rowOrder.push("grid");
+        parent.append(grid);
+        return grid;
+      },
       createButtonRow(label, parent, onClick, _danger, _title, path) {
+        if (parent?.buttonGrid) buttonGridRows.push(path ? path.join(".") : label);
         rowOrder.push(path ? path.join(".") : `button:${label}`);
         if (path) rowsByPath.set(path.join("."), { kind: "button", label, onClick });
         else rowsByPath.set(`button:${label}`, { kind: "button", label, onClick });
@@ -1041,6 +1051,10 @@ const step = (model, seconds, clock = null, dt = 0.1) => {
       at("WEATHER.controls.currentOn"), at("WEATHER.controls.fadeSec"));
     assert(at("WEATHER.controls.gust") > lastControl && at("WEATHER.controls.strike") > lastControl,
       "the action buttons come after every control");
+    // TK-367.1 (owner): two to a line — the top pair and the actions in button grids; the per-element «↺ авто» not.
+    assert.equal(rowOrder[at("WEATHER.controls.refresh") - 1], "grid", "«↻ Оновити» opens a button grid");
+    assert(["WEATHER.controls.refresh", "WEATHER.controls.auto", "WEATHER.controls.gust", "WEATHER.controls.strike"]
+      .every((path) => buttonGridRows.includes(path)), "the top pair and the actions are in button grids");
     // The wind: «← вліво | авто | вправо →» (no «немає» — calm is its switch off).
     const direction = rowsByPath.get("WEATHER.controls.windDirection");
     assert.equal(JSON.stringify(direction.choices.map((option) => option.label)), JSON.stringify(["← вліво", "авто", "вправо →"]),
@@ -1853,7 +1867,7 @@ const step = (model, seconds, clock = null, dt = 0.1) => {
   const node = () => ({ replaceChildren() {}, appendChild() {} });
   const ui = {
     createInfoRow() {}, createRangeRow() {}, createSelectRow() {}, createInputRow() {}, createSwitcherRow() {},
-    addParameter() {}, releaseValueBindings() {},
+    addParameter() {}, releaseValueBindings() {}, createButtonGrid: (parent) => parent,
     createButtonRow(label, parent, onClick, navigation, icon, path) {
       const row = { style: {} };
       buttons.set(path ? path.join(".") : label, onClick);
@@ -1949,6 +1963,7 @@ const step = (model, seconds, clock = null, dt = 0.1) => {
       ui: { ...ui, createInfoRow: (label, value) => { infos.push([label, value]); return {}; },
         createSwitcherRow: (label, value, parent, onChange, path) => switches.set(path.join("."), { value, onChange }),
         createRangeRow: (label, value, parent, onChange, path) => ranges.set(path.join("."), onChange),
+        createButtonGrid: (parent) => parent,
         createButtonRow: (label, parent, onClick, navigation, icon, path) => { starButtons.set(path ? path.join(".") : label, onClick);
           return { style: {} }; } },
       weather: { locationId: "test", getModel: () => model, getWind: () => null, getStarfallModel: () => starNight,
@@ -2023,6 +2038,7 @@ const step = (model, seconds, clock = null, dt = 0.1) => {
           ranges360.set(path.join("."), onChange);
           inControls(parent, path.join("."));
         },
+        createButtonGrid: (parent) => parent,
         createButtonRow(label, parent, onClick, navigation, icon, path) {
           const at = path ? path.join(".") : label;
           buttons360.set(at, onClick);

@@ -61,6 +61,12 @@ disclosure last. Relative order within each category follows creation order. DOM
 order; CSS does not reorder it. Transparent control groups share their parent's description and release only
 their own info rows during refresh. Automatic CONFIG trees and custom sections use this same insertion owner.
 
+TK-367.1: `DevToolsUI.createButtonGrid(parent)` returns a `devtools__button-grid` container (inserted like a row);
+button rows made in it sit two to a line (`repeat(2, minmax(0, 1fr))`, a last odd one spans the line, labels centred and
+allowed to wrap). Each button keeps its own `devtools__row` with its devtools path, so links, search and the reveal
+outline still find it; the grid takes the separator line between rows as one block, with no lines inside. Used for short
+actions (DevTools «ПОГОДА» → «Керування»); long labels stay full-width rows.
+
 Spec 131: switch prerequisites are declared explicitly, never inferred from tree nesting. Rejected activation
 restores the bound value and outlines the first unmet prerequisite with `devtools__row--blocked-prerequisite`
 and `--ui-danger` without changing geometry or keyboard focus decoration. The injected DEV feedback owner

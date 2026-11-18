@@ -2605,7 +2605,21 @@ function choiceRow(options, value, path) {
   events.fog.active = true;
   fireLive();
   assert.equal(fogChecked(), true, "a fog that started by itself shows on its switch with the next live update");
-  const bolideButton = () => byClass("devtools__action", liveUi.body).find((button) => button.innerText === "Болід зараз");
+  // TK-367.1 (owner: «по 2 кнопки в ряду», short labels): «Керування»'s buttons sit in two-column grids, each button in
+  // its own row with its own devtools path (links, search and the reveal outline still find it).
+  const gridPaths = byClass("devtools__button-grid", liveUi.body)
+    .map((grid) => byClass("devtools__row", grid).map((row) => row.dataset.devtoolsPath));
+  assert.equal(JSON.stringify(gridPaths[0]), JSON.stringify(["WEATHER.controls.refresh", "WEATHER.controls.auto"]),
+    "«↻ Оновити | ↺ Авто погода» share the first line");
+  assert.ok(gridPaths.at(-1).includes("WEATHER.controls.strike") && gridPaths.at(-1).at(-1) === "WEATHER.controls.bolide",
+    "the actions share the last grid, «Болід» at its end");
+  const gridCss = require("node:fs").readFileSync(require("node:path").resolve(__dirname,
+    "../../../src/dev/styles/dev-tools.css"), "utf8");
+  assert.match(gridCss, /\n\.devtools__button-grid \{[^}]*grid-template-columns: repeat\(2, minmax\(0, 1fr\)\);/u,
+    "the grid has two equal columns");
+  assert.match(gridCss, /\n\.devtools__button-grid > \.devtools__row:last-child:nth-child\(odd\) \{ grid-column: 1 \/ -1; \}/u,
+    "a last odd button takes the whole line");
+  const bolideButton = () => byClass("devtools__action", liveUi.body).find((button) => button.innerText === "Болід");
   runtime.context.matchMedia = (query) => ({ matches: false, media: query });
   bolideButton().click();
   assert.deepEqual([bolides, tools.isOpen], [1, true], "on a computer «Болід зараз» drops a bolide and the panel stays");

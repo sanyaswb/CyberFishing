@@ -653,6 +653,16 @@ export class DevToolsUI {
     this.#insertTreeNode(parentElement, navigation, 0);
   }
 
+  // TK-367.1 (owner: «кнопки занадто широкі … можна по 2 кнопки в ряду»): a container that lays the button rows made in
+  // it two to a line (a last odd one takes the whole line, devtools__button-grid); each button keeps its own row, so its
+  // devtools path (links, search, the reveal outline) works as before.
+  createButtonGrid(parentElement) {
+    const grid = document.createElement("div");
+    grid.className = "devtools__button-grid";
+    this.#insertTreeNode(parentElement, grid, 0);
+    return grid;
+  }
+
   // iconUrl: item art before the label (the shop); icon: a DevTools icon name (spec 174 C1).
   // badge: a short word drawn as the shared badge after the label (TK-314: "FREE" → `ui-free-badge`).
   createButtonRow(labelStr, parentElement, onClickCallback, navigation = false, iconUrl = "", path = null,

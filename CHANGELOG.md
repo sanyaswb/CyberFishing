@@ -2,6 +2,10 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.52.19 - Weather control buttons two to a line (TK-367.1)
+
+- DevTools «ПОГОДА» → «Керування»: the buttons sit two to a line with short labels — «↻ Оновити | ↺ Авто погода» on top; «Викид: пік | Викид: спад», «Порив вітру | Блискавка» and «Болід» at the bottom.
+
 ## v0.52.18 - Weather controls: a switch per element, settings under it (TK-367)
 
 - DevTools «ПОГОДА» → «Керування»: «↻ Оновити» on top with «↺ Автоматична погода» under it; every element — rain, storm, fog, emission, starfall, and now the ash, wind, waves and current — has a switch that follows what is happening, and its slider, settings and «↺ авто» show only while it is on. The actions (emission, gust, lightning, bolide) are at the bottom.
@@ -43,8 +47,3 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 
 - On a touch screen the cast aim moves exactly as far as the finger moves, from where it was — it does not jump under the finger and is no longer a slow joystick. While aiming, the map scrolls toward the aim's side, faster the farther the aim is from the screen's middle (at most 450 px/s), speeding up and slowing down smoothly.
 - Test switch casting.touchAim.startAtFullPower (on): an aim switched on by a tap waits at full power; a downward swipe lowers the power, back up raises it.
-
-## v0.52.9 - Review fixes for God mode line (TK-364.1, TK-364.2)
-
-- A line break in God mode no longer writes off more line than the tackle has: the 300 m reserve or a pole's virtual line is not lost, only the tackle's own line.
-- DevTools: the God mode warning no longer rewrites its text on every live update; only a changed value updates it.
