@@ -306,6 +306,27 @@ const step = (model, seconds, clock = null, dt = 0.1) => {
   assert.equal(started.snapshot.storm, 0, "nothing else");
 }
 
+// TK-367: the water current held by hand — every reader (the physics, the boats through resolveCurrent) gets the held
+// speed with the location's direction; the location's config is never written; null returns the location's own object.
+{
+  const current = { speedPxPerSec: 12, direction: { x: 1, y: 0.2 } };
+  const location = { weather: settings(), environment: { current } };
+  const environment = new EnvironmentSystem(location, 12, new SeededRng(4), {}, null, null);
+  assert.equal(environment.getPhysicsEnv().current, current, "nothing held: the location's own current");
+  environment.setCurrentSpeedOverride(0);
+  const held = environment.getPhysicsEnv().current;
+  assert.equal(JSON.stringify([held.speedPxPerSec, held.direction]), JSON.stringify([0, current.direction]),
+    "held at 0: still water in the location's direction");
+  assert.equal(current.speedPxPerSec, 12, "the location's config keeps its speed (nothing goes to the weather export)");
+  environment.setCurrentSpeedOverride(25);
+  assert.equal(environment.resolveCurrent(current), held, "the boats get the same reused record");
+  assert.equal(held.speedPxPerSec, 25, "with the new held speed");
+  assert.equal(environment.currentSpeedOverride, 25);
+  environment.setCurrentSpeedOverride(null);
+  assert.equal(environment.resolveCurrent(current), current, "released: the location's current again");
+  assert.equal(environment.resolveCurrent(null), null, "a location without a current stays without one");
+}
+
 // 9. EnvironmentSystem: thresholds, the continuous rain multiplier, the reused snapshot; without a model the weather
 //    stays clear; the wind held by hand.
 {
@@ -561,8 +582,8 @@ const step = (model, seconds, clock = null, dt = 0.1) => {
     'data-overlay-activate="release"',
     // TK-360: the weather rows link to the switches (a strength slider shows only while its element is on).
     'data-devtools-path="WEATHER.controls.storm"',
-    'data-devtools-path="WEATHER.controls.windDirection"',
-    'data-devtools-path="WEATHER.controls.windStrength"',
+    // TK-367: the wind's direction and strength show only while it is on — both rows link to its switch.
+    'data-devtools-path="WEATHER.controls.wind"',
     'data-devtools-path="CONFIG.spawns.timePhases.night.startHour"',
     'data-devtools-path="CONFIG.canvas.water.amplitude"',
     'data-devtools-path="CONFIG.canvas.water.wavelength"',
@@ -859,6 +880,8 @@ const step = (model, seconds, clock = null, dt = 0.1) => {
   globalThis.document = {
     createElement: () => fakeNode(),
   };
+  // TK-367: the rows in the order they are made (the order the user reads in «Керування»).
+  const rowOrder = [];
   try {
     const fakeUi = {
       syncCalls: [],
@@ -870,28 +893,33 @@ const step = (model, seconds, clock = null, dt = 0.1) => {
       },
       createInfoRow() {},
       createButtonRow(label, parent, onClick, _danger, _title, path) {
+        rowOrder.push(path ? path.join(".") : `button:${label}`);
         if (path) rowsByPath.set(path.join("."), { kind: "button", label, onClick });
         else rowsByPath.set(`button:${label}`, { kind: "button", label, onClick });
         return { style: {} };
       },
       setSectionLabel() {},
       createSwitcherRow(label, value, parent, onChange, path) {
+        if (path) rowOrder.push(path.join("."));
         if (path) rowsByPath.set(path.join("."), { kind: "switcher", value, onChange });
       },
       createRangeRow(label, value, parent, onChange, path) {
-        if (path) rowsByPath.set(path.join("."), { kind: "range", value, onChange });
+        if (path) rowOrder.push(path.join("."));
+        if (path) rowsByPath.set(path.join("."), { kind: "range", label, value, onChange });
       },
       createSelectRow(label, _choices, value, parent, onChange, path) {
         if (path) rowsByPath.set(path.join("."), { kind: "select", value, onChange });
       },
-      addParameter(parent, { control, options, value, onCommit, path, min, max }) {
-        if (control === "range" && path) rowsByPath.set(path.join("."), { kind: "range", value, min, max, onChange: onCommit });
+      addParameter(parent, { control, label, options, value, onCommit, path, min, max }) {
+        if (path) rowOrder.push(path.join("."));
+        if (control === "range" && path) rowsByPath.set(path.join("."), { kind: "range", label, value, min, max, onChange: onCommit });
         if (control === "switch" && path) rowsByPath.set(path.join("."), { kind: "switch", value, onChange: onCommit });
         if ((control === "choice" || control === "segments") && path) {
           rowsByPath.set(path.join("."), { kind: "choice", choices: options, value, onChange: onCommit });
         }
       },
       createInputRow(label, value, parent, _type, onChange, path, bindingPath) {
+        if (path) rowOrder.push(path.join("."));
         if (path) rowsByPath.set(path.join("."), { kind: "input", value, onChange, bindingPath });
       },
       createTextRow() {},
@@ -920,6 +948,7 @@ const step = (model, seconds, clock = null, dt = 0.1) => {
         calls.push(["strike"]);
       },
     };
+    const devState = { ashHold: null, ashEmission: 0, wavesHold: null, currentHold: null };
     const devWeather = new WeatherDevSection({
       ui: fakeUi,
       weather: {
@@ -929,8 +958,16 @@ const step = (model, seconds, clock = null, dt = 0.1) => {
         setWind: (dir) => calls.push(["setWind", dir]),
         setWindStrength: (s) => calls.push(["setWindStrength", s]),
         triggerWindGust: () => calls.push(["triggerWindGust"]),
-        holdAsh: (v) => calls.push(["holdAsh", v]),
-        holdWaves: (v) => calls.push(["holdWaves", v]),
+        // TK-367: the live state the switches follow, held as the game holds it.
+        getAshHold: () => devState.ashHold,
+        getAshStrength: () => devState.ashHold ?? devState.ashEmission,
+        holdAsh: (v) => { calls.push(["holdAsh", v]); devState.ashHold = v; },
+        getWavesHold: () => devState.wavesHold,
+        getWavesScale: () => 1,
+        holdWaves: (v) => { calls.push(["holdWaves", v]); devState.wavesHold = v; },
+        getCurrentHold: () => devState.currentHold,
+        getCurrentSpeed: () => devState.currentHold ?? 12,
+        holdCurrent: (v) => { calls.push(["holdCurrent", v]); devState.currentHold = v; },
       },
       rainConfig: () => JSON.parse(JSON.stringify(GAME.canvas.rain)),
       config: () => locations.test.weather,
@@ -994,10 +1031,56 @@ const step = (model, seconds, clock = null, dt = 0.1) => {
     rowsByPath.get("WEATHER.controls.windStrength").onChange(82);
     assert(calls.some(([k, v]) => k === "setWindStrength" && Math.abs(v - 0.82) < 1e-6), "strength slider drives setWindStrength");
     assert(!rowsByPath.has("WEATHER.controls.windStrengthHold"), "no separate «manual wind strength» switch (D10)");
+    // TK-367 (owner): «↻ Оновити» on top, «↺ Автоматична погода» right under it; the actions after every control.
+    rowOrder.length = 0;
+    rowsByPath.get("WEATHER.controls.refresh").onClick();
+    const at = (path) => rowOrder.indexOf(path);
+    assert(at("WEATHER.controls.refresh") >= 0 && at("WEATHER.controls.auto") === at("WEATHER.controls.refresh") + 1 &&
+      at("WEATHER.controls.auto") < at("WEATHER.controls.rain"), "«↻ Оновити» first, «↺ Автоматична погода» under it, then the elements");
+    const lastControl = Math.max(at("WEATHER.controls.ash"), at("WEATHER.controls.wind"), at("WEATHER.controls.wavesOn"),
+      at("WEATHER.controls.currentOn"), at("WEATHER.controls.fadeSec"));
+    assert(at("WEATHER.controls.gust") > lastControl && at("WEATHER.controls.strike") > lastControl,
+      "the action buttons come after every control");
+    // The wind: «← вліво | авто | вправо →» (no «немає» — calm is its switch off).
+    const direction = rowsByPath.get("WEATHER.controls.windDirection");
+    assert.equal(JSON.stringify(direction.choices.map((option) => option.label)), JSON.stringify(["← вліво", "авто", "вправо →"]),
+      "the wind's direction is three buttons");
+    direction.onChange("left");
+    assert(calls.some(([k, v]) => k === "setWind" && v === -1), "«← вліво» holds the wind to the left");
+    rowsByPath.get("WEATHER.controls.wind").onChange(false);
+    assert.deepEqual(calls.filter(([k]) => k === "setWind").at(-1), ["setWind", 0], "the wind off is calm");
+    // The ash (owner: managed apart from the emission): off with no emission, on holds the slider, off holds 0.
+    assert.equal(rowsByPath.get("WEATHER.controls.ash").value, false, "no emission: the ash's switch is off");
+    assert(!rowsByPath.has("WEATHER.controls.ashStrength"), "and it has no slider");
+    rowsByPath.get("WEATHER.controls.ash").onChange(true);
+    assert.deepEqual(calls.filter(([k]) => k === "holdAsh").at(-1), ["holdAsh", 1], "the ash on: held at the slider's 100 %");
+    assert.equal(rowsByPath.get("WEATHER.controls.ash").value, true, "the switch shows it on");
+    assert.match(rowsByPath.get("WEATHER.controls.ashStrength").label, /· вручну/u, "its slider says it is held by hand");
     rowsByPath.get("WEATHER.controls.ashStrength").onChange(30);
     assert(calls.some(([k, v]) => k === "holdAsh" && Math.abs(v - 0.3) < 1e-6), "the ash's slider holds the ash");
+    rowsByPath.get("WEATHER.controls.ash").onChange(false);
+    assert.deepEqual(calls.filter(([k]) => k === "holdAsh").at(-1), ["holdAsh", 0], "the ash off: held at 0 (even in an emission)");
+    rowsByPath.get("WEATHER.controls.ashAuto").onClick();
+    assert.deepEqual(calls.filter(([k]) => k === "holdAsh").at(-1), ["holdAsh", null], "«↺ авто»: it follows the emission again");
+    devState.ashEmission = 0.6;
+    devWeather.refreshLive();
+    assert.equal(rowsByPath.get("WEATHER.controls.ash").value, true, "an emission's ash turns the open switch on by itself (R26)");
+    // The waves: on by themselves; the slider holds the height; off — flat water.
+    assert.equal(rowsByPath.get("WEATHER.controls.wavesOn").value, true, "the waves are on by themselves");
     rowsByPath.get("WEATHER.controls.waves").onChange(150);
     assert(calls.some(([k, v]) => k === "holdWaves" && Math.abs(v - 1.5) < 1e-6), "the waves' slider holds their height");
+    rowsByPath.get("WEATHER.controls.wavesOn").onChange(false);
+    assert.deepEqual(calls.filter(([k]) => k === "holdWaves").at(-1), ["holdWaves", 0], "the waves off: flat water");
+    assert.equal(rowsByPath.get("WEATHER.controls.wavesOn").value, false);
+    // The current: held in the running game — never written into the location's config (it would go to the export).
+    const configWrites = calls.filter(([k]) => k === "updateConfig").length;
+    assert.equal(rowsByPath.get("WEATHER.controls.currentOn").value, true, "the location's current is on");
+    rowsByPath.get("WEATHER.controls.current").onChange(20);
+    assert.deepEqual(calls.filter(([k]) => k === "holdCurrent").at(-1), ["holdCurrent", 20], "the slider holds the current's speed");
+    rowsByPath.get("WEATHER.controls.currentOn").onChange(false);
+    assert.deepEqual(calls.filter(([k]) => k === "holdCurrent").at(-1), ["holdCurrent", 0], "the current off: still water");
+    assert.equal(rowsByPath.get("WEATHER.controls.currentOn").value, false);
+    assert.equal(calls.filter(([k]) => k === "updateConfig").length, configWrites, "and no config write");
     // D16: under the rain's strength, its look at 100 for the selected location — a real value within the range.
     const density = rowsByPath.get("WEATHER.controls.rainAt100.maxDrops");
     assert(density && density.value === GAME_CONFIG.canvas.rain.strength.maxDrops[1] && density.max === 2000,
@@ -1015,8 +1098,10 @@ const step = (model, seconds, clock = null, dt = 0.1) => {
     "with «Загальні» it writes the general end at 100");
     rowsByPath.get("WEATHER.controls.gust").onClick();
     assert(calls.some(([k]) => k === "triggerWindGust"), "gust button calls triggerWindGust");
-    rowsByPath.get("button:↺ Автоматична погода").onClick();
+    rowsByPath.get("WEATHER.controls.auto").onClick();
     assert(calls.some(([k, v]) => k === "setWindStrength" && v === null), "auto button resets forced wind strength");
+    assert(["holdAsh", "holdWaves", "holdCurrent"].every((kind) => calls.filter(([k]) => k === kind).at(-1)[1] === null),
+      "TK-367: «↺ Автоматична погода» releases the ash, the waves and the current too");
     assert(calls.some(([k]) => k === "releaseAll"), "auto button returns every weather process to its own course");
 
     // TK-298.1: Location selector stays visible even when only one location is configured.

@@ -68,6 +68,10 @@ export class EnvironmentSystem {
     current: null,
     wind: null,
   };
+  // TK-367: the water current's speed (px/s) held by hand (DevTools «Керування»), null: the location's own. The held
+  // current is one record rewritten from the location's (its direction and other fields kept), never the config.
+  #currentHold = null;
+  #heldCurrent = {};
   #physicsWind = {
     direction: 0,
     strength: 0,
@@ -129,6 +133,26 @@ export class EnvironmentSystem {
   setWindStrengthOverride(strength) {
     this.#wind?.setStrengthOverride(strength);
     this.#syncSnapshot();
+  }
+
+  // TK-367: holds the water current's speed (px/s, 0 — still water), or null for the location's own current.
+  setCurrentSpeedOverride(speed) {
+    this.#currentHold = speed === null || speed === undefined || !Number.isFinite(Number(speed))
+      ? null : Math.max(0, Number(speed));
+  }
+
+  get currentSpeedOverride() {
+    return this.#currentHold;
+  }
+
+  // The water current the tackle, the fish and the boats feel: base (a location's current or null) as it is, or a copy
+  // with the held speed. Reused; each reader passes its own base (the boats read the live location, GameWorld).
+  resolveCurrent(base) {
+    if (!base || this.#currentHold === null) return base ?? null;
+    const held = this.#heldCurrent;
+    for (const key in base) held[key] = base[key];
+    held.speedPxPerSec = this.#currentHold;
+    return held;
   }
 
   triggerWindGust(options) {
@@ -266,7 +290,7 @@ export class EnvironmentSystem {
   getPhysicsEnv() {
     const base = this.#config.environment;
     const env = this.#physicsEnv;
-    env.current = base?.current ?? null;
+    env.current = this.resolveCurrent(base?.current ?? null);
     env.wind = null;
 
     const windSnap = this.#wind?.snapshot ?? null;

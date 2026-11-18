@@ -72,7 +72,8 @@ export class WeatherOverlayModule extends OverlayModule {
       {
         color: "#ffffff",
         metricKey: "weather.windDirection",
-        devtoolsPath: "WEATHER.controls.windDirection",
+        // TK-367: the direction and strength show only while the wind is on — the links lead to its switch.
+        devtoolsPath: "WEATHER.controls.wind",
       },
     );
     const windStrengthText = `${share(reading.windStrength)}${reading.windGust ? " · порив" : ""}${
@@ -81,7 +82,7 @@ export class WeatherOverlayModule extends OverlayModule {
     html += this.plainRow("Сила вітру 0…1", windStrengthText, {
       color: "#ffdd66",
       metricKey: "weather.windStrength",
-      devtoolsPath: "WEATHER.controls.windStrength",
+      devtoolsPath: "WEATHER.controls.wind",
     });
     html += this.plainRow(
       "Ніч 0…1",

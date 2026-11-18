@@ -25,6 +25,16 @@ export class WeatherRenderModelBuilder {
     return this.#ashHold !== null;
   }
 
+  // TK-367 (DevTools «Керування»): the held strength (0…1) or null, and the ash's strength now (held, else the
+  // emission's) — what the scene draws this frame.
+  get ashHold() {
+    return this.#ashHold;
+  }
+
+  get ashStrength() {
+    return this.#ashHold ?? share(this.#getEnvironment()?.emission?.intensity);
+  }
+
   buildInto(target) {
     const environment = this.#getEnvironment();
     const weather = environment?.weather;

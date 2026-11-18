@@ -159,7 +159,8 @@ async function run() {
       map: { update() {}, getCastableBoundsVirtual: () => ({ left: 0, right: 4000, top: 0, bottom: 2000 }),
         getCellAtVirtualPos: () => cell, isCastableAt: () => true, hasCollisionAt: () => false },
       projector: { screenToVirtual: (x, y, out) => Object.assign(out, { x, y }) },
-      env: { update() {}, getSnapshot: () => ({ time: 12 }) },
+      // EnvironmentSystem's contract: resolveCurrent returns the location's current while nothing holds it (TK-367).
+      env: { update() {}, getSnapshot: () => ({ time: 12 }), resolveCurrent: (base) => base ?? null },
       chum: { update() {}, updateBoats(dt, checkPhysics) { boatWater = checkPhysics; } },
       location: {}, canvasMetrics: { width: 400, height: 400 }, clock: { realNow: 0 },
       locationConfig: { ...m.CONFIG.locations, cellSize: 40 },

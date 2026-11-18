@@ -10,6 +10,8 @@ export class GameWorld {
   #waterMetricSource;
   #isZoneMotionPaused;
   #bounds = { left: 0, right: 0, top: 0, bottom: 0 };
+  // TK-367: the boats' environment, one record a frame: the live location's current with the environment's DEV hold.
+  #boatEnv = { current: null };
 
   constructor({
     map,
@@ -97,6 +99,11 @@ export class GameWorld {
     return cell ? cell.depth : 0;
   }
 
+  #boatEnvironment() {
+    this.#boatEnv.current = this.#env.resolveCurrent(this.#location.currentEnvironment?.current ?? null);
+    return this.#boatEnv;
+  }
+
   update(dt, timeScale) {
     const locations = this.#locationConfig;
 
@@ -126,7 +133,7 @@ export class GameWorld {
         return cell ? cell.hasCollision : false;
       },
       locations.cellSize,
-      { current: this.#location.currentEnvironment?.current },
+      this.#boatEnvironment(),
       this.getWaterMetric(),
     );
 

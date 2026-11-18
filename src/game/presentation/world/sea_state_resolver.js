@@ -51,6 +51,11 @@ export class SeaStateResolver {
     return this.#amplitudeHold !== null;
   }
 
+  // TK-367: the held height × (0 — flat water) or null (from wind, night and storm).
+  get amplitudeHold() {
+    return this.#amplitudeHold;
+  }
+
   constructor({ getEnvironment, getSettings }) {
     if (typeof getEnvironment !== "function" || typeof getSettings !== "function") {
       throw new TypeError("SeaStateResolver requires getEnvironment and getSettings");

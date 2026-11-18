@@ -1313,7 +1313,8 @@ controlUI.dispose();
   assert.equal(flags.isEnabled("showBoatRoute"), false);
   st.setFlag("boatRoute", true); assert.equal(flags.isEnabled("showBoatRoute"), true, "the route switch shows the boat route");
   st.setFlag("boatRoute", false); assert.equal(flags.isEnabled("showBoatRoute"), false);
-  const world = new GameWorld({ map: liveMap, projector: proj, env: { update() {}, getSnapshot: () => ({ time: 12 }) },
+  const world = new GameWorld({ map: liveMap, projector: proj, env: { update() {}, getSnapshot: () => ({ time: 12 }),
+    resolveCurrent: (base) => base ?? null },
     chum: { update() {}, updateBoats() {} }, location: {}, canvasMetrics: { width: 400, height: 400 }, clock: { realNow: 0 },
     locationConfig: cfg.locations, waterMetricSource: { current: () => null }, isZoneMotionPaused: () => flags.isEnabled('pauseDynamicZones') });
   const step = dt => world.update(dt, 1);

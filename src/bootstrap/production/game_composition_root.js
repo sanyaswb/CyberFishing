@@ -1810,6 +1810,15 @@ export class GameCompositionRoot {
                       // Spec 180 D10: the ash's and the waves' strength held by hand (null: automatic).
                       holdAsh: (strength) => weatherRenderModel.holdAsh(strength),
                       holdWaves: (scale) => seaState.holdAmplitude(scale),
+                      // TK-367: the live state the «Керування» switches follow, and the water current held by hand.
+                      getAshHold: () => weatherRenderModel.ashHold,
+                      getAshStrength: () => weatherRenderModel.ashStrength,
+                      getWavesHold: () => seaState.amplitudeHold,
+                      getWavesScale: () => seaState.state.amplitudeScale,
+                      getCurrentHold: () => systems.env?.currentSpeedOverride ?? null,
+                      getCurrentSpeed: () => systems.env?.resolveCurrent(locCfg?.environment?.current ?? null)
+                        ?.speedPxPerSec ?? null,
+                      holdCurrent: (speed) => systems.env?.setCurrentSpeedOverride(speed),
                       // TK-321.2: the session's seed (CONFIG.debug.seed repeats this session).
                       sessionSeed: this.#sessionSeed(),
                       locationId: locId,
