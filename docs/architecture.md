@@ -171,8 +171,8 @@ Spec 179 D12 (TK-371): `bootstrap/production/house_visit_composition.js` compose
 house button (`HouseEntryControl`, top-left) asks `Game.requestHouseEntry()` (tackle put away), and the base's
 suspend/resume are `Game.enterHouse()/leaveHouse()`: the game loop keeps running but only steps the location's world
 (`GameApplication`, every `CONFIG.houseVisit.worldTickMs`, no drawing), while `HousePresence` stops the location's effects
-on the player (emission screen, keepnet dose, item wear, the radiation debuff). Production loads the House's code on the
-first visit (`import()`); DEV also opens it directly (DevTools → House, `dev.html?screen=house`).
+on the player (emission screen, keepnet dose, item wear, the radiation debuff). The House's code is in the page bundle
+(TK-371.1: a lazy `import()` split shared modules into extra start chunks over spec 160's limit); DEV also opens it directly (DevTools → House, `dev.html?screen=house`).
 
 ## Assets and preloading
 

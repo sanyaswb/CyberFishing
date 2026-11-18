@@ -17,6 +17,7 @@ import { STARTUP_STAGES } from "../../engine/diagnostics/startup_stages.js";
 import { markStartupReady } from "./startup_ready_signal.js";
 import { showStartupFailure } from "./startup_failure_composition.js";
 import { composeHouseVisit } from "./house_visit_composition.js";
+import { composeHouseScreen } from "./house_screen_composition.js";
 
 let startup;
 // One loop guard per page, shared by every game this realm starts.
@@ -96,11 +97,12 @@ async function startGame() {
     return game;
   }
   markStartupReady({ marks: startupMarks, windowTarget, onReady: () => compositionRoot.startDeferredAssetLoads() });
-  // Spec 179 D12 (TK-371, owner Q18): the house in production — its code and art load on the first visit (its
-  // stylesheet is in the page's one stylesheet: the game server's release ships no source files to link later).
+  // Spec 179 D12 (TK-371, owner Q18): the house in production — its art loads on the first visit; its code is in the
+  // page's bundle (TK-371.1: a lazy import() split the modules it shares with the game into more start chunks, 14 JS
+  // files instead of at most 10, spec 160) and its stylesheet in the page's one stylesheet (the game server's release
+  // ships no source files to link later).
   houseVisit = composeHouseVisit({ documentTarget, uiSurface, game, logger: new ConsoleLogger(),
     createHouseScreen: async ({ close }) => {
-      const { composeHouseScreen } = await import("./house_screen_composition.js");
       return composeHouseScreen({ documentTarget, windowTarget, uiSurface, ...compositionRoot.getSessionServices(),
         onExit: close });
     } });

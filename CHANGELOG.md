@@ -2,6 +2,12 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.52.23 - The house's code in the game's bundle (TK-371.1)
+
+- The production game page loads the house's code with the rest of the game instead of on the first visit.
+- The lazy load split the modules the house shares with the game into four more start files: 14 JavaScript files at start, over the limit of 10.
+- The start is back to its own files. The house's art still loads only when the house is shown.
+
 ## v0.52.22 - The house during an emission; a house button in the game (TK-371)
 
 - The house no longer stops the game. While the player is inside, the location's world goes on: game time, weather, wind, zones and the emission. It steps every 250 ms and nothing of the location is drawn.
@@ -59,8 +65,3 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 ## v0.52.14 - Full-power touch aim start off by default (TK-365.2)
 
 - An aim switched on by a tap waits at power 0 again and a downward swipe raises the power; the full-power start stays as a DevTools switch (casting.touchAim.startAtFullPower).
-
-## v0.52.13 - Double tap to the map's edge before aiming (TK-366.1)
-
-- Without an aim, a double tap in the left or right half of the screen takes the camera at once to that edge of the map; no aim starts. While aiming, a double tap removes the aim as before.
-- A finger's double tap may now have up to 450 ms between its two releases (input.touchCast.doubleTapMs); it was 300 ms, too short for a finger's hold and pause. Mouse unchanged.
