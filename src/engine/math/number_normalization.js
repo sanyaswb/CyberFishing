@@ -94,6 +94,13 @@ export function pairValue(pair, index, fallback) {
   return finiteOr(Array.isArray(pair) ? pair[index] : undefined, fallback);
 }
 
+// TK-374.4: the value at index of a config list by a count (the vodka's bottles: index 0 — one); past its end the last
+// value stays; an empty or missing list, or a non-finite value — the fallback.
+export function listValue(list, index, fallback) {
+  if (!Array.isArray(list) || list.length === 0) return fallback;
+  return finiteOr(list[Math.min(Math.max(0, Math.floor(finiteOr(index, 0))), list.length - 1)], fallback);
+}
+
 // TK-358: a value between a config pair's ends [min, max] at share 0…1 (fallback ends low and high).
 export function pairBetween(pair, low, high, share) {
   const start = pairValue(pair, 0, low);

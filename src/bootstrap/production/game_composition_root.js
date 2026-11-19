@@ -2762,7 +2762,7 @@ export class GameCompositionRoot {
     }));
     const refresh = () => control.update(inventory.getEquipped()?.drink ?? null);
     const stop = inventory.onInventoryChanged(refresh);
-    own({ dispose: () => stop?.() });
+    own({ dispose: () => stop() });
     refresh();
   }
 

@@ -9,16 +9,11 @@
 //   blur).
 // - Another bottle (another stage) eases the floor and the peak over stageBlendSec: no jump.
 // Visual only: random is Math.random (never a gameplay stream). No allocations per frame.
-import { clampUnit, finiteOr, pairValue } from "../../../engine/math/number_normalization.js";
+import { clampUnit, finiteOr, listValue, pairBetween } from "../../../engine/math/number_normalization.js";
 // An episode's phases in order.
 const NEXT_PHASE = Object.freeze({ wait: "rise", rise: "hold", hold: "fall", fall: "wait" });
 const smooth = (share) => share * share * (3 - 2 * share);
 const lerp = (from, to, share) => from + (to - from) * share;
-// A stage's value from a list by the bottles (index 0 — one bottle); past its end the last one stays.
-const atStage = (list, index, fallback) => {
-  if (!Array.isArray(list) || list.length === 0) return fallback;
-  return finiteOr(list[Math.min(index, list.length - 1)], fallback);
-};
 
 export class IntoxicationBlur {
   #random;
@@ -35,17 +30,12 @@ export class IntoxicationBlur {
     this.#random = random;
   }
 
-  // The share 0…1 of the current episode (0 — at the floor); for the checks and DevTools.
-  get episodeShare() {
-    return this.#share;
-  }
-
   // dt: seconds since the last frame; stage: the bottles drunk, 1…; settings: CONFIG.canvas.intoxication.blur.
   // Returns the blur in logical px (before the intoxication's fade).
   update(dt, stage, settings) {
     const index = Math.max(0, Math.floor(finiteOr(stage, 1)) - 1);
-    const floorPx = this.#levelPx(settings, atStage(settings?.floorLevel, index, 0));
-    const peakPx = Math.max(floorPx, this.#levelPx(settings, atStage(settings?.peakLevel, index, 1)));
+    const floorPx = this.#levelPx(settings, listValue(settings?.floorLevel, index, 0));
+    const peakPx = Math.max(floorPx, this.#levelPx(settings, listValue(settings?.peakLevel, index, 1)));
     const ease = 1 - Math.exp(-dt * 3 / Math.max(0.05, finiteOr(settings?.stageBlendSec, 2)));
     this.#floorPx += (floorPx - this.#floorPx) * ease;
     this.#peakPx += (peakPx - this.#peakPx) * ease;
@@ -83,14 +73,14 @@ export class IntoxicationBlur {
     this.#phase = phase;
     let seconds;
     if (phase === "wait") {
-      seconds = lerp(atStage(settings?.intervalMinSec, index, 10), atStage(settings?.intervalMaxSec, index, 20), this.#random());
+      seconds = lerp(listValue(settings?.intervalMinSec, index, 10), listValue(settings?.intervalMaxSec, index, 20), this.#random());
     } else if (phase === "rise") {
-      this.#depth = clampUnit(lerp(pairValue(settings?.depth, 0, 0.6), pairValue(settings?.depth, 1, 1), this.#random()));
-      seconds = lerp(pairValue(settings?.riseSec, 0, 1.2), pairValue(settings?.riseSec, 1, 3), this.#random());
+      this.#depth = clampUnit(pairBetween(settings?.depth, 0.6, 1, this.#random()));
+      seconds = pairBetween(settings?.riseSec, 1.2, 3, this.#random());
     } else if (phase === "hold") {
-      seconds = lerp(atStage(settings?.holdMinSec, index, 1), atStage(settings?.holdMaxSec, index, 2), this.#random());
+      seconds = lerp(listValue(settings?.holdMinSec, index, 1), listValue(settings?.holdMaxSec, index, 2), this.#random());
     } else {
-      seconds = lerp(pairValue(settings?.fallSec, 0, 1.5), pairValue(settings?.fallSec, 1, 4), this.#random());
+      seconds = pairBetween(settings?.fallSec, 1.5, 4, this.#random());
     }
     this.#phaseSec = Math.max(0.05, seconds);
     this.#phaseLeft = this.#phaseSec;
@@ -100,6 +90,6 @@ export class IntoxicationBlur {
   #levelPx(settings, level) {
     const index = Math.floor(finiteOr(level, 0));
     if (index <= 0) return 0;
-    return Math.max(0, atStage(settings?.levelsPx, index - 1, 0));
+    return Math.max(0, listValue(settings?.levelsPx, index - 1, 0));
   }
 }

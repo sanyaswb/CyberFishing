@@ -3,7 +3,7 @@
 // A description (CONFIG.statusEffects.<id>): { kind: "buff" | "debuff", iconAsset, durationSec (0: no timer — a held
 // status from the equipment or the environment), stacking: "renew" | "max" | "add", maxStacks, timeBase: "real",
 // badge (shown in the HUD), modifiers: { <system>: { <key>: share that stays, 0…1 } } }.
-import { finiteOr } from "../../../engine/math/number_normalization.js";
+import { finiteOr, listValue } from "../../../engine/math/number_normalization.js";
 export const STATUS_KINDS = Object.freeze(["buff", "debuff"]);
 export const STATUS_STACKING = Object.freeze(["renew", "max", "add"]);
 // Spec 181 Q1: real time (the page's monotonic clock). "game" is reserved for a later status.
@@ -45,9 +45,7 @@ export function statusModifierShare(definition, system, key, stacks) {
   const raw = definition?.modifiers?.[system]?.[key];
   if (raw === undefined || raw === null) return 1;
   if (Array.isArray(raw)) {
-    if (raw.length === 0) return 1;
-    const index = Math.min(raw.length, Math.max(1, Math.floor(finiteOr(stacks, 1)))) - 1;
-    return Math.min(1, Math.max(0, finiteOr(raw[index], 1)));
+    return Math.min(1, Math.max(0, listValue(raw, Math.floor(finiteOr(stacks, 1)) - 1, 1)));
   }
   const share = Math.min(1, Math.max(0, finiteOr(raw, 1)));
   return stacks > 1 ? share ** stacks : share;

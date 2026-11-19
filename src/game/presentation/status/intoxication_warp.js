@@ -7,14 +7,10 @@
 // - The strength wanders: a new target between minShare (almost no waves) and 1 every wanderSec (random within it),
 //   eased toward it; times strength by the bottles (a list: 0 up to three bottles, 1 at four, a little more at five).
 // Visual only: random is Math.random. One record rewritten in place: { skewX, skewY (degrees), stretchX, stretchY }.
-import { clampUnit, finiteOr, pairValue } from "../../../engine/math/number_normalization.js";
+import { clampUnit, finiteOr, listValue, pairBetween, pairValue } from "../../../engine/math/number_normalization.js";
 const TWO_PI = Math.PI * 2;
 const CHANNELS = 4;
 const lerp = (from, to, share) => from + (to - from) * share;
-const atStage = (list, index, fallback) => {
-  if (!Array.isArray(list) || list.length === 0) return fallback;
-  return finiteOr(list[Math.min(index, list.length - 1)], fallback);
-};
 
 export class IntoxicationWarp {
   #random;
@@ -46,7 +42,7 @@ export class IntoxicationWarp {
   update(dt, stage, fade, settings) {
     const record = this.#record;
     const index = Math.max(0, Math.floor(finiteOr(stage, 1)) - 1);
-    const power = settings?.enabled === true ? Math.max(0, atStage(settings.strength, index, 0)) : 0;
+    const power = settings?.enabled === true ? Math.max(0, listValue(settings.strength, index, 0)) : 0;
     const ease = 1 - Math.exp(-dt * 3 / Math.max(0.05, finiteOr(settings?.stageBlendSec, 2)));
     this.#stagePower += (power - this.#stagePower) * ease;
     if (this.#stagePower < 1e-4 && power === 0) return this.reset();
@@ -76,8 +72,7 @@ export class IntoxicationWarp {
   #wander(dt, settings) {
     this.#wanderLeft -= dt;
     if (this.#wanderLeft <= 0) {
-      this.#wanderSec = Math.max(0.2, lerp(pairValue(settings.wanderSec, 0, 3), pairValue(settings.wanderSec, 1, 8),
-        this.#random()));
+      this.#wanderSec = Math.max(0.2, pairBetween(settings.wanderSec, 3, 8, this.#random()));
       this.#wanderLeft = this.#wanderSec;
       this.#target = lerp(clampUnit(finiteOr(settings.minShare, 0.05)), 1, this.#random());
     }

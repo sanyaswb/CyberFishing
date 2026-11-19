@@ -2,6 +2,10 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.52.36 - Review before push (TK-374.4, TK-376.1)
+
+- No change in play: the code that reads a value by the number of bottles is shared now, and a small cleanup in the drink button's wiring.
+
 ## v0.52.35 - Drunk waves from four bottles (TK-374.3)
 
 - From four bottles the world slowly waves: the picture skews and stretches unevenly in long waves that never repeat and never move in step, now strong, now almost still; five bottles a little stronger. The HUD stays still and no scene edge shows.
@@ -46,7 +50,3 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 ## v0.52.27 - The gas mask mutes the radiation's hiss (TK-373)
 
 - In a gas mask the radiation's hiss on the screen is three times fainter (× 0.3). It still removes the emission's darkening and blur, as before. The share is a gas mask status modifier, adjustable in DevTools «Конфіг».
-
-## v0.52.26 - dev.html keeps its DevTools button (TK-371.3)
-
-- The house button (⌂) is in the released game only. dev.html has its DevTools button in the top-left corner again, and the strip along the screen's edge opens DevTools only in the zone editor, as before v0.52.22. In dev.html the house opens from DevTools («Будинок») or `?screen=house`.
