@@ -32,10 +32,15 @@ export class IntoxicationBlur {
 
   // dt: seconds since the last frame; stage: the bottles drunk, 1…; settings: CONFIG.canvas.intoxication.blur.
   // Returns the blur in logical px (before the intoxication's fade).
+  // TK-378: a fractional stage (sobering, 4.5) lies between its two stages' floor and peak; the episodes' times follow
+  // the lower stage.
   update(dt, stage, settings) {
-    const index = Math.max(0, Math.floor(finiteOr(stage, 1)) - 1);
-    const floorPx = this.#levelPx(settings, listValue(settings?.floorLevel, index, 0));
-    const peakPx = Math.max(floorPx, this.#levelPx(settings, listValue(settings?.peakLevel, index, 1)));
+    const position = Math.max(0, finiteOr(stage, 1) - 1);
+    const index = Math.floor(position);
+    const share = position - index;
+    const floorPx = lerp(this.#stagePx(settings, "floorLevel", index, 0), this.#stagePx(settings, "floorLevel", index + 1, 0), share);
+    const peakPx = Math.max(floorPx,
+      lerp(this.#stagePx(settings, "peakLevel", index, 1), this.#stagePx(settings, "peakLevel", index + 1, 1), share));
     const ease = 1 - Math.exp(-dt * 3 / Math.max(0.05, finiteOr(settings?.stageBlendSec, 2)));
     this.#floorPx += (floorPx - this.#floorPx) * ease;
     this.#peakPx += (peakPx - this.#peakPx) * ease;
@@ -84,6 +89,11 @@ export class IntoxicationBlur {
     }
     this.#phaseSec = Math.max(0.05, seconds);
     this.#phaseLeft = this.#phaseSec;
+  }
+
+  // A stage's level (floorLevel or peakLevel at index) in px.
+  #stagePx(settings, key, index, fallback) {
+    return this.#levelPx(settings, listValue(settings?.[key], index, fallback));
   }
 
   // Level 0 — sharp; level N — levelsPx[N − 1].

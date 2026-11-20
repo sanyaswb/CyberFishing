@@ -206,6 +206,8 @@ gameplay zones or their enable flags; hiding background also hides its displaced
     full-screen filter pass): from four bottles the same transform also skews and unevenly stretches the canvas
     (`IntoxicationWarp`, `canvas.intoxication.warp`; `SceneLayer.setViewMotion(…, skewX, skewY, stretchX, stretchY)`);
     each axis gets its own scale, large enough to cover what the skew shears in; still no scene frame.
+    TK-378: sobering glides a level down over `soberSec` (30 s) — the blur moves about 1 px per step, so a step costs a
+    few ¼ px redraws, not a frame each; the sway and the waves stay in the CSS transform.
     TK-349: the ash flies only in its own zones (`zones.ash`, `world.ashRegions`, apart from the rain's): new embers start
     inside a visible zone and one that drifts out fades over its fade share — no mask, so the edge stays soft.
     Spec 182 (TK-352): the starfall's stars (`PixiStarfallRenderer`) are mounted right after the background (over the

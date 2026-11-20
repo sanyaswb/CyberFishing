@@ -1,4 +1,4 @@
-import { stackTimedStatus, statusModifierShare } from "../../domain/status/status_effect_rules.js";
+import { stackTimedStatus, statusLevel, statusModifierShare } from "../../domain/status/status_effect_rules.js";
 
 // Spec 181 D1 (stage A): the player's buffs and debuffs. Statuses are described in CONFIG.statusEffects (read live, so
 // a DevTools edit reaches the next apply and the modifiers at once); this keeps the active ones.
@@ -99,10 +99,13 @@ export class PlayerStatusEffects {
     return this.#list;
   }
 
-  // TK-374: how many times an active status has stacked (the bottles drunk); 0 — not active.
+  // TK-374: how many times an active status has stacked (the bottles drunk); 0 — not active. TK-378: the level in effect
+  // now — the stacks worn off by the time left (statusLevel).
   stacks(id) {
-    this.#expire(this.#now());
-    return this.#entries.get(id)?.stacks ?? 0;
+    const now = this.#now();
+    this.#expire(now);
+    const entry = this.#entries.get(id);
+    return entry ? statusLevel(entry, this.definition(id), now) : 0;
   }
 
   remainingSec(id) {
@@ -120,7 +123,8 @@ export class PlayerStatusEffects {
     for (let index = 0; index < list.length; index++) {
       const entry = list[index];
       if (!entry.held && entry.untilMs <= now) continue;
-      share *= statusModifierShare(this.definition(entry.id), system, key, entry.stacks);
+      const definition = this.definition(entry.id);
+      share *= statusModifierShare(definition, system, key, statusLevel(entry, definition, now));
     }
     return share;
   }

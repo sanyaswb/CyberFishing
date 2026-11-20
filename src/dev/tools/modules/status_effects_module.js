@@ -61,12 +61,14 @@ export class StatusEffectsModule {
   #describe(entry) {
     const definition = this.#statuses.definition(entry.id);
     const time = entry.held ? `без таймера (${entry.source || "джерело"})` : `ще ${STATUS_LABELS.countdown(this.#statuses.remainingSec(entry.id))}`;
-    const stacks = entry.stacks > 1 ? ` · ×${entry.stacks}` : "";
+    // TK-378: the level in effect now (the stacks worn off by the time left).
+    const level = this.#statuses.stacks(entry.id);
+    const stacks = level > 1 ? ` · ×${level}` : "";
     const modifiers = [];
     for (const [system, keys] of Object.entries(definition?.modifiers || {})) {
       // TK-374: the share in effect now (by the stacks: a list of shares, or a share per stack), rounded for reading.
       for (const key of Object.keys(keys || {})) {
-        const share = statusModifierShare(definition, system, key, entry.stacks);
+        const share = statusModifierShare(definition, system, key, level);
         modifiers.push(`${system}.${key} ${Math.round(share * 1000) / 1000}`);
       }
     }

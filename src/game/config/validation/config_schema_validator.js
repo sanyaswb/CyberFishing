@@ -1462,6 +1462,19 @@ export class ConfigSchemaValidator {
       this.#requireParameterLabel(`${path}.durationSec`);
       this.#requireFiniteNumber(`CONFIG.${path}.maxStacks`, status.maxStacks, { min: 1, max: 99 });
       this.#requireParameterLabel(`${path}.maxStacks`);
+      // TK-378: the optional time by the level 1, 2, … — above zero, never shorter than the level before.
+      if (status.levelSec !== undefined) {
+        const levels = status.levelSec;
+        if (!Array.isArray(levels) || levels.length === 0 || levels.length > 99) {
+          this.#error(`CONFIG.${path}.levelSec`, "expected 1…99 durations by the levels");
+        } else {
+          levels.forEach((value, index) => {
+            this.#requireFiniteNumber(`CONFIG.${path}.levelSec[${index}]`, value, { min: 1, max: 86400 });
+            if (index > 0 && value < levels[index - 1]) this.#error(`CONFIG.${path}.levelSec[${index}]`, "must not be below the level before");
+          });
+        }
+        this.#requireParameterLabel(`${path}.levelSec`);
+      }
       const modifiers = status.modifiers;
       if (!modifiers || typeof modifiers !== "object") { this.#error(`CONFIG.${path}.modifiers`, "must be an object"); continue; }
       this.#requireParameterLabel(`${path}.modifiers`);
@@ -1560,7 +1573,7 @@ export class ConfigSchemaValidator {
     if (!cfg || typeof cfg !== "object") { this.#error(`CONFIG.${path}`, "missing intoxication config"); return; }
     this.#requireParameterLabel(path);
     this.#requireBooleanWithLabel(`${path}.enabled`, cfg.enabled);
-    this.#requireRangeNumbers(path, cfg, [["fadeSec", 0.1, 60]]);
+    this.#requireRangeNumbers(path, cfg, [["fadeSec", 0.1, 60], ["soberSec", 0.1, 600]]);
     this.#requireRangePairs(path, cfg, [["swayShare", 0, 0.2, false], ["swayPeriodSec", 0.5, 60, true]]);
     // TK-374.2: the defocus — lists by the bottles (1…99 values), its levels numbered in levelsPx (0 — sharp).
     const blurPath = `${path}.blur`;

@@ -1699,6 +1699,29 @@ const step = (model, seconds, clock = null, dt = 0.1) => {
   const ending = sample(five, settings.fadeSec / 2, 0, false);
   assert.ok(ending.blurPx > 0 && ending.blurPx < back.blurPx + levelPx(5),
     "after the last bottle's time the intoxication fades from its strength");
+  // TK-378 (owner): sobering is smooth — a level down glides over soberSec (the sway's reach, the defocus and the waves
+  // between the two levels, no jump), and the last level fades over soberSec after the vodka ends.
+  {
+    const sobering = make(21);
+    sample(sobering, settings.fadeSec + blur.stageBlendSec * 4, 5, false);
+    const reach = (stacks) => settings.swayShare[0] * width + (settings.swayShare[1] - settings.swayShare[0]) * width * (stacks - 1) / (maxStacks - 1);
+    const early = sample(sobering, 1, 4, false).margin;
+    assert.ok(early > reach(4.9) && early < reach(5), "a level down: a second later the sway is still almost at five bottles'");
+    let previousMargin = sobering.record.marginX, previousSkew = sobering.record.skewX, marginStep = 0, skewStep = 0;
+    for (let frame = 0; frame < settings.soberSec * 60; frame++) {
+      const record = sobering.update(1000 / 60, 4, maxStacks, false, width, settings);
+      marginStep = Math.max(marginStep, Math.abs(record.marginX - previousMargin));
+      skewStep = Math.max(skewStep, Math.abs(record.skewX - previousSkew));
+      previousMargin = record.marginX;
+      previousSkew = record.skewX;
+    }
+    assert.ok(Math.abs(sobering.record.marginX - reach(4)) < 1e-6, "after soberSec: the four bottles' sway");
+    assert.ok(marginStep < 0.05 && skewStep < 0.05, "the sway and the waves glide down (no jump)");
+    sample(sobering, settings.soberSec * 3, 1, false);
+    const lastLevel = sample(sobering, settings.soberSec / 2, 0, false).level;
+    assert.ok(lastLevel > 0.2 && lastLevel < 0.8, "the vodka over: the last level fades over soberSec, not at once");
+    assert.equal(sample(sobering, settings.soberSec / 2 + 0.1, 0, false).level, 0, "then sober");
+  }
 
   // The frame's composition (stages E, J, L): the drunk bottles and the «Радіація» status reach the sway, the emission's
   // peak the shake, both one move of the scene; the gas mask does not stop the shake.
@@ -1794,7 +1817,8 @@ const step = (model, seconds, clock = null, dt = 0.1) => {
   assert.equal(exposure.isCastBlocked(), true, "casting stays closed to the emission's very end");
 
   // Spec 181 stage A (TK-341), spec 179 stage L (TK-374, owner Q23, Q25): the vodka is a status (CONFIG.statusEffects.vodka)
-  // for 10 minutes; no cast; each bottle adds a stack (up to 5) and starts the 10 minutes again, all stacks end together;
+  // (TK-378: 1 bottle 1 min … 5 bottles 10 min); no cast; each bottle adds a stack (up to 5) and starts its level's time,
+  // all stacks end together;
   // the protection by the bottles 30 / 45 / 60 % (4 and 5 add none); the gas mask still wins; events only on a change.
   const { ITEM_DB } = require("../../../src/game/config/raw/items/item_database.js");
   const vodka = ITEM_DB.drinks.vodka_bottle.gameplayStats.use;
@@ -1802,7 +1826,9 @@ const step = (model, seconds, clock = null, dt = 0.1) => {
   const vodkaStatus = CONFIG.statusEffects.vodka;
   assert.equal(JSON.stringify([vodkaStatus.kind, vodkaStatus.durationSec, vodkaStatus.stacking, vodkaStatus.maxStacks,
     vodkaStatus.timeBase]), JSON.stringify(["buff", 600, "add", 5, "real"]),
-  "owner Q23: up to 5 bottles, all gone 10 minutes after the last; real time (spec 181 Q1)");
+  "owner Q23: up to 5 bottles; real time (spec 181 Q1)");
+  assert.equal(JSON.stringify(vodkaStatus.levelSec), JSON.stringify([60, 180, 300, 420, 600]),
+    "TK-378 (owner): 1 bottle — 1 min, 2 — 3, 3 — 5, 4 — 7, 5 bottles — 10 min");
   assert.equal(ITEM_DB.gasMasks.gas_mask_basic.itemType, "gas_mask", "the gas mask fits its slot");
   const events = [];
   const unsubscribe = statuses.subscribe((event) => events.push(`${event.type}:${event.id}`));
@@ -1814,7 +1840,7 @@ const step = (model, seconds, clock = null, dt = 0.1) => {
   assert.equal(statuses.stacks("vodka"), 1);
   for (let frame = 0; frame < 120; frame++) { clockMs += 16; exposure.modifier("vignette"); statuses.list(); }
   assert.equal(events.join(), "start:vodka", "reads every frame emit nothing");
-  advance(300000);
+  advance(30000);
   assert.equal(statuses.apply("vodka"), true);
   assert.ok(near2(statuses.modifier("emission", "vignette"), 0.55), "two bottles: 45 %");
   assert.equal(statuses.list().length, 1, "one status, two stacks");
@@ -1824,9 +1850,38 @@ const step = (model, seconds, clock = null, dt = 0.1) => {
   assert.equal(statuses.stacks("vodka"), 5, "at most 5 bottles count");
   assert.ok(near2(statuses.modifier("emission", "vignette"), 0.4), "4 and 5 bottles add no protection (owner Q25)");
   assert.equal(statuses.modifier("emission", "blurRate"), 1, "the pulses keep the emission's rhythm");
-  advance(300000 + 599000);
-  assert.ok(near2(exposure.modifier("vignette"), 0.4), "the last bottle started the 10 minutes again");
-  advance(300000 + 600001);
+  // TK-378 (owner): sobering by steps — 10→7 min left level 5, 7→5 — 4, 5→3 — 3, 3→1 — 2, the last minute — 1; the
+  // protection follows the level.
+  const levelsLeft = [];
+  for (const leftSec of [599, 421, 419, 301, 299, 181, 179, 61, 59, 1]) {
+    advance(30000 + (600 - leftSec) * 1000);
+    levelsLeft.push(statuses.stacks("vodka"));
+  }
+  assert.equal(JSON.stringify(levelsLeft), JSON.stringify([5, 5, 4, 4, 3, 3, 2, 2, 1, 1]),
+    "TK-378: the five bottles wear off a level at 7, 5, 3 and 1 minute left");
+  assert.ok(near2(exposure.modifier("vignette"), 0.7), "the last minute: one bottle's protection");
+  advance(30000 + 600001);
+  {
+    // Another bottle goes a level above the level now, not above the bottles drunk before.
+    let ownMs = 0;
+    const own = new PlayerStatusEffects({ now: () => ownMs, getDefinitions: () => CONFIG.statusEffects,
+      scheduler: { setTimeout: () => 1, clearTimeout() {} } });
+    const times = [];
+    for (let bottle = 0; bottle < 5; bottle += 1) { own.apply("vodka"); times.push(own.remainingSec("vodka")); }
+    assert.equal(JSON.stringify(times), JSON.stringify([60, 180, 300, 420, 600]), "each bottle starts its level's time");
+    ownMs = 500000;
+    assert.equal(own.stacks("vodka"), 2, "five bottles with 100 s left: level 2");
+    own.apply("vodka");
+    assert.deepEqual([own.stacks("vodka"), own.remainingSec("vodka")], [3, 300], "one more bottle: level 3 and its 5 minutes");
+    ownMs = 500000 + 300001;
+    assert.equal(own.stacks("vodka"), 0, "then sober");
+    own.apply("vodka");
+    ownMs += 59000;
+    assert.equal(own.stacks("vodka"), 1, "one bottle: level 1 for its minute");
+    ownMs += 1001;
+    assert.equal(own.stacks("vodka"), 0, "one bottle is over after 1 minute");
+    own.dispose();
+  }
   assert.equal(events.join(), "start:vodka,update:vodka,update:vodka,update:vodka,update:vodka,update:vodka,end:vodka",
     "all the stacks end together, with one event");
   assert.equal(statuses.stacks("vodka"), 0, "sober");

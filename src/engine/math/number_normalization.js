@@ -101,6 +101,15 @@ export function listValue(list, index, fallback) {
   return finiteOr(list[Math.min(Math.max(0, Math.floor(finiteOr(index, 0))), list.length - 1)], fallback);
 }
 
+// TK-378: the value at a fractional position of such a list (1.4 — 40 % of the way from list[1] to list[2]); the same
+// ends as listValue.
+export function listBetween(list, position, fallback) {
+  const at = Math.max(0, finiteOr(position, 0));
+  const index = Math.floor(at);
+  const start = listValue(list, index, fallback);
+  return start + (listValue(list, index + 1, fallback) - start) * (at - index);
+}
+
 // TK-358: a value between a config pair's ends [min, max] at share 0…1 (fallback ends low and high).
 export function pairBetween(pair, low, high, share) {
   const start = pairValue(pair, 0, low);

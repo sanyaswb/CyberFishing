@@ -2879,7 +2879,7 @@ function choiceRow(options, value, path) {
     "a timed status can be given; a held one belongs to its source");
   button("Видати: vodka").click();
   assert.ok(statuses.has("vodka"), "«Видати» applies the status");
-  assert.ok(activeText().includes("vodka=баф · ще 10:00 · emission.vignette 0.7, emission.blur 0.7, emission.blurRate 1"),
+  assert.ok(activeText().includes("vodka=баф · ще 1:00 · emission.vignette 0.7, emission.blur 0.7, emission.blurRate 1"),
     "the active vodka with its time left and modifiers");
   // Deep sections open as drill-ins outside the module's host (DevToolsUI), so the row is looked up in the whole panel.
   assert.ok(rendered.length === 1 && rendered[0].obj === config.statusEffects && rendered[0].path === "CONFIG.statusEffects",

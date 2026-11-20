@@ -1,6 +1,7 @@
 // Release notes, newest first (unshift with every patch). DEV only: no production code reads them, and in the start's
 // bundle they cost 13 KB gzip (spec 160). dev.html publishes them with the version: window.CYBER_FISHING_PROJECT_VERSION.notes.
 export const PROJECT_RELEASE_NOTES = Object.freeze([
+  "TK-378: vodka levelSec [60,180,300,420,600] — time by the level, statusLevel wears off by steps, a bottle over the level now; IntoxicationEffect glides down over soberSec (listBetween).",
   "Review before push (TK-374.4, TK-376.1): listValue in engine/math (blur, warp, statusModifierShare), pairBetween, dead episodeShare removed; stop() without an optional call.",
   "TK-374.3: IntoxicationWarp — CSS skew/stretch waves from 4 bottles (canvas.intoxication.warp); SceneCanvasMotion per-axis scale covering the skew; setViewMotion takes skew and stretch.",
   "TK-374.2: IntoxicationBlur — defocus in 5 stages by the bottles (floor level, episodes to a peak level, random times and depth); canvas.intoxication.blur lists, blurPx removed.",

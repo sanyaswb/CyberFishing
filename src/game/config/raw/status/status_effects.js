@@ -3,8 +3,8 @@
 // without a timer that lasts while its source holds it (an item in its slot, the location's radiation). badge — a round
 // icon under the radio in the HUD (spec 181 D3); icon — its drawing (presentation/hud/status_icons.js).
 export const STATUS_EFFECTS = {
-  // Горілка (spec 179 Q8, етап L — TK-374): кожна пляшка — ще одна стопка (до 5) і знову 10 хв; усі стопки зникають разом
-  // через 10 хв після останньої (Q23). Під радіацією — захист від ефектів викиду 30 / 45 / 60 % за 1 / 2 / 3+ пляшки
+  // Горілка (spec 179 Q8, етап L — TK-374): кожна пляшка — ще одна стопка (до 5); час і протверезіння
+  // сходинками — за рівнем (TK-378, levelSec: 1 пляшка 1 хв … 5 пляшок 10 хв). Під радіацією — захист від ефектів викиду 30 / 45 / 60 % за 1 / 2 / 3+ пляшки
   // (Q25); без радіації — сп'яніння (CONFIG.canvas.intoxication).
   vodka: {
     kind: "buff",
@@ -13,6 +13,11 @@ export const STATUS_EFFECTS = {
     durationSec: 600,
     stacking: "add",
     maxStacks: 5,
+    // TK-378 (власник): час за рівнем 1…5 — пляшка ставить рівень на один вище від поточного і його час: 1 пляшка — 1 хв,
+    // 2 — 3 хв, 3 — 5, 4 — 7, 5 — 10 хв. Протверезіння сходинками: рівень N тримається, поки лишилось більше за час
+    // рівня N−1 (5 пляшок: 10→7 хв — 5, 7→5 — 4, 5→3 — 3, 3→1 — 2, остання хвилина — 1). durationSec — для таймера
+    // без цього списку.
+    levelSec: [60, 180, 300, 420, 600],
     timeBase: "real",
     modifiers: {
       emission: {

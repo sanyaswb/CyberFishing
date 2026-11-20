@@ -543,7 +543,8 @@ async function stageTwo() {
     statuses.hold("gasMask", true);
     assert.equal(badgeList().length, 0, "Q3: the gas mask shows no badge");
     clock = 1000;
-    statuses.apply("vodka");
+    // TK-378: five bottles — the vodka's 10 minutes (one bottle lasts 1 minute).
+    for (let bottle = 0; bottle < 5; bottle += 1) statuses.apply("vodka");
     const [vodkaBadge] = badgeList();
     assert(vodkaBadge && vodkaBadge.classList.contains("hud-indicator--buff") && vodkaBadge.classList.contains("hud-indicator--timed"),
       "a drunk vodka shows a timed buff badge");

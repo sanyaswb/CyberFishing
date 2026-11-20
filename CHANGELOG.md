@@ -2,6 +2,11 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.52.37 - Sobering up by steps (TK-378)
+
+- Vodka lasts by the bottles: 1 bottle — 1 minute, 2 — 3, 3 — 5, 4 — 7, 5 bottles — 10 minutes; another bottle raises the level by one from the level now.
+- The drunk effects step down smoothly: with 5 bottles level 4 at 7 minutes left, 3 at 5, 2 at 3, 1 in the last minute; each step glides over 30 seconds, and the end fades over 30 seconds too.
+
 ## v0.52.36 - Review before push (TK-374.4, TK-376.1)
 
 - No change in play: the code that reads a value by the number of bottles is shared now, and a small cleanup in the drink button's wiring.
@@ -46,7 +51,3 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 
 - During an emission the view shakes. Early on there are rare light jolts, more often and stronger as the emission grows. At the peak the shake is constant and its strength keeps swinging. The HUD stays still, the gas mask does not stop it, and in the house there is none.
 - The shake moves the scene's picture (a CSS move of its canvas, slightly enlarged so the edges stay hidden), so the scene is not drawn again for it. Its values are in DevTools «ПОГОДА» → «ВИКИД» → «Тряска».
-
-## v0.52.27 - The gas mask mutes the radiation's hiss (TK-373)
-
-- In a gas mask the radiation's hiss on the screen is three times fainter (× 0.3). It still removes the emission's darkening and blur, as before. The share is a gas mask status modifier, adjustable in DevTools «Конфіг».

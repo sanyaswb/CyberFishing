@@ -7,7 +7,7 @@
 // - The strength wanders: a new target between minShare (almost no waves) and 1 every wanderSec (random within it),
 //   eased toward it; times strength by the bottles (a list: 0 up to three bottles, 1 at four, a little more at five).
 // Visual only: random is Math.random. One record rewritten in place: { skewX, skewY (degrees), stretchX, stretchY }.
-import { clampUnit, finiteOr, listValue, pairBetween, pairValue } from "../../../engine/math/number_normalization.js";
+import { clampUnit, finiteOr, listBetween, pairBetween, pairValue } from "../../../engine/math/number_normalization.js";
 const TWO_PI = Math.PI * 2;
 const CHANNELS = 4;
 const lerp = (from, to, share) => from + (to - from) * share;
@@ -41,8 +41,8 @@ export class IntoxicationWarp {
   // dt: seconds; stage: the bottles drunk, 1…; fade: the intoxication's level 0…1; settings: CONFIG.canvas.intoxication.warp.
   update(dt, stage, fade, settings) {
     const record = this.#record;
-    const index = Math.max(0, Math.floor(finiteOr(stage, 1)) - 1);
-    const power = settings?.enabled === true ? Math.max(0, listValue(settings.strength, index, 0)) : 0;
+    // TK-378: a fractional stage (sobering) lies between its two stages' strengths.
+    const power = settings?.enabled === true ? Math.max(0, listBetween(settings.strength, finiteOr(stage, 1) - 1, 0)) : 0;
     const ease = 1 - Math.exp(-dt * 3 / Math.max(0.05, finiteOr(settings?.stageBlendSec, 2)));
     this.#stagePower += (power - this.#stagePower) * ease;
     if (this.#stagePower < 1e-4 && power === 0) return this.reset();

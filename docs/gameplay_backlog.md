@@ -20,6 +20,17 @@ Notes: suspected owner module, related checks.
 
 ## Open
 
+### G-148 Vodka lasts by the bottles and sobers up by steps (P2, done in v0.52.37; owner acceptance pending)
+Found: 2026-11-20, owner (TK-378).
+Reproduce: drink 1, 2 or 5 bottles; wait and watch the drunk effects and the badge's time.
+Expected: a bottle raises the level by one over the level now and starts that level's time — 1 bottle 1 min, 2 — 3 min,
+3 — 5, 4 — 7, 5 — 10 min; then the level steps down: level N holds while more than the time of level N−1 is left
+(5 bottles: 10→7 min level 5, 7→5 — 4, 5→3 — 3, 3→1 — 2, the last minute — 1); each step glides over 30 s; the
+emission protection follows the level.
+Actual (before): every bottle started 10 minutes, the full level held to the end and then faded in 3 s.
+Notes: `statusEffects.vodka.levelSec`, `statusLevel` (status_effect_rules.js), `canvas.intoxication.soberSec`;
+weather-check.
+
 ### G-147 The production player starts with a short set; dev.html with every test item, vodka and a gas mask (P2, done in v0.52.33; owner acceptance pending)
 Found: 2026-11-18, owner, spec 184 Q1, Q2.
 Reproduce: start as a new player (no save) on index.html and on dev.html; open a DEV save made before.
