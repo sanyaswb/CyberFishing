@@ -8,8 +8,11 @@ import { UiEventShield } from "../dom/ui_event_shield.js";
 // No work per frame: the fill and its colours are CSS animations (transform and opacity, on the compositor) started with
 // the status's duration and a negative delay for the time already gone; the DOM is touched only on a status's start,
 // update and end, on a tap and by the open counter's one-second timer. Only statuses whose description has badge: true.
+// TK-380 (DEV God mode removeDebuffsByHold): a 500 ms hold on a timed debuff's badge shows a cross in its middle (the
+// hold's own click opens no counter); the next tap removes the debuff. Off: a tap works as before, a hold starts nothing.
 const FADE_MS = 300;
 const COUNTER_MS = 1000;
+const REMOVE_HOLD_MS = 500;
 
 export class StatusHudBadges {
   #document;
@@ -20,14 +23,18 @@ export class StatusHudBadges {
   #colors;
   #scheduler;
   #now;
+  #canRemoveByHold;
   #badges = new Map();
   #unsubscribe;
   #counterTimer = null;
 
   // statuses: PlayerStatusEffects; icons: the HUD icon port ({ create(symbol, className) }); labels: STATUS_LABELS;
   // colors: () => ({ full, half, low }) CSS colours; scheduler: { setTimeout, setInterval, clearInterval } (the window);
-  // now: () => the statuses' monotonic clock.
-  constructor({ documentRef, mountNode, statuses, icons, labels, colors, scheduler, now }) {
+  // now: () => the statuses' monotonic clock; canRemoveByHold: () => whether a hold may remove a debuff (TK-380, the DEV
+  // flags port: always false in production).
+  constructor({ documentRef, mountNode, statuses, icons, labels, colors, scheduler, now, canRemoveByHold }) {
+    if (typeof canRemoveByHold !== "function") throw new TypeError("StatusHudBadges requires canRemoveByHold");
+    this.#canRemoveByHold = canRemoveByHold;
     this.#document = documentRef;
     this.#mount = mountNode;
     this.#statuses = statuses;
@@ -44,7 +51,10 @@ export class StatusHudBadges {
     this.#unsubscribe?.();
     this.#unsubscribe = null;
     this.#stopCounter();
-    for (const badge of this.#badges.values()) badge.button.remove();
+    for (const badge of this.#badges.values()) {
+      this.#cancelHold(badge);
+      badge.button.remove();
+    }
     this.#badges.clear();
   }
 
@@ -70,10 +80,19 @@ export class StatusHudBadges {
     const count = document.createElement("span");
     count.className = "hud-indicator__count";
     count.hidden = true;
-    const badge = { id: entry.id, button, fill: null, count, icon, counting: false, ending: false };
+    const badge = { id: entry.id, kind: entry.kind, button, fill: null, count, icon, counting: false, ending: false,
+      holdTimer: null, heldClick: false, armed: false, cross: null };
     if (icon) button.append(icon);
     button.append(count);
-    button.addEventListener("click", () => this.#toggleCounter(badge));
+    button.addEventListener("click", () => this.#click(badge));
+    button.addEventListener("pointerdown", (event) => this.#startHold(badge, event));
+    for (const type of ["pointerup", "pointercancel", "pointerleave"]) {
+      button.addEventListener(type, () => this.#cancelHold(badge));
+    }
+    // A touch hold must not open the system menu while it may arm the removal.
+    button.addEventListener("contextmenu", (event) => {
+      if (badge.holdTimer !== null || badge.heldClick) event.preventDefault();
+    });
     this.#badges.set(entry.id, badge);
     this.#renderFill(badge, entry);
     this.#mount.appendChild(button);
@@ -116,10 +135,61 @@ export class StatusHudBadges {
     if (!badge || badge.ending) return;
     badge.ending = true;
     badge.counting = false;
+    this.#cancelHold(badge);
     this.#badges.delete(id);
     badge.button.classList.add("hud-indicator--ending");
     this.#scheduler.setTimeout(() => badge.button.remove(), FADE_MS);
     this.#syncCounter();
+  }
+
+  // TK-380: a tap — the hold's own click does nothing; on an armed badge it removes the debuff; else the counter.
+  #click(badge) {
+    if (badge.heldClick) { badge.heldClick = false; return; }
+    if (badge.armed) {
+      if (this.#canRemoveByHold()) { this.#statuses.remove(badge.id); return; }
+      this.#disarm(badge);
+    }
+    this.#toggleCounter(badge);
+  }
+
+  #startHold(badge, event) {
+    badge.heldClick = false;
+    this.#cancelHold(badge);
+    if (badge.armed || badge.ending || badge.kind !== "debuff" || (event?.button ?? 0) !== 0) return;
+    if (!badge.button.classList.contains("hud-indicator--timed") || !this.#canRemoveByHold()) return;
+    badge.holdTimer = this.#scheduler.setTimeout(() => {
+      badge.holdTimer = null;
+      badge.heldClick = true;
+      this.#arm(badge);
+    }, REMOVE_HOLD_MS);
+  }
+
+  #cancelHold(badge) {
+    if (badge.holdTimer === null) return;
+    this.#scheduler.clearTimeout(badge.holdTimer);
+    badge.holdTimer = null;
+  }
+
+  // The cross in the badge's middle; an open counter closes (the hold shows no time).
+  #arm(badge) {
+    badge.armed = true;
+    if (!badge.cross) {
+      badge.cross = this.#document.createElement("span");
+      badge.cross.className = "hud-indicator__remove";
+      badge.cross.setAttribute("aria-hidden", "true");
+      badge.button.append(badge.cross);
+    }
+    badge.button.classList.add("hud-indicator--remove-armed");
+    if (badge.counting) {
+      badge.counting = false;
+      badge.count.hidden = true;
+      this.#syncCounter();
+    }
+  }
+
+  #disarm(badge) {
+    badge.armed = false;
+    badge.button.classList.remove("hud-indicator--remove-armed");
   }
 
   #toggleCounter(badge) {

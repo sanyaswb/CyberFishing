@@ -46,6 +46,11 @@ export class GameplayOverrideReader {
     return this.isActive && this.#config.debug.godMode.noEquipmentLoss;
   }
 
+  // TK-380: a debuff's HUD badge can be removed by a hold (StatusHudBadges).
+  get removeDebuffsByHold() {
+    return this.isActive && this.#config.debug.godMode.removeDebuffsByHold === true;
+  }
+
   get fixedBiteChanceEnabled() {
     return this.isActive && this.#config.debug.godMode.fixedBiteChanceEnabled;
   }

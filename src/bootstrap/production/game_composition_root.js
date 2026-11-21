@@ -1987,7 +1987,7 @@ export class GameCompositionRoot {
       weather: systems.env,
       mountNode: indicatorColumn?.element ?? null,
     });
-    if (indicatorColumn) this.#composeStatusBadges({ own, mountNode: indicatorColumn.element });
+    if (indicatorColumn) this.#composeStatusBadges({ own, mountNode: indicatorColumn.element, devFlags });
     this.#composeGeigerCounter({ own, environment: systems.env });
     // A device card's charge is its battery's (null without a battery: no bar); a battery card reads its live charge directly.
     inventory.setDeviceChargeProvider?.((deviceItem) => {
@@ -2039,7 +2039,8 @@ export class GameCompositionRoot {
 
   // Spec 181 D3 (TK-343): the player's statuses as round badges under the radio; the fill's colours come from the
   // degradation palette (full, half, a fifth left).
-  #composeStatusBadges({ own, mountNode }) {
+  // TK-380: a hold removes a debuff only with the DEV God mode flag (production's inactive flags: never).
+  #composeStatusBadges({ own, mountNode, devFlags }) {
     const palette = new DegradationColorResolver({ configProvider: () => this.#config.degradationColors || {} });
     const color = (percent, fallback) => { const resolved = palette.resolvePercent(percent);
       return resolved.available ? resolved.cssColor : fallback; };
@@ -2053,6 +2054,7 @@ export class GameCompositionRoot {
         low: color(20, "var(--ui-danger)") }),
       scheduler: this.#windowTarget,
       now: () => this.#windowTarget.performance.now(),
+      canRemoveByHold: () => devFlags.isEnabled("removeDebuffsByHold"),
     }));
   }
 

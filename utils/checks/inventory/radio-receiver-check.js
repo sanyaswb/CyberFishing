@@ -537,8 +537,10 @@ async function stageTwo() {
     const column = new HudIndicatorColumn({ documentRef: doc, mountNode: doc.body });
     const icons = { create: (symbol, className) => { const icon = doc.createElement("svg"); icon.className = className;
       icon.dataset.symbol = symbol; return icon; } };
+    let removeByHold = false;
     const badges = new StatusHudBadges({ documentRef: doc, mountNode: column.element, statuses, icons, labels: STATUS_LABELS,
-      colors: () => ({ full: "rgb(0, 255, 0)", half: "rgb(255, 200, 0)", low: "rgb(255, 0, 0)" }), scheduler, now: () => clock });
+      colors: () => ({ full: "rgb(0, 255, 0)", half: "rgb(255, 200, 0)", low: "rgb(255, 0, 0)" }), scheduler, now: () => clock,
+      canRemoveByHold: () => removeByHold });
     const badgeList = () => column.element.children.filter((child) => child.classList.contains("hud-indicator--status"));
     statuses.hold("gasMask", true);
     assert.equal(badgeList().length, 0, "Q3: the gas mask shows no badge");
@@ -591,6 +593,34 @@ async function stageTwo() {
     advance(clock + 300);
     assert.equal(sickBadge.parentNode, null, "and is removed after the fade");
     assert.equal(badgeList().length, 1, "the vodka stays");
+    // TK-380 (DEV God mode removeDebuffsByHold): a 500 ms hold on a timed debuff shows a cross and opens no counter; the
+    // next tap removes the debuff. Off, a shorter hold or a buff: a tap works as before.
+    statuses.apply("sick");
+    const holdBadge = badgeList()[1];
+    const holdCount = holdBadge.children.find((child) => child.className === "hud-indicator__count");
+    const hold = (badge, ms) => { badge.fire("pointerdown", { button: 0 }); advance(clock + ms); badge.fire("pointerup"); badge.click(); };
+    const armed = (badge) => badge.classList.contains("hud-indicator--remove-armed");
+    hold(holdBadge, 600);
+    assert(!armed(holdBadge) && holdCount.hidden === false, "God mode flag off: a hold is a plain tap (the time shows)");
+    holdBadge.click();
+    removeByHold = true;
+    hold(holdBadge, 499);
+    assert(!armed(holdBadge) && holdCount.hidden === false, "a hold under 500 ms is a plain tap");
+    holdBadge.click();
+    hold(vodkaBadge, 600);
+    assert(!armed(vodkaBadge), "a buff is never armed");
+    vodkaBadge.click();
+    hold(holdBadge, 500);
+    assert(armed(holdBadge) && holdBadge.children.some((child) => child.className === "hud-indicator__remove"),
+      "a 500 ms hold shows the cross in the middle");
+    assert.equal(holdCount.hidden, true, "the long press opens no counter");
+    assert.equal(statuses.has("sick"), true, "armed, the debuff still runs");
+    holdBadge.click();
+    assert(!statuses.has("sick") && holdBadge.classList.contains("hud-indicator--ending"), "the next tap removes the debuff");
+    advance(clock + 300);
+    assert.equal(holdBadge.parentNode, null, "its badge fades away");
+    removeByHold = false;
+    assert.equal([...timers.values()].filter((timer) => timer.every).length, 0, "no counter timer left open");
     // Spec 181 D4 (TK-345): «Радіація» held by the location — a red badge with the radiation sign, no fill, no countdown.
     statuses.hold("radiation", true, { source: "location" });
     const radiationBadge = badgeList()[1];
@@ -608,8 +638,8 @@ async function stageTwo() {
     assert.equal(badgeList().length, 0, "dispose removes the badges");
     clock += 1000;
     const rebuilt = new StatusHudBadges({ documentRef: doc, mountNode: column.element, statuses, icons, labels: STATUS_LABELS,
-      colors: () => ({ full: "g", half: "y", low: "r" }), scheduler, now: () => clock });
-    assert.equal(badgeList()[0].style.getPropertyValue("--hud-indicator-delay"), "-31601ms", "the time already gone");
+      colors: () => ({ full: "g", half: "y", low: "r" }), scheduler, now: () => clock, canRemoveByHold: () => false });
+    assert.equal(badgeList()[0].style.getPropertyValue("--hud-indicator-delay"), "-34100ms", "the time already gone (TK-380's holds took 2.5 s of it)");
     rebuilt.dispose();
     radioLate.dispose();
     column.dispose();

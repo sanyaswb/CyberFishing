@@ -78,7 +78,12 @@
    (scaleY from the bottom) and its colour moves full → half → low by cross-fading two tone layers (opacity), so both
    run on the compositor. Duration and the time already gone come from the badge (--hud-indicator-duration, a negative
    --hud-indicator-delay); the colours from the degradation palette. */
-.hud-indicator--status { color: var(--ui-text); }
+.hud-indicator--status {
+  color: var(--ui-text);
+  /* TK-380: a hold on a badge (DEV removal) selects nothing and opens no callout on touch. */
+  -webkit-touch-callout: none;
+  user-select: none;
+}
 .hud-indicator--status .hud-indicator__icon { width: 62%; height: 62%; }
 .hud-indicator--debuff {
   color: var(--ui-danger);
@@ -136,6 +141,30 @@
   transform: translateX(50%);
 }
 .hud-indicator__count[hidden] { display: none; }
+/* TK-380 (DEV God mode): a hold armed the debuff's removal — a cross over the middle of the circle; the next tap removes. */
+.hud-indicator__remove {
+  display: none;
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  pointer-events: none;
+}
+.hud-indicator--remove-armed .hud-indicator__remove { display: block; }
+.hud-indicator__remove::before,
+.hud-indicator__remove::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 18%;
+  width: 64%;
+  height: calc(3px * var(--ui-hud-scale, 1));
+  margin-top: calc(-1.5px * var(--ui-hud-scale, 1));
+  border-radius: 999px;
+  background: var(--ui-danger);
+  box-shadow: 0 0 0 1px var(--hud-indicator-count-background);
+  transform: rotate(45deg);
+}
+.hud-indicator__remove::after { transform: rotate(-45deg); }
 
 @keyframes hud-indicator-wave {
   from { transform: translateX(0); }

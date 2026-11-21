@@ -2,6 +2,10 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.52.39 - DEV God mode: remove a debuff by holding its badge (TK-380)
+
+- dev.html only, with God mode «GOD зняти дебаф утриманням» on (DevTools → God mode): hold a debuff's round badge in the HUD for half a second — a cross appears in its middle and its time does not open; the next tap removes the debuff. A short tap shows the time as before. Debuffs with a timer only.
+
 ## v0.52.38 - The fiery ash flies with the wind (TK-379)
 
 - The emission's embers drift with the wind: its direction and strength set where and how fast they fly, a gust carries them faster, and they turn smoothly when the wind changes. Nearer embers fly faster.
@@ -45,9 +49,3 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 
 - The emission's shake no longer allocates on every frame; it shakes exactly as before.
 - Descriptions brought up to date: the vodka stacks, and the real cost of being drunk (the scene's blur on every frame).
-
-## v0.52.29 - Vodka stacks and makes you drunk (TK-374)
-
-- Each bottle of vodka adds to the effect (up to 5) and starts its 10 minutes again; all of it ends 10 minutes after the last bottle.
-- Under radiation the vodka protects from the emission's screen effects: 30 % for one bottle, 45 % for two, 60 % for three or more.
-- Without radiation the player gets drunk: the world blurs and the view sways slowly in a figure of eight, stronger with each bottle. When radiation comes, the drunkenness fades smoothly and the vodka works as protection; after the radiation it comes back. The HUD stays sharp and still. The values are in DevTools «Конфіг» → canvas → intoxication.
