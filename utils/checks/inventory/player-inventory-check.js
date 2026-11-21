@@ -190,7 +190,9 @@ function checkPlayerInventoryPort() {
   inventory.setLock(true);
   assert.equal(inventory.isLocked, true);
   const blocked = inventory.dispatchInventoryAction({ type: actions.INVENTORY_ITEM_ACTIVATE, instanceId: rod.instanceId });
-  assert.deepEqual({ ...blocked }, { success: false, warning: "Витягніть снасть з води, щоб змінити спорядження.", refresh: false },
+  // Spec 185 D9: the lock is decided by the commands now (the gas mask's filters pass), with the same refusal.
+  assert.deepEqual({ success: blocked.success, warning: blocked.warning, refresh: blocked.refresh },
+    { success: false, warning: "Витягніть снасть з води, щоб змінити спорядження.", refresh: false },
     "equipment changes are blocked while tackle is in the water");
   assert.equal(inventory.dispatchInventoryAction({ type: actions.OPEN }).success, true, "opening stays allowed while locked");
   assert.equal(inventory.dispatchInventoryAction({ type: actions.CONSUMABLE_SLOT_ACTIVATE, kind: "bait", slotIndex: 0 }).success,
@@ -546,8 +548,69 @@ function checkHandChumStack() {
     "the 97 left are back in the backpack (joined with an identical pack there, if any)");
 }
 
+// Spec 185 D9 (TK-385, owner: «Змінювати фільтри можна під час риболовлі в інвентарі. Під час дії радіації чи викиду
+// Знімати два фільтри одразу неможна, фільтр можна поміняти по черзі, якщо немає радіації і викиду можна»): with the
+// tackle in the water only the worn gas mask's filters change (the rest stays refused, the mask stays on); under
+// radiation an action that leaves the mask without a live filter is rolled back; without radiation — free.
+function checkGasMaskFilterSwap() {
+  const { inventory, actions, runtime } = compose({ production: true });
+  const { INVENTORY_MESSAGES } = runtime.importModule("src/game/presentation/inventory/inventory_messages.js");
+  const facade = inventory.inventoryFacade;
+  const mask = inventory.grantCatalogItem("gas_mask_basic").instanceId;
+  const filters = ["gas_filter_coal", "gas_filter_ash", "gas_filter_coal"].map((itemId) => inventory.grantCatalogItem(itemId).instanceId);
+  const dispatch = (action) => inventory.dispatchInventoryAction(action);
+  const sockets = () => facade.getViewModel().panel?.assembly?.sockets ?? [];
+  // A filter tapped in the editor takes a free cell (the attached copy may get a new instance id): one more cell filled.
+  const filledCount = () => sockets().filter((socket) => socket.item).length;
+  const put = (filterId) => {
+    const before = filledCount();
+    for (let tap = 0; tap < 2 && filledCount() === before; tap += 1) {
+      dispatch({ type: actions.INVENTORY_ITEM_ACTIVATE, instanceId: filterId });
+    }
+    return filledCount() === before + 1;
+  };
+  const removeCell = (index) => {
+    const socket = sockets()[index];
+    return dispatch({ type: actions.ASSEMBLY_SOCKET_ACTIVATE, rootInstanceId: mask, socketId: socket.socketId,
+      slotId: socket.slotId, slotIndex: socket.slotIndex, parentInstanceId: socket.parentInstanceId, listVisible: true });
+  };
+  const filled = () => sockets().map((socket) => socket.item?.instanceId ?? null);
+  dispatch({ type: actions.INVENTORY_ITEM_ACTIVATE, instanceId: mask });
+  assert.ok(put(filters[0]) && put(filters[1]), "two filters in the mask");
+  assert.equal(dispatch({ type: actions.ASSEMBLY_EQUIP, rootInstanceId: mask }).success, true, "the mask is worn");
+  let restricted = false;
+  inventory.setFilterSwapRestriction({ isActive: () => restricted });
+
+  inventory.setLock(true);
+  assert.equal(dispatch({ type: actions.EQUIPMENT_SLOT_ACTIVATE, slotId: "rod" }).warning,
+    INVENTORY_MESSAGES.equipmentLockedWhileFishing, "fishing: the rod's slot stays refused");
+  assert.equal(dispatch({ type: actions.EQUIPMENT_SLOT_ACTIVATE, slotId: "gasMask" }).success, true,
+    "fishing: the gas mask's slot opens its editor");
+  assert.equal(facade.getViewModel().panel?.assembly?.rootInstanceId, mask);
+  assert.equal(removeCell(0).success, true, "fishing: a filter comes out");
+  assert.equal(JSON.stringify(filled()), JSON.stringify([null, filters[1]]));
+  assert.ok(put(filters[2]), "fishing: a filter goes in");
+  const unequip = dispatch({ type: actions.ASSEMBLY_UNEQUIP, rootInstanceId: mask });
+  assert.equal([unequip.success, inventory.getEquipped().gasMask?.instanceId].join(), `false,${mask}`,
+    "fishing: the mask itself is not taken off");
+
+  restricted = true;
+  assert.equal(removeCell(0).success, true, "under radiation: one of two comes out");
+  const last = removeCell(1);
+  assert.equal(JSON.stringify([last.success, last.warning, filled()[1]]),
+    JSON.stringify([false, INVENTORY_MESSAGES.gasMaskFiltersOneAtATime, filters[1]]),
+  "under radiation: the last live filter stays (rolled back, with the message)");
+  assert.ok(put(inventory.grantCatalogItem("gas_filter_ash").instanceId), "a new one goes in first");
+  assert.equal(removeCell(1).success, true, "then the old one comes out");
+  inventory.setLock(false);
+  restricted = false;
+  assert.equal(removeCell(0).success, true, "no radiation, no emission: free");
+  assert.equal(JSON.stringify(filled()), JSON.stringify([null, null]), "the mask may stand without filters");
+}
+
 checkFreshStart();
 checkDrinkUse();
+checkGasMaskFilterSwap();
 checkDrinkStacks();
 checkDrinkSlot();
 checkHandChumStack();

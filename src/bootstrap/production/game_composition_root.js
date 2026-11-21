@@ -1980,6 +1980,16 @@ export class GameCompositionRoot {
     inventory.setBusyDevices({
       rootInstanceIds: () => systems.chum.rootInstanceIdsAway(),
     });
+    // Spec 185 D9 (TK-385): on the location under radiation or an emission the gas mask's filters change one at a time;
+    // in the house (no radiation reaches the player) and without either — freely.
+    inventory.setFilterSwapRestriction({
+      isActive: () => {
+        if (this.#housePresence.isInHouse()) return false;
+        const snapshot = systems.env.getSnapshot();
+        const phase = snapshot?.emission?.phase;
+        return Number(snapshot?.radiation) > 0 || (typeof phase === "string" && phase !== "idle");
+      },
+    });
     // Spec 181 D3: the HUD indicator column under the clock — the radio first, then the status badges.
     const indicatorColumn = this.#uiSurface ? own(new HudIndicatorColumn({ documentRef: this.#documentTarget,
       mountNode: this.#uiSurface.mountRoot })) : null;

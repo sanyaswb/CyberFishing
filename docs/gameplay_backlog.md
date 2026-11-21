@@ -20,7 +20,7 @@ Notes: suspected owner module, related checks.
 
 ## Open
 
-### G-149 The gas mask works through its filters and wears by its quality (P2, in progress: spec 185)
+### G-149 The gas mask works through its filters and wears by its quality (P2, done in v0.52.42–0.52.46; owner acceptance pending)
 Found: 2026-11-21, owner (spec 185).
 Reproduce: wear the gas mask on the location under radiation or an emission, with none, one or two filters.
 Expected: the mask holds two filters (3 min each); one filters at a time (less time left first), only while the
@@ -31,7 +31,9 @@ filters stop. Filters change one at a time under radiation, also while fishing.
 Actual (before): a gas mask in its slot protected fully and for ever (quality 5, worn only by the general radiation wear).
 Notes: spec 185 stages TK-381…TK-385; TK-381 (v0.52.42) — the filters, the mask's two cells, quality 3; TK-382
 (v0.52.43) — `GasMaskProtection`: filters one at a time, protection and cast only with a live filter, the 10 s return;
-TK-383 (v0.52.44) — the mask's own wear (100 s × quality while filtering), the radiation's general wear passes it by.
+TK-383 (v0.52.44) — the mask's own wear (100 s × quality while filtering), the radiation's general wear passes it by;
+TK-384 (v0.52.45) — the HUD indicator with cracks; TK-385 (v0.52.46) — filters change while fishing, one at a time under
+radiation. Checks: weather, device-power, emission-wear, player-inventory, radio-receiver.
 
 ### G-148 Vodka lasts by the bottles and sobers up by steps (P2, done in v0.52.37; owner acceptance pending)
 Found: 2026-11-20, owner (TK-378).

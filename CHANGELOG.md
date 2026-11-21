@@ -2,6 +2,10 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.52.46 - Gas mask filters change while fishing, one at a time under radiation (TK-385, spec 185)
+
+- With the tackle in the water the gas mask's filters can still be changed in its editor (the rest of the equipment stays locked, the mask stays on). Under radiation or during an emission the filters change one at a time: the last filter with time left cannot come out until a new one is in. Without radiation and an emission — freely.
+
 ## v0.52.45 - The gas mask's HUD indicator with cracks (TK-384, spec 185)
 
 - While a gas mask is worn, a round indicator stands in the HUD column after the radio: its fill is the mask's condition, cracks appear at 80, 60, 40, 20 and 0 % (at 0 it is cracked through, with a red outline), and it fades while the mask does not protect. A tap shows the filters' time left. (A Spine effect of cracked glass comes later.)
@@ -42,7 +46,3 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 
 - Vodka lasts by the bottles: 1 bottle — 1 minute, 2 — 3, 3 — 5, 4 — 7, 5 bottles — 10 minutes; another bottle raises the level by one from the level now.
 - The drunk effects step down smoothly: with 5 bottles level 4 at 7 minutes left, 3 at 5, 2 at 3, 1 in the last minute; each step glides over 30 seconds, and the end fades over 30 seconds too.
-
-## v0.52.36 - Review before push (TK-374.4, TK-376.1)
-
-- No change in play: the code that reads a value by the number of bottles is shared now, and a small cleanup in the drink button's wiring.

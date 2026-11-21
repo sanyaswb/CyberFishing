@@ -1,5 +1,6 @@
 import { LiveBaitStackId } from "../../domain/live_bait/live_bait_stack_id.js";
 import { BusyDeviceSignature } from "./busy_device_signature.js";
+import { LockedEquipmentSignature } from "./locked_equipment_signature.js";
 import { EQUIPMENT_ALL_SLOT_IDS, EQUIPMENT_MAIN_SLOT_IDS, slotTakesWholeStack } from "../../domain/equipment/equipment_slot_catalog.js";
 import { InventoryApplicationError } from "./inventory_application_error.js";
 import { InventoryItemLocation } from "../../domain/inventory/inventory_item_location.js";
@@ -42,6 +43,10 @@ export class InventoryCommandService {
   #liveBaitStacks = null;
   #itemUse;
   #busySignature = new BusyDeviceSignature();
+  // Spec 185 D9 (TK-385): the equipment that the lock keeps (all but the worn gas mask's filters) and the source of the
+  // filters' rule — { isActive() }: under radiation or an emission they change one at a time.
+  #lockedSignature = new LockedEquipmentSignature();
+  #filterSwapRestriction = null;
 
   constructor({
     messages,
@@ -129,22 +134,66 @@ export class InventoryCommandService {
     this.#busyDevices = source || null;
   }
 
-  dispatch(action = {}) {
+  // Spec 185 D9 (TK-385): { isActive() } — the radiation is above 0 or an emission is on (on the location).
+  setFilterSwapRestriction(source) {
+    this.#filterSwapRestriction = source || null;
+  }
+
+  // locked: the tackle is in the water (PlayerInventory's lock) — only the worn gas mask's filters may change (D9).
+  dispatch(action = {}, { locked = false } = {}) {
     try {
+      if (locked && !this.#isGasMaskFilterAction(action)) return this.#failure(this.#messages.equipmentLockedWhileFishing);
       const busyRoots = this.#busyDevices?.rootInstanceIds() || [];
-      if (busyRoots.length === 0) return this.#dispatch(action);
-      // Any action that would change a busy device (its slot, its items) is rolled back as a whole.
+      const maskId = this.#filterSwapRestriction?.isActive() === true ? this.#equipmentState.getRootInstanceId("gasMask") : null;
+      if (busyRoots.length === 0 && !locked && !maskId) return this.#dispatch(action);
+      // Any action that would change a busy device (its slot, its items), the tackle in the water, or leave the worn
+      // gas mask without a live filter under radiation is rolled back as a whole.
       return this.#transaction.runAtomic(() => {
-        const before = this.#busySignature.read(busyRoots, this.#repository, this.#equipmentState);
+        const before = busyRoots.length ? this.#busySignature.read(busyRoots, this.#repository, this.#equipmentState) : "";
+        const lockedBefore = locked ? this.#lockedSignature.read(this.#repository, this.#equipmentState) : "";
+        const liveBefore = maskId ? this.#liveFilterCount(maskId) : 0;
         const result = this.#dispatch(action);
-        if (this.#busySignature.read(busyRoots, this.#repository, this.#equipmentState) !== before) {
+        if (busyRoots.length && this.#busySignature.read(busyRoots, this.#repository, this.#equipmentState) !== before) {
           throw new Error(this.#messages.deviceAwayOnWater);
+        }
+        if (locked && this.#lockedSignature.read(this.#repository, this.#equipmentState) !== lockedBefore) {
+          throw new Error(this.#messages.equipmentLockedWhileFishing);
+        }
+        // Owner: «Під час дії радіації чи викиду Знімати два фільтри одразу неможна, фільтр можна поміняти по черзі».
+        if (maskId && liveBefore > 0 && this.#liveFilterCount(maskId) === 0) {
+          throw new Error(this.#messages.gasMaskFiltersOneAtATime);
         }
         return result;
       });
     } catch (error) {
       return this.#failure(error?.message, error);
     }
+  }
+
+  // D9: the actions that work only on the worn gas mask and its filters (its slot, its editor's cells, a filter tapped
+  // in its editor, the pick's list there). The locked signature guards what they change.
+  #isGasMaskFilterAction(action) {
+    const types = this.#actionTypes;
+    if (action.type === types.EQUIPMENT_SLOT_ACTIVATE) return action.slotId === "gasMask";
+    const maskId = this.#equipmentState.getRootInstanceId("gasMask");
+    if (!maskId) return false;
+    if (action.type === types.ASSEMBLY_SOCKET_ACTIVATE || action.type === types.ASSEMBLY_SOCKET_ITEM_ACTIVATE) {
+      return (action.rootInstanceId || this.#uiState.editingRootInstanceId) === maskId;
+    }
+    const editingMask = this.#uiState.panelMode === "assembly" && this.#uiState.editingRootInstanceId === maskId;
+    return editingMask && [types.INVENTORY_ITEM_ACTIVATE, types.PICK_CANCEL, types.SUBFILTER_TOGGLE,
+      types.SORT_CRITERION_SELECT].includes(action.type);
+  }
+
+  // D9: the filters with time left in a gas mask's cells (a saved charge above 0; a fresh one has no chargeState).
+  #liveFilterCount(maskId) {
+    let live = 0;
+    for (const { item } of this.#repository.listDescendants(maskId)) {
+      if (item.location?.slotId !== "filter") continue;
+      const percent = item.chargeState?.percent;
+      if (percent === undefined || Number(percent) > 0) live += 1;
+    }
+    return live;
   }
 
   #dispatch(action) {

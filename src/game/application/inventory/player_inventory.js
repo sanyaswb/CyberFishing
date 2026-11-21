@@ -79,14 +79,14 @@ export class PlayerInventory {
       this.#actions.AUTO_BAIT_CHANGE,
       this.#actions.AUTO_CHUM_CHANGE,
     ]);
-    if (this.#isLocked && !safeWhileLocked.has(action.type)) {
-      return {
-        success: false,
-        warning: this.#messages.equipmentLockedWhileFishing,
-        refresh: false,
-      };
-    }
-    return this.#facade.dispatch(action);
+    // Spec 185 D9 (owner: «Змінювати фільтри можна під час риболовлі в інвентарі»): under the lock the gas mask's filters
+    // still change; everything else is refused by the commands with the lock's message.
+    return this.#facade.dispatch(action, { locked: this.#isLocked && !safeWhileLocked.has(action.type) });
+  }
+
+  // Spec 185 D9: { isActive() } — under radiation or an emission the gas mask's filters change one at a time.
+  setFilterSwapRestriction(source) {
+    this.#facade.setFilterSwapRestriction(source);
   }
 
   // Spec 151: e.g. a bait boat on the water (ChumService.rootInstanceIdsAway).

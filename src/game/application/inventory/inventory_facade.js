@@ -34,6 +34,11 @@ export class InventoryFacade {
     this.#commands.setBusyDevices(source);
   }
 
+  // Spec 185 D9: { isActive() } — under radiation or an emission the gas mask's filters change one at a time.
+  setFilterSwapRestriction(source) {
+    this.#commands.setFilterSwapRestriction(source);
+  }
+
   // Spec 162 stage 2: the chosen live bait in the bait switcher.
   setLiveBaitHook(hook) {
     this.#viewModels.setLiveBaitHook(hook);
@@ -55,8 +60,9 @@ export class InventoryFacade {
     return this.#viewModels.create(this.#commands.getUiState());
   }
 
-  dispatch(action) {
-    const result = this.#commands.dispatch(action);
+  // options: { locked } — the tackle is in the water (spec 185 D9: only the gas mask's filters change).
+  dispatch(action, options = {}) {
+    const result = this.#commands.dispatch(action, options);
     this.notify();
     return Object.freeze({ ...result, refresh: false });
   }

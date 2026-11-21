@@ -438,6 +438,7 @@
 │  │  │  │  ├── line_runtime_display_stats_resolver.js
 │  │  │  │  ├── loadout_application_port.js
 │  │  │  │  ├── loadout_application_service.js
+│  │  │  │  ├── locked_equipment_signature.js
 │  │  │  │  ├── persistence
 │  │  │  │  │  ├── equipment_state_migration_policy.js
 │  │  │  │  │  ├── inventory_item_id_migration_policy.js
