@@ -8,8 +8,10 @@ import { UiEventShield } from "../dom/ui_event_shield.js";
 // No work per frame: the fill and its colours are CSS animations (transform and opacity, on the compositor) started with
 // the status's duration and a negative delay for the time already gone; the DOM is touched only on a status's start,
 // update and end, on a tap and by the open counter's one-second timer. Only statuses whose description has badge: true.
-// TK-380 (DEV God mode removeDebuffsByHold): a 500 ms hold on a timed debuff's badge shows a cross in its middle (the
-// hold's own click opens no counter); the next tap removes the debuff. Off: a tap works as before, a hold starts nothing.
+// TK-380 (DEV God mode removeDebuffsByHold): a 500 ms hold on a timed status's badge shows a cross in its middle (the
+// hold's own click opens no counter); the next tap removes the status. TK-380.1: any status with a timer — the vodka is a
+// buff in its description, yet its drunkenness is what the owner removes; a status held by its source (the radiation,
+// the gas mask) is its source's. Off: a tap works as before, a hold starts nothing.
 const FADE_MS = 300;
 const COUNTER_MS = 1000;
 const REMOVE_HOLD_MS = 500;
@@ -80,7 +82,7 @@ export class StatusHudBadges {
     const count = document.createElement("span");
     count.className = "hud-indicator__count";
     count.hidden = true;
-    const badge = { id: entry.id, kind: entry.kind, button, fill: null, count, icon, counting: false, ending: false,
+    const badge = { id: entry.id, button, fill: null, count, icon, counting: false, ending: false,
       holdTimer: null, heldClick: false, armed: false, cross: null };
     if (icon) button.append(icon);
     button.append(count);
@@ -142,7 +144,7 @@ export class StatusHudBadges {
     this.#syncCounter();
   }
 
-  // TK-380: a tap — the hold's own click does nothing; on an armed badge it removes the debuff; else the counter.
+  // TK-380: a tap — the hold's own click does nothing; on an armed badge it removes the status; else the counter.
   #click(badge) {
     if (badge.heldClick) { badge.heldClick = false; return; }
     if (badge.armed) {
@@ -155,7 +157,7 @@ export class StatusHudBadges {
   #startHold(badge, event) {
     badge.heldClick = false;
     this.#cancelHold(badge);
-    if (badge.armed || badge.ending || badge.kind !== "debuff" || (event?.button ?? 0) !== 0) return;
+    if (badge.armed || badge.ending || (event?.button ?? 0) !== 0) return;
     if (!badge.button.classList.contains("hud-indicator--timed") || !this.#canRemoveByHold()) return;
     badge.holdTimer = this.#scheduler.setTimeout(() => {
       badge.holdTimer = null;

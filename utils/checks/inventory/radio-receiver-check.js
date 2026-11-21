@@ -607,9 +607,15 @@ async function stageTwo() {
     hold(holdBadge, 499);
     assert(!armed(holdBadge) && holdCount.hidden === false, "a hold under 500 ms is a plain tap");
     holdBadge.click();
+    // TK-380.1: the vodka is a buff in its description, yet its drunkenness is what the owner removes — any timed status.
     hold(vodkaBadge, 600);
-    assert(!armed(vodkaBadge), "a buff is never armed");
+    assert(armed(vodkaBadge), "a timed buff (the vodka) is armed too");
+    removeByHold = false;
     vodkaBadge.click();
+    assert(!armed(vodkaBadge) && statuses.has("vodka") && !vodkaBadge.children.find((child) =>
+      child.className === "hud-indicator__count").hidden, "the flag turned off meanwhile: the tap disarms and shows the time");
+    vodkaBadge.click();
+    removeByHold = true;
     hold(holdBadge, 500);
     assert(armed(holdBadge) && holdBadge.children.some((child) => child.className === "hud-indicator__remove"),
       "a 500 ms hold shows the cross in the middle");
@@ -630,6 +636,10 @@ async function stageTwo() {
     radiationBadge.click();
     assert.equal(radiationBadge.children.find((child) => child.className === "hud-indicator__count").hidden, true,
       "no countdown without a timer");
+    removeByHold = true;
+    hold(radiationBadge, 600);
+    assert(!armed(radiationBadge) && statuses.has("radiation"), "TK-380.1: a status held by its source is never armed");
+    removeByHold = false;
     statuses.hold("radiation", false);
     advance(clock + 300);
     assert.equal(radiationBadge.parentNode, null, "the radiation gone, its badge fades away");
@@ -639,7 +649,7 @@ async function stageTwo() {
     clock += 1000;
     const rebuilt = new StatusHudBadges({ documentRef: doc, mountNode: column.element, statuses, icons, labels: STATUS_LABELS,
       colors: () => ({ full: "g", half: "y", low: "r" }), scheduler, now: () => clock, canRemoveByHold: () => false });
-    assert.equal(badgeList()[0].style.getPropertyValue("--hud-indicator-delay"), "-34100ms", "the time already gone (TK-380's holds took 2.5 s of it)");
+    assert.equal(badgeList()[0].style.getPropertyValue("--hud-indicator-delay"), "-34700ms", "the time already gone (TK-380's holds took 3.1 s of it)");
     rebuilt.dispose();
     radioLate.dispose();
     column.dispose();

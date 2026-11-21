@@ -1708,8 +1708,8 @@
     "description": "Under tension the virtual reel winds slower (1 − tension / line limit), but never slower than this share of its speed."
   },
   "debug.godMode.removeDebuffsByHold": {
-    "label": "GOD зняти дебаф утриманням",
-    "description": "Утримати значок дебафу в HUD 500 мс — посередині з'являється хрестик (час не відкривається); наступний дотик знімає дебаф. Короткий дотик, як і раніше, показує час. Лише дебафи з таймером."
+    "label": "GOD зняти ефект утриманням",
+    "description": "Утримати значок ефекту з таймером у HUD (горілка — сп'яніння) 500 мс — посередині з'являється хрестик (час не відкривається); наступний дотик знімає ефект. Короткий дотик, як і раніше, показує час. Ефекти, які тримає джерело (радіація локації, протигаз), не знімаються."
   },
   "debug.godMode.forceAnomalyChance": {
     "label": "GOD anomaly chance 100%",

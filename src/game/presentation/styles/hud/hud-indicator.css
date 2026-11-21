@@ -141,7 +141,7 @@
   transform: translateX(50%);
 }
 .hud-indicator__count[hidden] { display: none; }
-/* TK-380 (DEV God mode): a hold armed the debuff's removal — a cross over the middle of the circle; the next tap removes. */
+/* TK-380 (DEV God mode): a hold armed a timed status's removal — a cross over the circle's middle; the next tap removes. */
 .hud-indicator__remove {
   display: none;
   position: absolute;

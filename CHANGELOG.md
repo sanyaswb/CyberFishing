@@ -2,6 +2,10 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.52.41 - God mode: a hold removes the vodka too (TK-380.1)
+
+- dev.html, God mode «GOD зняти ефект утриманням»: a hold now arms any effect with a timer, the vodka (its drunkenness) included — before it took debuffs only, and no debuff in the game has a timer. Effects held by their source (the location's radiation, the gas mask) stay.
+
 ## v0.52.40 - DevTools no longer goes empty after a bottle of vodka (TK-378.1)
 
 - dev.html: with any active effect (vodka, a gas mask in its slot, radiation) DevTools stayed empty until a reload. Fixed: the «СТАТУСИ» section reads the level again, and every page draws.
@@ -44,8 +48,3 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 
 - A new «Напій» slot beside the gas mask takes the bottles as one stack; a tap on a bottle in the backpack puts it there, «Випити» is in the slot's editor.
 - While the slot holds a drink, a button left of the item selector shows it and how many are left; a tap drinks one, also while fishing. The last bottle hides the button.
-
-## v0.52.31 - A pack of hand chum is many throws; identical bottles are one stack (TK-375)
-
-- A pack of hand chum put into its slot goes there whole: a pack of 100 is 100 throws, each takes one; the auto-refill puts in the next whole pack. Taking it off returns the rest to the backpack.
-- Identical bottles of vodka are one stack: a new bottle joins the ones already in the backpack, and separate bottles from an older save join on load.

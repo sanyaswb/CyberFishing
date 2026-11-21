@@ -369,7 +369,7 @@ export const CONFIG = {
       // віртуальна ліска: риба її бере, поки гравець не тягне; поки тягне — віртуальна підмотка poleRetrieveSpeedMetersPerSec
       // (під натягом повільніше, не нижче poleMinEfficiency швидкості), не коротше за ліску вудки.
       infiniteCastingLine: { reserveMeters: 300, poleRetrieveSpeedMetersPerSec: 1.5, poleMinEfficiency: 0.25 },
-      // TK-380: утримання 500 мс на значку дебафу в HUD показує хрестик, наступний дотик знімає дебаф.
+      // TK-380: утримання 500 мс на значку ефекту з таймером у HUD (горілка) показує хрестик, наступний дотик знімає ефект.
       removeDebuffsByHold: false,
 
       // Bite debug controls. Працюють тільки коли enabled: true.
