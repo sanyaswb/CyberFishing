@@ -2,6 +2,11 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.52.40 - DevTools no longer goes empty after a bottle of vodka (TK-378.1)
+
+- dev.html: with any active effect (vodka, a gas mask in its slot, radiation) DevTools stayed empty until a reload. Fixed: the «СТАТУСИ» section reads the level again, and every page draws.
+- If one DevTools section ever fails to draw, it now shows the error in its own page and the rest of DevTools keeps working.
+
 ## v0.52.39 - DEV God mode: remove a debuff by holding its badge (TK-380)
 
 - dev.html only, with God mode «GOD зняти дебаф утриманням» on (DevTools → God mode): hold a debuff's round badge in the HUD for half a second — a cross appears in its middle and its time does not open; the next tap removes the debuff. A short tap shows the time as before. Debuffs with a timer only.
@@ -44,8 +49,3 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 
 - A pack of hand chum put into its slot goes there whole: a pack of 100 is 100 throws, each takes one; the auto-refill puts in the next whole pack. Taking it off returns the rest to the backpack.
 - Identical bottles of vodka are one stack: a new bottle joins the ones already in the backpack, and separate bottles from an older save join on load.
-
-## v0.52.30 - Review before push (TK-372.1, TK-374.1)
-
-- The emission's shake no longer allocates on every frame; it shakes exactly as before.
-- Descriptions brought up to date: the vodka stacks, and the real cost of being drunk (the scene's blur on every frame).

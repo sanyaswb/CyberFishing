@@ -1,6 +1,7 @@
 // Release notes, newest first (unshift with every patch). DEV only: no production code reads them, and in the start's
 // bundle they cost 13 KB gzip (spec 160). dev.html publishes them with the version: window.CYBER_FISHING_PROJECT_VERSION.notes.
 export const PROJECT_RELEASE_NOTES = Object.freeze([
+  "TK-378.1 (I-29): createPlayerStatusesDevPort with stacks for the game and its check; DevTools mounts each module in isolation (console.error + alert in its page).",
   "TK-380: debug.godMode.removeDebuffsByHold (DEV flags port) — StatusHudBadges 500 ms hold on a timed debuff arms hud-indicator--remove-armed (cross), the hold's click opens no counter, the next tap removes the status.",
   "TK-379: PixiAshRenderer drift = direction × (strength + gust × gustSlantShare) × ashDriftPx (90), eased by canvas.ash.windFollowPerSec (+gustFollowPerSec in a gust); canvas.ash.followsWind switch.",
   "TK-378: vodka levelSec [60,180,300,420,600] — time by the level, statusLevel wears off by steps, a bottle over the level now; IntoxicationEffect glides down over soberSec (listBetween).",

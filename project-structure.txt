@@ -235,6 +235,7 @@
 │     │  ├── battery.svg
 │     │  ├── boat.svg
 │     │  ├── chum.svg
+│     │  ├── drink.svg
 │     │  ├── float.svg
 │     │  ├── gas-mask.svg
 │     │  ├── keepnet.svg
@@ -254,6 +255,7 @@
 │  │     ├── boat_animation_composition.js
 │  │     ├── config_context.js
 │  │     ├── depth_selector_composition.js
+│  │     ├── emission_screen_composition.js
 │  │     ├── fishing_services_composition.js
 │  │     ├── game.js
 │  │     ├── game_asset_preload_facade.js
@@ -265,6 +267,9 @@
 │  │     ├── game_time_composition.js
 │  │     ├── game_version_badge.js
 │  │     ├── hint_renderer_composition.js
+│  │     ├── house_screen_composition.js
+│  │     ├── house_view_composition.js
+│  │     ├── house_visit_composition.js
 │  │     ├── hud_icons_composition.js
 │  │     ├── inventory_composition_root.js
 │  │     ├── inventory_selector_composition.js
@@ -273,6 +278,7 @@
 │  │     ├── lazy_feature.js
 │  │     ├── live_bait_composition.js
 │  │     ├── player_inventory_composition.js
+│  │     ├── player_start_config.js
 │  │     ├── radio_feature_composition.js
 │  │     ├── rod_animation_composition.js
 │  │     ├── scene_layer_composition.js
@@ -318,9 +324,11 @@
 │  │  │  ├── render_component.js
 │  │  │  ├── render_math.js
 │  │  │  └── render_pass.js
-│  │  └── scene
-│  │     ├── deferred_scene_layer.js
-│  │     └── inactive_scene_layer.js
+│  │  ├── scene
+│  │  │  ├── deferred_scene_layer.js
+│  │  │  └── inactive_scene_layer.js
+│  │  └── screens
+│  │     └── screen_host.js
 │  ├── entrypoints
 │  │  ├── game.entry.js
 │  │  └── game_startup_meter.entry.js
@@ -363,12 +371,15 @@
 │  │  │  │  ├── reel_service.js
 │  │  │  │  ├── rod_visual_offset_system.js
 │  │  │  │  └── tension_service.js
+│  │  │  ├── house
+│  │  │  │  └── room_upgrade_service.js
 │  │  │  ├── input
 │  │  │  │  ├── fight_input_action_composer.js
 │  │  │  │  └── pull_input_mapper.js
 │  │  │  ├── inventory
 │  │  │  │  ├── apply_bait_exposure_service.js
 │  │  │  │  ├── apply_battery_drain_service.js
+│  │  │  │  ├── apply_item_wear_service.js
 │  │  │  │  ├── assembly_inventory_context_filter_strategy.js
 │  │  │  │  ├── auto_refill_coordinator.js
 │  │  │  │  ├── auto_refill_port.js
@@ -403,6 +414,7 @@
 │  │  │  │  ├── inventory_item_grant_service.js
 │  │  │  │  ├── inventory_item_hydrator.js
 │  │  │  │  ├── inventory_item_removal_service.js
+│  │  │  │  ├── inventory_item_use.js
 │  │  │  │  ├── inventory_item_view_context.js
 │  │  │  │  ├── inventory_line_allocation_service.js
 │  │  │  │  ├── inventory_loadout_adapter.js
@@ -413,6 +425,7 @@
 │  │  │  │  ├── inventory_runtime_config_provider.js
 │  │  │  │  ├── inventory_runtime_display_stats_resolver.js
 │  │  │  │  ├── inventory_settings_transaction_participant.js
+│  │  │  │  ├── inventory_stack_consolidation.js
 │  │  │  │  ├── inventory_transaction_coordinator.js
 │  │  │  │  ├── inventory_ui_state.js
 │  │  │  │  ├── item_database.js
@@ -441,6 +454,7 @@
 │  │  │  ├── live_bait
 │  │  │  │  ├── aquarium_feed_inventory_port.js
 │  │  │  │  ├── catch_disposition_service.js
+│  │  │  │  ├── keepnet_radiation_exposure.js
 │  │  │  │  ├── live_bait_bait_candidate_port.js
 │  │  │  │  ├── live_bait_care_service.js
 │  │  │  │  ├── live_bait_command_service.js
@@ -472,11 +486,14 @@
 │  │  │  └── world
 │  │  │     ├── current_location.js
 │  │  │     ├── emission_exposure.js
+│  │  │     ├── emission_wear_exposure.js
 │  │  │     ├── environment_system.js
 │  │  │     ├── equipment_status_source.js
 │  │  │     ├── game_world.js
 │  │  │     ├── ground_plane_scope.js
+│  │  │     ├── house_presence.js
 │  │  │     ├── player_status_effects.js
+│  │  │     ├── player_statuses_dev_port.js
 │  │  │     └── radiation_status_source.js
 │  │  ├── config
 │  │  │  ├── databases
@@ -543,6 +560,7 @@
 │  │  │  │  ├── immutable_config.js
 │  │  │  │  └── resolved_config_provider.js
 │  │  │  └── validation
+│  │  │     ├── aquarium_visual_issues.js
 │  │  │     ├── inventory_selector_config_validator.js
 │  │  │     ├── item_progression_config_validator.js
 │  │  │     ├── item_rarity_config_validator.js
@@ -577,6 +595,7 @@
 │  │  │  │  ├── equipment_state.js
 │  │  │  │  ├── equipment_transition_plan.js
 │  │  │  │  ├── fishing_readiness_policy.js
+│  │  │  │  ├── house_entry_policy.js
 │  │  │  │  ├── manual_rod_change_planner.js
 │  │  │  │  ├── rod_capability_resolver.js
 │  │  │  │  ├── tackle_load_limit_policy.js
@@ -589,8 +608,10 @@
 │  │  │  │  ├── fish_endurance_points_calculator.js
 │  │  │  │  ├── fish_fight_event.js
 │  │  │  │  ├── fish_physics_profile.js
+│  │  │  │  ├── fish_radiation_bite_modifier.js
 │  │  │  │  ├── fish_rarity_resolver.js
-│  │  │  │  └── fish_stamina_points_calculator.js
+│  │  │  │  ├── fish_stamina_points_calculator.js
+│  │  │  │  └── fish_weight_sampler.js
 │  │  │  ├── fishing
 │  │  │  │  ├── cast_rod_bite_policy.js
 │  │  │  │  ├── cast_rod_line_constraint.js
@@ -677,6 +698,7 @@
 │  │  │  │  └── room_progress.js
 │  │  │  ├── inventory
 │  │  │  │  ├── backpack_slot_count.js
+│  │  │  │  ├── consumable_stack_rule.js
 │  │  │  │  ├── flat_inventory_item_repository.js
 │  │  │  │  ├── inventory_capacity_policy.js
 │  │  │  │  ├── inventory_grant_ledger.js
@@ -694,7 +716,9 @@
 │  │  │  │  │  └── bait_effectiveness_resolver.js
 │  │  │  │  ├── condition
 │  │  │  │  │  ├── durability_max_load.js
-│  │  │  │  │  └── item_condition_resolver.js
+│  │  │  │  │  ├── item_condition_quality.js
+│  │  │  │  │  ├── item_condition_resolver.js
+│  │  │  │  │  └── item_radiation_wear_policy.js
 │  │  │  │  ├── effective_item_stats_resolver.js
 │  │  │  │  ├── freshness
 │  │  │  │  │  ├── bait_freshness_decay_policy.js
@@ -743,6 +767,7 @@
 │  │  │  │  ├── caught_fish_collection.js
 │  │  │  │  ├── caught_fish_rarity.js
 │  │  │  │  ├── feed_supply_state.js
+│  │  │  │  ├── keepnet_radiation_policy.js
 │  │  │  │  ├── live_bait_eligibility_policy.js
 │  │  │  │  ├── live_bait_motion_profile_resolver.js
 │  │  │  │  ├── live_bait_stack_id.js
@@ -793,6 +818,7 @@
 │  │  │  │  ├── game_time_clock.js
 │  │  │  │  └── time_phase.js
 │  │  │  └── weather
+│  │  │     ├── emission_dose.js
 │  │  │     ├── emission_model.js
 │  │  │     ├── starfall_night.js
 │  │  │     ├── weather_event_process.js
@@ -818,6 +844,19 @@
 │  │     │  ├── rod_animation_state_resolver.js
 │  │     │  ├── rod_line_renderer.js
 │  │     │  └── rod_static_renderer.js
+│  │     ├── house
+│  │     │  ├── aquarium_feed_picker.js
+│  │     │  ├── aquarium_fish_motion.js
+│  │     │  ├── aquarium_fish_view.js
+│  │     │  ├── aquarium_fish_view_style.js
+│  │     │  ├── house_fish_list_view.js
+│  │     │  ├── house_labels.js
+│  │     │  ├── house_level_card.js
+│  │     │  ├── house_navigation_controller.js
+│  │     │  ├── house_presenter.js
+│  │     │  ├── house_room_view.js
+│  │     │  ├── house_screen_markup.js
+│  │     │  └── house_view.js
 │  │     ├── hud
 │  │     │  ├── fight_hud_frame_builder.js
 │  │     │  ├── fight_hud_renderer.js
@@ -934,6 +973,9 @@
 │  │     │  ├── victory_weight_scale_renderer.js
 │  │     │  └── victory_window.js
 │  │     ├── status
+│  │     │  ├── intoxication_blur.js
+│  │     │  ├── intoxication_effect.js
+│  │     │  ├── intoxication_warp.js
 │  │     │  └── status_labels.js
 │  │     ├── styles
 │  │     │  ├── auto-switch.css
@@ -941,6 +983,7 @@
 │  │     │  ├── fight_area_style_resolver.js
 │  │     │  ├── fishing_zone_colors.js
 │  │     │  ├── game-shell.css
+│  │     │  ├── house.css
 │  │     │  ├── hud
 │  │     │  │  ├── chum-control.css
 │  │     │  │  ├── depth-selector.css
@@ -983,11 +1026,13 @@
 │  │     │  └── time_of_day_layers.js
 │  │     ├── ui
 │  │     │  ├── art_size.js
+│  │     │  ├── asset_href_binder.js
 │  │     │  ├── rarity_stars_renderer.js
 │  │     │  ├── ui_auto_switch_renderer.js
 │  │     │  ├── ui_close_button_renderer.js
 │  │     │  ├── ui_hint_config.js
-│  │     │  └── ui_hint_renderer.js
+│  │     │  ├── ui_hint_renderer.js
+│  │     │  └── ui_sheet_handle_renderer.js
 │  │     ├── version
 │  │     │  └── project_version.js
 │  │     ├── viewport
@@ -997,6 +1042,7 @@
 │  │     │  ├── degradation_color_config.js
 │  │     │  └── degradation_color_config_validator.js
 │  │     ├── weather
+│  │     │  ├── emission_camera_shake.js
 │  │     │  ├── emission_screen_effect.js
 │  │     │  ├── geiger_click_planner.js
 │  │     │  └── weather_look_resolver.js
@@ -1046,6 +1092,7 @@
 │        │  ├── engine_interface.js
 │        │  ├── hint_sheet_controller.js
 │        │  ├── horizontal_scroll_controller.js
+│        │  ├── hud_row_sizer.js
 │        │  ├── inventory_dom_factory.js
 │        │  ├── inventory_long_press_controller.js
 │        │  ├── inventory_pick_cancel_controller.js
@@ -1054,6 +1101,8 @@
 │        │  ├── item_progression_dom_adapter.js
 │        │  ├── item_rarity_dom_adapter.js
 │        │  ├── scroll_container_aligner.js
+│        │  ├── sheet_dismiss_controller.js
+│        │  ├── sheet_height_controller.js
 │        │  ├── swipe_pager_controller.js
 │        │  ├── ui_event_shield.js
 │        │  └── ui_surface_adapter.js
@@ -1092,11 +1141,13 @@
 │        │  ├── pixi_rain_renderer.js
 │        │  ├── pixi_rod_renderer.js
 │        │  ├── pixi_runtime_module.js
+│        │  ├── pixi_scene_blur.js
 │        │  ├── pixi_scene_layer.js
 │        │  ├── pixi_spine_runtime.js
 │        │  ├── pixi_starfall_renderer.js
 │        │  ├── pixi_water_renderer.js
 │        │  ├── pixi_world_entities_renderer.js
+│        │  ├── scene_canvas_motion.js
 │        │  ├── scene_change_fingerprint.js
 │        │  ├── scene_color.js
 │        │  ├── scene_skeletal_surface.js
@@ -1117,16 +1168,19 @@
 │        │  ├── browser_timeout_scheduler.js
 │        │  ├── browser_wall_clock.js
 │        │  ├── game_clock.js
+│        │  ├── game_minute_ticker.js
 │        │  └── monotonic_interval_ticker.js
 │        └── ui
 │           ├── browser_fullscreen.js
 │           ├── chum_controls.js
 │           ├── depth_selector.js
+│           ├── drink_hud_control.js
 │           ├── fullscreen_control.js
 │           ├── game_controls.js
 │           ├── game_stage_layout.js
 │           ├── game_toolbar.js
 │           ├── hold_charges.js
+│           ├── house_entry_control.js
 │           ├── hud_indicator_column.js
 │           ├── radio_hud_indicator.js
 │           ├── startup_failure_screen.js

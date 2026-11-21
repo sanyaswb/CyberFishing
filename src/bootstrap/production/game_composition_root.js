@@ -69,6 +69,7 @@ import { EmissionWearExposure } from "../../game/application/world/emission_wear
 import { HousePresence } from "../../game/application/world/house_presence.js";
 import { HudIndicatorColumn } from "../../platform/browser/ui/hud_indicator_column.js";
 import { StatusHudBadges } from "../../platform/browser/ui/status_hud_badges.js";
+import { createPlayerStatusesDevPort } from "../../game/application/world/player_statuses_dev_port.js";
 import { DrinkHudControl } from "../../platform/browser/ui/drink_hud_control.js";
 import { STATUS_LABELS } from "../../game/presentation/status/status_labels.js";
 import { EmissionScreenEffect, sceneBlurPx } from "../../game/presentation/weather/emission_screen_effect.js";
@@ -2058,17 +2059,9 @@ export class GameCompositionRoot {
     }));
   }
 
-  // Spec 181 D5: the DEV port of the player's statuses (no subscribe: DevTools redraws on its own buttons).
+  // Spec 181 D5: the DEV port of the player's statuses (TK-378.1: built where its checks build it).
   #playerStatusesPort() {
-    const statuses = this.#playerStatuses();
-    return Object.freeze({
-      list: () => statuses.list(),
-      definition: (id) => statuses.definition(id),
-      remainingSec: (id) => statuses.remainingSec(id),
-      apply: (id, options) => statuses.apply(id, options),
-      remove: (id) => statuses.remove(id),
-      clear: () => statuses.clear(),
-    });
+    return createPlayerStatusesDevPort(this.#playerStatuses());
   }
 
   #playerStatuses() {

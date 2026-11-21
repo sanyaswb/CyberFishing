@@ -2868,7 +2868,10 @@ function choiceRow(options, value, path) {
   // The tree double keeps ConfigTreeRenderer.render(obj, parent, path): it records what the module hands it.
   const rendered = [];
   const tree = { render: (obj, parent, path) => rendered.push({ obj, path: path.join(".") }) };
-  new StatusEffectsModule({ config, statuses }).mount(host, { ui: statusUi, createSection, tree, edits });
+  // TK-378.1: the module gets the port the game gives it (createPlayerStatusesDevPort), never the whole PlayerStatusEffects.
+  const { createPlayerStatusesDevPort } = runtime.importModule("src/game/application/world/player_statuses_dev_port.js");
+  new StatusEffectsModule({ config, statuses: createPlayerStatusesDevPort(statuses) })
+    .mount(host, { ui: statusUi, createSection, tree, edits });
   const button = (label) => byClass("devtools__action", host).find((element) => element.innerText === label);
   const activeText = () => byClass("devtools__row", host).filter((row) => row.children[0]?.dataset.devtoolsKey &&
     ["vodka", "gasMask", "активні"].includes(row.children[0].dataset.devtoolsKey))
@@ -2896,6 +2899,42 @@ function choiceRow(options, value, path) {
   assert.equal(JSON.stringify(statuses.list().map((entry) => entry.id)), JSON.stringify(["gasMask"]),
     "«Зняти всі» ends the timed ones, the slot keeps the gas mask's");
   statusUi.dispose?.();
+
+  // TK-378.1 (owner: after a bottle of vodka every DevTools page but the first stayed empty): the whole panel opens with
+  // the game's port and an active vodka; and a section that throws while it draws shows its error in its own page while
+  // the other pages still draw.
+  const { DevTools } = runtime.importModule("src/dev/tools/dev_tools.js");
+  const openPanel = (port) => {
+    const panelUi = new DevToolsUI(() => {}, {}, null, null, null, document.body, createElement("div"));
+    const tools = new DevTools({ debug: {}, locations: { map: {} }, statusEffects: config.statusEffects }, { synchronize() {} }, {
+      catalogs: { items: {}, fishes: [], maps: {} }, settingsStore: null, debugModulesSource: () => ({}),
+      storageCache: { get: (key, fallback) => fallback, set() {}, remove() {} }, statuses: port,
+      createUI: () => ({ ui: panelUi, tooltipProvider: { ready: new Promise(() => {}) } }) });
+    const errors = [];
+    const consoleError = console.error;
+    console.error = (...args) => errors.push(args);
+    try { tools.toggle(); } finally { console.error = consoleError; }
+    // A page's host (its sections start closed): what was drawn into it.
+    const find = (node, id) => node?.dataset?.devtoolsPage === id ? node
+      : (node?.children ?? []).reduce((found, child) => found ?? find(child, id), null);
+    const page = (id) => find(panelUi.body, id)?.children ?? [];
+    return { panelUi, tools, errors, page };
+  };
+  button("Видати: vodka").click();
+  const drunk = openPanel(createPlayerStatusesDevPort(statuses));
+  assert.equal(drunk.errors.length, 0, "an active vodka draws without an error");
+  assert.ok(byClass("devtools__row", drunk.panelUi.body).some((row) => row.children[0]?.dataset?.devtoolsKey === "vodka"),
+    "«СТАТУСИ» shows the active vodka");
+  assert.ok(drunk.page("config").length > 0, "and the other pages are drawn");
+  drunk.tools.dispose();
+  const broken = openPanel({ ...createPlayerStatusesDevPort(statuses), stacks: () => { throw new TypeError("stacks broke"); } });
+  assert.equal(broken.errors.length, 1, "a section that throws is reported once in the console");
+  const alert = byClass("devtools__alert", broken.panelUi.body).find((element) =>
+    byClass("devtools__alert-line", element).some((line) => line.innerText === "stacks broke"));
+  assert.ok(alert, "and shows its error in the panel (a phone has no console)");
+  assert.ok(broken.page("config").length > 0, "the other pages still draw");
+  broken.tools.dispose();
+  statuses.clear();
 }
 
 // --- TK-335: the RANDOMIZER's report is visible right after «Запустити» ------------------------------------------------

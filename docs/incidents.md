@@ -42,8 +42,27 @@ rule as something the next change can follow.
 | R27 | Movement on a masked area is tested at the point it ends on, not only per axis: a diagonal step can pass both axis tests and cross a corner of the mask. An entity that is already outside its area must still be able to come back. A check of such an area runs the real mask of a location (its stairs), not a rectangle. | I-27 |
 | R26 | A DevTools control that shows a live state (an on/off switch of a process that also starts and ends by itself) follows that state while the panel is open, not only the redraw caused by another control: a cheap comparison on each live update, a redraw only on change. A check changes the state without touching a control and asserts the switch at once. | I-26 |
 | R25 | A check that compares a filtered list with the list it came from keeps each item's own index (map to [value, index] before filtering); comparing by the filtered position mixes items up and can pass or fail by luck. | I-25 |
+| R29 | A module that takes a narrowed port is checked with that port, built by the same function production uses — never with the whole object behind it. A new call in the module then fails its check when the port lacks it. One DevTools section that throws never empties the panel: each module draws in isolation and shows its error in its page. | I-29 |
 
 <a id="i-25"></a>
+
+## I-29 · 2026-11-21 · v0.52.37–0.52.39: after a bottle of vodka DevTools stayed empty (TK-378.1)
+
+- **Seen:** the owner on a phone (dev.html, God mode on): after one bottle of vodka every DevTools page but «Гра» was
+  empty, and «Гра» showed only «СТАТУСИ» with nothing in it; until the page was reloaded. Systematic, from v0.52.37 on.
+  On the phone there was no console to show.
+- **Cause:** TK-378 made `StatusEffectsModule.#describe` (`src/dev/tools/modules/status_effects_module.js:65`) read the
+  level with `statuses.stacks(id)`. DevTools gets a narrowed DEV port built in `GameCompositionRoot.#playerStatusesPort`
+  (list, definition, remainingSec, apply, remove, clear — no `stacks`), so with any active status (the vodka, a gas mask
+  in its slot, the location's radiation) `mount` threw `TypeError: stacks is not a function`. `DevTools.#populatePanel`
+  mounted the modules in one loop without isolation, so the throw stopped the redraw of every module after it. The check
+  (`devtools-controls-check`) gave the module the whole `PlayerStatusEffects`, which has `stacks`, and passed.
+- **Fix (v0.52.40):** one function builds the port (`createPlayerStatusesDevPort`,
+  `src/game/application/world/player_statuses_dev_port.js`, with `stacks`) for the game and for the check; `DevTools`
+  mounts each module in isolation — a throw goes to the console and shows as an alert in its page, the rest draws.
+- **Rule R29:** check a module with the port production gives it, built by the same code; isolate DevTools sections.
+- **Check:** `utils/checks/tooling/devtools-controls-check.js` (the module on the real port; the whole panel with an active
+  vodka; a section that throws shows its alert while «Конфіг» still draws) — fails with the old port and the old panel.
 
 ## I-28 · 2026-11-17 · up to v0.52.4: in God mode a cast landed outside the castable mask (TK-362.2)
 

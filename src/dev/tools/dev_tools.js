@@ -245,12 +245,25 @@ export class DevTools {
     for (const page of this.#pages) {
       const host = hosts.get(page.id);
       if (page.navigation) this.#renderNavigation(host);
-      for (const module of page.modules) module.mount(host, this.#context);
+      for (const module of page.modules) this.#mountModule(module, host, page.id);
       if (page.empty && host.children.length === 0) this.#ui.createEmptyNote(host, page.empty);
     }
     // Spec 174 C3: a search or the changed-only filter stays applied across a redraw.
     this.#ui.refreshFilter();
     body.scrollTop = scrollTop;
+  }
+
+  // TK-378.1: one module that throws while it draws shows its error in its own page (the owner on a phone has no
+  // console) and the other modules and pages still draw; before, the redraw stopped there and left the panel empty.
+  #mountModule(module, host, pageId) {
+    try {
+      module.mount(host, this.#context);
+    } catch (error) {
+      console.error("[DevTools] a section failed to draw", error);
+      this.#ui.createAlert(`Розділ «${module.constructor?.name ?? pageId}» не намалювався`,
+        [String(error?.message ?? error), "Решта DevTools працює; деталі — у консолі."], host,
+        ["DEVTOOLS", "sectionError", pageId, module.constructor?.name ?? ""]);
+    }
   }
 
   // The pages of the DEV build: the game and the fisherman's house.
