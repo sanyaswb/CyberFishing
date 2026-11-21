@@ -11,6 +11,9 @@ import { isItemBroken } from "../../domain/items/condition/item_condition_qualit
 //   1 − radiationResistance. When the protection ends (the mask cracks to 0, the last filter runs out, the mask leaves
 //   its slot) the effects come back smoothly over breakFadeSec (owner Q3); it returns at once when the mask protects.
 // - The cast during an emission needs that protection (owner Q4): isProtecting(); problem() says what is missing.
+// - D5 (TK-383): while a filter filters, the mask wears by its quality — 100 → 0 in wearSecPerQuality × quality seconds
+//   (quality 3: 5 min); the wear gathers and goes into the inventory every wearWriteEverySec, at once when it would crack
+//   the mask, and on flush() (the page hides, the house). The authored quality counts (baseQuality), not the worn one.
 // Per frame it reads the cached equipment model and the filters' readings, writes four numbers only when they change and
 // allocates nothing.
 const NO_FILTERS = Object.freeze([]);
@@ -19,9 +22,13 @@ export class GasMaskProtection {
   #getEquipped;
   #power;
   #statuses;
+  #inventory;
   #getSettings;
   #statusId;
   #protection = 0;
+  #wearMaskId = null;
+  #pendingWear = 0;
+  #wearElapsedMs = 0;
   #emission = 1;
   #radiation = 0.5;
   #activeFilterId = null;
@@ -29,15 +36,18 @@ export class GasMaskProtection {
   #modifiers = { emission: { vignette: 1, blur: 1, blurRate: 1 }, radiation: { grain: 1 } };
 
   // getEquipped: () => the equipment read model ({ gasMask, gasMaskFilters }); power: DevicePowerService ({ consume });
-  // statuses: PlayerStatusEffects ({ hold }); getSettings: () => CONFIG.emission.gasMask.
-  constructor({ getEquipped, power, statuses, getSettings, statusId = "gasMask" }) {
+  // statuses: PlayerStatusEffects ({ hold }); inventory: { wearItem(instanceId, points) } (PlayerInventory);
+  // getSettings: () => CONFIG.emission.gasMask.
+  constructor({ getEquipped, power, statuses, inventory, getSettings, statusId = "gasMask" }) {
     if (typeof getEquipped !== "function") throw new TypeError("GasMaskProtection requires getEquipped");
     if (typeof power?.consume !== "function") throw new TypeError("GasMaskProtection requires power");
     if (typeof statuses?.hold !== "function") throw new TypeError("GasMaskProtection requires statuses");
+    if (typeof inventory?.wearItem !== "function") throw new TypeError("GasMaskProtection requires inventory");
     if (typeof getSettings !== "function") throw new TypeError("GasMaskProtection requires getSettings");
     this.#getEquipped = getEquipped;
     this.#power = power;
     this.#statuses = statuses;
+    this.#inventory = inventory;
     this.#getSettings = getSettings;
     this.#statusId = statusId;
   }
@@ -59,16 +69,18 @@ export class GasMaskProtection {
     const working = Boolean(mask) && !isItemBroken(mask);
     const active = working ? this.#activeFilter() : null;
     this.#activeFilterId = active?.instanceId ?? null;
+    const settings = this.#getSettings();
     if (active && filtering && dt > 0) {
       this.#power.consume({ deviceId: mask.instanceId, batteryInstanceId: active.instanceId, unitsPerSecond: 1,
         seconds: dt / 1000 });
+      this.#wear(mask, dt, settings);
     }
     if (active) {
       this.#emission = clampUnit(finiteOr(active.effectiveStats?.emissionResistance, 1));
       this.#radiation = clampUnit(finiteOr(active.effectiveStats?.radiationResistance, 0.5));
     }
     const protecting = Boolean(active) && this.#percent(active) > 0;
-    const fadeSec = Math.max(0, finiteOr(this.#getSettings()?.breakFadeSec, 10));
+    const fadeSec = Math.max(0, finiteOr(settings?.breakFadeSec, 10));
     const next = protecting ? 1 : fadeSec > 0 ? Math.max(0, this.#protection - dt / (fadeSec * 1000)) : 0;
     this.#apply(next);
   }
@@ -94,8 +106,34 @@ export class GasMaskProtection {
     return units * this.#percent(filter) / 100;
   }
 
+  // Writes the gathered wear (the page hides, the player goes into the house).
+  flush() {
+    const points = this.#pendingWear;
+    const maskId = this.#wearMaskId;
+    this.#pendingWear = 0;
+    this.#wearElapsedMs = 0;
+    if (maskId && points > 0) this.#inventory.wearItem(maskId, points);
+  }
+
+  // The page's hide (its flush) writes the wear before a teardown; dispose only lets the status go.
   dispose() {
     this.#apply(0);
+  }
+
+  // D5: wearSecPerQuality × quality seconds from 100 to 0; written in steps, at once when it would crack the mask.
+  #wear(mask, dt, settings) {
+    if (mask.instanceId !== this.#wearMaskId) {
+      this.flush();
+      this.#wearMaskId = mask.instanceId;
+    }
+    const stats = mask.effectiveStats || {};
+    const quality = Math.max(1, finiteOr(stats.baseQuality ?? stats.quality, 1));
+    const fullSec = Math.max(1, finiteOr(settings?.wearSecPerQuality, 100)) * quality;
+    this.#pendingWear += dt / 1000 / fullSec * 100;
+    this.#wearElapsedMs += dt;
+    const condition = finiteOr(stats.durability, 100);
+    const everyMs = Math.max(0.1, finiteOr(settings?.wearWriteEverySec, 5)) * 1000;
+    if (this.#wearElapsedMs >= everyMs || condition - this.#pendingWear <= 0) this.flush();
   }
 
   #mask() {

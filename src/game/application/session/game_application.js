@@ -1128,6 +1128,7 @@ export class GameApplication {
     if (this.#house.isInHouse()) return;
     if (this.#keepnetRadiation?.flush()) this.#syncLiveBaitCast();
     this.#emissionWear?.flush();
+    this.#gasMask?.flush();
     this.#house.enter();
     this.#houseElapsedMs = 0;
     this.#emissionScreen.update(0);

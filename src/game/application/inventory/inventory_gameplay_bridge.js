@@ -140,6 +140,13 @@ export class InventoryGameplayBridge {
     return result?.success ? result.worn : 0;
   }
 
+  // Spec 185 D5: the condition after the wear, or null (no condition, nothing written).
+  wearItem(instanceId, points) {
+    const result = this.#gameplayCommands.wearItem(instanceId, points);
+    if (result?.success && result.condition !== null) this.#afterMutation?.(result);
+    return result?.success ? result.condition : null;
+  }
+
   evaluateCastReadiness() {
     return this.#readinessPolicy.evaluateCast({
       equipmentState: this.#equipmentState,

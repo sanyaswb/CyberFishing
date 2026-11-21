@@ -177,6 +177,16 @@ export class InventoryGameplayCommands {
     }
   }
 
+  // Spec 185 D5 (TK-383): one item's own wear (the gas mask), in one inventory transaction (its commit saves).
+  wearItem(instanceId, points) {
+    try {
+      const condition = this.#transaction.runAtomic(() => this.#itemWear.wearOne(instanceId, points));
+      return inventoryCommandSuccess({ condition });
+    } catch (error) {
+      return this.#failure(error.message, error);
+    }
+  }
+
   handChumUsed(context = {}) {
     return this.#runAutoRefill(AutoRefillTrigger.HAND_CHUM_USED, context);
   }

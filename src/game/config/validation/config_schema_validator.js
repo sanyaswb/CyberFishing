@@ -1395,6 +1395,7 @@ export class ConfigSchemaValidator {
     this.#requireParameterLabel(path);
     this.#requireFiniteNumberWithLabel(`${path}.breakFadeSec`, cfg.breakFadeSec, { min: 0, max: 120 });
     this.#requireFiniteNumberWithLabel(`${path}.wearSecPerQuality`, cfg.wearSecPerQuality, { min: 1, max: 100000 });
+    this.#requireFiniteNumberWithLabel(`${path}.wearWriteEverySec`, cfg.wearWriteEverySec, { min: 0.1, max: 600 });
     const cracks = cfg.crackAtPercent;
     if (!Array.isArray(cracks) || cracks.length === 0 || !cracks.every((value, index) => Number.isFinite(value) &&
       value >= 0 && value <= 100 && (index === 0 || value < cracks[index - 1]))) {

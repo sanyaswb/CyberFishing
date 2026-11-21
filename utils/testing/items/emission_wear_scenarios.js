@@ -104,7 +104,13 @@ module.exports = async function checkEmissionWear() {
   const within = (value, [min, max], message) => assert.ok(value >= min - 0.5 && value <= max + 0.5, `${message}: ${value}`);
   within(lost("hook"), [80, 100], "quality 1 loses 80–100 in one emission");
   within(lost("line"), policy.range(5, settings), "quality 5 loses its range");
-  within(lost("mask"), policy.range(5, settings), "the gas mask wears like any quality 5 item");
+  // Spec 185 D5 (TK-383): the gas mask wears only by its own rule while it filters (GasMaskProtection), not by the radiation.
+  assert.equal(run.condition("mask"), 100, "the general radiation wear passes the gas mask by (radiationImmunity 1)");
+  const maskWear = new ApplyItemWearService({ repository: run.repository, hydrator: { hydrate } });
+  assert.equal(maskWear.wearOne("mask", 30), 70, "its own wear writes the condition (the real catalog's mask)");
+  assert.equal(run.condition("mask"), 70);
+  assert.equal(maskWear.wearOne("mask", 500), 0, "and stops at 0");
+  assert.equal(maskWear.wearOne("bread", 5), null, "an item without a condition is not written");
   const rodRange = policy.range(rod.gameplayStats.quality, settings);
   within(lost("rod"), [rodRange[0] / 2, rodRange[1] / 2], "the rod's immunity halves its loss");
   assert.equal(run.condition("bread"), null, "an item without a condition does not wear");
@@ -161,7 +167,8 @@ module.exports = async function checkEmissionWear() {
   const statuses = { hold: (id, on) => held.push([id, on]), modifier: () => 1, has: () => false };
   let equipped = { gasMask: mask(30), gasMaskFilters: [filter, null] };
   const power = { consume: () => ({ hasBattery: true, percent: 100, empty: false }) };
-  const gasMask = new GasMaskProtection({ getEquipped: () => equipped, power, statuses, getSettings: () => ({ breakFadeSec: 0 }) });
+  const gasMask = new GasMaskProtection({ getEquipped: () => equipped, power, statuses, inventory: { wearItem: () => null },
+    getSettings: () => ({ breakFadeSec: 0 }) });
   gasMask.update(16, true);
   assert.deepEqual(held.at(-1), ["gasMask", true], "a worn gas mask with a filter still protects");
   equipped = { gasMask: mask(0), gasMaskFilters: [filter, null] };

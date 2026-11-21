@@ -30,7 +30,8 @@ wears from 100 to 0 in 5 min of that use; cracks at 80/60/40/20/0 %; at 0 the ef
 filters stop. Filters change one at a time under radiation, also while fishing.
 Actual (before): a gas mask in its slot protected fully and for ever (quality 5, worn only by the general radiation wear).
 Notes: spec 185 stages TK-381…TK-385; TK-381 (v0.52.42) — the filters, the mask's two cells, quality 3; TK-382
-(v0.52.43) — `GasMaskProtection`: filters one at a time, protection and cast only with a live filter, the 10 s return.
+(v0.52.43) — `GasMaskProtection`: filters one at a time, protection and cast only with a live filter, the 10 s return;
+TK-383 (v0.52.44) — the mask's own wear (100 s × quality while filtering), the radiation's general wear passes it by.
 
 ### G-148 Vodka lasts by the bottles and sobers up by steps (P2, done in v0.52.37; owner acceptance pending)
 Found: 2026-11-20, owner (TK-378).

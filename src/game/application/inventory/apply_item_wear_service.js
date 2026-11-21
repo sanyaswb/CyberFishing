@@ -10,7 +10,7 @@ export class ApplyItemWearService {
   #policy;
 
   constructor({ repository, hydrator, policy = new ItemRadiationWearPolicy() } = {}) {
-    if (!repository?.update || !repository?.list) throw new TypeError("ApplyItemWearService requires repository");
+    if (!repository?.update || !repository?.list || !repository?.get) throw new TypeError("ApplyItemWearService requires repository");
     if (!hydrator?.hydrate) throw new TypeError("ApplyItemWearService requires hydrator");
     this.#repository = repository;
     this.#hydrator = hydrator;
@@ -38,5 +38,21 @@ export class ApplyItemWearService {
       worn += 1;
     }
     return worn;
+  }
+
+  // Spec 185 D5 (TK-383): an item's own wear (the gas mask while it filters) — `points` of condition off, never below 0.
+  // Returns the condition after it, or null when the item has no condition (nothing written).
+  wearOne(instanceId, points) {
+    const raw = instanceId ? this.#repository.get(instanceId) : null;
+    if (!raw || !(points > 0)) return null;
+    const condition = itemCondition(this.#hydrator.hydrate(raw, this.#repository));
+    if (condition === null) return null;
+    const next = Math.max(0, condition - points);
+    if (next === condition) return condition;
+    this.#repository.update(instanceId, (source) => ({
+      ...source,
+      statOverrides: { ...(source.statOverrides || {}), durability: next },
+    }));
+    return next;
   }
 }

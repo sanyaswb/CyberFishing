@@ -1803,7 +1803,16 @@ const step = (model, seconds, clock = null, dt = 0.1) => {
       return { percent: charges.get(id), capacityUnits: 180 }; } } });
   const filterStats = { capacityUnits: 180, radiationResistance: 0.5, emissionResistance: 1 };
   const filter = (instanceId, percent = 100) => { charges.set(instanceId, percent); return { instanceId, effectiveStats: filterStats }; };
-  const gasMask = new GasMaskProtection({ getEquipped: () => equipped, power, statuses, getSettings: () => CONFIG.emission.gasMask });
+  // The inventory's wear port as PlayerInventory keeps it: the written condition is what the next equipment model reads.
+  const wearWrites = [];
+  const maskInventory = { wearItem: (id, points) => { wearWrites.push(points);
+    const mask = equipped.gasMask;
+    if (mask?.instanceId !== id) return null;
+    equipped = { ...equipped, gasMask: { ...mask, effectiveStats: { ...mask.effectiveStats,
+      durability: Math.max(0, mask.effectiveStats.durability - points) } } };
+    return equipped.gasMask.effectiveStats.durability; } };
+  const gasMask = new GasMaskProtection({ getEquipped: () => equipped, power, statuses, inventory: maskInventory,
+    getSettings: () => CONFIG.emission.gasMask });
   const equip = (value) => { equipped = value; gasMask.update(0, false); };
   // Spec 179 D12 (TK-371): the player's presence in the house.
   const { HousePresence } = require("../../../src/game/application/world/house_presence.js");
@@ -1952,6 +1961,34 @@ const step = (model, seconds, clock = null, dt = 0.1) => {
   masked([filter("e", 0.1), null]);
   runMask(1, true);
   assert.equal(gasMask.problem(), "noFilter", "the last filter ran out: the mask needs a filter");
+
+  // Spec 185 D5 (TK-383, owner: «Якість протигазу 3 … стан з 100% до 0 падає приблизно за 5хв»): the mask wears only while
+  // it filters, by its authored quality; written every wearWriteEverySec and at once when it cracks; a cracked mask
+  // stops its filters, the other filter keeps its rest.
+  const settings185 = CONFIG.emission.gasMask;
+  const quality = ITEM_DB.gasMasks.gas_mask_basic.gameplayStats.quality;
+  assert.equal(JSON.stringify([quality, settings185.wearSecPerQuality * quality]), JSON.stringify([3, 300]),
+    "owner: quality 3 — 5 minutes from 100 to 0");
+  equipped = { gasMask: { instanceId: "mask3", effectiveStats: { durability: 100, quality: 1.5, baseQuality: 3 } },
+    gasMaskFilters: [filter("g", 100), filter("h", 100)] };
+  gasMask.update(0, false);
+  wearWrites.length = 0;
+  runMask(60, false);
+  assert.deepEqual([equipped.gasMask.effectiveStats.durability, wearWrites.length], [100, 0], "owner Q2: no filtering, no wear");
+  runMask(150, true);
+  const half = equipped.gasMask.effectiveStats.durability;
+  assert.ok(Math.abs(half - 50) < 2, `half of the 5 minutes: half of the condition (${half.toFixed(1)}; the authored quality counts)`);
+  assert.ok(Math.abs(wearWrites.length - 150 / settings185.wearWriteEverySec) <= 1,
+    `written every wearWriteEverySec, not per frame (${wearWrites.length} writes in 150 s)`);
+  runMask(149, true);
+  assert.ok(equipped.gasMask.effectiveStats.durability > 0, "still whole just before 5 minutes");
+  runMask(1.1, true);
+  assert.deepEqual([equipped.gasMask.effectiveStats.durability, gasMask.problem()], [0, "broken"],
+    "cracked to 0 at 5 minutes, written at once");
+  const rest = Math.round(left("h"));
+  runMask(20, true);
+  assert.equal(Math.round(left("h")), rest, "the cracked mask stops the other filter, which keeps its rest");
+  assert.ok(rest > 0 && left("g") === 0, "the first filter ran out after 3 minutes, the second one had taken over");
   gasMask.dispose();
   // The stacking rules on their own descriptions: max keeps the longer time, add stacks up to maxStacks (the share once
   // per stack); a DevTools edit of a description reaches the next apply and the modifiers at once.

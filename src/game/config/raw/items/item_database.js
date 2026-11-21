@@ -1433,10 +1433,13 @@ export const ITEM_DB = {
       displayStats: {
         durability: "Стан: %",
       },
-      // Spec 179 D10 (TK-370, owner Q16): broken (0) it does not protect. Spec 185 D2 (owner): quality 3.
+      // Spec 179 D10 (TK-370, owner Q16): broken (0) it does not protect. Spec 185 D2, D5 (owner): quality 3; it wears
+      // only by its own rule while it filters (GasMaskProtection: 100 → 0 in wearSecPerQuality × quality s), so the
+      // general radiation wear passes it by (radiationImmunity 1).
       gameplayStats: {
         durability: 100,
         quality: 3,
+        radiationImmunity: 1,
       },
     },
   },

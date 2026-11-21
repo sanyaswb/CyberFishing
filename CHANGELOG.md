@@ -2,6 +2,10 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.52.44 - The gas mask wears by its quality while it filters (TK-383, spec 185)
+
+- While a filter is working (on the location under radiation or during an emission) the gas mask wears: quality 3 goes from 100 % to 0 in 5 minutes. At 0 it cracks: it stops protecting and its filters stop; the other filter keeps what is left. Without radiation or an emission the mask does not wear.
+
 ## v0.52.43 - The gas mask protects through its filters (TK-382, spec 185)
 
 - The gas mask protects only with a filter that has time left: then the emission's darkening and blur are gone and the radiation's hiss is half as strong. The filters work one at a time (the one with less time first, the other takes over without a gap), and their time runs only on the location under radiation or during an emission. A removed filter keeps its time.
@@ -43,8 +47,3 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 
 - From four bottles the world slowly waves: the picture skews and stretches unevenly in long waves that never repeat and never move in step, now strong, now almost still; five bottles a little stronger. The HUD stays still and no scene edge shows.
 - It is a CSS warp of the scene's picture (no filter, the scene is not redrawn). The values are in DevTools «Конфіг» → canvas → intoxication → «Хвилі».
-
-## v0.52.34 - Drunk blur comes and goes like a defocus (TK-374.2)
-
-- The vodka's blur is no longer constant: it comes and clears smoothly, each time for a different while and strength. One bottle — mostly sharp, now and then a light defocus; two — more often; from three on there is always some defocus with stronger, more frequent and longer episodes, strongest at five.
-- The values are lists by the bottles in DevTools «Конфіг» → canvas → intoxication → «Розфокус».

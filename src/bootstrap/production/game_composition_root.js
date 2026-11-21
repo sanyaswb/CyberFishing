@@ -1048,7 +1048,11 @@ export class GameCompositionRoot {
       own(this.#playerStatuses());
       // Spec 185 (TK-382): the gas mask protects through its filters (their time is spent like a battery's charge).
       const gasMask = own(new GasMaskProtection({ getEquipped: () => systems.inventory.getEquipped(),
-        power: systems.devicePower, statuses: this.#playerStatuses(), getSettings: () => this.#config.emission.gasMask }));
+        power: systems.devicePower, statuses: this.#playerStatuses(), inventory: systems.inventory,
+        getSettings: () => this.#config.emission.gasMask }));
+      // TK-383: the mask's gathered wear is written when the page hides or closes, as the filters' time.
+      own(new BrowserPageHideListener({ documentRef: this.#documentTarget, windowRef: this.#windowTarget,
+        onHide: () => gasMask.flush() }));
       // Spec 179 D12 (TK-371): the player in the house — the location's effects on them stop, the world goes on.
       const housePresence = this.#housePresence;
       const emissionExposure = new EmissionExposure({ getEnvironment: () => systems.env.getSnapshot(),

@@ -345,7 +345,7 @@ assert(resourceMetersCss.includes("prefers-reduced-motion"), "resource-meters.cs
     gasMaskFilters: [hydrate(repository.get("f-1")), hydrate(repository.get("f-2"))] };
   const held = [];
   const gasMask = new GasMaskProtection({ getEquipped: () => equipped, power: filterPower,
-    statuses: { hold: (id, on) => held.push(on) }, getSettings: () => CONFIG.emission.gasMask });
+    statuses: { hold: (id, on) => held.push(on) }, inventory: { wearItem: () => null }, getSettings: () => CONFIG.emission.gasMask });
   const seconds = (count, filtering) => { for (let step = 0; step < count * 60; step += 1) gasMask.update(1000 / 60, filtering); };
   seconds(10, false);
   assert.equal(filterWrites, 0, "owner Q2: nothing is spent while the mask does not filter");

@@ -166,6 +166,12 @@ export class PlayerInventory {
     return this.#gameplayBridge.applyRadiationWear(exposure, rollFor, settings);
   }
 
+  // Spec 185 D5 port for GasMaskProtection: the gas mask's own wear while it filters (not blocked by the tackle lock:
+  // equipment does not change, only its condition).
+  wearItem(instanceId, points) {
+    return this.#gameplayBridge.wearItem(instanceId, points);
+  }
+
   consumeHandChum() {
     return this.consumeEquipped("handChum", 1, true);
   }
