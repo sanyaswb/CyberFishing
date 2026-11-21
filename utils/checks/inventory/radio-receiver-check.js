@@ -651,6 +651,53 @@ async function stageTwo() {
       colors: () => ({ full: "g", half: "y", low: "r" }), scheduler, now: () => clock, canRemoveByHold: () => false });
     assert.equal(badgeList()[0].style.getPropertyValue("--hud-indicator-delay"), "-34700ms", "the time already gone (TK-380's holds took 3.1 s of it)");
     rebuilt.dispose();
+    // Spec 185 D6 (TK-384): the gas mask's indicator — shown while worn, its condition as the level fill, the crack stage
+    // by the real thresholds (80/60/40/20/0), faded without protection, a tap shows the filters' time; written on change.
+    const { GasMaskHudIndicator } = runtime.importModule("src/platform/browser/ui/gas_mask_hud_indicator.js");
+    const { gasMaskCrackStage } = runtime.importModule("src/game/domain/items/condition/gas_mask_cracks.js");
+    const thresholds = liveConfig.emission.gasMask.crackAtPercent;
+    assert.equal(JSON.stringify([100, 81, 80, 61, 60, 40, 20, 1, 0].map((value) => gasMaskCrackStage(value, thresholds))),
+      JSON.stringify([0, 0, 1, 1, 2, 3, 4, 4, 5]), "owner: cracks at 80, 60, 40, 20 and 0 %");
+    const reading = { worn: false, condition: 100, stage: 0, filterSec: 0, protecting: false };
+    let notify = null;
+    const maskIndicator = new GasMaskHudIndicator({ documentRef: doc, mountNode: column.element,
+      reader: () => reading, subscribe: (handler) => { notify = handler; return () => { notify = null; }; },
+      icons, labels: STATUS_LABELS, levelColor: (percent) => `level-${percent}`, scheduler });
+    const maskButton = column.element.children.find((child) => child.classList.contains("hud-indicator--gas-mask"));
+    assert.equal(maskButton.hidden, true, "no gas mask worn: no indicator");
+    Object.assign(reading, { worn: true, condition: 100, stage: 0, filterSec: 300, protecting: true });
+    notify();
+    const maskFill = maskButton.children.find((child) => child.className.includes("hud-indicator__fill--level"));
+    assert.equal(JSON.stringify([maskButton.hidden, maskFill.style.getPropertyValue("--hud-indicator-level"),
+      maskFill.style.getPropertyValue("--hud-indicator-color-full"), maskButton.getAttribute("aria-label")]),
+    JSON.stringify([false, "1", "level-100", "Протигаз: стан 100 %, захищає"]), "worn: the full condition, protecting");
+    Object.assign(reading, { condition: 55, stage: gasMaskCrackStage(55, thresholds) });
+    notify();
+    assert.ok(maskButton.classList.contains("hud-indicator--cracks-2") && maskFill.style.getPropertyValue("--hud-indicator-level") === "0.55",
+      "55 %: the second stage of cracks, the fill at 55 %");
+    Object.assign(reading, { condition: 0, stage: gasMaskCrackStage(0, thresholds), protecting: false });
+    notify();
+    assert.ok(maskButton.classList.contains("hud-indicator--cracks-5") && !maskButton.classList.contains("hud-indicator--cracks-2") &&
+      maskButton.classList.contains("hud-indicator--unprotected"), "0 %: cracked through and faded");
+    const maskSnapshot = () => JSON.stringify([maskButton.className, maskFill.style.getPropertyValue("--hud-indicator-level"),
+      maskButton.getAttribute("aria-label")]);
+    const settled = maskSnapshot();
+    notify();
+    assert.equal(maskSnapshot(), settled, "an event without a change writes nothing new");
+    const maskCount = maskButton.children.find((child) => child.className === "hud-indicator__count");
+    reading.filterSec = 125;
+    maskButton.click();
+    assert.equal([maskCount.hidden, maskCount.textContent].join(), "false,2:05", "a tap shows the filters' time left");
+    reading.filterSec = 64;
+    advance(clock + 1000);
+    assert.equal(maskCount.textContent, "1:04", "the open counter follows it once a second");
+    maskButton.click();
+    assert.equal([...timers.values()].filter((timer) => timer.every).length, 0, "closed: its timer stops");
+    reading.worn = false;
+    notify();
+    assert.equal(maskButton.hidden, true, "the mask taken off: the indicator hides");
+    maskIndicator.dispose();
+    assert.equal(maskButton.parentNode, null, "dispose removes it");
     radioLate.dispose();
     column.dispose();
     statuses.dispose();
@@ -664,6 +711,11 @@ async function stageTwo() {
     }
     assert(/\.hud-indicator__fill \{[^}]*transform-origin: 50% 100%;/u.test(css), "the fill drains from the top down");
     assert(/\.hud-indicator--debuff \{[^}]*border-color: var\(--ui-danger\);/u.test(css), "a debuff has the danger outline");
+    for (let stage = 1; stage <= 4; stage += 1) {
+      assert.ok(css.includes(`.hud-indicator--cracks-${stage} .hud-indicator__crack:nth-child(-n+${stage})`),
+        `TK-384: the stage ${stage} shows its first ${stage} cracks`);
+    }
+    assert.ok(/\.hud-indicator--cracks-5 \.hud-indicator__crack \{ stroke-width: 2\.6; \}/u.test(css), "the last stage is thicker");
   }
 
   // TK-152: power button blocked when no battery / empty battery

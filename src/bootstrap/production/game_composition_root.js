@@ -63,6 +63,7 @@ import { resolveSessionSeed } from "../../engine/random/session_seed.js";
 import { EmissionExposure } from "../../game/application/world/emission_exposure.js";
 import { PlayerStatusEffects } from "../../game/application/world/player_status_effects.js";
 import { GasMaskProtection } from "../../game/application/world/gas_mask_protection.js";
+import { GasMaskHudIndicator } from "../../platform/browser/ui/gas_mask_hud_indicator.js";
 import { RadiationStatusSource } from "../../game/application/world/radiation_status_source.js";
 import { KeepnetRadiationExposure } from "../../game/application/live_bait/keepnet_radiation_exposure.js";
 import { EmissionWearExposure } from "../../game/application/world/emission_wear_exposure.js";
@@ -1046,13 +1047,7 @@ export class GameCompositionRoot {
       // statuses weaken it, the gas mask in its slot holds its own.
       // TK-358: the statuses' end timer goes with the game.
       own(this.#playerStatuses());
-      // Spec 185 (TK-382): the gas mask protects through its filters (their time is spent like a battery's charge).
-      const gasMask = own(new GasMaskProtection({ getEquipped: () => systems.inventory.getEquipped(),
-        power: systems.devicePower, statuses: this.#playerStatuses(), inventory: systems.inventory,
-        getSettings: () => this.#config.emission.gasMask }));
-      // TK-383: the mask's gathered wear is written when the page hides or closes, as the filters' time.
-      own(new BrowserPageHideListener({ documentRef: this.#documentTarget, windowRef: this.#windowTarget,
-        onHide: () => gasMask.flush() }));
+      const gasMask = systems.gasMask;
       // Spec 179 D12 (TK-371): the player in the house — the location's effects on them stop, the world goes on.
       const housePresence = this.#housePresence;
       const emissionExposure = new EmissionExposure({ getEnvironment: () => systems.env.getSnapshot(),
@@ -1995,6 +1990,10 @@ export class GameCompositionRoot {
       weather: systems.env,
       mountNode: indicatorColumn?.element ?? null,
     });
+    // Spec 185 (TK-382…TK-384): the gas mask protects through its filters (their time is spent like a battery's charge);
+    // its HUD indicator (condition, cracks) stands after the radio, before the status badges.
+    systems.gasMask = this.#composeGasMask({ own, inventory, devicePower,
+      mountNode: indicatorColumn?.element ?? null });
     if (indicatorColumn) this.#composeStatusBadges({ own, mountNode: indicatorColumn.element, devFlags });
     this.#composeGeigerCounter({ own, environment: systems.env });
     // A device card's charge is its battery's (null without a battery: no bar); a battery card reads its live charge directly.
@@ -2043,6 +2042,24 @@ export class GameCompositionRoot {
       feature.radio.setBiting(this.#stateName === "biting"),
     );
     return radio;
+  }
+
+  // Spec 185: GasMaskProtection (filters, protection, wear) and its HUD indicator; the gathered wear is written when the
+  // page hides or closes, as the filters' time.
+  #composeGasMask({ own, inventory, devicePower, mountNode }) {
+    const gasMask = own(new GasMaskProtection({ getEquipped: () => inventory.getEquipped(), power: devicePower,
+      statuses: this.#playerStatuses(), inventory, getSettings: () => this.#config.emission.gasMask }));
+    own(new BrowserPageHideListener({ documentRef: this.#documentTarget, windowRef: this.#windowTarget,
+      onHide: () => gasMask.flush() }));
+    if (mountNode) {
+      const palette = new DegradationColorResolver({ configProvider: () => this.#config.degradationColors || {} });
+      own(new GasMaskHudIndicator({ documentRef: this.#documentTarget, mountNode, reader: () => gasMask.read(),
+        subscribe: (handler) => inventory.onInventoryChanged(handler),
+        icons: composeHudIcons({ documentRef: this.#documentTarget, assets: this.#assets }), labels: STATUS_LABELS,
+        levelColor: (percent) => palette.resolvePercent(percent).cssColor ?? "var(--ui-success)",
+        scheduler: this.#windowTarget }));
+    }
+    return gasMask;
   }
 
   // Spec 181 D3 (TK-343): the player's statuses as round badges under the radio; the fill's colours come from the

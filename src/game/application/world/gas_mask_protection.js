@@ -1,5 +1,6 @@
 import { clampUnit, finiteOr } from "../../../engine/math/number_normalization.js";
 import { isItemBroken } from "../../domain/items/condition/item_condition_quality.js";
+import { gasMaskCrackStage } from "../../domain/items/condition/gas_mask_cracks.js";
 
 // Spec 185 D3, D4, D7, D8 (TK-382): the gas mask protects through its filters.
 // - Filters work one at a time (owner Q1): the one with less time left; the other waits. A filter's time is its charge
@@ -29,6 +30,7 @@ export class GasMaskProtection {
   #wearMaskId = null;
   #pendingWear = 0;
   #wearElapsedMs = 0;
+  #reading = { worn: false, condition: 0, stage: 0, filterSec: 0, protecting: false };
   #emission = 1;
   #radiation = 0.5;
   #activeFilterId = null;
@@ -98,6 +100,22 @@ export class GasMaskProtection {
     if (!mask) return "missing";
     if (isItemBroken(mask)) return "broken";
     return this.#activeFilter() === null ? "noFilter" : null;
+  }
+
+  // Spec 185 D6 (TK-384): what the HUD indicator shows — one reused record: worn, condition 0…100, crack stage (0 whole …
+  // the last threshold), the filters' time left together (s), whether it protects.
+  read() {
+    const reading = this.#reading;
+    const mask = this.#mask();
+    reading.worn = Boolean(mask);
+    reading.condition = mask ? Math.max(0, Math.min(100, finiteOr(mask.effectiveStats?.durability, 100))) : 0;
+    reading.stage = mask ? gasMaskCrackStage(reading.condition, this.#getSettings()?.crackAtPercent) : 0;
+    let seconds = 0;
+    const filters = mask ? this.#getEquipped()?.gasMaskFilters ?? NO_FILTERS : NO_FILTERS;
+    for (let index = 0; index < filters.length; index += 1) if (filters[index]) seconds += this.secondsLeft(filters[index]);
+    reading.filterSec = seconds;
+    reading.protecting = this.isProtecting();
+    return reading;
   }
 
   // A filter's time left, s (its pending use included), or 0.

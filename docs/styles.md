@@ -335,6 +335,10 @@ follow in start order. A timed status's `hud-indicator__fill` drains by `transfo
 colour by cross-fading two `hud-indicator__tone` layers' opacity (compositor only; the colours are the degradation
 palette at 100/50/20 %, set once per badge as `--hud-indicator-color-*`), run by `--hud-indicator-duration` and a
 negative `--hud-indicator-delay`; `hud-indicator__count` is the tap countdown styled as `inventory-toggle__item-count`.
+Spec 185 D6 (TK-384): the gas mask's indicator (`--gas-mask`, after the radio) reuses the status circle with the radio's
+`hud-indicator__fill--level` as its condition (degradation colour) and an inline `hud-indicator__cracks` SVG of five
+`hud-indicator__crack` paths; `--cracks-N` shows the first N (the 5th thicker, with the danger outline), `--unprotected`
+fades the icon. Classes change only when the condition is written (every few seconds); nothing animates.
 TK-380 (DEV God mode `removeDebuffsByHold`): `--remove-armed` shows `hud-indicator__remove`, a cross of two rotated
 `--ui-danger` bars over the circle's middle; status badges have no touch callout or text selection (a hold).
 The radio (spec 181 stage F) shows the inventory's radio drawing (`hud-indicator__image`) while silent and the wave only

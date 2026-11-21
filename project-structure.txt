@@ -720,6 +720,7 @@
 │  │  │  │  │  └── bait_effectiveness_resolver.js
 │  │  │  │  ├── condition
 │  │  │  │  │  ├── durability_max_load.js
+│  │  │  │  │  ├── gas_mask_cracks.js
 │  │  │  │  │  ├── item_condition_quality.js
 │  │  │  │  │  ├── item_condition_resolver.js
 │  │  │  │  │  └── item_radiation_wear_policy.js
@@ -1183,6 +1184,7 @@
 │           ├── game_controls.js
 │           ├── game_stage_layout.js
 │           ├── game_toolbar.js
+│           ├── gas_mask_hud_indicator.js
 │           ├── hold_charges.js
 │           ├── house_entry_control.js
 │           ├── hud_indicator_column.js

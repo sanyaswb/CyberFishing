@@ -1,6 +1,7 @@
 // Release notes, newest first (unshift with every patch). DEV only: no production code reads them, and in the start's
 // bundle they cost 13 KB gzip (spec 160). dev.html publishes them with the version: window.CYBER_FISHING_PROJECT_VERSION.notes.
 export const PROJECT_RELEASE_NOTES = Object.freeze([
+  "Spec 185 TK-384: GasMaskHudIndicator (condition level fill, gasMaskCrackStage cracks by crackAtPercent, unprotected fade, filter time on tap; written on inventory events only); #composeGasMask.",
   "Spec 185 TK-383: GasMaskProtection wears the mask 100 → 0 in wearSecPerQuality × baseQuality s while filtering; PlayerInventory.wearItem → ApplyItemWearService.wearOne every 5 s, at 0 and on flush; gas mask radiationImmunity 1.",
   "Spec 185 TK-382: GasMaskProtection (filters one at a time through DevicePowerService, held gasMask status with the filter's modifiers via hold({ modifiers }), breakFadeSec fade, cast gate and reason); EquipmentStatusSource removed.",
   "Spec 185 TK-381: gas_filter items (gasFilter copies: capacityUnits 180, radiationResistance 0.5, emissionResistance 1; protection.gas_filter charge), gas_mask assembly (filter ×2), quality 3, gasMaskFilters in the equipment model, DEV grants and shop.",

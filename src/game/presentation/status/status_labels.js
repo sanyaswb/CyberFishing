@@ -14,4 +14,9 @@ export const STATUS_LABELS = Object.freeze({
   badge(name, kind) {
     return kind === "debuff" ? `${name} (дебаф)` : name;
   },
+  // Spec 185 D6 (TK-384): the gas mask's HUD indicator — its condition and what protects (the tap shows the filters' time).
+  gasMask(condition, protecting) {
+    const state = condition <= 0 ? "тріснув" : protecting ? "захищає" : "без фільтра";
+    return `Протигаз: стан ${Math.round(condition)} %, ${state}`;
+  },
 });

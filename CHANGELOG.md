@@ -2,6 +2,10 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.52.45 - The gas mask's HUD indicator with cracks (TK-384, spec 185)
+
+- While a gas mask is worn, a round indicator stands in the HUD column after the radio: its fill is the mask's condition, cracks appear at 80, 60, 40, 20 and 0 % (at 0 it is cracked through, with a red outline), and it fades while the mask does not protect. A tap shows the filters' time left. (A Spine effect of cracked glass comes later.)
+
 ## v0.52.44 - The gas mask wears by its quality while it filters (TK-383, spec 185)
 
 - While a filter is working (on the location under radiation or during an emission) the gas mask wears: quality 3 goes from 100 % to 0 in 5 minutes. At 0 it cracks: it stops protecting and its filters stop; the other filter keeps what is left. Without radiation or an emission the mask does not wear.
@@ -42,8 +46,3 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 ## v0.52.36 - Review before push (TK-374.4, TK-376.1)
 
 - No change in play: the code that reads a value by the number of bottles is shared now, and a small cleanup in the drink button's wiring.
-
-## v0.52.35 - Drunk waves from four bottles (TK-374.3)
-
-- From four bottles the world slowly waves: the picture skews and stretches unevenly in long waves that never repeat and never move in step, now strong, now almost still; five bottles a little stronger. The HUD stays still and no scene edge shows.
-- It is a CSS warp of the scene's picture (no filter, the scene is not redrawn). The values are in DevTools «Конфіг» → canvas → intoxication → «Хвилі».
