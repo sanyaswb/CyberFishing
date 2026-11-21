@@ -62,7 +62,7 @@ import { StarfallNight } from "../../game/domain/weather/starfall_night.js";
 import { resolveSessionSeed } from "../../engine/random/session_seed.js";
 import { EmissionExposure } from "../../game/application/world/emission_exposure.js";
 import { PlayerStatusEffects } from "../../game/application/world/player_status_effects.js";
-import { EquipmentStatusSource } from "../../game/application/world/equipment_status_source.js";
+import { GasMaskProtection } from "../../game/application/world/gas_mask_protection.js";
 import { RadiationStatusSource } from "../../game/application/world/radiation_status_source.js";
 import { KeepnetRadiationExposure } from "../../game/application/live_bait/keepnet_radiation_exposure.js";
 import { EmissionWearExposure } from "../../game/application/world/emission_wear_exposure.js";
@@ -1046,11 +1046,13 @@ export class GameCompositionRoot {
       // statuses weaken it, the gas mask in its slot holds its own.
       // TK-358: the statuses' end timer goes with the game.
       own(this.#playerStatuses());
-      own(new EquipmentStatusSource({ inventory: systems.inventory, statuses: this.#playerStatuses(), slots: { gasMask: "gasMask" } }));
+      // Spec 185 (TK-382): the gas mask protects through its filters (their time is spent like a battery's charge).
+      const gasMask = own(new GasMaskProtection({ getEquipped: () => systems.inventory.getEquipped(),
+        power: systems.devicePower, statuses: this.#playerStatuses(), getSettings: () => this.#config.emission.gasMask }));
       // Spec 179 D12 (TK-371): the player in the house — the location's effects on them stop, the world goes on.
       const housePresence = this.#housePresence;
       const emissionExposure = new EmissionExposure({ getEnvironment: () => systems.env.getSnapshot(),
-        getEquipped: () => systems.inventory.getEquipped(), statuses: this.#playerStatuses(), house: housePresence });
+        gasMask, statuses: this.#playerStatuses(), house: housePresence });
       // Spec 181 D4: the debuff «Радіація» while the location's radiation is above zero (checked with the frame).
       const radiationStatus = new RadiationStatusSource({ getEnvironment: () => systems.env.getSnapshot(),
         statuses: this.#playerStatuses(), house: housePresence });
@@ -1068,6 +1070,7 @@ export class GameCompositionRoot {
         liveBait,
         keepnetRadiation,
         emissionWear,
+        gasMask,
         housePresence,
         liveBaitCandidate,
         createLiveBaitMotion,

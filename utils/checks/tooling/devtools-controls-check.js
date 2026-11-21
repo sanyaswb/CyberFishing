@@ -2858,7 +2858,9 @@ function choiceRow(options, value, path) {
   let clock = 0;
   const statuses = new PlayerStatusEffects({ now: () => clock, getDefinitions: () => config.statusEffects,
     scheduler: { setTimeout: () => 1, clearTimeout() {} } });
-  statuses.hold("gasMask", true, { source: "gasMask" });
+  // Spec 185 D4: the gas mask is held with its filter's modifiers (GasMaskProtection), which the section shows.
+  const filterModifiers = { emission: { vignette: 0, blur: 0, blurRate: 1 }, radiation: { grain: 0.5 } };
+  statuses.hold("gasMask", true, { source: "gasMask", modifiers: filterModifiers });
   // The edits write into the live config, as DevConfigEditService does.
   const edits = { update: (path, value) => { let node = config; const keys = path.slice(1);
     for (const key of keys.slice(0, -1)) node = node[key]; node[keys.at(-1)] = value; },
@@ -2877,7 +2879,7 @@ function choiceRow(options, value, path) {
     ["vodka", "gasMask", "активні"].includes(row.children[0].dataset.devtoolsKey))
     .map((row) => `${row.children[0].dataset.devtoolsKey}=${byClass("devtools__value", row)[0]?.innerText}`);
   assert.equal(JSON.stringify(activeText()), JSON.stringify(["gasMask=баф · без таймера (gasMask) · emission.vignette 0, " +
-    "emission.blur 0, emission.blurRate 1, radiation.grain 0.3"]), "the gas mask held by its slot is shown");
+    "emission.blur 0, emission.blurRate 1, radiation.grain 0.5"]), "the gas mask held with its filter's modifiers is shown");
   assert.ok(button("Видати: vodka") && !button("Видати: gasMask") && !button("Зняти: gasMask"),
     "a timed status can be given; a held one belongs to its source");
   button("Видати: vodka").click();
@@ -2893,7 +2895,7 @@ function choiceRow(options, value, path) {
   assert.equal(statuses.modifier("emission", "vignette"), 0.3, "a live edit reaches the active vodka at once");
   button("Зняти: vodka").click();
   assert.equal(statuses.has("vodka"), false, "«Зняти» ends it");
-  statuses.hold("gasMask", true, { source: "gasMask" });
+  statuses.hold("gasMask", true, { source: "gasMask", modifiers: filterModifiers });
   button("Видати: vodka").click();
   button("Зняти всі").click();
   assert.equal(JSON.stringify(statuses.list().map((entry) => entry.id)), JSON.stringify(["gasMask"]),

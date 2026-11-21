@@ -54,8 +54,10 @@ export class PlayerStatusEffects {
     return true;
   }
 
-  // A status without a timer, on while its source holds it. Returns whether it changed.
-  hold(id, on, { source = "" } = {}) {
+  // A status without a timer, on while its source holds it. Returns whether it changed. Spec 185 D4 (TK-382): modifiers —
+  // the source's own modifiers ({ <system>: { <key>: share } }) instead of the description's; the source keeps the object
+  // and may change its numbers in place (the gas mask's protection fading), read with every modifier() call.
+  hold(id, on, { source = "", modifiers = null } = {}) {
     const current = this.#entries.get(id);
     if (!on) {
       if (!current?.held) return false;
@@ -67,7 +69,8 @@ export class PlayerStatusEffects {
     if (!definition) return false;
     if (current) this.#delete(current);
     const now = this.#now();
-    this.#add({ id, kind: definition.kind, held: true, stacks: 1, startedAtMs: now, untilMs: Infinity, source });
+    this.#add({ id, kind: definition.kind, held: true, stacks: 1, startedAtMs: now, untilMs: Infinity, source,
+      sourceModifiers: modifiers ? { modifiers } : null });
     this.#emit("start", this.#entries.get(id));
     return true;
   }
@@ -124,7 +127,7 @@ export class PlayerStatusEffects {
       const entry = list[index];
       if (!entry.held && entry.untilMs <= now) continue;
       const definition = this.definition(entry.id);
-      share *= statusModifierShare(definition, system, key, statusLevel(entry, definition, now));
+      share *= statusModifierShare(entry.sourceModifiers ?? definition, system, key, statusLevel(entry, definition, now));
     }
     return share;
   }

@@ -74,6 +74,8 @@ export class GameApplication {
   #liveBaitCastId = null;
   #keepnetRadiation = null;
   #emissionWear = null;
+  // Spec 185 (TK-382): the gas mask's filters and protection (GasMaskProtection).
+  #gasMask = null;
   #house = null;
   #houseEntry = new HouseEntryPolicy();
   #houseElapsedMs = 0;
@@ -235,6 +237,7 @@ export class GameApplication {
     this.#liveBait = runtime.liveBait || null;
     this.#keepnetRadiation = runtime.keepnetRadiation || null;
     this.#emissionWear = runtime.emissionWear || null;
+    this.#gasMask = runtime.gasMask || null;
     // Spec 179 D12: the player in the house; the tackle must be put away to go in.
     this.#house = runtime.housePresence;
     if (typeof this.#house?.isInHouse !== "function") throw new TypeError("GameApplication requires runtime.housePresence");
@@ -746,6 +749,8 @@ export class GameApplication {
     if (this.#keepnetRadiation?.update(dt, envSnapshot.radiation)) this.#syncLiveBaitCast();
     // Spec 179 D10: the radiation's wear of the items with a condition.
     this.#emissionWear?.update(dt, envSnapshot.radiation);
+    // Spec 185 (owner Q2): the gas mask filters on the location while the radiation is above 0 or an emission is on.
+    this.#gasMask?.update(dt, Number(envSnapshot.radiation) > 0 || this.#emissionExposure.isActive());
     this.#castPenalty.update(dt);
     this.#timeUI.update(envSnapshot.time);
     this.#emissionScreen.update(dt);
@@ -1102,7 +1107,10 @@ export class GameApplication {
   // Spec 179 stage E: the inventory opens with the warning, where a gas mask can be put on.
   #showGasMaskRequiredWarning() {
     this.#inventoryUI.open();
-    this.#inventoryUI.showWarning(this.#messages.gasMaskRequiredToCast);
+    // Spec 185 D8: the message names what is missing — the mask, a whole one, or a filter with time left.
+    const reason = this.#emissionExposure.castBlockReason();
+    this.#inventoryUI.showWarning(reason === "broken" ? this.#messages.gasMaskBrokenToCast
+      : reason === "noFilter" ? this.#messages.gasMaskFilterRequiredToCast : this.#messages.gasMaskRequiredToCast);
   }
 
   // Spec 179 D12 (TK-371, owner Q20): whether the player may go into the house now — the tackle put away (gas mask,

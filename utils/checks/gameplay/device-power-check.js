@@ -313,6 +313,59 @@ assert(resourceMetersCss.includes(".inventory-resource-meter--parameter .invento
 assert(resourceMetersCss.includes("--ui-radius-control"), "resource-meters.css applies control border-radius token to parameter meter tracks");
 assert(resourceMetersCss.includes("prefers-reduced-motion"), "resource-meters.css supports prefers-reduced-motion");
 
+// Spec 185 D3 (TK-382): a gas mask filter's time is the battery's charge path on the real catalog — 180 units, 1 a second,
+// written into the filter's chargeState every 5 s and when it runs out; the two filters work one at a time (owner Q1),
+// only while the mask filters (owner Q2); the spent one stays 0, the other takes over; the snapshot keeps the time left.
+{
+  const { GasMaskProtection } = runtime.importModule("src/game/application/world/gas_mask_protection.js");
+  const { CONFIG } = runtime.importModule("src/game/config/runtime/game_config.js");
+  const { InventoryItemSnapshotMapper } = runtime.importModule(
+    "src/game/application/inventory/persistence/inventory_item_snapshot_mapper.js");
+  const coal = ITEM_DB.gasFilters.gas_filter_coal;
+  assert.equal(JSON.stringify([coal.gameplayStats.capacityUnits, coal.progressionProfile.groupId,
+    ITEM_PROGRESSION_CONFIG.groups["protection.gas_filter"].charge.instanceStatePath]),
+  JSON.stringify([180, "protection.gas_filter", "chargeState.percent"]), "a filter: 180 s as the charge of its group");
+  const repository = new FlatInventoryItemRepository({ items: [
+    { instanceId: "mask", itemId: "gas_mask_basic", quantity: 1, location: InventoryItemLocation.inventory() },
+    { instanceId: "f-1", itemId: "gas_filter_coal", quantity: 1, location: InventoryItemLocation.attached("mask", "filter", 0) },
+    { instanceId: "f-2", itemId: "gas_filter_ash", quantity: 1, chargeState: { percent: 50 },
+      location: InventoryItemLocation.attached("mask", "filter", 1) },
+  ] });
+  const definition = (itemId) => ITEM_DB.gasFilters[itemId] ?? ITEM_DB.gasMasks[itemId];
+  const hydrate = (raw) => ({ ...definition(raw.itemId), ...raw, effectiveStats: { ...definition(raw.itemId).gameplayStats } });
+  const chargeResolver = new ItemBoundedMetricResolver({ capabilityId: "charge",
+    profileProvider: (item) => ITEM_PROGRESSION_CONFIG.groups[item?.progressionProfile?.groupId]?.charge,
+    descriptorFactory: (values) => values });
+  const drain = new ApplyBatteryDrainService({ repository, hydrator: { hydrate }, chargeResolver });
+  let filterWrites = 0;
+  const filterPower = new DevicePowerService({ config: () => ({ maxStepSeconds: 1, saveIntervalSeconds: 5 }), batteries: {
+    attachedBattery: () => null, readBattery: (id) => drain.read(id),
+    drainBattery: (id, units) => { filterWrites += 1; return drain.drain(id, units); } } });
+  const equipped = { gasMask: hydrate(repository.get("mask")),
+    gasMaskFilters: [hydrate(repository.get("f-1")), hydrate(repository.get("f-2"))] };
+  const held = [];
+  const gasMask = new GasMaskProtection({ getEquipped: () => equipped, power: filterPower,
+    statuses: { hold: (id, on) => held.push(on) }, getSettings: () => CONFIG.emission.gasMask });
+  const seconds = (count, filtering) => { for (let step = 0; step < count * 60; step += 1) gasMask.update(1000 / 60, filtering); };
+  seconds(10, false);
+  assert.equal(filterWrites, 0, "owner Q2: nothing is spent while the mask does not filter");
+  seconds(30, true);
+  assert.equal(gasMask.activeFilterId, "f-2", "owner Q1: the half-spent filter first");
+  near(repository.get("f-2").chargeState.percent, 50 - 30 / 180 * 100, 5 / 180 * 100 + 0.01, "its time is written every 5 s");
+  assert.equal(repository.get("f-1").chargeState, undefined, "the waiting filter stays full");
+  seconds(61, true);
+  assert.equal(repository.get("f-2").chargeState.percent, 0, "the spent filter is written at 0 at once");
+  assert.equal(gasMask.activeFilterId, "f-1", "and the other one takes over");
+  assert.ok(held.at(-1) === true && gasMask.protection === 1, "with no gap in the protection");
+  filterPower.flush();
+  // The save boundary as composed: a chargeState is kept for an item whose group has the charge capability.
+  const snapshots = new InventoryItemSnapshotMapper({ itemDefinitionResolver: { resolve: definition, get: definition },
+    overridePolicy: { normalize: () => ({}) },
+    chargeCapabilityProvider: (item) => ITEM_PROGRESSION_CONFIG.groups[item?.progressionProfile?.groupId]?.charge ?? null });
+  const saved = snapshots.toSnapshot(repository.get("f-1"));
+  near(saved.chargeState.percent, 100 - 1 / 180 * 100, 1 / 180 * 100 + 0.01, "the save keeps the filter's time left");
+}
+
 console.log("Device power passed: catalog boat rates (5/7.5/10 min moving, a third waiting, 0 idle/drifting), drain never "
   + "rises or goes below 0, 300 s per battery on 16 ms steps without the wall clock, writes every 5 s and at empty, "
   + "clamped steps, flush on hide, ledger, lower charge across tabs, one-time grants once, boat drifts on an empty "

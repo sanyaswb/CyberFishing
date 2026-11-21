@@ -2,6 +2,11 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.52.43 - The gas mask protects through its filters (TK-382, spec 185)
+
+- The gas mask protects only with a filter that has time left: then the emission's darkening and blur are gone and the radiation's hiss is half as strong. The filters work one at a time (the one with less time first, the other takes over without a gap), and their time runs only on the location under radiation or during an emission. A removed filter keeps its time.
+- Without a working filter (or with a cracked mask) the mask does not protect and there is no cast during an emission; the message says what is missing. When the protection ends, the effects come back smoothly over 10 seconds.
+
 ## v0.52.42 - Gas mask filters and the mask's two filter cells (TK-381, spec 185)
 
 - Two gas mask filters: «Фільтр ФПК-1 „Вугільний“» and «Фільтр ФПК-1 „Попіл“», 3 minutes each (same parameters), with simple icons. The gas mask now has two filter cells: a tap on the mask opens its editor, a filter goes into a free cell, «Спорядити» puts the mask on. Gas mask quality is 3.
@@ -43,8 +48,3 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 
 - The vodka's blur is no longer constant: it comes and clears smoothly, each time for a different while and strength. One bottle — mostly sharp, now and then a light defocus; two — more often; from three on there is always some defocus with stronger, more frequent and longer episodes, strongest at five.
 - The values are lists by the bottles in DevTools «Конфіг» → canvas → intoxication → «Розфокус».
-
-## v0.52.33 - The production start is a short set; dev.html keeps every test item, with vodka and a gas mask (TK-377)
-
-- A new player in the game starts with the bamboo rod, the day float, a 15 m line, the basic hook and 15 oil worms (one on the hook) — nothing else. The bamboo rod without a reel takes 10 m of the line; the other 5 m lie in the backpack.
-- dev.html starts a new player with every test item plus 10 vodka (one stack) and a gas mask; a dev.html save from before gets the 10 bottles and the mask once.

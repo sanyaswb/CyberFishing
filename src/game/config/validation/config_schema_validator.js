@@ -1384,6 +1384,23 @@ export class ConfigSchemaValidator {
         value <= 100) || pair[0] > pair[1]) this.#error(`CONFIG.${path}.${key}`, "expected [min, max] 0…100, min ≤ max");
       this.#requireParameterLabel(`${path}.${key}`);
     }
+    this.#validateGasMaskConfig();
+  }
+
+  // Spec 185: the gas mask's filters, wear and cracks (CONFIG.emission.gasMask).
+  #validateGasMaskConfig() {
+    const cfg = this.config.emission?.gasMask;
+    const path = "emission.gasMask";
+    if (!cfg || typeof cfg !== "object") { this.#error(`CONFIG.${path}`, "missing gas mask config"); return; }
+    this.#requireParameterLabel(path);
+    this.#requireFiniteNumberWithLabel(`${path}.breakFadeSec`, cfg.breakFadeSec, { min: 0, max: 120 });
+    this.#requireFiniteNumberWithLabel(`${path}.wearSecPerQuality`, cfg.wearSecPerQuality, { min: 1, max: 100000 });
+    const cracks = cfg.crackAtPercent;
+    if (!Array.isArray(cracks) || cracks.length === 0 || !cracks.every((value, index) => Number.isFinite(value) &&
+      value >= 0 && value <= 100 && (index === 0 || value < cracks[index - 1]))) {
+      this.#error(`CONFIG.${path}.crackAtPercent`, "expected falling percents 100…0");
+    }
+    this.#requireParameterLabel(`${path}.crackAtPercent`);
   }
 
   // Spec 179 stage E: the emission's darkening and blur (CONFIG.emission.screen).

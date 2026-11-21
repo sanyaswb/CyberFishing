@@ -9,6 +9,9 @@ export const FISHING_MESSAGES = Object.freeze({
   equipLineToCast: "Спочатку споряди ліску для закидання.",
   // Spec 179 stage E: no cast during an emission without a gas mask.
   gasMaskRequiredToCast: "У вас немає протигазу",
+  // Spec 185 D8 (owner Q4): a gas mask that does not protect does not allow a cast either.
+  gasMaskBrokenToCast: "Протигаз тріснув — він більше не захищає",
+  gasMaskFilterRequiredToCast: "Протигаз без фільтра не захищає: вставте фільтр із запасом часу",
   // Spec 179 D12 (owner Q20): the house only with the tackle put away.
   stowTackleForHouse: "Спершу складіть снасті в інвентар",
   noChumInInventory: "У вас немає прикормки в інвентарі!",

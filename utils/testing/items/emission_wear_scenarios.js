@@ -23,7 +23,7 @@ module.exports = async function checkEmissionWear() {
   const { EmissionWearExposure } = await import("../../../src/game/application/world/emission_wear_exposure.js");
   const { FishingReadinessPolicy } = await import("../../../src/game/domain/equipment/fishing_readiness_policy.js");
   const { EmissionExposure } = await import("../../../src/game/application/world/emission_exposure.js");
-  const { EquipmentStatusSource } = await import("../../../src/game/application/world/equipment_status_source.js");
+  const { GasMaskProtection } = await import("../../../src/game/application/world/gas_mask_protection.js");
 
   const settings = CONFIG.emission.wear;
   const definitions = new Map(Object.values(ITEM_DB).flatMap((group) => Object.values(group)).map((item) => [item.id, item]));
@@ -152,21 +152,25 @@ module.exports = async function checkEmissionWear() {
   items.rod = hydrate({ instanceId: "rod", itemId: "rod_test_float", quantity: 1, statOverrides: { durability: 0 } });
   assert.equal(readiness.evaluateCast({ equipmentState: state }).warningCode, "broken-tackle", "a broken rod too");
 
-  // A broken gas mask does not protect: no status, the cast stays blocked during an emission.
+  // A broken gas mask does not protect: no status, the cast stays blocked during an emission (spec 185: with a filter
+  // that has time left, on the real catalog's mask and filter).
   const mask = (durability) => hydrate({ instanceId: "mask", itemId: "gas_mask_basic", quantity: 1,
     statOverrides: { durability } });
+  const filter = hydrate({ instanceId: "filter", itemId: "gas_filter_coal", quantity: 1 });
   const held = [];
   const statuses = { hold: (id, on) => held.push([id, on]), modifier: () => 1, has: () => false };
-  let equipped = { gasMask: mask(30) };
-  const source = new EquipmentStatusSource({ inventory: { getEquipped: () => equipped }, statuses, slots: { gasMask: "gasMask" } });
-  assert.deepEqual(held.at(-1), ["gasMask", true], "a worn gas mask still protects");
-  equipped = { gasMask: mask(0) };
-  source.sync();
+  let equipped = { gasMask: mask(30), gasMaskFilters: [filter, null] };
+  const power = { consume: () => ({ hasBattery: true, percent: 100, empty: false }) };
+  const gasMask = new GasMaskProtection({ getEquipped: () => equipped, power, statuses, getSettings: () => ({ breakFadeSec: 0 }) });
+  gasMask.update(16, true);
+  assert.deepEqual(held.at(-1), ["gasMask", true], "a worn gas mask with a filter still protects");
+  equipped = { gasMask: mask(0), gasMaskFilters: [filter, null] };
+  gasMask.update(16, true);
   assert.deepEqual(held.at(-1), ["gasMask", false], "a broken gas mask holds no status");
   const exposure = new EmissionExposure({ getEnvironment: () => ({ emission: { phase: "peak", intensity: 1 } }),
-    getEquipped: () => equipped, statuses, house: { isInHouse: () => false } });
+    gasMask, statuses, house: { isInHouse: () => false } });
   assert.equal(exposure.hasGasMask(), false, "a broken gas mask is no gas mask");
-  equipped = { gasMask: mask(1) };
+  equipped = { gasMask: mask(1), gasMaskFilters: [filter, null] };
   assert.equal(exposure.hasGasMask(), true);
 
   console.log("Emission wear passed: worn quality, ranges by quality and immunity, the location's mean dose; one " +

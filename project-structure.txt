@@ -492,8 +492,8 @@
 │  │  │     ├── emission_exposure.js
 │  │  │     ├── emission_wear_exposure.js
 │  │  │     ├── environment_system.js
-│  │  │     ├── equipment_status_source.js
 │  │  │     ├── game_world.js
+│  │  │     ├── gas_mask_protection.js
 │  │  │     ├── ground_plane_scope.js
 │  │  │     ├── house_presence.js
 │  │  │     ├── player_status_effects.js

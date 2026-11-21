@@ -78,6 +78,14 @@ export const CONFIG = {
       qualityCurve: 1, // ефективна якість = 1 + (якість − 1) × (стан / 100)^qualityCurve (1 — лінійно)
       applyEverySec: 5, // як часто знос записується в інвентар, поки йде
     },
+    // Spec 185 (власник): протигаз діє через фільтри — працює один (у якого менше часу), лише поки протигаз фільтрує: на
+    // локації під радіацією > 0 або під час викиду. Тоді ж протигаз зношується за своєю якістю (загальний знос D10 його
+    // не чіпає, radiationImmunity 1). Стан 0 — протигаз тріснув: фільтри стоять, ефекти плавно повертаються.
+    gasMask: {
+      breakFadeSec: 10, // за скільки секунд повертаються затемнення, розмиття й шипіння, коли захисту не стало
+      wearSecPerQuality: 100, // знос від 100 до 0 за (це × якість) с фільтрування: якість 3 — 300 с (5 хв)
+      crackAtPercent: [80, 60, 40, 20, 0], // стадії тріщин за станом, % (1-ша … 5-та)
+    },
   },
   // Spec 179 D12 (TK-371): while the player is in the house the location's world goes on in these steps without drawing
   // (game time, weather, wind, zones, the emission); a longer step is cheaper, a shorter one keeps the world finer.

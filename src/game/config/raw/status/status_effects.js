@@ -38,7 +38,8 @@ export const STATUS_EFFECTS = {
     timeBase: "real",
     modifiers: {},
   },
-  // Протигаз у слоті (spec 181 Q3: без значка — його видно в слоті): ефектів викиду немає; закид дозволяє сам слот.
+  // Протигаз, що захищає (spec 185 D4, TK-382): тримає GasMaskProtection, поки протигаз цілий і має фільтр із часом;
+  // модифікатори — від фільтра (emissionResistance, radiationResistance у ITEM_DB.gasFilters), тут їх немає.
   gasMask: {
     kind: "buff",
     icon: "gas-mask",
@@ -47,16 +48,6 @@ export const STATUS_EFFECTS = {
     stacking: "renew",
     maxStacks: 1,
     timeBase: "real",
-    modifiers: {
-      emission: {
-        vignette: 0,
-        blur: 0,
-        blurRate: 1,
-      },
-      // Spec 179 етап K (TK-373): шипіння радіації на екрані в протигазі приглушене (частка, що лишається).
-      radiation: {
-        grain: 0.3,
-      },
-    },
+    modifiers: {},
   },
 };

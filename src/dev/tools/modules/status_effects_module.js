@@ -65,10 +65,12 @@ export class StatusEffectsModule {
     const level = this.#statuses.stacks(entry.id);
     const stacks = level > 1 ? ` · ×${level}` : "";
     const modifiers = [];
-    for (const [system, keys] of Object.entries(definition?.modifiers || {})) {
+    // Spec 185 D11: a status held with its source's own modifiers (the gas mask's filter) shows those.
+    const source = entry.sourceModifiers ?? definition;
+    for (const [system, keys] of Object.entries(source?.modifiers || {})) {
       // TK-374: the share in effect now (by the stacks: a list of shares, or a share per stack), rounded for reading.
       for (const key of Object.keys(keys || {})) {
-        const share = statusModifierShare(definition, system, key, level);
+        const share = statusModifierShare(source, system, key, level);
         modifiers.push(`${system}.${key} ${Math.round(share * 1000) / 1000}`);
       }
     }

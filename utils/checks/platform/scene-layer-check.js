@@ -872,10 +872,12 @@ async function checkRadiationGrain() {
   assert.equal(place(), stepped, "the same grain at a lower opacity (it jumps only at its pace)");
   assert.ok(grid.alpha > 0 && grid.alpha < settings.maxOpacity, "the opacity follows the radiation");
   // Spec 179 stage K (TK-373): the gas mask mutes the hiss — the statuses' share of the opacity.
-  const gasMaskShare = CONFIG.statusEffects.gasMask.modifiers.radiation.grain;
-  assert.equal(gasMaskShare, 0.3, "the gas mask keeps 0.3 of the hiss (owner)");
+  // Spec 185 D1: the share comes from the gas mask's filter (radiationResistance 0.5: half of the hiss stays).
+  const { ITEM_DB } = await importSource("src/game/config/raw/items/item_database.js");
+  const gasMaskShare = 1 - ITEM_DB.gasFilters.gas_filter_coal.gameplayStats.radiationResistance;
+  assert.equal(gasMaskShare, 0.5, "the gas mask's filter keeps 0.5 of the hiss (owner: «знімає … на 50%»)");
   assert.equal(frame({ weather: { radiation: 1, grainShare: gasMaskShare } }), true, "putting the gas mask on redraws");
-  assert.ok(Math.abs(grid.alpha - settings.maxOpacity * gasMaskShare) < 1e-9, "in the gas mask the hiss is × 0.3");
+  assert.ok(Math.abs(grid.alpha - settings.maxOpacity * gasMaskShare) < 1e-9, "in the gas mask the hiss is × 0.5");
   frame(world(1));
   assert.ok(Math.abs(grid.alpha - settings.maxOpacity) < 1e-9, "without it the full hiss again");
   const before = grain.status.cells;

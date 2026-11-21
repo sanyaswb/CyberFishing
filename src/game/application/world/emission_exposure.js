@@ -1,38 +1,39 @@
-import { isItemBroken } from "../../domain/items/condition/item_condition_quality.js";
-
 // Spec 179 stage E (TK-324), spec 181: how the emission reaches the player.
 // - intensity(): the emission's intensity now, 0…1; 0 outside an emission.
 // - modifier(key): the share of the emission's screen effect that stays under the player's statuses (spec 181 D1:
-//   emission.vignette, .blur, .blurRate — the vodka 0.7 / 0.55 / 0.4 by the bottles (TK-374), the gas mask in its slot
-//   0; the product over the statuses).
-// - isCastBlocked(): from the emission's start to its end a cast needs a gas mask (the vodka does not allow it); a fight
-//   that is already on continues (owner, Q10), only new casts are refused.
-// It reads the environment's snapshot, the equipment and the statuses live, allocates nothing and keeps no state.
+//   emission.vignette, .blur, .blurRate — the vodka 0.7 / 0.55 / 0.4 by the bottles (TK-374), the gas mask's filter 0
+//   (spec 185); the product over the statuses).
+// - isCastBlocked(): from the emission's start to its end a cast needs a gas mask that protects — whole, with a filter
+//   that has time left (spec 185 D8, owner Q4; the vodka does not allow it); a fight that is already on continues
+//   (owner, Q10), only new casts are refused. castBlockReason(): why ("missing", "broken", "noFilter").
+// It reads the environment's snapshot, the gas mask and the statuses live, allocates nothing and keeps no state.
 import { clampUnit } from "../../../engine/math/number_normalization.js";
 
 export class EmissionExposure {
   #getEnvironment;
-  #getEquipped;
+  #gasMask;
   #statuses;
   #house;
 
-  // getEnvironment: () => EnvironmentSystem's snapshot ({ emission }); getEquipped: () => the equipment read model;
-  // statuses: PlayerStatusEffects (spec 181); house: HousePresence — in the house the emission reaches nobody (D12).
-  constructor({ getEnvironment, getEquipped, statuses, house }) {
+  // getEnvironment: () => EnvironmentSystem's snapshot ({ emission }); gasMask: GasMaskProtection ({ isProtecting,
+  // problem }); statuses: PlayerStatusEffects (spec 181); house: HousePresence — in the house the emission reaches
+  // nobody (D12).
+  constructor({ getEnvironment, gasMask, statuses, house }) {
     if (typeof getEnvironment !== "function") throw new TypeError("EmissionExposure requires getEnvironment");
-    if (typeof getEquipped !== "function") throw new TypeError("EmissionExposure requires getEquipped");
+    if (typeof gasMask?.isProtecting !== "function" || typeof gasMask?.problem !== "function") {
+      throw new TypeError("EmissionExposure requires gasMask");
+    }
     if (typeof statuses?.modifier !== "function") throw new TypeError("EmissionExposure requires statuses");
     if (typeof house?.isInHouse !== "function") throw new TypeError("EmissionExposure requires house");
     this.#getEnvironment = getEnvironment;
-    this.#getEquipped = getEquipped;
+    this.#gasMask = gasMask;
     this.#statuses = statuses;
     this.#house = house;
   }
 
-  // Spec 179 D10: a broken gas mask (condition 0) does not protect.
+  // Spec 179 D10, spec 185 D8: a gas mask that protects (a broken one or one without a live filter does not).
   hasGasMask() {
-    const gasMask = this.#getEquipped()?.gasMask;
-    return Boolean(gasMask) && !isItemBroken(gasMask);
+    return this.#gasMask.isProtecting();
   }
 
   isActive() {
@@ -58,5 +59,10 @@ export class EmissionExposure {
 
   isCastBlocked() {
     return this.isActive() && !this.hasGasMask();
+  }
+
+  // Spec 185 D8: what the cast lacks ("missing", "broken", "noFilter") or null.
+  castBlockReason() {
+    return this.isCastBlocked() ? this.#gasMask.problem() : null;
   }
 }

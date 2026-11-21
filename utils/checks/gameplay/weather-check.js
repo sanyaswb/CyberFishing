@@ -1283,8 +1283,12 @@ const step = (model, seconds, clock = null, dt = 0.1) => {
   const maskStatuses = new PlayerStatusEffects({ now: () => 0, getDefinitions: () => statusConfig.statusEffects,
     scheduler: { setTimeout() { return 1; }, clearTimeout() {} } });
   assert.equal(maskStatuses.modifier("radiation", "grain"), 1);
-  maskStatuses.hold("gasMask", true);
-  assert.equal(maskStatuses.modifier("radiation", "grain"), 0.3, "the gas mask in its slot mutes the hiss to 0.3");
+  // Spec 185 D4: the gas mask's status takes its source's modifiers (the filter's), changed in place by the source.
+  const maskModifiers = { radiation: { grain: 0.5 } };
+  maskStatuses.hold("gasMask", true, { source: "gasMask", modifiers: maskModifiers });
+  assert.equal(maskStatuses.modifier("radiation", "grain"), 0.5, "the gas mask's filter mutes the hiss to 0.5");
+  maskModifiers.radiation.grain = 0.8;
+  assert.equal(maskStatuses.modifier("radiation", "grain"), 0.8, "a change of the source's modifiers reaches the next read");
   maskStatuses.hold("gasMask", false);
 }
 
@@ -1548,8 +1552,8 @@ const step = (model, seconds, clock = null, dt = 0.1) => {
   // The exposure tells the peak; in the house there is none (its intensity is 0 too).
   let env = { emission: { phase: "peak", intensity: 1 } };
   const house = new HousePresence();
-  const exposure = new EmissionExposure({ getEnvironment: () => env, getEquipped: () => ({}), house,
-    statuses: { modifier: () => 1 } });
+  const exposure = new EmissionExposure({ getEnvironment: () => env, gasMask: { isProtecting: () => false,
+    problem: () => "missing" }, house, statuses: { modifier: () => 1 } });
   assert.equal(exposure.atPeak(), true);
   env = { emission: { phase: "onset", intensity: 0.4 } };
   assert.equal(exposure.atPeak(), false);
@@ -1742,7 +1746,8 @@ const step = (model, seconds, clock = null, dt = 0.1) => {
   const intoxication = make(5);
   const frameScreen = composeEmissionScreen({ effect: new EmissionScreenEffect({ random: () => 0.5 }), veil: null,
     cameraShake: new EmissionCameraShake({ random: () => 0.5 }), intoxication, sceneLayer,
-    emissionExposure: new EmissionExposure({ getEnvironment: () => env, getEquipped: () => equipped, statuses, house }),
+    emissionExposure: new EmissionExposure({ getEnvironment: () => env, gasMask: { isProtecting: () => Boolean(equipped.gasMask),
+      problem: () => (equipped.gasMask ? null : "missing") }, statuses, house }),
     radiationStatus: new RadiationStatusSource({ getEnvironment: () => env, statuses, house }), statuses,
     getViewWidth: () => width, getConfig: () => CONFIG });
   const frames = (seconds) => { for (let elapsed = 0; elapsed < seconds; elapsed += 1 / 60) frameScreen.update(1000 / 60); };
@@ -1773,7 +1778,8 @@ const step = (model, seconds, clock = null, dt = 0.1) => {
   const { EmissionVeilDomRenderer } = require("../../../src/platform/browser/dom/emission_veil_dom_renderer.js");
   const { CONFIG } = require("../../../src/game/config/runtime/game_config.js");
   const { PlayerStatusEffects } = require("../../../src/game/application/world/player_status_effects.js");
-  const { EquipmentStatusSource } = require("../../../src/game/application/world/equipment_status_source.js");
+  const { GasMaskProtection } = require("../../../src/game/application/world/gas_mask_protection.js");
+  const { DevicePowerService } = require("../../../src/game/application/power/device_power_service.js");
   let env = { emission: { phase: "idle", intensity: 0 } };
   let equipped = {};
   let clockMs = 0;
@@ -1787,15 +1793,22 @@ const step = (model, seconds, clock = null, dt = 0.1) => {
     for (const [id, timer] of [...timers]) if (timer.at <= clockMs) { timers.delete(id); timer.fn(); }
   };
   const statuses = new PlayerStatusEffects({ now: () => clockMs, getDefinitions: () => CONFIG.statusEffects, scheduler });
-  const inventoryListeners = new Set();
-  const equipmentSource = new EquipmentStatusSource({ inventory: { getEquipped: () => equipped,
-    onInventoryChanged: (fn) => { inventoryListeners.add(fn); return () => inventoryListeners.delete(fn); } },
-  statuses, slots: { gasMask: "gasMask" } });
-  const equip = (value) => { equipped = value; for (const fn of inventoryListeners) fn(); };
+  // Spec 185 (TK-382): the gas mask protects through its filters; their time is a battery-like charge spent by the real
+  // DevicePowerService over an inventory double with its contract (readBattery / drainBattery by instance id).
+  const charges = new Map();
+  const power = new DevicePowerService({ config: () => CONFIG.power, batteries: {
+    attachedBattery: () => null,
+    readBattery: (id) => (charges.has(id) ? { percent: charges.get(id), capacityUnits: 180 } : null),
+    drainBattery: (id, units) => { charges.set(id, Math.max(0, charges.get(id) - units / 180 * 100));
+      return { percent: charges.get(id), capacityUnits: 180 }; } } });
+  const filterStats = { capacityUnits: 180, radiationResistance: 0.5, emissionResistance: 1 };
+  const filter = (instanceId, percent = 100) => { charges.set(instanceId, percent); return { instanceId, effectiveStats: filterStats }; };
+  const gasMask = new GasMaskProtection({ getEquipped: () => equipped, power, statuses, getSettings: () => CONFIG.emission.gasMask });
+  const equip = (value) => { equipped = value; gasMask.update(0, false); };
   // Spec 179 D12 (TK-371): the player's presence in the house.
   const { HousePresence } = require("../../../src/game/application/world/house_presence.js");
   const house = new HousePresence();
-  const exposure = new EmissionExposure({ getEnvironment: () => env, getEquipped: () => equipped, statuses, house });
+  const exposure = new EmissionExposure({ getEnvironment: () => env, gasMask, statuses, house });
   assert.deepEqual([exposure.intensity(), exposure.isCastBlocked()], [0, false], "no emission: no effect, casting allowed");
   env = { emission: { phase: "onset", intensity: 0.5 } };
   assert.deepEqual([exposure.intensity(), exposure.modifier("vignette"), exposure.isCastBlocked()], [0.5, 1, true], "an emission without a gas mask: effect and no cast");
@@ -1808,11 +1821,18 @@ const step = (model, seconds, clock = null, dt = 0.1) => {
   house.leave();
   assert.equal(exposure.intensity(), 0.5, "back on the location: the effects at the emission's current strength");
   assert.equal(house.feltRadiation(0.8), 0.8, "on the location the radiation is felt");
-  equip({ gasMask: { id: "mask" } });
+  // Spec 185 D4, D8 (owner Q4): a mask without a filter neither protects nor allows a cast; with one it does both.
+  equip({ gasMask: { instanceId: "mask", effectiveStats: { durability: 100 } }, gasMaskFilters: [null, null] });
+  assert.deepEqual([statuses.has("gasMask"), exposure.isCastBlocked(), exposure.castBlockReason()], [false, true, "noFilter"],
+    "a gas mask without a filter: no protection, no cast");
+  equip({ gasMask: { instanceId: "mask", effectiveStats: { durability: 100 } }, gasMaskFilters: [filter("f1"), null] });
   assert.deepEqual([statuses.has("gasMask"), exposure.modifier("vignette"), exposure.modifier("blur"), exposure.isCastBlocked()], [true, 0, 0, false],
-    "a gas mask holds its status: no effect and casting allowed");
+    "a gas mask with a filter holds its status: no effect and casting allowed");
+  assert.equal(statuses.modifier("radiation", "grain"), 0.5, "the filter takes away half of the radiation's hiss (owner: 50 %)");
   equip({});
-  assert.equal(statuses.has("gasMask"), false, "out of its slot, the gas mask's status ends");
+  assert.deepEqual([exposure.isCastBlocked(), exposure.castBlockReason()], [true, "missing"], "out of its slot: no cast");
+  for (let step = 0; step < 600; step += 1) gasMask.update(1000 / 60, true);
+  assert.equal(statuses.has("gasMask"), false, "out of its slot, the gas mask's status ends (after its fade)");
   env = { emission: { phase: "fade", intensity: 0.01 } };
   assert.equal(exposure.isCastBlocked(), true, "casting stays closed to the emission's very end");
 
@@ -1890,15 +1910,49 @@ const step = (model, seconds, clock = null, dt = 0.1) => {
   assert.equal(statuses.apply("unknown"), false, "an unknown status does nothing");
   assert.equal(statuses.apply("gasMask"), false, "a status without a timer is never applied as timed");
   statuses.apply("vodka");
-  equip({ gasMask: { id: "mask" } });
+  equip({ gasMask: { instanceId: "mask", effectiveStats: { durability: 100 } }, gasMaskFilters: [filter("f2"), null] });
   assert.deepEqual([exposure.modifier("vignette"), exposure.modifier("blur"), exposure.isCastBlocked()], [0, 0, false],
     "the gas mask wins over the vodka (the product of the shares)");
   statuses.clear();
   assert.equal(JSON.stringify(statuses.list().map((entry) => entry.id)), JSON.stringify(["gasMask"]),
-    "«Зняти всі» ends the timed statuses; the slot keeps holding the gas mask's");
-  equip({});
+    "«Зняти всі» ends the timed statuses; the mask keeps holding the gas mask's");
+  gasMask.dispose();
+  assert.equal(statuses.has("gasMask"), false, "dispose releases the gas mask's status");
   unsubscribe();
-  equipmentSource.dispose();
+
+  // Spec 185 D3, D4, D7 (TK-382, owner Q1–Q3): two filters work one at a time — the one with less time left first —
+  // only while the mask filters; a broken mask stops them; at the end of the protection the effects come back over
+  // breakFadeSec, not at once.
+  const fps = 60;
+  const runMask = (seconds, filtering) => { for (let frame = 0; frame < seconds * fps; frame += 1) gasMask.update(1000 / fps, filtering); };
+  const masked = (filters, durability = 100) => equip({ gasMask: { instanceId: "mask2", effectiveStats: { durability } },
+    gasMaskFilters: filters });
+  const left = (id) => gasMask.secondsLeft({ instanceId: id, effectiveStats: filterStats });
+  masked([filter("a", 100), filter("b", 50)]);
+  assert.equal(gasMask.activeFilterId, "b", "owner Q1: the filter with less time left filters first");
+  runMask(30, false);
+  assert.deepEqual([Math.round(left("a")), Math.round(left("b"))], [180, 90], "owner Q2: no radiation, no emission — no time spent");
+  runMask(30, true);
+  assert.deepEqual([Math.round(left("a")), Math.round(left("b"))], [180, 60], "filtering: only the active filter spends, 1 s a second");
+  runMask(61, true);
+  assert.deepEqual([gasMask.activeFilterId, Math.round(left("a")), left("b")], ["a", 179, 0],
+    "the spent filter gives way to the other, which takes over without a gap");
+  assert.equal(exposure.modifier("vignette"), 0, "and the protection stays full");
+  masked([filter("c", 100), null], 0);
+  const fadeSec = CONFIG.emission.gasMask.breakFadeSec;
+  runMask(fadeSec / 2, true);
+  assert.equal(Math.round(left("c")), 180, "a broken mask stops its filters (owner: «вони нічого вже не фільтрують»)");
+  assert.equal(exposure.castBlockReason(), "broken", "and allows no cast");
+  const halfway = exposure.modifier("vignette");
+  assert.ok(halfway > 0.4 && halfway < 0.6, `owner Q3: the effects come back smoothly (${halfway.toFixed(2)} after half of ${fadeSec} s)`);
+  runMask(fadeSec / 2 + 0.1, true);
+  assert.deepEqual([exposure.modifier("vignette"), statuses.has("gasMask")], [1, false], "after breakFadeSec all of them are back");
+  masked([filter("d", 100), null]);
+  assert.equal(exposure.modifier("vignette"), 0, "a whole mask with a filter protects again at once");
+  masked([filter("e", 0.1), null]);
+  runMask(1, true);
+  assert.equal(gasMask.problem(), "noFilter", "the last filter ran out: the mask needs a filter");
+  gasMask.dispose();
   // The stacking rules on their own descriptions: max keeps the longer time, add stacks up to maxStacks (the share once
   // per stack); a DevTools edit of a description reaches the next apply and the modifiers at once.
   const defs = { long: { kind: "debuff", durationSec: 100, stacking: "max", maxStacks: 1, modifiers: { emission: { blur: 0.5 } } },
