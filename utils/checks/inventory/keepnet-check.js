@@ -487,7 +487,7 @@ async function checkSlotIconWarmUp(InventoryUiBootstrap) {
     sources: createAssetLoadSources({ locations: { map: {} }, itemDb: {} }) });
   const slotGroup = loadPlan.layer("layer-one").groups.find((group) => group.id === "slot-icons");
   const expected = inventorySlotIconAssets();
-  assert.equal(expected.length, 14, "fourteen distinct placeholder files (battery, spec 143; radio, spec 142; the drink, spec 184; the hook is the sprite symbol, TK-238)");
+  assert.equal(expected.length, 15, "fifteen distinct placeholder files (battery, spec 143; radio, spec 142; the drink, spec 184; the gas mask's filter, spec 185; the hook is the sprite symbol, TK-238)");
   assert.deepEqual(loadPlan.resolveGroup(slotGroup), expected, "the plan's layer-one warms each placeholder once");
 }
 // Spec 157 R5: the keepnet stages are display-sized (the largest phone view is ~374 CSS px, x2), committed and light;

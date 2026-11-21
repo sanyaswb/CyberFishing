@@ -842,8 +842,8 @@ export class InventoryViewModelFactory {
       return ["boat", "chum_delivery"].includes(itemType);
     }
     if (categoryId === "nets") return itemType === "net";
-    return itemType === "gas_mask" || itemType === "drink" || itemType === "backpack" || itemType === "battery" ||
-      itemType === "radio";
+    return itemType === "gas_mask" || itemType === "gas_filter" || itemType === "drink" || itemType === "backpack" ||
+      itemType === "battery" || itemType === "radio";
   }
 
   #itemType(item) {
@@ -919,6 +919,8 @@ export class InventoryViewModelFactory {
       chum: "Прикормка",
       cargo: "Бункер",
       battery: "Батарейка",
+      // Spec 185 D2: the gas mask's two filter cells.
+      filter: "Фільтр",
     };
     const base = labels[slotId] || slotId;
     if (slotId === "bait" && parentContext?.slotId === "hook") {

@@ -1,6 +1,7 @@
 // Release notes, newest first (unshift with every patch). DEV only: no production code reads them, and in the start's
 // bundle they cost 13 KB gzip (spec 160). dev.html publishes them with the version: window.CYBER_FISHING_PROJECT_VERSION.notes.
 export const PROJECT_RELEASE_NOTES = Object.freeze([
+  "Spec 185 TK-381: gas_filter items (gasFilter copies: capacityUnits 180, radiationResistance 0.5, emissionResistance 1; protection.gas_filter charge), gas_mask assembly (filter ×2), quality 3, gasMaskFilters in the equipment model, DEV grants and shop.",
   "TK-380.1: StatusHudBadges arms any timed status (the vodka is a buff), held ones never; label «GOD зняти ефект утриманням».",
   "TK-378.1 (I-29): createPlayerStatusesDevPort with stacks for the game and its check; DevTools mounts each module in isolation (console.error + alert in its page).",
   "TK-380: debug.godMode.removeDebuffsByHold (DEV flags port) — StatusHudBadges 500 ms hold on a timed debuff arms hud-indicator--remove-armed (cross), the hold's click opens no counter, the next tap removes the status.",

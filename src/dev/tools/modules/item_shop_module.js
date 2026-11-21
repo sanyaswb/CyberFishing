@@ -15,6 +15,7 @@ const CATEGORY_LABELS = Object.freeze({
   deliveryMethods: "Доставка",
   batteries: "Живлення",
   gasMasks: "Протигази",
+  gasFilters: "Фільтри протигаза",
   drinks: "Напої",
   devices: "Пристрої",
   builds: "Комплекти",

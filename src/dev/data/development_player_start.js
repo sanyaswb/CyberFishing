@@ -1,5 +1,6 @@
 // Spec 184 D6 (TK-377, owner Q1, Q2): what a new player starts with on dev.html — every test item (the starting set
-// before spec 184) plus 10 vodka bottles (one stack) and a gas mask; production starts with CONFIG.player's short set.
+// before spec 184) plus 10 vodka bottles (one stack), a gas mask and its filters (spec 185); production starts with
+// CONFIG.player's short set.
 // oneTimeGrants give the bottles and the mask once to a DEV save made before them (evenIfHeld: also when the save
 // already has some); a new DEV player has them in the set, so the grants are only marked. DEV composes it into
 // GameCompositionRoot (playerStart); production never reads this module.
@@ -75,10 +76,15 @@ export const DEVELOPMENT_PLAYER_START = Object.freeze({
     // Spec 184 Q1, Q2 (owner): «тільки в dev режимі 10 горілок, і 1 протигаз».
     { instanceId: "uuid-vodka", itemId: "vodka_bottle", quantity: 10 },
     { instanceId: "uuid-gas-mask", itemId: "gas_mask_basic", quantity: 1 },
+    // Spec 185 D10 (TK-381): two of each filter (a filter keeps its own time left once used).
+    { instanceId: "uuid-gas-filter-coal", itemId: "gas_filter_coal", quantity: 2 },
+    { instanceId: "uuid-gas-filter-ash", itemId: "gas_filter_ash", quantity: 2 },
   ],
 
   oneTimeGrants: [
     { id: "spec184-dev-vodka", itemId: "vodka_bottle", quantity: 10, evenIfHeld: true },
     { id: "spec184-dev-gas-mask", itemId: "gas_mask_basic", quantity: 1 },
+    { id: "spec185-dev-gas-filter-coal", itemId: "gas_filter_coal", quantity: 2 },
+    { id: "spec185-dev-gas-filter-ash", itemId: "gas_filter_ash", quantity: 2 },
   ],
 });

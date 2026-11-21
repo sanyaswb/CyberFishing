@@ -4,6 +4,7 @@ export const ITEM_ASSEMBLY_PROFILE_IDS = Object.freeze({
   HOOK: "hook_standard",
   BAIT_BOAT: "bait_boat",
   RADIO: "radio_receiver",
+  GAS_MASK: "gas_mask",
 });
 
 export const ITEM_ASSEMBLY_PROFILE_CONFIG = Object.freeze({
@@ -86,6 +87,20 @@ export const ITEM_ASSEMBLY_PROFILE_CONFIG = Object.freeze({
         id: "battery",
         acceptedTypes: Object.freeze(["battery"]),
         capacity: 1,
+        refillable: false,
+      }),
+    ]),
+  }),
+
+  // Spec 185 D2 (TK-381): two filters; the one with less time left filters first, the other waits (owner Q1).
+  [ITEM_ASSEMBLY_PROFILE_IDS.GAS_MASK]: Object.freeze({
+    id: ITEM_ASSEMBLY_PROFILE_IDS.GAS_MASK,
+    fallbackTypes: Object.freeze(["gas_mask"]),
+    slots: Object.freeze([
+      Object.freeze({
+        id: "filter",
+        acceptedTypes: Object.freeze(["gas_filter"]),
+        capacity: 2,
         refillable: false,
       }),
     ]),

@@ -188,6 +188,9 @@
 │  │  │  ├── float-day.webp
 │  │  │  ├── float-night--low.webp
 │  │  │  └── float-night.webp
+│  │  ├── gas-filters
+│  │  │  ├── gas-filter--1.svg
+│  │  │  └── gas-filter--2.svg
 │  │  ├── gas-masks
 │  │  │  └── gas-mask--1.svg
 │  │  ├── keepnet
@@ -237,6 +240,7 @@
 │     │  ├── chum.svg
 │     │  ├── drink.svg
 │     │  ├── float.svg
+│     │  ├── gas-filter.svg
 │     │  ├── gas-mask.svg
 │     │  ├── keepnet.svg
 │     │  ├── line.svg

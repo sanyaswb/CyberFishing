@@ -2,6 +2,11 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.52.42 - Gas mask filters and the mask's two filter cells (TK-381, spec 185)
+
+- Two gas mask filters: «Фільтр ФПК-1 „Вугільний“» and «Фільтр ФПК-1 „Попіл“», 3 minutes each (same parameters), with simple icons. The gas mask now has two filter cells: a tap on the mask opens its editor, a filter goes into a free cell, «Спорядити» puts the mask on. Gas mask quality is 3.
+- dev.html: two of each filter in the DEV start and once in an existing DEV save; DEV shop «Фільтри протигаза». The filters do not act yet — the next stage makes the mask protect only through them.
+
 ## v0.52.41 - God mode: a hold removes the vodka too (TK-380.1)
 
 - dev.html, God mode «GOD зняти ефект утриманням»: a hold now arms any effect with a timer, the vodka (its drunkenness) included — before it took debuffs only, and no debuff in the game has a timer. Effects held by their source (the location's radiation, the gas mask) stay.
@@ -43,8 +48,3 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 
 - A new player in the game starts with the bamboo rod, the day float, a 15 m line, the basic hook and 15 oil worms (one on the hook) — nothing else. The bamboo rod without a reel takes 10 m of the line; the other 5 m lie in the backpack.
 - dev.html starts a new player with every test item plus 10 vodka (one stack) and a gas mask; a dev.html save from before gets the 10 bottles and the mask once.
-
-## v0.52.32 - A drink slot and a HUD drink button (TK-376)
-
-- A new «Напій» slot beside the gas mask takes the bottles as one stack; a tap on a bottle in the backpack puts it there, «Випити» is in the slot's editor.
-- While the slot holds a drink, a button left of the item selector shows it and how many are left; a tap drinks one, also while fishing. The last bottle hides the button.

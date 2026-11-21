@@ -409,9 +409,33 @@ function checkDrinkUse() {
   const mask = inventory.grantCatalogItem("gas_mask_basic");
   assert.equal(mask.success, true, "the DEV shop can grant the gas mask");
   const maskItem = items(inventory).find((item) => item.itemId === "gas_mask_basic");
+  // Spec 185 D2 (TK-381): the gas mask is an assembly with two filter cells, as the radio with its battery: a tap opens
+  // its editor, a filter tapped there takes a free cell, «Спорядити» puts the mask into its slot.
   assert.equal(inventory.dispatchInventoryAction({ type: actions.INVENTORY_ITEM_ACTIVATE, instanceId: maskItem.instanceId })
     .success, true);
-  assert.equal(inventory.getEquipped().gasMask?.itemId, "gas_mask_basic", "a tap puts the gas mask into its slot");
+  assert.equal(facade.getViewModel().panel?.assembly?.rootInstanceId, maskItem.instanceId, "a tap opens the gas mask's editor");
+  for (const itemId of ["gas_filter_coal", "gas_filter_ash"]) {
+    const filter = inventory.grantCatalogItem(itemId);
+    assert.equal(filter.success, true, `the DEV shop grants ${itemId}`);
+    // With two free cells the first tap asks for a cell (requiresSocketChoice), the next one fills it.
+    const attached = () => (facade.getViewModel().panel?.assembly?.sockets ?? [])
+      .some((socket) => socket.item?.instanceId === filter.instanceId);
+    for (let tap = 0; tap < 2 && !attached(); tap += 1) {
+      assert.equal(inventory.dispatchInventoryAction({ type: actions.INVENTORY_ITEM_ACTIVATE, instanceId: filter.instanceId })
+        .success, true, `${itemId} goes into a free filter cell`);
+    }
+    assert.ok(attached(), `${itemId} is in a filter cell`);
+  }
+  const sockets = facade.getViewModel().panel?.assembly?.sockets ?? [];
+  assert.equal(JSON.stringify(sockets.map((socket) => [socket.socketId, socket.label, socket.item?.itemId])),
+    JSON.stringify([["filter[0]", "Фільтр 1", "gas_filter_coal"], ["filter[1]", "Фільтр 2", "gas_filter_ash"]]),
+    "both filters sit in the mask's two cells «Фільтр 1», «Фільтр 2»");
+  assert.equal(inventory.dispatchInventoryAction({ type: actions.ASSEMBLY_EQUIP, rootInstanceId: maskItem.instanceId }).success, true);
+  assert.equal(inventory.getEquipped().gasMask?.itemId, "gas_mask_basic", "«Спорядити» puts the gas mask into its slot");
+  assert.equal(JSON.stringify(inventory.getEquipped().gasMaskFilters.map((filter) => filter?.itemId)),
+    JSON.stringify(["gas_filter_coal", "gas_filter_ash"]), "the equipment read model lists the mask's filters by cell");
+  assert.equal(JSON.stringify(inventory.getEquipped().gasMaskFilters.map((filter) => filter.effectiveStats.capacityUnits)),
+    JSON.stringify([180, 180]), "each filter: 180 s");
   const granted = inventory.grantCatalogItem("vodka_bottle");
   assert.equal(granted.success, true, "the DEV shop can grant the vodka");
   const bottleId = granted.instanceId;

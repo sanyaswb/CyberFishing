@@ -10,6 +10,29 @@
  * rarityProfile призначається дизайнером і не виводиться з gameplayStats.
  */
 
+// Spec 185 D1 (TK-381): a gas mask filter. capacityUnits — its seconds of filtering (the charge capability of
+// «protection.gas_filter», 1 unit a second, spent only while it filters: on the location under radiation or an emission);
+// radiationResistance — the share of the radiation's hiss it takes away (0.5: half stays); emissionResistance — the share
+// of the emission's darkening and blur (1: none stays).
+function gasFilter(id, name, iconAsset) {
+  return {
+    id,
+    name,
+    itemType: "gas_filter",
+    iconAsset,
+    rarityProfile: { mode: "authored", tier: 1, maxTier: 5, isUnique: false },
+    progressionProfile: { groupId: "protection.gas_filter" },
+    displayStats: {
+      capacityUnits: "Час дії, с:",
+    },
+    gameplayStats: {
+      capacityUnits: 180,
+      radiationResistance: 0.5,
+      emissionResistance: 1,
+    },
+  };
+}
+
 // TK-249: one pack of the basic carp mix; every pack is a separate copy of the same data (DEV edits stay per item).
 function carpMixBasicPack(id, packSize) {
   return {
@@ -1405,15 +1428,24 @@ export const ITEM_DB = {
       iconAsset: "items.gas-masks.gas-mask--1",
       rarityProfile: { mode: "authored", tier: 1, maxTier: 5, isUnique: false },
       progressionProfile: { groupId: "protection.gas_mask" },
+      // Spec 185 D2 (TK-381): two filter slots; it protects only with a filter that has time left.
+      assemblyProfileId: "gas_mask",
       displayStats: {
         durability: "Стан: %",
       },
-      // Spec 179 D10 (TK-370, owner Q16): the gas mask wears with the radiation; broken (0) it does not protect.
+      // Spec 179 D10 (TK-370, owner Q16): broken (0) it does not protect. Spec 185 D2 (owner): quality 3.
       gameplayStats: {
         durability: 100,
-        quality: 5,
+        quality: 3,
       },
     },
+  },
+
+  // Spec 185 D1 (TK-381, owner: «Параметри фільтрів зроби поки що однакові тобто це один об'єкт»): two filters with one
+  // set of parameters (gasFilter: each item gets its own copy, so a DEV edit stays per item, like the chum packs).
+  gasFilters: {
+    gas_filter_coal: gasFilter("gas_filter_coal", "Фільтр ФПК-1 «Вугільний»", "items.gas-filters.gas-filter--1"),
+    gas_filter_ash: gasFilter("gas_filter_ash", "Фільтр ФПК-1 «Попіл»", "items.gas-filters.gas-filter--2"),
   },
 
   // Spec 179 stage F (TK-340), spec 181: drinks used from the backpack («Випити»). use.statusId starts the player's status

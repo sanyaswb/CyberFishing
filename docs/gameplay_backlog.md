@@ -20,6 +20,17 @@ Notes: suspected owner module, related checks.
 
 ## Open
 
+### G-149 The gas mask works through its filters and wears by its quality (P2, in progress: spec 185)
+Found: 2026-11-21, owner (spec 185).
+Reproduce: wear the gas mask on the location under radiation or an emission, with none, one or two filters.
+Expected: the mask holds two filters (3 min each); one filters at a time (less time left first), only while the
+radiation is above 0 or an emission is on; a filter takes away all of the emission's darkening and blur and half of the
+radiation's hiss; without a filter with time left — no protection and no cast during an emission. The mask (quality 3)
+wears from 100 to 0 in 5 min of that use; cracks at 80/60/40/20/0 %; at 0 the effects come back over ~10 s and the
+filters stop. Filters change one at a time under radiation, also while fishing.
+Actual (before): a gas mask in its slot protected fully and for ever (quality 5, worn only by the general radiation wear).
+Notes: spec 185 stages TK-381…TK-385; TK-381 (v0.52.42) — the filters, the mask's two cells, quality 3.
+
 ### G-148 Vodka lasts by the bottles and sobers up by steps (P2, done in v0.52.37; owner acceptance pending)
 Found: 2026-11-20, owner (TK-378).
 Reproduce: drink 1, 2 or 5 bottles; wait and watch the drunk effects and the badge's time.

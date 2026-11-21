@@ -60,6 +60,11 @@ export class EquipmentReadModelFactory {
     const deliveryBattery = delivery ? this.#child(this.#instanceId(delivery), "battery", 0) : null;
     // Spec 142: the radio receiver and its battery.
     const radioBattery = radio ? this.#child(this.#instanceId(radio), "battery", 0) : null;
+    // Spec 185 D2 (TK-381): the gas mask's two filters, by their cell (null — empty).
+    const gasMaskId = this.#instanceId(gasMask);
+    const gasMaskFilters = gasMask
+      ? [this.#child(gasMaskId, "filter", 0), this.#child(gasMaskId, "filter", 1)]
+      : [];
 
     return Object.freeze({
       rod,
@@ -80,6 +85,7 @@ export class EquipmentReadModelFactory {
       radio,
       radioBattery,
       gasMask,
+      gasMaskFilters: Object.freeze(gasMaskFilters),
       drink,
     });
   }

@@ -15,6 +15,7 @@ const ICONS = Object.freeze({
   battery: "ui.inventory.battery",
   delivery: "ui.inventory.boat",
   gasMask: "ui.inventory.gas-mask",
+  filter: "ui.inventory.gas-filter",
   drink: "ui.inventory.drink",
   radio: "ui.inventory.radio",
   bait: "ui.inventory.bait",

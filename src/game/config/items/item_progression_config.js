@@ -67,6 +67,18 @@ export const ITEM_PROGRESSION_CONFIG = (() => {
       "protection.gas_mask": {
         condition: condition("EmissionExposure"),
       },
+      // Spec 185 D3 (TK-381): a filter's time left — the battery's bounded charge (capacityUnits seconds, 1 unit/s);
+      // a removed filter keeps it.
+      "protection.gas_filter": {
+        charge: {
+          instanceStatePath: "chargeState.percent",
+          defaultCurrent: 100,
+          minimum: 0,
+          maximum: 100,
+          metricLabel: "Ресурс фільтра",
+          gameplayConsumer: "GasMaskFilterUse",
+        },
+      },
       "consumable.drink": {}, // Spec 179 stage F: drunk whole; no condition or upgrade metric.
       // Spec 143: a battery's charge only falls while a device consumes it (DevicePowerService).
       "power.battery": {
