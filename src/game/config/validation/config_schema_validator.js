@@ -1664,6 +1664,7 @@ export class ConfigSchemaValidator {
     if (!cfg || typeof cfg !== "object") { this.#error(`CONFIG.${path}`, "missing ash config"); return; }
     this.#requireParameterLabel(path);
     this.#requireBooleanWithLabel(`${path}.enabled`, cfg.enabled);
+    this.#requireBooleanWithLabel(`${path}.followsWind`, cfg.followsWind);
     this.#requireRangeNumbers(path, cfg, ASH_SETTINGS_RANGES.numbers);
     this.#validateStrengthRanges(path, cfg.strength, ASH_SETTINGS_RANGES.strength);
     this.#requireRangePairs(path, cfg, ASH_SETTINGS_RANGES.pairs);

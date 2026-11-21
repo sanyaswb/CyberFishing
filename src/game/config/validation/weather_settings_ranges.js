@@ -20,7 +20,7 @@ export const WIND_SETTINGS_RANGES = Object.freeze({
 });
 
 export const ASH_SETTINGS_RANGES = Object.freeze({
-  numbers: Object.freeze([["flicker", 0, 1], ["fadeShare", 0, 0.5]]),
+  numbers: Object.freeze([["flicker", 0, 1], ["fadeShare", 0, 0.5], ["windFollowPerSec", 0, 60]]),
   pairs: Object.freeze([["sizePx", 0, 200, true], ["lifeSec", 0.1, 60, true]]),
   strength: Object.freeze([["maxParticles", 0, 2000], ["opacity", 0, 1], ["riseSpeedPx", -500, 500], ["wanderPx", 0, 500]]),
   colors: Object.freeze(["hotColor", "coolColor"]),

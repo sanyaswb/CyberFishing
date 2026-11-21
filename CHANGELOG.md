@@ -2,6 +2,11 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.52.38 - The fiery ash flies with the wind (TK-379)
+
+- The emission's embers drift with the wind: its direction and strength set where and how fast they fly, a gust carries them faster, and they turn smoothly when the wind changes. Nearer embers fly faster.
+- A separate switch: DevTools «ПОГОДА» → «ПОПІЛ» → «Вигляд (загальний)» → «Попіл летить за вітром»; the drift speed is «ВІТЕР» → «Знос попелу, px/с» (now 90).
+
 ## v0.52.37 - Sobering up by steps (TK-378)
 
 - Vodka lasts by the bottles: 1 bottle — 1 minute, 2 — 3, 3 — 5, 4 — 7, 5 bottles — 10 minutes; another bottle raises the level by one from the level now.
@@ -46,8 +51,3 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 - Each bottle of vodka adds to the effect (up to 5) and starts its 10 minutes again; all of it ends 10 minutes after the last bottle.
 - Under radiation the vodka protects from the emission's screen effects: 30 % for one bottle, 45 % for two, 60 % for three or more.
 - Without radiation the player gets drunk: the world blurs and the view sways slowly in a figure of eight, stronger with each bottle. When radiation comes, the drunkenness fades smoothly and the vodka works as protection; after the radiation it comes back. The HUD stays sharp and still. The values are in DevTools «Конфіг» → canvas → intoxication.
-
-## v0.52.28 - The emission shakes the view (TK-372)
-
-- During an emission the view shakes. Early on there are rare light jolts, more often and stronger as the emission grows. At the peak the shake is constant and its strength keeps swinging. The HUD stays still, the gas mask does not stop it, and in the house there is none.
-- The shake moves the scene's picture (a CSS move of its canvas, slightly enlarged so the edges stay hidden), so the scene is not drawn again for it. Its values are in DevTools «ПОГОДА» → «ВИКИД» → «Тряска».

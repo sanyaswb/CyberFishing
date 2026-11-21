@@ -16,7 +16,8 @@
 //   the edge stays soft). With the switch off (world.ashZoned false) the whole screen is the ash's.
 // Spec 180 (TK-326): `settings` is the ash's look already resolved at the emission's strength (WeatherLookResolver:
 // count, opacity, rise and wander between their ends at 0 and 100); the wind's drift is the wind's
-// (`weatherSettings.wind.ashDriftPx`).
+// (`weatherSettings.wind.ashDriftPx`). TK-379: the drift follows the wind's direction, strength and gusts (like the
+// rain's slant) and eases toward it (`settings.windFollowPerSec`); `settings.followsWind` false turns it off.
 // Drawing (docs/rendering.md 16, 22, 23): one ParticleContainer, one texture, additive blend, no filter, a fixed pool
 // sized by the settings (it grows only when the settings grow); unused particles have alpha 0. position, vertex
 // (scale) and color (tint, alpha) change every frame, so they are dynamic (Pixi 8 ParticleBuffer.update). The scene
@@ -52,6 +53,8 @@ export class PixiAshRenderer {
   #alive = new Uint8Array(0);
   #count = 0;
   #time = 0;
+  // TK-379: the wind's drift now, px/s (eases toward the wind).
+  #windDrift = 0;
   #lastNow = null;
   #visible = false;
   #stepMs = 0;
@@ -110,7 +113,8 @@ export class PixiAshRenderer {
     this.#hotValue = this.#hot.read(settings?.hotColor);
     this.#coolValue = this.#cool.read(settings?.coolColor);
     this.#time = (this.#time + elapsed) % 3600;
-    this.#updateEmbers(elapsed, target, settings, world, viewWidth, viewHeight, finiteOr(weatherSettings?.wind?.ashDriftPx, 40));
+    this.#followWind(elapsed, settings, world.weather, weatherSettings?.wind);
+    this.#updateEmbers(elapsed, target, settings, world, viewWidth, viewHeight);
     this.#visible = true;
     this.#container.visible = true;
     this.#stepMs = performance.now() - started;
@@ -122,7 +126,25 @@ export class PixiAshRenderer {
     this.#glow.destroy(true);
   }
 
-  #updateEmbers(elapsed, target, settings, world, viewWidth, viewHeight, windDrift) {
+  // TK-379: the wind's drift (px/s at full depth) — direction × (strength + gust × gustSlantShare) × ashDriftPx, as the
+  // rain's slant reads the wind; it catches up with the wind at windFollowPerSec (faster in a gust, gustFollowPerSec),
+  // so the embers turn with the wind instead of jumping. followsWind false: no drift (it eases back to calm).
+  #followWind(elapsed, settings, weather, wind) {
+    const gust = clampUnit(finiteOr(weather?.windGust, 0));
+    let target = 0;
+    if (settings?.followsWind !== false) {
+      const direction = Math.max(-1, Math.min(1, finiteOr(weather?.windDirection, 0)));
+      const strength = clampUnit(finiteOr(weather?.windStrength, Math.abs(direction)));
+      target = direction * (strength + gust * Math.max(0, finiteOr(wind?.gustSlantShare, 1.2))) *
+        finiteOr(wind?.ashDriftPx, 90);
+    }
+    const follow = Math.max(0, finiteOr(settings?.windFollowPerSec, 1.5)) +
+      Math.min(1, gust * 3) * Math.max(0, finiteOr(wind?.gustFollowPerSec, 6));
+    this.#windDrift += (target - this.#windDrift) * Math.min(1, elapsed * follow);
+  }
+
+  #updateEmbers(elapsed, target, settings, world, viewWidth, viewHeight) {
+    const windDrift = this.#windDrift;
     const sizeMin = Math.max(0, finiteOr(settings?.sizePx?.[0], 2));
     const sizeMax = Math.max(sizeMin, finiteOr(settings?.sizePx?.[1], 9));
     const lifeMin = Math.max(0.1, finiteOr(settings?.lifeSec?.[0], 3));
@@ -132,8 +154,6 @@ export class PixiAshRenderer {
     const opacity = clampUnit(finiteOr(settings?.opacity, 0.85));
     const flicker = clampUnit(finiteOr(settings?.flicker, 0.35));
     const fade = clampUnit(finiteOr(settings?.fadeShare, 0.25));
-    const wind = Math.max(-1, Math.min(1, finiteOr(world.weather?.windDirection, 0))) *
-      clampUnit(finiteOr(world.weather?.windStrength, Math.abs(finiteOr(world.weather?.windDirection, 0))));
     const view = this.#view;
     const toU = 1 / Math.max(1, view.width);
     const toV = 1 / Math.max(1, view.height);
@@ -170,7 +190,7 @@ export class PixiAshRenderer {
       // Two slow sines per axis with the ember's own frequency and phase: smooth, never repeating in step with others.
       const wanderX = Math.sin(t * freq + phase) + 0.6 * Math.sin(t * freq * 1.73 + phase * 2.1);
       const wanderY = Math.cos(t * freq * 0.83 + phase * 1.3) + 0.6 * Math.sin(t * freq * 2.27 + phase * 0.7);
-      const speedX = (wind * windDrift + wander * wanderX) * depth;
+      const speedX = (windDrift + wander * wanderX) * depth;
       const speedY = (-rise + wander * 0.7 * wanderY) * depth;
       this.#u[index] = u + speedX * elapsed * toU;
       this.#v[index] = v + speedY * elapsed * toV;

@@ -8,6 +8,7 @@ export const ASH_SETTINGS = {
   "enabled": true,
   "fadeShare": 0.25,
   "flicker": 0.35,
+  "followsWind": true,
   "hotColor": "#ffd27a",
   "lifeSec": [
     3,
@@ -34,5 +35,6 @@ export const ASH_SETTINGS = {
       12,
       24
     ]
-  }
+  },
+  "windFollowPerSec": 1.5
 };

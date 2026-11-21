@@ -1247,6 +1247,37 @@ async function checkAsh() {
   for (let index = 0; index < 60 * 10; index += 1) zonedFrame([{ x: 2000, y: 0, width: 100, height: 100 }]);
   assert.equal(zonedAsh.status.embers, 0, "no ash zone on screen: no ash");
   zonedAsh.dispose();
+
+  // TK-379: the embers drift with the wind — its direction, strength and gusts — once the drift has caught up with it;
+  // followsWind off: no drift. Mean step of the shown embers over one 0.1 s frame (their own wander averages out).
+  const windDrift = (weather, look = looks.resolve("ash", 1)) => {
+    let windSeed = 7;
+    const windAsh = new PixiAshRenderer({ pixi, documentTarget,
+      random: () => { windSeed = (Math.imul(windSeed, 1664525) + 1013904223) >>> 0; return windSeed / 4294967296; } });
+    const windStage = new pixi.Container();
+    windAsh.mount(windStage);
+    const [windEmbers] = windStage.children;
+    const windSettings = { wind: { ashDriftPx: 90, gustSlantShare: 1.2, gustFollowPerSec: 6 } };
+    let windNow = 1000;
+    const step = (sec) => { windNow += sec * 1000;
+      windAsh.update(world({ emission: 1, windGust: 0, ...weather }), 1200, 700, windNow, look, windSettings); };
+    for (let index = 0; index < 180; index += 1) step(1 / 60);
+    const xs = windEmbers.particleChildren.map((particle) => [particle.alpha > 0, particle.x]);
+    step(0.1);
+    const dxs = windEmbers.particleChildren.map((particle, index) => [xs[index][0] && particle.alpha > 0, particle.x - xs[index][1]])
+      .filter(([shown]) => shown).map(([, dx]) => dx);
+    windAsh.dispose();
+    return dxs.reduce((sum, dx) => sum + dx, 0) / Math.max(1, dxs.length);
+  };
+  const calm = windDrift({ windDirection: 0, windStrength: 0 });
+  const right = windDrift({ windDirection: 1, windStrength: 0.6 });
+  const left = windDrift({ windDirection: -1, windStrength: 0.6 });
+  const gusty = windDrift({ windDirection: 1, windStrength: 0.6, windGust: 1 });
+  const ignored = windDrift({ windDirection: 1, windStrength: 0.6 }, { ...looks.resolve("ash", 1), followsWind: false });
+  assert.ok(Math.abs(calm) < 1, `calm: no drift (${calm.toFixed(2)} px)`);
+  assert.ok(right > 2 && left < -2, `the wind carries the embers its way (${right.toFixed(2)}, ${left.toFixed(2)} px)`);
+  assert.ok(gusty > right * 1.8, `a gust carries them faster (${gusty.toFixed(2)} vs ${right.toFixed(2)} px)`);
+  assert.ok(Math.abs(ignored) < 1, `followsWind off: the wind does not move the ash (${ignored.toFixed(2)} px)`);
 }
 
 async function checkRain() {

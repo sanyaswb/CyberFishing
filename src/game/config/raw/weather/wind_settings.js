@@ -3,7 +3,7 @@
 // location's (MAP_DB.<id>.weather.wind.gust.chancePerSec); the rain's effect on the wind is under `rain`. DevTools
 // «ПОГОДА» → «ВІТЕР» edits them live. `npm run apply:weather` rewrites this whole file in this form (spec 180 stage D).
 export const WIND_SETTINGS = {
-  "ashDriftPx": 45,
+  "ashDriftPx": 90,
   "gust": {
     "attackShare": 0.25,
     "deltaRange": [
