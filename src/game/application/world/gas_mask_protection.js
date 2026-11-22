@@ -36,13 +36,18 @@ export class GasMaskProtection {
   #activeFilterId = null;
   // The status's own modifiers, changed in place (PlayerStatusEffects reads them with every modifier() call).
   #modifiers = { emission: { vignette: 1, blur: 1, blurRate: 1 }, radiation: { grain: 1 } };
+  // TK-382.1: the requests reused every frame (the filter's use; the status's hold while the effects come back).
+  #use = { deviceId: null, batteryInstanceId: null, unitsPerSecond: 1, seconds: 0 };
+  #holdOptions = { source: "gasMask", modifiers: this.#modifiers };
 
   // getEquipped: () => the equipment read model ({ gasMask, gasMaskFilters }); power: DevicePowerService ({ consume });
   // statuses: PlayerStatusEffects ({ hold }); inventory: { wearItem(instanceId, points) } (PlayerInventory);
   // getSettings: () => CONFIG.emission.gasMask.
   constructor({ getEquipped, power, statuses, inventory, getSettings, statusId = "gasMask" }) {
     if (typeof getEquipped !== "function") throw new TypeError("GasMaskProtection requires getEquipped");
-    if (typeof power?.consume !== "function") throw new TypeError("GasMaskProtection requires power");
+    if (typeof power?.consume !== "function" || typeof power?.reading !== "function") {
+      throw new TypeError("GasMaskProtection requires power");
+    }
     if (typeof statuses?.hold !== "function") throw new TypeError("GasMaskProtection requires statuses");
     if (typeof inventory?.wearItem !== "function") throw new TypeError("GasMaskProtection requires inventory");
     if (typeof getSettings !== "function") throw new TypeError("GasMaskProtection requires getSettings");
@@ -73,8 +78,11 @@ export class GasMaskProtection {
     this.#activeFilterId = active?.instanceId ?? null;
     const settings = this.#getSettings();
     if (active && filtering && dt > 0) {
-      this.#power.consume({ deviceId: mask.instanceId, batteryInstanceId: active.instanceId, unitsPerSecond: 1,
-        seconds: dt / 1000 });
+      const use = this.#use;
+      use.deviceId = mask.instanceId;
+      use.batteryInstanceId = active.instanceId;
+      use.seconds = dt / 1000;
+      this.#power.consume(use);
       this.#wear(mask, dt, settings);
     }
     if (active) {
@@ -175,9 +183,9 @@ export class GasMaskProtection {
     return active;
   }
 
-  // A zero-second use returns the filter's reading with its pending units, without spending anything.
+  // The filter's reading with its pending units, spending nothing (TK-382.1: no request object per call).
   #percent(filter) {
-    return finiteOr(this.#power.consume({ batteryInstanceId: filter.instanceId, unitsPerSecond: 1, seconds: 0 })?.percent, 0);
+    return finiteOr(this.#power.reading(filter.instanceId)?.percent, 0);
   }
 
   #apply(protection) {
@@ -191,6 +199,6 @@ export class GasMaskProtection {
     modifiers.emission.vignette = emission;
     modifiers.emission.blur = emission;
     modifiers.radiation.grain = radiation;
-    this.#statuses.hold(this.#statusId, protection > 0, { source: "gasMask", modifiers });
+    this.#statuses.hold(this.#statusId, protection > 0, this.#holdOptions);
   }
 }

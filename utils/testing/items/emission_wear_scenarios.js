@@ -166,7 +166,8 @@ module.exports = async function checkEmissionWear() {
   const held = [];
   const statuses = { hold: (id, on) => held.push([id, on]), modifier: () => 1, has: () => false };
   let equipped = { gasMask: mask(30), gasMaskFilters: [filter, null] };
-  const power = { consume: () => ({ hasBattery: true, percent: 100, empty: false }) };
+  const full = { hasBattery: true, percent: 100, empty: false };
+  const power = { consume: () => full, reading: () => full };
   const gasMask = new GasMaskProtection({ getEquipped: () => equipped, power, statuses, inventory: { wearItem: () => null },
     getSettings: () => ({ breakFadeSec: 0 }) });
   gasMask.update(16, true);

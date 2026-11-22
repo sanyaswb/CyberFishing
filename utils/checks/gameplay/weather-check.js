@@ -1989,6 +1989,16 @@ const step = (model, seconds, clock = null, dt = 0.1) => {
   runMask(20, true);
   assert.equal(Math.round(left("h")), rest, "the cracked mask stops the other filter, which keeps its rest");
   assert.ok(rest > 0 && left("g") === 0, "the first filter ran out after 3 minutes, the second one had taken over");
+  // TK-382.1 (review): the per-frame path allocates no request — one reused object goes to every use, and the filters'
+  // readings do not go through consume at all.
+  const requests = new Set();
+  let consumes = 0;
+  const consume = power.consume.bind(power);
+  power.consume = (request) => { consumes += 1; requests.add(request); return consume(request); };
+  masked([filter("k", 100), filter("l", 100)]);
+  runMask(2, true);
+  power.consume = consume;
+  assert.deepEqual([requests.size, consumes], [1, 2 * fps], "one reused request, one use per frame, no reads through consume");
   gasMask.dispose();
   // The stacking rules on their own descriptions: max keeps the longer time, add stacks up to maxStacks (the share once
   // per stack); a DevTools edit of a description reaches the next apply and the modifiers at once.

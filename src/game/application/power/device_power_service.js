@@ -41,6 +41,12 @@ export class DevicePowerService {
     return this.#current(batteryInstanceId);
   }
 
+  // TK-382.1: the reading with its pending units, spending nothing and reading the inventory only once per battery (the
+  // per-frame path of a device that checks its charge: the gas mask's filters).
+  reading(batteryInstanceId) {
+    return this.#current(batteryInstanceId);
+  }
+
   // The reading over the last stored charge: the per-frame path, no inventory read while the charge is known.
   #current(batteryInstanceId) {
     const reading = this.#reading(batteryInstanceId);

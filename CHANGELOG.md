@@ -2,6 +2,10 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.52.49 - Review: the gas mask's per-frame check allocates nothing (TK-382.1)
+
+- No change in play: the gas mask's check every frame no longer creates temporary objects (less garbage collection while a mask is worn).
+
 ## v0.52.48 - Review: browsing the inventory under radiation saves nothing (TK-385.1)
 
 - Under radiation with a gas mask on (and while the bait boat is on the water) opening the inventory, choosing a section, a filter or going back no longer writes the whole save each time; only real changes are saved.
@@ -40,7 +44,3 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 
 - dev.html: with any active effect (vodka, a gas mask in its slot, radiation) DevTools stayed empty until a reload. Fixed: the «СТАТУСИ» section reads the level again, and every page draws.
 - If one DevTools section ever fails to draw, it now shows the error in its own page and the rest of DevTools keeps working.
-
-## v0.52.39 - DEV God mode: remove a debuff by holding its badge (TK-380)
-
-- dev.html only, with God mode «GOD зняти дебаф утриманням» on (DevTools → God mode): hold a debuff's round badge in the HUD for half a second — a cross appears in its middle and its time does not open; the next tap removes the debuff. A short tap shows the time as before. Debuffs with a timer only.
