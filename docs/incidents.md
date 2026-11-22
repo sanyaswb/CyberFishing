@@ -42,9 +42,31 @@ rule as something the next change can follow.
 | R27 | Movement on a masked area is tested at the point it ends on, not only per axis: a diagonal step can pass both axis tests and cross a corner of the mask. An entity that is already outside its area must still be able to come back. A check of such an area runs the real mask of a location (its stairs), not a rectangle. | I-27 |
 | R26 | A DevTools control that shows a live state (an on/off switch of a process that also starts and ends by itself) follows that state while the panel is open, not only the redraw caused by another control: a cheap comparison on each live update, a redraw only on change. A check changes the state without touching a control and asserts the switch at once. | I-26 |
 | R25 | A check that compares a filtered list with the list it came from keeps each item's own index (map to [value, index] before filtering); comparing by the filtered position mixes items up and can pass or fail by luck. | I-25 |
+| R30 | A background write (a device's charge, a wear, a timer's state) touches only what reads it: an announcement builds no view model nobody reads, and a closed window renders nothing. A check counts the view-model builds of a background write. A guard that wraps actions in a transaction leaves out the ones that only change what is shown (a commit saves the whole inventory). | I-30 |
 | R29 | A module that takes a narrowed port is checked with that port, built by the same function production uses — never with the whole object behind it. A new call in the module then fails its check when the port lacks it. One DevTools section that throws never empties the panel: each module draws in isolation and shows its error in its page. | I-29 |
 
 <a id="i-25"></a>
+
+## I-30 · 2026-11-23 · spec 143 … v0.52.46: every background inventory write rebuilt the whole inventory (TK-386)
+
+- **Seen:** the review of spec 185 (owner: «зверни увагу на оптимізацію»), measured in Node on the real inventory
+  composition (DEV start): one write of the gas mask's wear took ~7–8 ms on a PC, of it the save 0.05 ms; under
+  radiation with the mask ~23 such writes a minute (the filter's time and the mask's wear every 5 s), plus the
+  radiation's general wear and the radio's battery — a frame hitch every 1.5–2.5 s, several times longer on a phone.
+- **Cause:** `InventoryFacade.notify` (`inventory_facade.js`) built the full inventory view model (every card's
+  parameters) for every change and handed it to its listeners; `InventoryUI.#handleFacadeNotification` rendered it
+  into the DOM even with the window closed. Background writers (`drainBattery`, `applyRadiationWear`, `wearItem`) go
+  through that notify. Pre-existing since the battery (spec 143) and the wear (TK-370); spec 185 doubled the writers.
+  Separately, TK-385's guard wrapped every inventory action under radiation in a transaction, whose commit saves the
+  whole inventory — opening it or choosing a section wrote the save (the boat-on-water guard did the same).
+- **Fix (v0.52.47, v0.52.48):** `notify` hands a payload whose view model is built only when a listener reads it
+  (once); a closed inventory skips the render (it renders on open, as TK-213 already did at the start). The guards do
+  not wrap view-only actions. A write now takes ~1.6 ms (the transaction's snapshot, the save's mapping and the
+  equipment model), with no DOM work while closed.
+- **Rule R30:** a background write touches only what reads it; view-only actions skip guarding transactions.
+- **Check:** `player-inventory` (a background write builds no view model without a reader, one build with one;
+  under radiation and with the boat on the water opening, sections, filters and back save nothing), `inventory-ui`
+  (a notification to the closed inventory reads no view model and renders nothing) — fail on the old code.
 
 ## I-29 · 2026-11-21 · v0.52.37–0.52.39: after a bottle of vodka DevTools stayed empty (TK-378.1)
 

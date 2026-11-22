@@ -257,6 +257,8 @@ function checkLineCapacityContext() {
   fight = { lineInstanceId: lineId, hasReel: true, remainingMeters: 12 };
   lineContexts.clear();
   inventory.refreshItemData();
+  // TK-386: the view is built by its reader (the open inventory), not by every notification.
+  inventory.inventoryFacade.getViewModel();
   inventory.getEquipped();
   assert.deepEqual(lineContexts.get(lineId)?.activeState, fight, "during a fight the live line state reaches the view");
   fight = null;
@@ -608,9 +610,30 @@ function checkGasMaskFilterSwap() {
   assert.equal(JSON.stringify(filled()), JSON.stringify([null, null]), "the mask may stand without filters");
 }
 
+// TK-386 (review): a background write (the gas mask's wear here; a battery's charge and the radiation's wear go the
+// same way) with nobody reading the view model builds none — the full inventory view model costs ~7 ms; a listener that
+// reads it gets one build, however many times it reads.
+function checkBackgroundWriteBuildsNoViewModel() {
+  const { inventory } = compose();
+  const facade = inventory.inventoryFacade;
+  const mask = facade.getViewModel().inventory.items.find((item) => item.itemId === "gas_mask_basic").instanceId;
+  let builds = 0;
+  const build = facade.getViewModel.bind(facade);
+  facade.getViewModel = () => { builds += 1; return build(); };
+  let changes = 0;
+  inventory.onInventoryChanged(() => { changes += 1; });
+  inventory.wearItem(mask, 1);
+  assert.deepEqual([changes, builds], [1, 0], "a background write announces the change and builds no view model");
+  const unsubscribe = facade.subscribe((notification) => { notification.viewModel; notification.viewModel; });
+  inventory.wearItem(mask, 1);
+  assert.equal(builds, 1, "a reader of the view model gets one build per change");
+  unsubscribe();
+}
+
 checkFreshStart();
 checkDrinkUse();
 checkGasMaskFilterSwap();
+checkBackgroundWriteBuildsNoViewModel();
 checkDrinkStacks();
 checkDrinkSlot();
 checkHandChumStack();

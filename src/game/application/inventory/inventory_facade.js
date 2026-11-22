@@ -75,13 +75,20 @@ export class InventoryFacade {
     return () => this.#listeners.delete(listener);
   }
 
+  // TK-386: the listeners get { viewModel, warning } with the view model built only when one of them reads it (once): a
+  // background write (a battery's charge, the radiation's wear, a gas mask's filter) with the inventory closed builds
+  // nothing — the full view model is ~7 ms of cards and parameters.
   notify({ warning = null } = {}) {
-    const viewModel = this.getViewModel();
-    const payload = warning
-      ? Object.freeze({ viewModel, warning })
-      : viewModel;
+    let viewModel = null;
+    const facade = this;
+    const payload = Object.freeze({
+      get viewModel() {
+        viewModel ??= facade.getViewModel();
+        return viewModel;
+      },
+      warning,
+    });
     for (const listener of [...this.#listeners]) listener(payload);
-    return viewModel;
   }
 
   handleRodRetrieved(context = {}) {

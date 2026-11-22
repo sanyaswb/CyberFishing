@@ -1,6 +1,7 @@
 // Release notes, newest first (unshift with every patch). DEV only: no production code reads them, and in the start's
 // bundle they cost 13 KB gzip (spec 160). dev.html publishes them with the version: window.CYBER_FISHING_PROJECT_VERSION.notes.
 export const PROJECT_RELEASE_NOTES = Object.freeze([
+  "Review TK-386 (I-30, R30): InventoryFacade.notify builds the view model only for a reader (lazy payload); InventoryUI does not render while closed; write ~7.3 → ~1.6 ms (Node, DEV start).",
   "Spec 185 TK-385: the tackle lock decided in InventoryCommandService (gas mask filter actions pass, LockedEquipmentSignature rolls back anything else); setFilterSwapRestriction — no action may leave the worn mask without a live filter under radiation or an emission.",
   "Spec 185 TK-384: GasMaskHudIndicator (condition level fill, gasMaskCrackStage cracks by crackAtPercent, unprotected fade, filter time on tap; written on inventory events only); #composeGasMask.",
   "Spec 185 TK-383: GasMaskProtection wears the mask 100 → 0 in wearSecPerQuality × baseQuality s while filtering; PlayerInventory.wearItem → ApplyItemWearService.wearOne every 5 s, at 0 and on flush; gas mask radiationImmunity 1.",

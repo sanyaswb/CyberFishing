@@ -785,6 +785,12 @@ class InventoryUiBehaviorCheck {
     ui.refreshWhenOpen();
     assert.strictEqual(viewModelReads, 0, "the closed inventory reads no view model");
     assert.strictEqual(this.#findAllByClass(ui.rootNode, "inventory-toggle").length, 0, "the closed inventory has no content");
+    // TK-386: a background change (a battery's charge, the radiation's wear, a gas mask's filter) notifies the closed
+    // inventory: it reads no view model (the facade builds it only for a reader) and renders nothing.
+    let lazyReads = 0;
+    subscriber(Object.freeze({ get viewModel() { lazyReads += 1; return currentView; }, warning: null }));
+    assert.strictEqual(lazyReads + viewModelReads, 0, "a notification to the closed inventory builds no view model");
+    assert.strictEqual(this.#findAllByClass(ui.rootNode, "inventory-toggle").length, 0, "and renders nothing");
     ui.open();
     assert(viewModelReads > 0, "open() renders the inventory");
     const readsAfterOpen = viewModelReads;

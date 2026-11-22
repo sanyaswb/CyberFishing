@@ -894,6 +894,9 @@ export class InventoryUI {
       if (!this.#isOpen) this.open();
       this.showWarning(notification.warning);
     }
+    // TK-386: a closed inventory shows nothing: it renders when it opens (open() → refresh), not on every background
+    // write (the facade builds the view model only when it is read).
+    if (!this.#isOpen) return;
     if (notification.viewModel && typeof notification.viewModel === "object") {
       this.render(notification.viewModel);
       return;
