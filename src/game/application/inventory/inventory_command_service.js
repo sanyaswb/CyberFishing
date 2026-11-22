@@ -143,6 +143,9 @@ export class InventoryCommandService {
   dispatch(action = {}, { locked = false } = {}) {
     try {
       if (locked && !this.#isGasMaskFilterAction(action)) return this.#failure(this.#messages.equipmentLockedWhileFishing);
+      // TK-385.1: an action that only changes what is shown (open, a section, a filter, the sort, back) changes no
+      // equipment: no guard, so no transaction and no save (a guarded action's commit writes the whole inventory).
+      if (this.#isViewOnly(action)) return this.#dispatch(action);
       const busyRoots = this.#busyDevices?.rootInstanceIds() || [];
       const maskId = this.#filterSwapRestriction?.isActive() === true ? this.#equipmentState.getRootInstanceId("gasMask") : null;
       if (busyRoots.length === 0 && !locked && !maskId) return this.#dispatch(action);
@@ -168,6 +171,15 @@ export class InventoryCommandService {
     } catch (error) {
       return this.#failure(error?.message, error);
     }
+  }
+
+  // TK-385.1: the actions that change only the UI state (InventoryUiState), never the items or the equipment.
+  #isViewOnly(action) {
+    const types = this.#actionTypes;
+    return action.type === types.OPEN || action.type === types.CLOSE || action.type === types.SECTION_SELECT ||
+      action.type === types.CATEGORY_SELECT || action.type === types.SUBFILTER_TOGGLE ||
+      action.type === types.SORT_CRITERION_SELECT || action.type === types.SORT_DIRECTION_SELECT ||
+      action.type === types.PICK_CANCEL || action.type === types.ASSEMBLY_BACK;
   }
 
   // D9: the actions that work only on the worn gas mask and its filters (its slot, its editor's cells, a filter tapped

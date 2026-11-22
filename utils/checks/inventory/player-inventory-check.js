@@ -366,7 +366,7 @@ function checkCatalogItemGrant() {
 
 // Spec 151 D5: while a boat is on the water the inventory rolls back any action that would change it.
 function checkBoatOnWaterGuard() {
-  const { inventory, actions } = compose();
+  const { inventory, actions, cache } = compose();
   const boat = items(inventory).find((item) => item.itemId === "boat_lvl3");
   assert(boat, "the starting inventory has the bait boat");
   assert.equal(inventory.dispatchInventoryAction({ type: actions.ASSEMBLY_EQUIP, rootInstanceId: boat.instanceId }).success,
@@ -380,8 +380,10 @@ function checkBoatOnWaterGuard() {
   assert.equal(inventory.getEquipped().delivery?.instanceId, boat.instanceId, "the action is rolled back as a whole");
   assert.equal(inventory.dispatchInventoryAction({ type: actions.ASSEMBLY_DISASSEMBLE, rootInstanceId: boat.instanceId })
     .success, false, "nor taken apart");
+  const savesBefore = cache.writes.length;
   assert.equal(inventory.dispatchInventoryAction({ type: actions.SECTION_SELECT, sectionId: "items" }).success, true,
     "actions that leave the boat unchanged still work");
+  assert.equal(cache.writes.length, savesBefore, "TK-385.1: a section's choice with the boat on the water saves nothing");
   away = [];
   assert.equal(inventory.dispatchInventoryAction({ type: actions.EQUIPMENT_SLOT_LONG_PRESS, slotId: "delivery" }).success,
     true, "back on shore the boat can be unequipped");
@@ -555,7 +557,7 @@ function checkHandChumStack() {
 // tackle in the water only the worn gas mask's filters change (the rest stays refused, the mask stays on); under
 // radiation an action that leaves the mask without a live filter is rolled back; without radiation — free.
 function checkGasMaskFilterSwap() {
-  const { inventory, actions, runtime } = compose({ production: true });
+  const { inventory, actions, runtime, cache } = compose({ production: true });
   const { INVENTORY_MESSAGES } = runtime.importModule("src/game/presentation/inventory/inventory_messages.js");
   const facade = inventory.inventoryFacade;
   const mask = inventory.grantCatalogItem("gas_mask_basic").instanceId;
@@ -597,7 +599,17 @@ function checkGasMaskFilterSwap() {
     "fishing: the mask itself is not taken off");
 
   restricted = true;
+  // TK-385.1 (review): under radiation an action that only changes what is shown writes no save.
+  const savesBefore = cache.writes.length;
+  for (const type of [actions.CLOSE, actions.OPEN, actions.SUBFILTER_TOGGLE, actions.ASSEMBLY_BACK]) {
+    dispatch({ type, filterId: "gas-filters", enabled: true, rootInstanceId: mask });
+  }
+  dispatch({ type: actions.SECTION_SELECT, sectionId: "backpack" });
+  dispatch({ type: actions.SECTION_SELECT, sectionId: "equipment" });
+  assert.equal(cache.writes.length, savesBefore, "under radiation: opening, sections, filters and back save nothing");
+  dispatch({ type: actions.EQUIPMENT_SLOT_ACTIVATE, slotId: "gasMask" });
   assert.equal(removeCell(0).success, true, "under radiation: one of two comes out");
+  assert.ok(cache.writes.length > savesBefore, "a filter's change is saved");
   const last = removeCell(1);
   assert.equal(JSON.stringify([last.success, last.warning, filled()[1]]),
     JSON.stringify([false, INVENTORY_MESSAGES.gasMaskFiltersOneAtATime, filters[1]]),

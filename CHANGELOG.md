@@ -2,6 +2,10 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.52.48 - Review: browsing the inventory under radiation saves nothing (TK-385.1)
+
+- Under radiation with a gas mask on (and while the bait boat is on the water) opening the inventory, choosing a section, a filter or going back no longer writes the whole save each time; only real changes are saved.
+
 ## v0.52.47 - Review: a background inventory write no longer rebuilds the closed inventory (TK-386)
 
 - Smoother play under radiation: every few seconds the game writes a battery's charge, the items' wear and now the gas mask's filter and wear; each such write rebuilt the whole inventory window, even when it was closed (~7 ms on a PC, more on a phone). Now the closed inventory is left alone and drawn when it opens; a write takes about a fifth of the time.
@@ -40,8 +44,3 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 ## v0.52.39 - DEV God mode: remove a debuff by holding its badge (TK-380)
 
 - dev.html only, with God mode «GOD зняти дебаф утриманням» on (DevTools → God mode): hold a debuff's round badge in the HUD for half a second — a cross appears in its middle and its time does not open; the next tap removes the debuff. A short tap shows the time as before. Debuffs with a timer only.
-
-## v0.52.38 - The fiery ash flies with the wind (TK-379)
-
-- The emission's embers drift with the wind: its direction and strength set where and how fast they fly, a gust carries them faster, and they turn smoothly when the wind changes. Nearer embers fly faster.
-- A separate switch: DevTools «ПОГОДА» → «ПОПІЛ» → «Вигляд (загальний)» → «Попіл летить за вітром»; the drift speed is «ВІТЕР» → «Знос попелу, px/с» (now 90).
