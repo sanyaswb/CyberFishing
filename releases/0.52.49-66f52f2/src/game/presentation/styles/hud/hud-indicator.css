@@ -1,0 +1,216 @@
+/* HUD indicators (spec 142 D12, spec 181 D3): 40 x 40 circles in a column under the clock — informational (the radio)
+   first, then the player's buffs and debuffs. The column places them (.hud-indicators); each circle owns its look. The
+   radio's state modifier colours the wave and only "playing" moves it; the wave shows only while the radio sounds
+   (--sounding), otherwise the inventory's radio drawing (spec 181 stage F). */
+.hud-indicators {
+  position: fixed;
+  top: calc(var(--ui-edge-top) + var(--ui-hud-control-size) * var(--ui-hud-scale, 1) + var(--ui-toolbar-gap));
+  right: var(--ui-edge-right);
+  z-index: var(--ui-layer-hud);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--ui-toolbar-gap);
+  pointer-events: none;
+}
+.hud-indicator {
+  --hud-indicator-size: calc(40px * var(--ui-hud-scale, 1));
+  --hud-indicator-count-background: #111b22; /* the inventory toggle's track (inventory-toggle__item-count) */
+  position: relative;
+  display: grid;
+  place-items: center;
+  box-sizing: border-box;
+  width: var(--hud-indicator-size);
+  height: var(--hud-indicator-size);
+  padding: 0;
+  overflow: hidden;
+  border: calc(var(--ui-control-border-width) * var(--ui-hud-scale, 1)) solid var(--ui-control-border-color);
+  border-radius: 50%;
+  color: var(--ui-muted);
+  background: rgba(var(--ui-surface-rgb), 0.85);
+  cursor: pointer;
+  pointer-events: auto;
+  touch-action: manipulation;
+}
+.hud-indicator[hidden] { display: none; }
+.hud-indicator:focus-visible { outline: 2px solid var(--ui-focus-color); outline-offset: 3px; }
+.hud-indicator__icon {
+  position: relative;
+  z-index: 1;
+  width: 70%;
+  height: 70%;
+  overflow: hidden;
+}
+.hud-indicator__image {
+  position: relative;
+  z-index: 1;
+  width: 72%;
+  height: 72%;
+  object-fit: contain;
+  pointer-events: none;
+}
+.hud-indicator--radio .hud-indicator__icon { display: none; }
+.hud-indicator--sounding .hud-indicator__icon { display: block; }
+.hud-indicator--sounding .hud-indicator__image { display: none; }
+.hud-indicator__wave {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2.5;
+  stroke-linecap: round;
+}
+.hud-indicator--playing { color: var(--ui-success); }
+.hud-indicator--playing .hud-indicator__wave { animation: hud-indicator-wave 1.2s linear infinite; }
+.hud-indicator--weak { color: var(--ui-accent); }
+.hud-indicator--weak .hud-indicator__wave { stroke-dasharray: 4 5; }
+.hud-indicator--empty {
+  color: var(--ui-danger);
+  border-color: var(--ui-danger);
+}
+/* Off and empty: a flat line (the wave squashed onto its axis). */
+.hud-indicator--off .hud-indicator__wave,
+.hud-indicator--empty .hud-indicator__wave {
+  transform: scaleY(0.12);
+  transform-box: view-box;
+  transform-origin: center;
+}
+
+/* Spec 181 D3: a status badge. The fill shows the share of time left: full at the start, it drains from the top down
+   (scaleY from the bottom) and its colour moves full → half → low by cross-fading two tone layers (opacity), so both
+   run on the compositor. Duration and the time already gone come from the badge (--hud-indicator-duration, a negative
+   --hud-indicator-delay); the colours from the degradation palette. */
+.hud-indicator--status {
+  color: var(--ui-text);
+  /* TK-380: a hold on a badge (DEV removal) selects nothing and opens no callout on touch. */
+  -webkit-touch-callout: none;
+  user-select: none;
+}
+.hud-indicator--status .hud-indicator__icon { width: 62%; height: 62%; }
+.hud-indicator--debuff {
+  color: var(--ui-danger);
+  border-color: var(--ui-danger);
+}
+.hud-indicator__fill,
+.hud-indicator__tone {
+  position: absolute;
+  inset: 0;
+}
+.hud-indicator__fill {
+  z-index: 0;
+  opacity: 0.6;
+  background: var(--hud-indicator-color-full, var(--ui-success));
+  transform-origin: 50% 100%;
+}
+.hud-indicator--timed .hud-indicator__fill {
+  animation: hud-indicator-drain var(--hud-indicator-duration, 1s) linear var(--hud-indicator-delay, 0s) both;
+}
+/* Spec 181 stage F: an informational level (the radio's battery charge), set on change only. */
+.hud-indicator__fill--level {
+  opacity: 0.45;
+  transform: scaleY(var(--hud-indicator-level, 0));
+  transition: transform 300ms ease-out;
+}
+.hud-indicator__tone { opacity: 0; }
+.hud-indicator__tone--half {
+  background: var(--hud-indicator-color-half, var(--ui-warning));
+  animation: hud-indicator-tone-half var(--hud-indicator-duration, 1s) linear var(--hud-indicator-delay, 0s) both;
+}
+.hud-indicator__tone--low {
+  background: var(--hud-indicator-color-low, var(--ui-danger));
+  animation: hud-indicator-tone-low var(--hud-indicator-duration, 1s) linear var(--hud-indicator-delay, 0s) both;
+}
+.hud-indicator--ending {
+  opacity: 0;
+  transition: opacity 300ms ease-out;
+  pointer-events: none;
+}
+/* Q6: the time left on a tap, styled as the inventory toggle's item count. */
+.hud-indicator__count {
+  position: absolute;
+  right: 50%;
+  bottom: calc(2px * var(--ui-hud-scale, 1));
+  z-index: 2;
+  min-width: calc(14px * var(--ui-hud-scale, 1));
+  padding: 1px 2px;
+  border-radius: 999px;
+  background: var(--hud-indicator-count-background);
+  color: var(--ui-muted);
+  font-size: calc(10px * var(--ui-hud-scale, 1));
+  line-height: 1;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+  transform: translateX(50%);
+}
+.hud-indicator__count[hidden] { display: none; }
+/* Spec 185 D6 (TK-384): the gas mask's indicator — its condition as the level fill, the cracks of its stage over it
+   (80 / 60 / 40 / 20 / 0 %, the last ones thicker), faded while it does not protect. Stage classes change on a write of
+   the condition only; nothing animates. */
+.hud-indicator__cracks {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+.hud-indicator__crack {
+  display: none;
+  fill: none;
+  stroke: rgba(232, 240, 245, 0.92);
+  stroke-width: 1.6;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.hud-indicator--cracks-1 .hud-indicator__crack:nth-child(-n+1),
+.hud-indicator--cracks-2 .hud-indicator__crack:nth-child(-n+2),
+.hud-indicator--cracks-3 .hud-indicator__crack:nth-child(-n+3),
+.hud-indicator--cracks-4 .hud-indicator__crack:nth-child(-n+4),
+.hud-indicator--cracks-5 .hud-indicator__crack { display: inline; }
+.hud-indicator--cracks-5 .hud-indicator__crack { stroke-width: 2.6; }
+.hud-indicator--cracks-5 { border-color: var(--ui-danger); }
+.hud-indicator--unprotected .hud-indicator__icon { opacity: 0.45; }
+/* TK-380 (DEV God mode): a hold armed a timed status's removal — a cross over the circle's middle; the next tap removes. */
+.hud-indicator__remove {
+  display: none;
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  pointer-events: none;
+}
+.hud-indicator--remove-armed .hud-indicator__remove { display: block; }
+.hud-indicator__remove::before,
+.hud-indicator__remove::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 18%;
+  width: 64%;
+  height: calc(3px * var(--ui-hud-scale, 1));
+  margin-top: calc(-1.5px * var(--ui-hud-scale, 1));
+  border-radius: 999px;
+  background: var(--ui-danger);
+  box-shadow: 0 0 0 1px var(--hud-indicator-count-background);
+  transform: rotate(45deg);
+}
+.hud-indicator__remove::after { transform: rotate(-45deg); }
+
+@keyframes hud-indicator-wave {
+  from { transform: translateX(0); }
+  to { transform: translateX(-20px); }
+}
+@keyframes hud-indicator-drain {
+  from { transform: scaleY(1); }
+  to { transform: scaleY(0); }
+}
+/* Green while more than half is left, yellow at half, red from a fifth (spec 181 D3). */
+@keyframes hud-indicator-tone-half {
+  0%, 30% { opacity: 0; }
+  50%, 100% { opacity: 1; }
+}
+@keyframes hud-indicator-tone-low {
+  0%, 60% { opacity: 0; }
+  80%, 100% { opacity: 1; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .hud-indicator--playing .hud-indicator__wave { animation: none; }
+  .hud-indicator--ending { transition: none; }
+}
