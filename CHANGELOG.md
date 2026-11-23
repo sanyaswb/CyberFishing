@@ -2,6 +2,10 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.52.65 - Rain comes more often under a storm (TK-399.1)
+
+- A storm raises the rain's chance more (×10 instead of ×6): rain now falls under most storms (~85%) and more than half of the emissions (~61%), and a storm without rain still happens.
+
 ## v0.52.64 - The emission no longer brings rain (TK-399)
 
 - An emission brings its storm and ash, but no rain: a storm may now come without rain. Rain during an emission comes only by its own chance, raised by the storm as under any storm.
@@ -37,7 +41,3 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 ## v0.52.56 - Review: DevTools without fallbacks for what always exists (TK-389.1)
 
 - No visible change: two DevTools parts no longer carry a fallback for a method or a wrapper that is always there (the saving section's status row, the Spine section's controller).
-
-## v0.52.55 - Review: a DevTools search filters once per redraw (TK-387.1)
-
-- dev.html: while a DevTools search or «Змінені» is on, a redraw of ПОГОДА or the zone editor filtered the panel twice (once over a half-built section); now once.

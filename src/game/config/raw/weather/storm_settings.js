@@ -4,7 +4,7 @@
 // `npm run apply:weather` rewrites this whole file in this form (spec 180 stage D).
 export const STORM_SETTINGS = {
   "gustChanceMult": 2.5,
-  "rainChanceMult": 6,
+  "rainChanceMult": 10,
   "rainDropsShare": 0.6,
   "rainSlantDeg": 48,
   "rainStrengthMult": 1.3,

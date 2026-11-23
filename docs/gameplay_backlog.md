@@ -26,7 +26,9 @@ Reproduce: start an emission on the test location (DevTools «ПОГОДА» →
 Expected: the emission holds the storm; rain comes only by its own chance (raised by the storm, as under any storm),
 so a storm without rain is possible.
 Actual: the emission held the rain at `weather.emission.storm.rain` (1) × its intensity — it rained every emission.
-Notes: EnvironmentSystem emission floors; weather-check (d) and the TK-398 block.
+Notes: EnvironmentSystem emission floors; weather-check (d) and the TK-398 block. TK-399.1 (v0.52.65, owner): the
+storm's raise of the rain's chance `weather.storm.rainChanceMult` 6 → 10 — rain under ~85% of storms (was 72%) and
+~61% of emissions (was 39%); weather-check counts 200 storms on the real config.
 
 ### G-149 The gas mask works through its filters and wears by its quality (P2, done in v0.52.42–0.52.46; owner acceptance pending)
 Found: 2026-11-21, owner (spec 185).

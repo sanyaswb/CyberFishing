@@ -2287,6 +2287,25 @@ const step = (model, seconds, clock = null, dt = 0.1) => {
     "CONFIG.weather holds the storm's and the wind's general settings");
   assert.equal(MAP_DB.test.weather.storm.rainChanceMult, undefined, "the storm's multipliers left the location");
   assert.equal(MAP_DB.test.weather.wind.weatherBoost, undefined, "the rain's and storm's effect on the wind left the location");
+  // TK-399.1 (owner): a storm raises the rain's chance enough that most storms bring rain (×10: ~85% on the test
+  // location), yet a storm without rain still happens (TK-399). Ordinary storms on the real config, fixed seeds.
+  {
+    const storms = 200;
+    let rainy = 0;
+    for (let i = 0; i < storms; i += 1) {
+      const location = JSON.parse(JSON.stringify(MAP_DB.test.weather));
+      location.initial = { rain: 0, storm: 0, fog: 0 };
+      location.storm.enabled = false;
+      location.fog.enabled = false;
+      const model = new WeatherModel({ rng: new SeededRng(`tk399.1:${i}`), getSettings: () => location,
+        getGeneralSettings: () => GAME_CONFIG.weather });
+      model.update(100);
+      model.start("storm");
+      for (let t = 0; t < 3600 && !model.snapshot.events.rain.active && model.snapshot.events.storm.active; t += 2) model.update(2000);
+      if (model.snapshot.events.rain.active) rainy += 1;
+    }
+    assert.ok(rainy >= storms * 0.8 && rainy < storms, `most storms bring rain, not all (${rainy} of ${storms})`);
+  }
 
   const { WorldRenderFrameBuilder } = require("../../../src/game/presentation/rendering/world_render_frame_builder.js");
   const { GameRenderFrame } = require("../../../src/game/presentation/rendering/game_render_frame.js");
