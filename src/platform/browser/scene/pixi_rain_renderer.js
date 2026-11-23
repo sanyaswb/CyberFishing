@@ -164,10 +164,11 @@ export class PixiRainRenderer {
       ? clampUnit(Number(rawWindStrength))
       : Math.abs(windDir);
     const windGust = clampUnit(finiteOr(weather?.windGust, 0));
-    const windSlant = Math.max(0, finiteOr(windSettings?.rainSlantDeg, 0));
     const stormSlant = Math.max(0, effectOfPair(stormSettings?.rainSlantDeg, 0, storm));
     const gustShare = Math.max(0, finiteOr(windSettings?.gustSlantShare, 1.2));
-    const rawSlant = (windStrength + windGust * gustShare) * windSlant + stormSlant;
+    // Spec 187 D7: the wind's slant [від, до] by its strength with the gust (none with no wind).
+    const windSlant = Math.max(0, effectOfPair(windSettings?.rainSlantDeg, 0, windStrength + windGust * gustShare));
+    const rawSlant = windSlant + stormSlant;
     const targetSlant = windDir * Math.min(MAX_SLANT_DEG, rawSlant);
     const followPerSec = Math.max(0, finiteOr(windSettings?.slantFollowPerSec, 2)) +
       Math.min(1, windGust * 3) * Math.max(0, finiteOr(windSettings?.gustFollowPerSec, 6));

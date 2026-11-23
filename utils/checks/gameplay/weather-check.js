@@ -3208,6 +3208,17 @@ const step = (model, seconds, clock = null, dt = 0.1) => {
       near(effectOfPair(storm[key], neutral, strength), was(strength), `${key} at ${strength * 100} % acts as before`, 1e-9);
     }
   }
+  // The wind's: by its strength with the gust (above 100 % — on along the same line), and the rain's on the wind.
+  const wind = GAME_CONFIG.weather.wind;
+  const windOld = [[wind.rainSlantDeg, 0, (s) => 34 * s, "rainSlantDeg"], [wind.ashDriftPx, 0, (s) => 90 * s, "ashDriftPx"],
+    [wind.rain.minStrength, 0, (s) => 0.25 * s, "rain.minStrength"], [wind.rain.bonus, 0, (s) => 0.2 * s, "rain.bonus"],
+    [wind.rain.gustChanceMult, 1, (s) => 1 + 1.5 * s, "rain.gustChanceMult"]];
+  for (const [pair, neutral, was, key] of windOld) {
+    assert.ok(Array.isArray(pair) && pair.length === 2, `CONFIG.weather.wind.${key} is [від, до]`);
+    for (const strength of [0, 0.02, 0.05, 0.3, 1, 1.6]) {
+      near(effectOfPair(pair, neutral, strength), was(strength), `wind ${key} at ${strength * 100} % acts as before`, 1e-9);
+    }
+  }
 }
 
 console.log(

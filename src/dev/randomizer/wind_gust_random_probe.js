@@ -63,10 +63,12 @@ export class WindGustRandomProbe {
       gusting = now;
     }
     const perHour = (part) => (time[part] > 0 ? (gusts[part] / (time[part] / 3600)).toFixed(1) : "—");
+    // Spec 187 D7: the rain's and the storm's raise of the gusts as [від, до] (at 5 % and at 100 % of their strength).
+    const pairText = (pair) => (Array.isArray(pair) ? `×${pair[0]}…×${pair[1]}` : "×1");
     const rows = [
       ["сід", String(seed)],
-      ["налаштування", `шанс ${settings.wind?.gust?.chancePerSec ?? 0.14} за секунду (× сила вітру, дощ ×` +
-        `${general.wind?.rain?.gustChanceMult ?? 1.5}, шторм ×${general.storm?.gustChanceMult ?? 2.5})`],
+      ["налаштування", `шанс ${settings.wind?.gust?.chancePerSec ?? 0.14} за секунду (× сила вітру, дощ ` +
+        `${pairText(general.wind?.rain?.gustChanceMult)}, шторм ${pairText(general.storm?.gustChanceMult)})`],
       ["змодельовано", `${starts.length} з ${count} поривів за ${(elapsed / 3600).toFixed(1)} год гри (початкова погода не діє)`],
     ];
     if (!starts.length) {

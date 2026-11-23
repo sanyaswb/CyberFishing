@@ -8,15 +8,16 @@ export const STORM_SETTINGS_RANGES = Object.freeze({
     ["rainSlantDeg", 0, 60, false], ["windMinStrength", 0, 1, false], ["gustChanceMult", 0, 21, false]]),
 });
 
+// Spec 187 D7: the wind's effects (rainSlantDeg, ashDriftPx, rain.*) are [від, до] pairs (either may be larger).
 export const WIND_SETTINGS_RANGES = Object.freeze({
-  numbers: Object.freeze([["rainSlantDeg", 0, 60], ["slantFollowPerSec", 0, 60], ["gustSlantShare", 0, 10],
-    ["gustFollowPerSec", 0, 60], ["ashDriftPx", -500, 500]]),
+  numbers: Object.freeze([["slantFollowPerSec", 0, 60], ["gustSlantShare", 0, 10], ["gustFollowPerSec", 0, 60]]),
+  pairs: Object.freeze([["rainSlantDeg", 0, 60, false], ["ashDriftPx", -500, 500, false]]),
   gust: Object.freeze({
     numbers: Object.freeze([["attackShare", 0.05, 0.8]]),
     pairs: Object.freeze([["deltaRange", 0, 1, true], ["durationSec", 0.1, 60, true]]),
   }),
   rain: Object.freeze({
-    numbers: Object.freeze([["minStrength", 0, 1], ["bonus", 0, 1], ["gustChanceMult", 0, 20]]),
+    pairs: Object.freeze([["minStrength", 0, 1, false], ["bonus", 0, 1, false], ["gustChanceMult", 0, 21, false]]),
   }),
 });
 

@@ -2,6 +2,10 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.52.74 - The wind's effects as «від / до» (spec 187, stage C)
+
+- The drops' slant and the ash's drift from the wind, and the rain's effect on the wind, are now set by two values — at 5 % and at 100 % — instead of multipliers. The game plays the same.
+
 ## v0.52.73 - The storm's effects as «від / до» (spec 187, stage C)
 
 - What a storm does to the rain, the drops and the wind is now set by two values — at 5 % and at 100 % of its strength — instead of multipliers. The game plays the same; a weak storm can now be tuned on its own.
@@ -38,7 +42,3 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 ## v0.52.65 - Rain comes more often under a storm (TK-399.1)
 
 - A storm raises the rain's chance more (×10 instead of ×6): rain now falls under most storms (~85%) and more than half of the emissions (~61%), and a storm without rain still happens.
-
-## v0.52.64 - The emission no longer brings rain (TK-399)
-
-- An emission brings its storm and ash, but no rain: a storm may now come without rain. Rain during an emission comes only by its own chance, raised by the storm as under any storm.

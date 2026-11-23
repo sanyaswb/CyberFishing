@@ -23,6 +23,7 @@
 // (scale) and color (tint, alpha) change every frame, so they are dynamic (Pixi 8 ParticleBuffer.update). The scene
 // presents a frame only while an ember is alive.
 import { clampUnit, finiteOr } from "../../../engine/math/number_normalization.js";
+import { effectOfPair } from "../../../engine/math/strength_value.js";
 import { BackgroundPlacement } from "./background_placement.js";
 import { mixColor, SceneColor } from "./scene_color.js";
 import { ScreenZoneSet } from "./screen_zone_set.js";
@@ -135,8 +136,8 @@ export class PixiAshRenderer {
     if (settings?.followsWind !== false) {
       const direction = Math.max(-1, Math.min(1, finiteOr(weather?.windDirection, 0)));
       const strength = clampUnit(finiteOr(weather?.windStrength, Math.abs(direction)));
-      target = direction * (strength + gust * Math.max(0, finiteOr(wind?.gustSlantShare, 1.2))) *
-        finiteOr(wind?.ashDriftPx, 90);
+      // Spec 187 D7: ashDriftPx is [від, до] by the wind's strength (with its gust); none with no wind.
+      target = direction * effectOfPair(wind?.ashDriftPx, 0, strength + gust * Math.max(0, finiteOr(wind?.gustSlantShare, 1.2)));
     }
     const follow = Math.max(0, finiteOr(settings?.windFollowPerSec, 1.5)) +
       Math.min(1, gust * 3) * Math.max(0, finiteOr(wind?.gustFollowPerSec, 6));

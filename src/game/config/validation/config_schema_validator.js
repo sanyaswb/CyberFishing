@@ -1541,11 +1541,12 @@ export class ConfigSchemaValidator {
     if (!wind || typeof wind !== "object") { this.#error("CONFIG.weather.wind", "missing wind settings"); return; }
     this.#requireParameterLabel("weather.wind");
     this.#requireRangeNumbers("weather.wind", wind, WIND_SETTINGS_RANGES.numbers);
+    this.#requireRangePairs("weather.wind", wind, WIND_SETTINGS_RANGES.pairs);
     this.#requireParameterLabel("weather.wind.gust");
     this.#requireRangeNumbers("weather.wind.gust", wind.gust, WIND_SETTINGS_RANGES.gust.numbers);
     this.#requireRangePairs("weather.wind.gust", wind.gust, WIND_SETTINGS_RANGES.gust.pairs);
     this.#requireParameterLabel("weather.wind.rain");
-    this.#requireRangeNumbers("weather.wind.rain", wind.rain, WIND_SETTINGS_RANGES.rain.numbers);
+    this.#requireRangePairs("weather.wind.rain", wind.rain, WIND_SETTINGS_RANGES.rain.pairs);
   }
 
   // TK-332: rows of weather_settings_ranges.js — each a finite number within [min, max] with a label.

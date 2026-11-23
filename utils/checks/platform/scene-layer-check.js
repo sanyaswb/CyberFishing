@@ -1170,7 +1170,7 @@ async function checkAsh() {
   const full = { maxParticles: ASH_SETTINGS.strength.maxParticles[1], opacity: ASH_SETTINGS.strength.opacity[1] };
   let now = 1000;
   const frame = (model, options = null, sec = 1 / 60) => { now += sec * 1000;
-    return ash.update(model, 1200, 700, now, options ?? looks.resolve("ash", model?.weather?.emission ?? 0), { wind: { ashDriftPx: 45 } }); };
+    return ash.update(model, 1200, 700, now, options ?? looks.resolve("ash", model?.weather?.emission ?? 0), { wind: { ashDriftPx: [2.25, 45] } }); };
   assert.equal(frame(world({ emission: 1 }), { ...looks.resolve("ash", 1), enabled: false }), false, "switched off: nothing to draw");
   assert.equal(frame(null), false, "off the scene: nothing to draw");
   assert.equal(frame(world({ emission: 0 })), false, "no emission: no ash, no frames");
@@ -1222,7 +1222,7 @@ async function checkAsh() {
   const phoneLayer = { x: -400, y: 0, width: 1200, height: 700 };
   for (let index = 0; index < 5; index += 1) {
     phoneNow += 1000 / 60;
-    phoneAsh.update(world({ emission: 1 }, phoneLayer), 400, 700, phoneNow, looks.resolve("ash", 1), { wind: { ashDriftPx: 45 } });
+    phoneAsh.update(world({ emission: 1 }, phoneLayer), 400, 700, phoneNow, looks.resolve("ash", 1), { wind: { ashDriftPx: [2.25, 45] } });
   }
   assert.equal(phoneAsh.status.embers, Math.round(full.maxParticles / 3), "a phone screen showing a third: a third of the embers");
   phoneAsh.dispose();
@@ -1237,7 +1237,7 @@ async function checkAsh() {
   const zonedWorld = (regions) => ({ ...world({ emission: 1, windStrength: 0, windDirection: 0 }), ashZoned: true,
     ashRegions: { count: regions.length, getAt: (index) => regions[index] } });
   const zonedFrame = (regions) => { now += 1000 / 60;
-    return zonedAsh.update(zonedWorld(regions), 1200, 700, now, looks.resolve("ash", 1), { wind: { ashDriftPx: 45 } }); };
+    return zonedAsh.update(zonedWorld(regions), 1200, 700, now, looks.resolve("ash", 1), { wind: { ashDriftPx: [2.25, 45] } }); };
   zonedFrame([zone]);
   const shown = () => zonedEmbers.particleChildren.filter((particle) => particle.alpha > 0);
   const inside = (particle, margin = 0) => particle.x >= zone.x - margin && particle.x <= zone.x + zone.width + margin &&
@@ -1260,7 +1260,7 @@ async function checkAsh() {
     const windStage = new pixi.Container();
     windAsh.mount(windStage);
     const [windEmbers] = windStage.children;
-    const windSettings = { wind: { ashDriftPx: 90, gustSlantShare: 1.2, gustFollowPerSec: 6 } };
+    const windSettings = { wind: { ashDriftPx: [4.5, 90], gustSlantShare: 1.2, gustFollowPerSec: 6 } };
     let windNow = 1000;
     const step = (sec) => { windNow += sec * 1000;
       windAsh.update(world({ emission: 1, windGust: 0, ...weather }), 1200, 700, windNow, look, windSettings); };
@@ -1302,7 +1302,7 @@ async function checkRain() {
     clipRegions: { count: 1, getAt: () => water }, waterPlane: { metric, left: 0, right: 2560, top: 0, bottom: 640 } };
   // Spec 180: the rain's look as WeatherLookResolver hands it (already at the rain's strength) and CONFIG.weather.
   const weatherSettings = { storm: { rainDropsShare: [0.025, 0.5], rainSlantDeg: [0.7, 14] },
-    wind: { rainSlantDeg: 14, slantFollowPerSec: 2, gustSlantShare: 1.2, gustFollowPerSec: 6 } };
+    wind: { rainSlantDeg: [0.7, 14], slantFollowPerSec: 2, gustSlantShare: 1.2, gustFollowPerSec: 6 } };
   const settings = { enabled: true, maxDrops: 200, fallPx: 500, speedPx: 1500, speedJitter: 0.15,
     lengthPx: 36, widthPx: 1.6, opacity: 0.4, color: "#c9d6e3", minScale: 0.3,
     rings: { enabled: true, maxRings: 120, sizePx: 16, lifeSec: 0.7, opacity: 0.4, flatten: 0.35, color: "#dfe9f2",

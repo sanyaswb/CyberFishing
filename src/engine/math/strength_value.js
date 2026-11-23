@@ -13,12 +13,13 @@ export function strengthValue(from, to, strength) {
 
 // Spec 187 D7: an effect of an element on others (a storm's raise of the rain's chance, the wind's slant): `neutral` with
 // the element off (strength 0), rising linearly to «від» at the visible strength, then to «до» at 1 — so a pair made
-// from an old multiplier (від = its value at the visible strength) acts exactly as the multiplier did.
+// from an old multiplier (від = its value at the visible strength) acts exactly as the multiplier did. A level above 1
+// (the wind's strength plus its gust) goes on along the same line, as the multiplier did.
 export function effectValue(neutral, from, to, strength) {
-  const level = clampUnit(finiteOr(strength, 0));
+  const level = Math.max(0, finiteOr(strength, 0));
   if (level <= 0) return neutral;
   if (level < VISIBLE_STRENGTH) return neutral + (from - neutral) * level / VISIBLE_STRENGTH;
-  return strengthValue(from, to, level);
+  return from + (to - from) * (level - VISIBLE_STRENGTH) / (1 - VISIBLE_STRENGTH);
 }
 
 // An effect read from its config pair [від, до] (or neutral when it is missing or not a pair).

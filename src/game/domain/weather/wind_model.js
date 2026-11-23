@@ -148,10 +148,11 @@ export class WindModel {
 
     // Spec 180 D3: the rain's and the storm's effect on the wind are general (CONFIG.weather.wind.rain, .storm).
     const general = this.#getGeneral();
-    const rainFloor = rainLevel > 0 ? rainLevel * Math.max(0, finiteOr(general?.wind?.rain?.minStrength, 0)) : 0;
+    // Spec 187 D7: the rain's effects on the wind — [від, до] by the rain's strength, none with no rain.
+    const rainFloor = Math.max(0, effectOfPair(general?.wind?.rain?.minStrength, 0, rainLevel));
     // Spec 187 D7: the storm's floor for the wind — [від, до] by the storm's strength, none with no storm.
     const stormFloor = Math.max(0, effectOfPair(general?.storm?.windMinStrength, 0, stormLevel));
-    const rainBonus = rainLevel * Math.max(0, finiteOr(general?.wind?.rain?.bonus, 0));
+    const rainBonus = Math.max(0, effectOfPair(general?.wind?.rain?.bonus, 0, rainLevel));
     const dirFloor =
       this.#forcedStrength === null && (this.#forcedDirection === -1 || this.#forcedDirection === 1)
         ? Math.max(
@@ -312,7 +313,7 @@ export class WindModel {
     const gust = settings?.gust;
     const general = this.#getGeneral();
     const baseChance = Math.max(0, finiteOr(gust?.chancePerSec, 0.14));
-    const rainMult = 1 + rainLevel * Math.max(0, finiteOr(general?.wind?.rain?.gustChanceMult, 1.5));
+    const rainMult = Math.max(0, effectOfPair(general?.wind?.rain?.gustChanceMult, 1, rainLevel));
     const stormMult = Math.max(0, effectOfPair(general?.storm?.gustChanceMult, 1, stormLevel));
     const strengthWeight = 0.35 + 0.65 * Math.max(boostedBase, stormLevel);
     const probability = Math.min(1, baseChance * rainMult * stormMult * strengthWeight * dtSec);
