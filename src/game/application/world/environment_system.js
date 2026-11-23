@@ -143,9 +143,19 @@ export class EnvironmentSystem {
   // is rolled to start or end, every level freezes where it is (each model holds its own), the derived ones follow
   // their sources (the ash the emission, the waves the wind and the storm, the current as it is); the chances within a
   // level (gusts, strikes, falling stars) still act. snapshot.automaticWeather tells the views.
+  // Review of spec 187 (TK-402.2, R22): on releases every hold of the models — the freeze's and the ones set by hand
+  // while it was off — so the pair is symmetric whoever turns it (the views' own holds are their owners').
   setAutomaticWeather(on) {
     const automatic = on !== false;
     this.#automatic = automatic;
+    if (automatic) {
+      this.#weather?.releaseAll();
+      this.#emission?.holdIntensity(null);
+      this.#starfall?.hold(null);
+      this.#wind?.setStrengthOverride(null);
+      this.#wind?.setDirectionOverride(null);
+      this.#windOverride = null;
+    }
     this.#weather?.setAutomatic(automatic);
     this.#wind?.setAutomatic(automatic);
     this.#emission?.setAutomatic(automatic);

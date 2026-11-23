@@ -1015,7 +1015,7 @@ export class WeatherDevSection {
     if (this.#weather.setAutomatic) {
       this.#ui.createSwitcherRow("Автоматична погода", this.#weather.isAutomatic?.() !== false, controls, (on) => {
         this.#weather.setAutomatic(on === true);
-        if (on === true) this.#releaseHolds(model);
+        if (on === true) this.#releaseHolds();
         this.#fill();
       }, AUTO_PATH);
     }
@@ -1049,12 +1049,8 @@ export class WeatherDevSection {
   }
 
   // D10, TK-398: every hold released — each element back to its own course (the automatic weather turned on).
-  #releaseHolds(model) {
-    model.releaseAll();
-    this.#weather.setWind?.(null);
-    this.#weather.setWindStrength?.(null);
-    this.#weather.getEmissionModel?.()?.holdIntensity(null);
-    this.#weather.getStarfallModel?.()?.hold(null);
+  // TK-402.2: the models' holds are released by the environment itself (setAutomatic(true)); here the views' own.
+  #releaseHolds() {
     this.#weather.holdAsh?.(null);
     this.#weather.holdWaves?.(null);
     this.#weather.holdCurrent?.(null);

@@ -9,16 +9,29 @@
 import { finiteOr } from "../../../engine/math/number_normalization.js";
 import { VISIBLE_STRENGTH, strengthValue } from "../../../engine/math/strength_value.js";
 const INTEGER_KEYS = Object.freeze(new Set(["maxDrops", "maxParticles", "maxRings"]));
+// The <key>Cap names, made once per key (resolve() runs every frame; a template string each time allocates).
+const CAP_KEYS = new Map();
+const capKey = (key) => {
+  let name = CAP_KEYS.get(key);
+  if (name === undefined) {
+    name = `${key}Cap`;
+    CAP_KEYS.set(key, name);
+  }
+  return name;
+};
 // Spec 187 D15: the DEV section reads the same rule.
 export { VISIBLE_STRENGTH, strengthValue };
 
-// A location's override of one strength value → { from, to } (null: that end not overridden).
+// One end (0 «від», 1 «до») of a location's override of a strength value, or null (that end not overridden): [від, до]
+// with a null end, or an old plain number (= «до»). Allocation-free (resolve() reads it every frame).
+function overrideEnd(override, index) {
+  const value = Array.isArray(override) ? override[index] : index === 1 ? override : null;
+  return value !== null && value !== undefined && Number.isFinite(Number(value)) ? Number(value) : null;
+}
+
+// A location's override of one strength value → { from, to } (null: that end not overridden). For DEV (allocates).
 export function lookOverrideEnds(override) {
-  if (Array.isArray(override)) {
-    return { from: Number.isFinite(Number(override[0])) && override[0] !== null ? Number(override[0]) : null,
-      to: Number.isFinite(Number(override[1])) && override[1] !== null ? Number(override[1]) : null };
-  }
-  return { from: null, to: override !== null && override !== undefined && Number.isFinite(Number(override)) ? Number(override) : null };
+  return { from: overrideEnd(override, 0), to: overrideEnd(override, 1) };
 }
 
 export class WeatherLookResolver {
@@ -65,16 +78,14 @@ export class WeatherLookResolver {
       for (const key in ranges) {
         const range = ranges[key];
         if (!Array.isArray(range)) continue;
-        const own = overrides ? lookOverrideEnds(overrides[key]) : NO_OVERRIDE;
-        const atFrom = own.from ?? finiteOr(range[0], 0);
-        const atFull = own.to ?? finiteOr(range[1], atFrom);
+        const override = overrides ? overrides[key] : null;
+        const atFrom = overrideEnd(override, 0) ?? finiteOr(range[0], 0);
+        const atFull = overrideEnd(override, 1) ?? finiteOr(range[1], atFrom);
         const value = strengthValue(atFrom, atFull, strength);
         target[key] = INTEGER_KEYS.has(key) ? Math.round(value) : value;
-        target[`${key}Cap`] = Math.max(atFrom, atFull);
+        target[capKey(key)] = Math.max(atFrom, atFull);
       }
     }
     return target;
   }
 }
-
-const NO_OVERRIDE = Object.freeze({ from: null, to: null });

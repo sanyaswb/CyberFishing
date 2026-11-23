@@ -2,6 +2,11 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.52.77 - Review before the push: no per-frame objects for the weather's look, a symmetric automatic switch (TK-402)
+
+- The rain's and the ash's look no longer make a new object per value every frame on a location with its own values.
+- Turning the automatic weather on releases every frozen or hand-set level by itself, whoever turns it.
+
 ## v0.52.76 - Old weather files with multipliers still apply (spec 187)
 
 - `npm run apply:weather` and the DevTools import read a weather file exported before the storm's and the wind's «від / до» as the pairs that act the same (such a file still reports a conflict with the changed code: apply it with --force or export again).
@@ -38,7 +43,3 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 ## v0.52.68 - DevTools: the weather's sliders follow the live value (TK-401)
 
 - dev.html: in «ПОГОДА» → «Керування» the strength sliders (rain, storm, fog, emission, ash, the wind with its gusts, the waves, the current) move with the live value; one held by hand shows its value, and one the person is moving is not pulled away.
-
-## v0.52.67 - DevTools: «Хвилі» off when the water is flat (TK-398.1)
-
-- dev.html: with the automatic weather off and no wind the water was flat, but «Хвилі» in «Керування» (and the «i» of «ПОГОДА») still showed the waves on. Now they are on only while held by hand or while the waves really show; a wind that raises waves turns the switch on by itself.

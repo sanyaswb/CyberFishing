@@ -1,6 +1,7 @@
 // Release notes, newest first (unshift with every patch). DEV only: no production code reads them, and in the start's
 // bundle they cost 13 KB gzip (spec 160). dev.html publishes them with the version: window.CYBER_FISHING_PROJECT_VERSION.notes.
 export const PROJECT_RELEASE_NOTES = Object.freeze([
+  "TK-402 (review): WeatherLookResolver.resolve() reads a location's override ends without an object per value per frame and makes the <key>Cap names once; EnvironmentSystem.setAutomaticWeather(true) releases the models' holds itself (R22), DevTools only its views' own.",
   "Spec 187 D18: readWeatherFile upgrades an old file's storm and wind multipliers to the [від, до] pairs that act the same (upgradeLegacyEffects; a copy), so validation, apply:weather and the DevTools import see pairs.",
   "Spec 187 C (waves): CONFIG.canvas.water.seaState normal.windAmplitude / windSpeed and storm.amplitude / speed / wavelength are [від, до] pairs read by SeaStateResolver (no wind — the calm swell, no storm — ×1) — the same game.",
   "Spec 187 C (wind): CONFIG.weather.wind rainSlantDeg / ashDriftPx (by the wind's strength with its gust, on along the line above 100 %) and rain.minStrength / bonus / gustChanceMult (by the rain's strength) are [від, до] pairs read by WindModel, PixiRainRenderer and PixiAshRenderer — the same game.",

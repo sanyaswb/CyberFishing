@@ -1154,11 +1154,11 @@ const step = (model, seconds, clock = null, dt = 0.1) => {
     // D11, TK-398: on again — the weather runs by itself and every hold is released.
     calls.length = 0;
     rowsByPath.get("WEATHER.controls.auto").onChange(true);
-    assert.deepEqual(calls.find(([k]) => k === "setAutomatic"), ["setAutomatic", true], "the switch on: setAutomatic(true)");
-    assert(calls.some(([k, v]) => k === "setWindStrength" && v === null), "it resets forced wind strength");
+    assert.deepEqual(calls.find(([k]) => k === "setAutomatic"), ["setAutomatic", true],
+      "the switch on: setAutomatic(true) — the environment releases the models' holds itself (TK-402.2)");
     assert(["holdAsh", "holdWaves", "holdCurrent"].every((kind) => calls.filter(([k]) => k === kind).at(-1)[1] === null),
-      "TK-367: it releases the ash, the waves and the current too");
-    assert(calls.some(([k]) => k === "releaseAll"), "it releases every weather process");
+      "TK-367: the section releases the views' own holds — the ash, the waves and the current");
+    assert(!calls.some(([k]) => k === "releaseAll" || k === "setWindStrength"), "and no second release of the models");
     assert.equal(rowsByPath.get("WEATHER.controls.auto").value, true, "the redrawn switch shows the automatic weather");
 
     // TK-298.1: Location selector stays visible even when only one location is configured.
@@ -2320,6 +2320,34 @@ const step = (model, seconds, clock = null, dt = 0.1) => {
     looks.resolve("rain", 1).lengthPx];
   assert.deepEqual(own, [120, 300, 70, 90], "the location's own «від» and «до»; a null end falls back to the general one");
   assert.deepEqual(looks.ends("rain", "lengthPx"), { from: 70, to: 90 }, "ends() tells both ends as they run");
+  // Review of spec 187 (TK-402.1): resolve() runs every frame for the rain and the ash — a location's overrides add no
+  // allocation (each override was read into a new { from, to } object per value per frame). Three million resolves in a
+  // child process with --trace-gc, with the location's overrides and without: the young-generation collections between
+  // the marks (JS numbers alone make some) are no more with them.
+  {
+    const { spawnSync } = require("node:child_process");
+    const resolverPath = require.resolve("../../../src/game/presentation/weather/weather_look_resolver.js");
+    const scavengesWith = (overrides) => {
+      const program = `const { WeatherLookResolver } = require(${JSON.stringify(resolverPath)});
+        const overrides = ${JSON.stringify(overrides)};
+        const looks = new WeatherLookResolver({ getLooks: () => ({ rain: { color: "#fff", strength: { maxDrops: [80, 700],
+          lengthPx: [70, 100], widthPx: [1, 2], speedPx: [900, 1400] } } }), getOverrides: () => overrides });
+        for (let i = 0; i < 20000; i += 1) looks.resolve("rain", (i % 100) / 100);
+        console.log("BEGIN");
+        for (let i = 0; i < 3000000; i += 1) looks.resolve("rain", (i % 100) / 100);
+        console.log("END");`;
+      const run = spawnSync(process.execPath, ["--trace-gc", "-e", program], { encoding: "utf8" });
+      // The marks by their text (a collection's trace may share a line with a mark).
+      const begin = run.stdout.indexOf("BEGIN");
+      const end = run.stdout.indexOf("END", begin);
+      assert.ok(run.status === 0 && begin >= 0 && end > begin,
+        `the allocation probe ran (status ${run.status}, ${run.stdout.slice(-120)} ${run.stderr.slice(0, 200)})`);
+      return (run.stdout.slice(begin, end).match(/Scavenge/gu) ?? []).length;
+    };
+    const plain = scavengesWith({ rain: {} });
+    const overridden = scavengesWith({ rain: { maxDrops: [120, 300], lengthPx: [null, 90], widthPx: 1.5, speedPx: [1000, null] } });
+    assert.ok(overridden <= plain * 1.1 + 2, `the location's overrides allocate nothing more (${overridden} vs ${plain} young collections)`);
+  }
   assert.equal(looks.resolve("snow", 1), null, "no look, nothing");
   assert.equal(GAME_CONFIG.weather.storm.rainChanceMult[1] > 1 && GAME_CONFIG.weather.wind.gust.durationSec.length, 2,
     "CONFIG.weather holds the storm's and the wind's general settings");
@@ -3020,15 +3048,7 @@ const step = (model, seconds, clock = null, dt = 0.1) => {
       most.strikes = env.getSnapshot().weather.strikeSerial - strikesBefore;
       return most;
     };
-    // D11: what the section does when the automatic weather is turned on — every hold released.
-    const releaseHolds = () => {
-      weather.releaseAll();
-      env.setWindOverride(null);
-      env.setWindStrengthOverride(null);
-      emission.holdIntensity(null);
-      starfall.hold(null);
-    };
-    return { env, weather, wind, emission, starfall, sea, run, frame, releaseHolds };
+    return { env, weather, wind, emission, starfall, sea, run, frame };
   };
 
   // The same location with the automatic weather on: everything comes by itself (the check is not empty).
@@ -3064,9 +3084,16 @@ const step = (model, seconds, clock = null, dt = 0.1) => {
     assert.ok(Math.abs(later[key] - atOff[key]) < 1e-6, `off: ${key} stays where it was (${atOff[key]} → ${later[key]})`);
   }
   assert.ok(held.strikes > 0 && held.gust > 0, `the frozen storm strikes and the frozen wind gusts (${JSON.stringify(held)})`);
-  // On again (the section releases every hold): the weather runs by itself.
+  // Review TK-402.2 (R22): on again — the environment itself releases every hold the freeze (or a hand) set; no one else
+  // has to. A wind and a storm held by hand while off go too.
+  frozen.env.setWindStrengthOverride(0.6);
+  frozen.env.setWindOverride(-1);
+  frozen.starfall.hold(0.4);
   frozen.env.setAutomaticWeather(true);
-  frozen.releaseHolds();
+  const events = frozen.weather.snapshot.events;
+  assert.deepEqual([events.rain.held, events.storm.held, events.fog.held, frozen.emission.snapshot.intensityHeld,
+    frozen.starfall.snapshot.held, frozen.wind.snapshot.forcedStrength, frozen.wind.snapshot.forcedDirection],
+  [false, false, false, false, false, null, null], "on: every hold of the models released by the environment");
   const back = frozen.run(60);
   assert.ok(back.started && back.current > 0 && back.waves > 0, "on again: the weather runs by itself");
 
