@@ -44,6 +44,10 @@ export class DevToolsUI {
   #contentDepth = new WeakMap();
   // TK-333: a section's content → its title label, so a module can change the title in place (setSectionLabel).
   #sectionLabels = new WeakMap();
+  // TK-306.1 (I-31): a section → its title and content, and a content → its section. The content moves into the drill
+  // area and back and the «i» joins the section later, so a section's parts are never found by their place in it.
+  #sectionParts = new WeakMap();
+  #contentSections = new WeakMap();
   // TK-308: section contents drawn on first need.
   #lazyContents = new Map();
   #drill = null;
@@ -186,8 +190,7 @@ export class DevToolsUI {
         row.remove();
         if (content && content.children.length === 0) {
           this.#sectionInfoButtons.get(content)?.remove();
-          content.parentNode?.classList?.contains("devtools__section-content")
-            && content.parentNode.parentNode?.classList?.remove("devtools__section--has-info");
+          this.#contentSections.get(content.parentNode)?.classList.remove("devtools__section--has-info");
           content.remove();
         }
       }
@@ -257,9 +260,10 @@ export class DevToolsUI {
   // states stay the same nodes.
   focusSection(section) {
     this.#leaveDrill();
-    const content = section.children[1];
+    const parts = this.#sectionParts.get(section);
     const page = this.#pageOf(section);
-    if (!content || !page) return;
+    if (!parts || !page) return;
+    const { title, content } = parts;
     this.#materialize(content);
     const ancestors = [];
     for (let node = section.parentNode; node && node !== page; node = node.parentNode) {
@@ -270,19 +274,20 @@ export class DevToolsUI {
     crumbs.setAttribute("aria-label", "Шлях до секції");
     crumbs.appendChild(this.#crumb(page.getAttribute("aria-label") || "", () => this.#leaveDrill()));
     for (const ancestor of ancestors) {
-      crumbs.appendChild(this.#crumb(ancestor.children[0].textContent, () => {
+      const ancestorParts = this.#sectionParts.get(ancestor);
+      crumbs.appendChild(this.#crumb(ancestorParts.title.textContent, () => {
         if (ancestor.classList.contains("devtools__section--drill")) {
           this.focusSection(ancestor);
           return;
         }
         this.#leaveDrill();
-        if (ancestor.children[1].style.display === "none") ancestor.children[0].click();
+        if (ancestorParts.content.style.display === "none") ancestorParts.title.click();
         ancestor.scrollIntoView?.({ block: "start" });
       }));
     }
     const current = document.createElement("span");
     current.className = "devtools__crumb devtools__crumb--current";
-    current.textContent = section.children[0].textContent;
+    current.textContent = title.textContent;
     current.setAttribute("aria-current", "location");
     crumbs.appendChild(current);
     const host = document.createElement("div");
@@ -291,7 +296,7 @@ export class DevToolsUI {
     host.appendChild(content);
     page.classList.add("devtools__page--drilled");
     page.append(crumbs, host);
-    this.#drill = { section, content, page, crumbs, host };
+    this.#drill = { section, title, content, page, crumbs, host };
     this.#body.scrollTop = 0;
   }
 
@@ -330,7 +335,8 @@ export class DevToolsUI {
     if (!drill) return;
     this.#drill = null;
     drill.content.style.display = "none";
-    drill.section.appendChild(drill.content);
+    // Back in its own place, right after the title (the «i» after it stays last).
+    drill.section.insertBefore(drill.content, drill.title.nextSibling);
     drill.crumbs.remove();
     drill.host.remove();
     drill.page.classList.remove("devtools__page--drilled");
@@ -485,6 +491,8 @@ export class DevToolsUI {
     content.style.display = isExpanded ? "block" : "none";
     this.#contentDepth.set(content, depth);
     this.#sectionLabels.set(content, label);
+    this.#sectionParts.set(section, { title, content });
+    this.#contentSections.set(content, section);
     if (render) this.#lazyContents.set(content, () => render(content));
 
     title.addEventListener("click", () => {
@@ -567,8 +575,10 @@ export class DevToolsUI {
     const record = { expanded, content: document.createElement("div"), button: null };
     record.content.className = "devtools__section-info";
     this.#insertTreeNode(content, record.content, -1);
-    const section = content.parentNode;
-    if (!section?.classList?.contains("devtools__section") || section.children[1] !== content) return record;
+    // Found by the content, not by the content's parent: a drill-in holds the content outside its section.
+    const section = this.#contentSections.get(content);
+    if (!section) return record;
+    const { title } = this.#sectionParts.get(section);
     const button = document.createElement("button");
     button.type = "button";
     button.className = "devtools__info devtools__section-info-button";
@@ -582,7 +592,7 @@ export class DevToolsUI {
     button.addEventListener("click", () => {
       const open = record.content.hidden;
       // A closed section opens with its description.
-      if (open && content.style.display === "none") section.children[0].click();
+      if (open && content.style.display === "none") title.click();
       show(open);
     });
     show(expanded);
@@ -1125,20 +1135,14 @@ export class DevToolsUI {
       return true;
     }
 
-    if (target.classList?.contains("devtools__section")) {
-      const content = target.children?.[1];
-      if (content?.classList?.contains("devtools__section-content") && content.style.display === "none") {
-        target.children?.[0]?.click?.();
-      }
-    }
+    const targetParts = this.#sectionParts.get(target);
+    if (targetParts?.content.style.display === "none") targetParts.title.click();
     for (let parent = target.parentNode; parent; parent = parent.parentNode) {
       if (parent.classList?.contains("devtools__section-content") && parent.style.display === "none") {
-        parent.parentNode?.children?.[0]?.click?.();
+        this.#sectionParts.get(this.#contentSections.get(parent))?.title.click();
       }
     }
-    const highlightTarget = target.classList?.contains("devtools__section")
-      ? target.children?.[0] || target
-      : target;
+    const highlightTarget = targetParts?.title ?? target;
     highlightTarget.classList?.add("devtools__row--revealed");
     target.scrollIntoView?.({ block: "center" });
     return true;

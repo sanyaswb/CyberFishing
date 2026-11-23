@@ -2,6 +2,10 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.52.50 - DevTools no longer goes empty after a section's «i» (TK-306.1)
+
+- dev.html: sometimes, after a tap on the «i» of a deep section (for example «Зорепад»), every row of DevTools vanished and the «i» sat in the panel's top-right corner over the close button. It happened when such a section was opened a second time after leaving it. Fixed: the section always opens with its own rows, the «i» stays beside its title.
+
 ## v0.52.49 - Review: the gas mask's per-frame check allocates nothing (TK-382.1)
 
 - No change in play: the gas mask's check every frame no longer creates temporary objects (less garbage collection while a mask is worn).
@@ -39,8 +43,3 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 ## v0.52.41 - God mode: a hold removes the vodka too (TK-380.1)
 
 - dev.html, God mode «GOD зняти ефект утриманням»: a hold now arms any effect with a timer, the vodka (its drunkenness) included — before it took debuffs only, and no debuff in the game has a timer. Effects held by their source (the location's radiation, the gas mask) stay.
-
-## v0.52.40 - DevTools no longer goes empty after a bottle of vodka (TK-378.1)
-
-- dev.html: with any active effect (vodka, a gas mask in its slot, radiation) DevTools stayed empty until a reload. Fixed: the «СТАТУСИ» section reads the level again, and every page draws.
-- If one DevTools section ever fails to draw, it now shows the error in its own page and the rest of DevTools keeps working.

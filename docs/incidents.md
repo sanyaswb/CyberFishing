@@ -44,8 +44,30 @@ rule as something the next change can follow.
 | R25 | A check that compares a filtered list with the list it came from keeps each item's own index (map to [value, index] before filtering); comparing by the filtered position mixes items up and can pass or fail by luck. | I-25 |
 | R30 | A background write (a device's charge, a wear, a timer's state) touches only what reads it: an announcement builds no view model nobody reads, and a closed window renders nothing. A check counts the view-model builds of a background write. A guard that wraps actions in a transaction leaves out the ones that only change what is shown (a commit saves the whole inventory). | I-30 |
 | R29 | A module that takes a narrowed port is checked with that port, built by the same function production uses — never with the whole object behind it. A new call in the module then fails its check when the port lacks it. One DevTools section that throws never empties the panel: each module draws in isolation and shows its error in its page. | I-29 |
+| R31 | A DOM part that is moved elsewhere and back, or that other parts join later, is found by reference (a map from its owner kept when it is made), never by its place among the owner's children; a node moved back goes to its own place. A check moves it there and back and then uses it again. | I-31 |
 
 <a id="i-25"></a>
+
+## I-31 · 2026-11-23 · TK-320 … v0.52.49: DevTools went empty after «i», the «i» sat over the close button (TK-306.1)
+
+- **Seen:** the owner, `dev.html`: «іноді» after a tap on a section's «i» («Зорепад») every row of DevTools vanished
+  and the «i» moved to the top-right corner of the panel over the close button. Not every time, so it looked random.
+- **Cause:** a deep section opens inside (drill-in, spec 174 C4, TK-306): `focusSection` moves the section's content
+  into the page's drill area and `#leaveDrill` puts it back with `section.appendChild(content)` — at the end. A section
+  with a description (TK-320) has its «i» appended after the content: `[title, content, «i»]`. After the first leave
+  it became `[title, «i», content]`, and the next drill-in took `section.children[1]` — the «i» — for the content: it
+  was moved into the drill area alone, the page hid everything else (`devtools__page--drilled`), and the «i»
+  (`position: absolute`) lost its section box and was placed by the panel's — its corner. It needed both a section with
+  a description at the drill-in depth and a second opening after leaving it (a crumb, another module, a search, a
+  reveal), so it came «іноді». `createSectionInfo`, the crumbs and `revealPath` found the parts by place too.
+- **Fix (v0.52.50):** `DevToolsUI` keeps each section's title and content in maps when it makes them
+  (`#sectionParts`, `#contentSections`) and every lookup uses them; leaving a drill-in puts the content right after
+  the title.
+- **Rule R31:** a moved or later-joined DOM part is found by reference, never by its place; a moved node goes back to
+  its own place.
+- **Check:** `devtools-controls` (TK-306.1: a drill-in section with an «i» — open by the title, leave by a crumb, the
+  content is back after the title; «i» opens it again with its content, not the «i», in the drill area; once more by
+  the title) — fails on the old code. The keepnet `TestDocument` got `nextSibling` (DOM contract).
 
 ## I-30 · 2026-11-23 · spec 143 … v0.52.46: every background inventory write rebuilt the whole inventory (TK-386)
 

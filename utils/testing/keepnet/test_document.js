@@ -22,6 +22,12 @@ class TestElement {
     };
   }
   get childNodes() { return this.children; }
+  // DOM contract: the node after this one in its parent, or null (the last one or without a parent).
+  get nextSibling() {
+    const siblings = this.parentNode?.children;
+    if (!siblings) return null;
+    return siblings[siblings.indexOf(this) + 1] ?? null;
+  }
   set textContent(value) { this.replaceChildren(); this.text = String(value); }
   get textContent() { return this.text + this.children.map((child) => child.textContent).join(""); }
   append(...children) { for (const child of children) { child.remove(); child.parentNode = this; this.children.push(child); } }

@@ -1823,6 +1823,60 @@ function choiceRow(options, value, path) {
   drillUi.dispose();
 }
 
+// --- TK-306.1 (I-31): a drill-in section with a description «i» opens again after leaving -----------------------------
+// The owner (2026-11-23): after «i» on «Зорепад» the panel went empty and the «i» sat in the panel's corner over the
+// close button. Leaving a drill-in put the content after the «i», and the next drill-in took the section's second child
+// — the «i» — for its content.
+{
+  const infoDrillUi = new DevToolsUI(
+    () => {},
+    {},
+    null,
+    null,
+    null,
+    document.body,
+    createElement("div"),
+  );
+  const page = infoDrillUi
+    .createPages([{ id: "game", title: "Гра", icon: "map" }], "game", () => {})
+    .get("game");
+  const section = (title, parent) =>
+    infoDrillUi.createSection(title, parent, false, () => {}, null);
+  const root = section("РАНДОМАЙЗЕР", page);
+  const probes = section("Погода", root);
+  const starfall = section("Зорепад", probes);
+  infoDrillUi.createInfoRow("зорепадних ночей", "3", starfall);
+  const starfallSection = starfall.parentNode;
+  const infoButton = byClass("devtools__section-info-button", starfallSection)[0];
+  const titleOf = (content) => content.parentNode.children[0];
+  titleOf(root).click();
+  titleOf(probes).click();
+  const crumbTo = (text) =>
+    byClass("devtools__crumb", page).find((crumb) => crumb.textContent === text).click();
+  const assertDrilledIn = (how) => {
+    const host = byClass("devtools__drill", page)[0];
+    assert.ok(host, `${how}: the page shows the section alone`);
+    assert.equal(host.children.length, 1, `${how}: one thing in the drill area`);
+    // Nodes are compared by identity (assert.equal would diff the whole tree on a failure).
+    assert.ok(host.children[0] === starfall, `${how}: the drill area holds the section's content, not its «i»`);
+    assert.ok(infoButton.parentNode === starfallSection, `${how}: the «i» stays beside the section's title`);
+  };
+  const description = byClass("devtools__section-info", starfall)[0];
+  starfallSection.children[0].click();
+  assertDrilledIn("the title the first time");
+  crumbTo("Погода");
+  assert.ok(starfall.parentNode === starfallSection, "the content is back in its section");
+  assert.ok(starfallSection.children[1] === starfall, "back in its own place: after the title, before the «i»");
+  // The owner's case: «i» of a closed section opens it (a drill-in) with its description.
+  infoButton.click();
+  assertDrilledIn("«i» after leaving");
+  assert.equal(description.hidden, false, "«i» opens the description");
+  crumbTo("Гра");
+  starfallSection.children[0].click();
+  assertDrilledIn("the title after leaving again");
+  infoDrillUi.dispose();
+}
+
 // --- TK-307 (spec 174 C5): the panel's text dialog and result line instead of prompt and alert --------------------------
 (async () => {
   const { ServiceModule } = runtime.importModule(
