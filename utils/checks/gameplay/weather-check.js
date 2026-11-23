@@ -419,10 +419,10 @@ const step = (model, seconds, clock = null, dt = 0.1) => {
   );
   near(
     settle().amplitudeScale,
-    settings.normal.windAmplitude,
+    settings.normal.windAmplitude[1],
     "wind: windAmplitude",
   );
-  near(sea.state.speedScale, settings.normal.windSpeed, "wind: windSpeed");
+  near(sea.state.speedScale, settings.normal.windSpeed[1], "wind: windSpeed");
   near(sea.state.travel, 1, "the waves travel with the wind (to the right)");
   environment.wind.direction = -1;
   let previous = sea.state.travel,
@@ -457,17 +457,17 @@ const step = (model, seconds, clock = null, dt = 0.1) => {
   environment.weather.storm = 1;
   near(
     settle().amplitudeScale,
-    settings.normal.windAmplitude * settings.storm.amplitude,
+    settings.normal.windAmplitude[1] * settings.storm.amplitude[1],
     "storm: full wind and stormAmplitude",
   );
   near(
     sea.state.speedScale,
-    settings.normal.windSpeed * settings.storm.speed,
+    settings.normal.windSpeed[1] * settings.storm.speed[1],
     "storm: faster",
   );
   near(
     sea.state.wavelengthScale,
-    settings.storm.wavelength,
+    settings.storm.wavelength[1],
     "storm: longer waves",
   );
   settings.enabled = false;
@@ -528,17 +528,17 @@ const step = (model, seconds, clock = null, dt = 0.1) => {
     storm = water.seaState.storm;
   near(
     reading.waves.amplitude,
-    water.amplitude * normal.windAmplitude * storm.amplitude,
+    water.amplitude * normal.windAmplitude[1] * storm.amplitude[1],
     "amplitude = base × wind × storm",
   );
   near(
     reading.waves.wavelength,
-    water.wavelength * storm.wavelength,
+    water.wavelength * storm.wavelength[1],
     "length = base × storm",
   );
   near(
     reading.waves.speed,
-    water.speed * normal.windSpeed * storm.speed,
+    water.speed * normal.windSpeed[1] * storm.speed[1],
     "speed = base × wind × storm",
   );
   assert.deepEqual(
@@ -608,12 +608,12 @@ const step = (model, seconds, clock = null, dt = 0.1) => {
   );
   near(
     reading.waves.factors.amplitude.wind,
-    normal.windAmplitude,
+    normal.windAmplitude[1],
     "status reader exposes component wind amplitude factor",
   );
   near(
     reading.waves.factors.amplitude.storm,
-    storm.amplitude,
+    storm.amplitude[1],
     "status reader exposes component storm amplitude factor",
   );
   water.seaState.smoothingSec = 4;
@@ -636,8 +636,9 @@ const step = (model, seconds, clock = null, dt = 0.1) => {
         );
         cursor = cursor[seg];
       }
+      // Spec 187 D7: a [від, до] pair is one DevTools row (a pair field), a leaf too.
       assert(
-        cursor !== null && typeof cursor !== "object",
+        cursor !== null && (typeof cursor !== "object" || (Array.isArray(cursor) && cursor.every((end) => Number.isFinite(end)))),
         `link path ${linkPath} must resolve to a leaf value, not a section`,
       );
     }
@@ -783,7 +784,7 @@ const step = (model, seconds, clock = null, dt = 0.1) => {
   seaContinuous.update(200);
   const strongAmp = seaContinuous.state.amplitudeScale;
   assert(
-    weakAmp > seaCfg.normal.calmAmplitude && weakAmp < strongAmp && strongAmp < seaCfg.normal.windAmplitude,
+    weakAmp > seaCfg.normal.calmAmplitude && weakAmp < strongAmp && strongAmp < seaCfg.normal.windAmplitude[1],
     `waves scale smoothly between calm and full wind (${weakAmp.toFixed(3)} < ${strongAmp.toFixed(3)})`,
   );
 
@@ -3217,6 +3218,17 @@ const step = (model, seconds, clock = null, dt = 0.1) => {
     assert.ok(Array.isArray(pair) && pair.length === 2, `CONFIG.weather.wind.${key} is [від, до]`);
     for (const strength of [0, 0.02, 0.05, 0.3, 1, 1.6]) {
       near(effectOfPair(pair, neutral, strength), was(strength), `wind ${key} at ${strength * 100} % acts as before`, 1e-9);
+    }
+  }
+  // The sea state's: the wind's from the calm swell, the storm's from ×1.
+  const seaState = GAME_CONFIG.canvas.water.seaState;
+  const seaOld = [[seaState.normal.windAmplitude, seaState.normal.calmAmplitude, (s) => 0.55 + 0.6 * s, "normal.windAmplitude"],
+    [seaState.normal.windSpeed, 1, (s) => 1 + 0.25 * s, "normal.windSpeed"], [seaState.storm.amplitude, 1, (s) => 1 + s, "storm.amplitude"],
+    [seaState.storm.speed, 1, (s) => 1 + 0.6 * s, "storm.speed"], [seaState.storm.wavelength, 1, (s) => 1 + 0.3 * s, "storm.wavelength"]];
+  for (const [pair, neutral, was, key] of seaOld) {
+    assert.ok(Array.isArray(pair) && pair.length === 2, `CONFIG.canvas.water.seaState.${key} is [від, до]`);
+    for (const strength of [0, 0.02, 0.05, 0.3, 0.7, 1]) {
+      near(effectOfPair(pair, neutral, strength), was(strength), `sea ${key} at ${strength * 100} % acts as before`, 1e-9);
     }
   }
 }

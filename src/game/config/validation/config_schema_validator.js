@@ -1291,11 +1291,14 @@ export class ConfigSchemaValidator {
       this.#requireParameterLabel(`canvas.water.${key}`);
     }
     // Spec 172 D7: the sea state (TK-291: shared values, the normal state and the storm event) and the waves' variation.
-    for (const [group, part] of [["normal", [["calmAmplitude", 0, 5], ["windAmplitude", 0, 5], ["windSpeed", 0, 5],
-      ["nightAmplitude", 0, 5]]], ["storm", [["amplitude", 0, 10], ["speed", 0, 10], ["wavelength", 0.1, 10]]]]) {
+    // Spec 187 D7: the effects of the wind and the storm are [від, до] pairs.
+    for (const [group, part, pairs] of [["normal", [["calmAmplitude", 0, 5], ["nightAmplitude", 0, 5]],
+      [["windAmplitude", 0, 5, false], ["windSpeed", 0, 5, false]]],
+    ["storm", [], [["amplitude", 0, 10, false], ["speed", 0, 10, false], ["wavelength", 0.1, 10, false]]]]) {
       const values = cfg.seaState?.[group];
       if (!values || typeof values !== "object") { this.#error(`CONFIG.canvas.water.seaState.${group}`, "missing config"); continue; }
       this.#requireParameterLabel(`canvas.water.seaState.${group}`);
+      this.#requireRangePairs(`canvas.water.seaState.${group}`, values, pairs);
       for (const [key, min, max] of part) {
         this.#requireFiniteNumber(`CONFIG.canvas.water.seaState.${group}.${key}`, values[key], { min, max });
         this.#requireParameterLabel(`canvas.water.seaState.${group}.${key}`);

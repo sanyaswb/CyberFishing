@@ -113,11 +113,11 @@
   },
   "canvas.water.seaState.normal.windAmplitude": {
     "label": "Висота при вітрі",
-    "description": "Множник висоти хвиль при вітрі."
+    "description": "Множник висоти хвиль від вітру (без вітру — висота штилю). Від — при силі вітру 5 %, до — при 100 %."
   },
   "canvas.water.seaState.normal.windSpeed": {
     "label": "Швидкість при вітрі",
-    "description": "Множник швидкості хвиль при вітрі; хвилі йдуть за вітром."
+    "description": "Множник швидкості хвиль від вітру (без вітру ×1); хвилі йдуть за вітром. Від — при силі вітру 5 %, до — при 100 %."
   },
   "canvas.water.seaState.normal.nightAmplitude": {
     "label": "Висота вночі",
@@ -129,15 +129,15 @@
   },
   "canvas.water.seaState.storm.amplitude": {
     "label": "Висота в грозу",
-    "description": "Множник висоти хвиль у повну грозу."
+    "description": "Множник висоти хвиль у грозу. Від — при силі грози 5 %, до — при 100 %; без грози ×1."
   },
   "canvas.water.seaState.storm.speed": {
     "label": "Швидкість у грозу",
-    "description": "Множник швидкості хвиль у повну грозу."
+    "description": "Множник швидкості хвиль у грозу. Від — при силі грози 5 %, до — при 100 %; без грози ×1."
   },
   "canvas.water.seaState.storm.wavelength": {
     "label": "Довжина в грозу",
-    "description": "Множник довжини хвиль у повну грозу."
+    "description": "Множник довжини хвиль у грозу. Від — при силі грози 5 %, до — при 100 %; без грози ×1."
   },
   "canvas.water.variation": {
     "label": "Розсинхрон хвиль",

@@ -1,6 +1,7 @@
 // Release notes, newest first (unshift with every patch). DEV only: no production code reads them, and in the start's
 // bundle they cost 13 KB gzip (spec 160). dev.html publishes them with the version: window.CYBER_FISHING_PROJECT_VERSION.notes.
 export const PROJECT_RELEASE_NOTES = Object.freeze([
+  "Spec 187 C (waves): CONFIG.canvas.water.seaState normal.windAmplitude / windSpeed and storm.amplitude / speed / wavelength are [від, до] pairs read by SeaStateResolver (no wind — the calm swell, no storm — ×1) — the same game.",
   "Spec 187 C (wind): CONFIG.weather.wind rainSlantDeg / ashDriftPx (by the wind's strength with its gust, on along the line above 100 %) and rain.minStrength / bonus / gustChanceMult (by the rain's strength) are [від, до] pairs read by WindModel, PixiRainRenderer and PixiAshRenderer — the same game.",
   "Spec 187 C (storm): engine/math/strength_value.js (strengthValue, effectOfPair: neutral at 0, linear to «від» at 5 %, then to «до»); CONFIG.weather.storm's six effects are [від, до] pairs read by WeatherModel, WindModel and PixiRainRenderer — the same game as the old multipliers; ranges as pairs, labels, DevTools pairs.",
   "Spec 187 B: WeatherLookResolver «від» at VISIBLE_STRENGTH 5 % (strengthValue), location look overrides [від, до] (lookOverrideEnds, ends()); DevTools ДОЩ/ПОПІЛ — one field per value at the strength slider's level (≤5 % edits «від», 100 % «до», between requires the slider), marked when the slider moved it; I-33/R32: the location's look validated on its own in the weather file.",

@@ -1,9 +1,12 @@
 import { clampUnit, finiteOr } from "../../../engine/math/number_normalization.js";
 import { backgroundTimeBlend } from "../../domain/time/background_time_blend.js";
+import { effectOfPair } from "../../../engine/math/strength_value.js";
 
 const MAX_STEP_SEC = 0.25;
 
 const positive = (value, fallback) => Math.max(0, finiteOr(value, fallback));
+// Spec 187 D7: the «до» end of a [від, до] pair (the value at full strength the readings show), or the value itself.
+const endOf = (pair) => (Array.isArray(pair) ? pair[1] : pair);
 
 // Spec 172 D7 (TK-289): the state of the sea, which both the water's picture and the float's rocking follow, so they
 // always agree. From the weather, the wind and the time of day it gives multipliers of the waves' amplitude, speed and
@@ -104,23 +107,24 @@ export class SeaStateResolver {
     const normal = settings.normal;
     const event = settings.storm;
     // Spec 187 D12: the calm swell stays without automatic weather too (the weather freezes, it does not go out).
+    // Spec 187 D7: the wind's and the storm's effects are [від, до] by their strength (no wind — the calm swell, ×1).
     const calm = positive(normal?.calmAmplitude, 1);
-    const windy = positive(normal?.windAmplitude, 1);
+    const windy = positive(endOf(normal?.windAmplitude), 1);
     const nightAmpTarget = positive(normal?.nightAmplitude, 1);
-    const stormAmpTarget = positive(event?.amplitude, 1);
-    const windAmpFactor = calm + (windy - calm) * wind;
+    const stormAmpTarget = positive(endOf(event?.amplitude), 1);
+    const windAmpFactor = Math.max(0, effectOfPair(normal?.windAmplitude, calm, wind));
     const nightAmpFactor = 1 + (nightAmpTarget - 1) * night;
-    const stormAmpFactor = 1 + (stormAmpTarget - 1) * storm;
+    const stormAmpFactor = Math.max(0, effectOfPair(event?.amplitude, 1, storm));
     const amplitude = this.#amplitudeHold ?? windAmpFactor * nightAmpFactor * stormAmpFactor;
 
-    const windSpeedTarget = positive(normal?.windSpeed, 1);
-    const stormSpeedTarget = positive(event?.speed, 1);
-    const windSpeedFactor = 1 + (windSpeedTarget - 1) * wind;
-    const stormSpeedFactor = 1 + (stormSpeedTarget - 1) * storm;
+    const windSpeedTarget = positive(endOf(normal?.windSpeed), 1);
+    const stormSpeedTarget = positive(endOf(event?.speed), 1);
+    const windSpeedFactor = Math.max(0, effectOfPair(normal?.windSpeed, 1, wind));
+    const stormSpeedFactor = Math.max(0, effectOfPair(event?.speed, 1, storm));
     const speed = windSpeedFactor * stormSpeedFactor;
 
-    const stormLengthTarget = positive(event?.wavelength, 1);
-    const wavelength = 1 + (stormLengthTarget - 1) * storm;
+    const stormLengthTarget = positive(endOf(event?.wavelength), 1);
+    const wavelength = Math.max(0, effectOfPair(event?.wavelength, 1, storm));
     const smoothing = positive(settings.smoothingSec, 0);
     const f = state.factors;
     f.smoothingSec = smoothing;
