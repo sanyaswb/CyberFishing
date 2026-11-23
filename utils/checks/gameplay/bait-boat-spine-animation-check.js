@@ -1,4 +1,5 @@
 const assert = require("node:assert/strict");
+const { devToolsRedraw } = require("../../testing/doubles/dev_tools_redraw");
 
 async function checkBoatStateFlow() {
   const { BaitBoat } = await import("../../../src/game/application/chum/bait_boat.js");
@@ -396,7 +397,7 @@ async function checkDevToolsAndBoatConfig() {
   assert.equal(typeof CONFIG.ui.boat.yOffset, "number");
 
   const createdElements = [];
-  const fakeUi = {
+  const fakeUi = { releaseValueBindings() {}, redraw: devToolsRedraw,
     createInfoRow(label, value, parent) {
       createdElements.push({ type: "info", label, value });
     },

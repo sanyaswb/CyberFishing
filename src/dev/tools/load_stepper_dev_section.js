@@ -40,9 +40,12 @@ export class LoadStepperDevSection {
     this.#render();
   }
 
+  // TK-387: redrawn through DevToolsUI.redraw (bindings, the section's «i», an open drill-in).
   #render() {
-    const content = this.#content;
-    content.replaceChildren();
+    this.#ui.redraw(this.#content, () => this.#draw(this.#content));
+  }
+
+  #draw(content) {
     const ui = this.#ui;
     ui.createSwitcherRow("Покроковий режим (з наступного старту)", this.#settings.isEnabled(), content,
       (enabled) => this.#settings.setEnabled(enabled), ["LOAD_STEPPER", "enabled"]);

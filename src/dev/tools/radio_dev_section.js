@@ -70,10 +70,13 @@ export class RadioDevSection {
       command: `npm run apply:radio -- ${this.#exportedFile}`, onClose: () => { this.#exportedFile = null; } });
   }
 
+  // TK-387: redrawn through DevToolsUI.redraw — «Звук» → an effect opens as a drill-in, and its «увімкнено» redraws
+  // this section, so the drill-in is reopened with the rebuilt effect.
   #fill() {
-    const content = this.#content;
-    if (!content) return;
-    content.replaceChildren();
+    if (this.#content) this.#ui.redraw(this.#content, () => this.#draw(this.#content));
+  }
+
+  #draw(content) {
     const status = this.#radio.getStatus();
     const charge = this.#radio.batteryPercent();
     this.#ui.createInfoRow("стан", `${status.powered ? "увімкнено" : "вимкнено"} · ${status.status}`, content);

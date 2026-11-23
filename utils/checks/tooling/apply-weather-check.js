@@ -4,6 +4,7 @@
 // and/or a location's weather (format v2; v1 = rain + a location still applies). Every file write runs in a scratch
 // directory; production modules are only read.
 const assert = require("node:assert/strict");
+const { devToolsRedraw } = require("../../testing/doubles/dev_tools_redraw");
 const fs = require("node:fs");
 const os = require("node:os");
 const path = require("node:path");
@@ -233,7 +234,7 @@ const tick = () => new Promise((resolve) => setTimeout(resolve, 0));
     const resets = [];
 
     const fakeUi = {
-      releaseValueBindings() {},
+      redraw: devToolsRedraw, releaseValueBindings() {},
       createSection(label, parent) {
         const node = doc.createElement("div");
         parent.appendChild(node);

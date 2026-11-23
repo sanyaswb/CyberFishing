@@ -28,10 +28,13 @@ export class SpineBoatDevSection {
     this.#fill();
   }
 
+  // TK-387: redrawn through DevToolsUI.redraw — «Кістки» opens as a drill-in and a bone's choice or edit redraws this
+  // section, so the drill-in is reopened with the rebuilt bones.
   #fill() {
-    const content = this.#content;
-    if (!content) return;
-    content.replaceChildren();
+    if (this.#content) this.#ui.redraw(this.#content, () => this.#draw(this.#content));
+  }
+
+  #draw(content) {
     const status = this.#controller.getStatus();
     this.#ui.createInfoRow("режим", status.mode, content);
     if (status.reason) this.#ui.createInfoRow("причина без Spine", status.reason, content);

@@ -37,7 +37,11 @@ export class StatusEffectsModule {
     const ui = this.#ui;
     const section = this.#active;
     if (!ui || !section) return;
-    section.replaceChildren();
+    // TK-387: the one redraw path (bindings, an open drill-in).
+    ui.redraw(section, () => this.#drawActive(ui, section));
+  }
+
+  #drawActive(ui, section) {
     const active = this.#statuses.list();
     if (active.length === 0) ui.createTextRow("активні", "немає", section);
     for (const entry of active) {

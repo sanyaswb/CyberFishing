@@ -50,10 +50,12 @@ export class KeepnetDevSection {
     return { added, released, occupied, capacity: view.keepnetCapacity };
   }
 
+  // TK-387: redrawn through DevToolsUI.redraw (bindings, the section's «i», an open drill-in).
   #render() {
-    const content = this.#content;
-    if (!content) return;
-    content.replaceChildren();
+    if (this.#content) this.#ui.redraw(this.#content, () => this.#draw(this.#content));
+  }
+
+  #draw(content) {
     const view = this.#keepnet.getView();
     const live = view.liveBaits.filter((fish) => fish.location === "keepnet").length;
     const occupied = view.keepnet.length + live + (view.keepnetReservedCount || 0);

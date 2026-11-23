@@ -4,6 +4,7 @@
 // chances, the radio and the wind read from EnvironmentSystem; spec 179: the emission, radiation and its storm hold.
 // Fixed seeds, explicit time steps.
 const assert = require("node:assert/strict");
+const { devToolsRedraw } = require("../../testing/doubles/dev_tools_redraw");
 const {
   WeatherModel,
 } = require("../../../src/game/domain/weather/weather_model.js");
@@ -933,7 +934,7 @@ const step = (model, seconds, clock = null, dt = 0.1) => {
         if (path) rowsByPath.set(path.join("."), { kind: "input", value, onChange, bindingPath });
       },
       createTextRow() {},
-      releaseValueBindings() {},
+      redraw: devToolsRedraw, releaseValueBindings() {},
       syncValue(path, value) {
         this.syncCalls.push([path.join("."), value]);
       },
@@ -2318,7 +2319,7 @@ const step = (model, seconds, clock = null, dt = 0.1) => {
   const node = () => ({ replaceChildren() {}, appendChild() {} });
   const ui = {
     createInfoRow() {}, createRangeRow() {}, createSelectRow() {}, createInputRow() {}, createSwitcherRow() {},
-    addParameter() {}, releaseValueBindings() {}, createButtonGrid: (parent) => parent,
+    addParameter() {}, redraw: devToolsRedraw, releaseValueBindings() {}, createButtonGrid: (parent) => parent,
     createButtonRow(label, parent, onClick, navigation, icon, path) {
       const row = { style: {} };
       buttons.set(path ? path.join(".") : label, onClick);
@@ -2477,7 +2478,7 @@ const step = (model, seconds, clock = null, dt = 0.1) => {
     const section360 = new WeatherDevSection({
       view: { selected: "test" },
       ui: {
-        createInfoRow() {}, releaseValueBindings() {}, setSectionLabel() {},
+        createInfoRow() {}, redraw: devToolsRedraw, releaseValueBindings() {}, setSectionLabel() {},
         createSelectRow(label, choices, value, parent, onChange, path) { inControls(parent, path.join(".")); },
         createInputRow(label, value, parent) { inControls(parent, `input:${label}`); },
         addParameter(parent, { path }) { if (path) inControls(parent, path.join(".")); },

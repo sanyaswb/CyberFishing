@@ -1,6 +1,7 @@
 "use strict";
 const { composeTestConfig } = require("../../testing/runtime/config_test_composition");
 const assert = require("node:assert/strict");
+const { devToolsRedraw } = require("../../testing/doubles/dev_tools_redraw");
 const { SourceRuntime } = require("../../testing/core/source_runtime");
 
 function check(structured) {
@@ -654,6 +655,8 @@ function checkLocationMapConfigChanges() {
   // Spec 174 C2: each rail module gets its own page host.
   const pageHosts = new Map();
   const ui = new Proxy({body:panelBody,
+    // TK-387: a section redraws through DevToolsUI.redraw; the double draws again as the panel does.
+    redraw: devToolsRedraw,
     createPages(modules){pageHosts.clear();for(const module of modules)pageHosts.set(module.id,{page:module.id,children:[]});return new Map(pageHosts);},
     createSection(label,parent,expanded,onToggle,path,options){
       const section = {label,parent,expanded,onToggle,path,options,replaceChildren(){}}; sections.push(section);

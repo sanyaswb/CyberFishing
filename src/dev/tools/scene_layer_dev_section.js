@@ -50,10 +50,12 @@ export class SceneLayerDevSection {
     this.#fill();
   }
 
+  // TK-387: redrawn through DevToolsUI.redraw (bindings, the section's «i», an open drill-in in the weather).
   #fill() {
-    const content = this.#content;
-    if (!content) return;
-    content.replaceChildren();
+    if (this.#content) this.#ui.redraw(this.#content, () => this.#draw(this.#content));
+  }
+
+  #draw(content) {
     const status = this.#layer.getStatus();
     // TK-333.1 (owner): the scene's mode is the section's first parameter, above its state and the weather.
     if (status.state !== "inactive") {

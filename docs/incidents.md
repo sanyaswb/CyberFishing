@@ -36,7 +36,7 @@ rule as something the next change can follow.
 | R20 | Every `data-devtools-path` / `devtoolsPath` emitted by an overlay or UI link must be validated by automated checks against the live `CONFIG` object or mounted `DevTools` control index so it resolves to an exact leaf control (never a missing path or ancestor section fallback). | I-20 |
 | R21 | Layout overrides in container or media queries (phone, adaptive) come after every base rule of the same selector in the file; a base rule added later must go above them. A check parses the stylesheet and fails when a base rule of an overridden selector follows the query. | I-21 |
 | R22 | Each switch of a manual control holds only its own process; never one shared freeze or a switch that sets another process. A check flips every switch in every order and asserts the others keep their course. | I-22 |
-| R23 | A DevTools section that redraws its container while a child drill-in (`depth >= MAX_INLINE_SECTION_DEPTH`) may be open must wrap the rebuild in `DevToolsUI.preserveDrill`, and UI tests of nested modules must mount at the real production section depth (e.g. `СЦЕНА WebGL` -> `ПОГОДА`). | I-23 |
+| R23 | A DevTools section redraws its own rows only through `DevToolsUI.redraw(container, draw)` (an open drill-in is put back and reopened, bindings, paths and the section's «i» released), never by `replaceChildren` of its own; a DevToolsUI double mixes in `devToolsRedraw` (`utils/testing/doubles/dev_tools_redraw.js`). UI tests of nested modules mount at the real production section depth (e.g. `СЦЕНА WebGL` -> `ПОГОДА`, `SPINE` -> rod -> `Кістки`). | I-23, I-32 |
 | R24 | A double of `DevToolsUI` that records what a section shows keeps its placement contract (`#insertTreeNode`: rows before nested sections and slots, whatever order they were made in) and asserts the order the user reads. A mark derived from session edits («· змінено», a reset button) follows `config-updated` in place, not only the next redraw. Found by looking at the live panel, which the fake hid. | I-24 |
 | R28 | A DEV override lifts exactly the limit it is named for. A flag that removes a distance limit does not also remove the water test; when a flag joins a condition with `||`, check what else that condition guarded. When reproducing an owner's report, ask which DEV switches were on (God mode, its sub-flags default on). | I-28 |
 | R27 | Movement on a masked area is tested at the point it ends on, not only per axis: a diagonal step can pass both axis tests and cross a corner of the mask. An entity that is already outside its area must still be able to come back. A check of such an area runs the real mask of a location (its stairs), not a rectangle. | I-27 |
@@ -47,6 +47,27 @@ rule as something the next change can follow.
 | R31 | A DOM part that is moved elsewhere and back, or that other parts join later, is found by reference (a map from its owner kept when it is made), never by its place among the owner's children; a node moved back goes to its own place. A check moves it there and back and then uses it again. | I-31 |
 
 <a id="i-25"></a>
+
+## I-32 · 2026-11-23 · TK-306/TK-320 … v0.52.50: «i» multiplied, a drill-in kept the previous bone (TK-387)
+
+- **Seen:** the DevTools review (owner: «передивися devtools … що можна покращити і виправити»), reproduced in Node on
+  the real classes: every «↻ Оновити» of a section with description rows (САДОК, РАДІО, Spine, СЦЕНА WebGL, ПОГОДА with
+  «Всі») added one more «i» beside its title; in «SPINE → вудка/кораблик → Кістки» (a drill-in) choosing another bone
+  left the previous bone's fields on screen, and editing «x» changed the previous bone; in «РАДІО → Звук → ефект»
+  switching it on showed no parameters.
+- **Cause:** each section redrew itself on its own (`content.replaceChildren()` and rows again, 12 places), and the steps
+  differed: the «i» is appended to the section (`#createSectionInfo`), outside the container, so it stayed; seven
+  sections did not release their bindings; only the weather wrapped its redraw in `preserveDrill` (R23), so a redraw
+  from inside a drill-in (`SpineRodDevSection.#fill`, `RadioDevSection.#fill`) rebuilt the hidden parent while the
+  drill area kept the old rows and closures. Since the drill-in (TK-306) and the section «i» (TK-320).
+- **Fix (v0.52.51):** `DevToolsUI.redraw(container, draw)` is the one redraw path (drill-in put back and reopened,
+  bindings and paths released, the section's «i» removed, then `draw()`); every section that redraws its rows uses it;
+  `preserveDrill` is private; the optional `releaseValueBindings?.` / `typeof preserveDrill` calls are gone.
+- **Rule R23 (extended):** a section redraws only through `DevToolsUI.redraw`; doubles mix in `devToolsRedraw`.
+- **Check:** `devtools-controls` (TK-387: the real `SpineRodDevSection` — two «Оновити» leave one «i»; «Кістки» inside:
+  choosing «tip» shows its fields there, an edit changes «tip»; the real `RadioDevSection` — «Ретро» switched on inside
+  its drill-in shows its parameters) — fails with the old sections. The zone editor's double gives each control group a
+  container of its own, as the panel does.
 
 ## I-31 · 2026-11-23 · TK-320 … v0.52.49: DevTools went empty after «i», the «i» sat over the close button (TK-306.1)
 

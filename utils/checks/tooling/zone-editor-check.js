@@ -1,8 +1,13 @@
 "use strict";
 const assert = require("node:assert/strict");
+const { devToolsRedraw } = require("../../testing/doubles/dev_tools_redraw");
 const { SourceRuntime } = require("../../testing/core/source_runtime");
 const runtime = new SourceRuntime();
 const load = path => runtime.importModule(path);
+// Each control group is a container of its own (the location list, the beyond-map notice, an outer category), as in the
+// panel: a redraw of one releases only its own rows (TK-387). The location list keeps the label the scenarios read.
+const controlGroupDouble = (parent, path = []) =>
+  ({ label: path.at(-1) === "location" ? "Локація" : path.join("."), replaceChildren() {} });
 const { ZoneEditorState } = load("src/dev/location/zone_editor_state.js");
 const { ZoneEditorGeometryBuilder } = load("src/dev/location/zone_editor_geometry_builder.js");
 const { ZoneEditorSection } = load("src/dev/tools/zone_editor_section.js");
@@ -205,7 +210,7 @@ const { WorldPerspective } = load("src/game/domain/locations/world_perspective.j
     const group = { label: parent.label, disabled, replaceChildren() {} };
     if (path?.[1] === 'outer') outerGroups.set(path[2], group);
     return group;
-  }, syncValue() {}, releaseValueBindings() {}, createInfoRow() {},
+  }, syncValue() {}, redraw: devToolsRedraw, releaseValueBindings() {}, createInfoRow() {},
     createRangeRow(label, value, parent, action) { remember(label, parent, action); },
     createSwitcherRow(label, value, parent, action) { remember(label, parent, action); if (label === 'Меш маски') maskSections.push(parent.label); },
     createButtonRow(label, parent, action) { remember(label, parent, action); },
@@ -422,7 +427,7 @@ const refreshMetric = () => {
 // Rows of the per-category zone lists are keyed "<list>/<label>" (their labels repeat in every list).
 const ZONE_LISTS = new Set(["Ігрова область (закидання)", "Перешкоди", "Зачепи", "Рухомі зони"]);
 const keyOf = (label, parent) => ZONE_LISTS.has(parent?.label) ? `${parent.label}/${label}` : label;
-const ui = { createControlGroup: () => ({ label: "Локація", replaceChildren() {} }), syncValue: (path, value) => synced.push([path, value]), releaseValueBindings() {},
+const ui = { createControlGroup: controlGroupDouble, syncValue: (path, value) => synced.push([path, value]), redraw: devToolsRedraw, releaseValueBindings() {},
   createSwitcherRow(label, value, parent, callback) { actions.set(keyOf(label, parent), callback); },
   createInputRow(label, value, parent, type, callback) { actions.set(keyOf(label, parent), callback); },
   createRangeRow(label, value, parent, callback) { actions.set(keyOf(label, parent), callback); },
@@ -797,9 +802,9 @@ controlUI.dispose();
     const parent = kind === "button" ? args[0] : kind === "select" ? args[2] : args[1];
     rows.set(`${parent?.label}/${label}`, { kind, args });
   };
-  const structureUi = { createControlGroup: () => ({ label: "Локація", replaceChildren() {} }),
+  const structureUi = { createControlGroup: controlGroupDouble,
     syncValue(path, value) { controlValues.set(path.join("."), value); },
-    releaseValueBindings(parent) { for (const key of [...rows.keys()]) if (key.startsWith(`${parent.label}/`)) rows.delete(key); },
+    redraw: devToolsRedraw, releaseValueBindings(parent) { for (const key of [...rows.keys()]) if (key.startsWith(`${parent.label}/`)) rows.delete(key); },
     createInfoRow: () => ({}), createAlert: () => ({}), createInputRow: record("input"), createRangeRow: record("range"), createButtonRow: record("button"),
     createSelectRow: record("select"), createSwitcherRow: record("switch") };
   const written = [];
@@ -1103,7 +1108,7 @@ controlUI.dispose();
   const moves = [];
   const fsState = new ZoneEditorState(); fsState.loadedLocationId = "test"; fsState.setLocation("test");
   const fsRows = new Map();
-  const fsUi = { syncValue() {}, releaseValueBindings() {}, createAlert: () => ({}), createInfoRow() {}, createControlGroup: () => ({ replaceChildren() {} }),
+  const fsUi = { syncValue() {}, redraw: devToolsRedraw, releaseValueBindings() {}, createAlert: () => ({}), createInfoRow() {}, createControlGroup: () => ({ replaceChildren() {} }),
     createInputRow() {}, createRangeRow() {}, createButtonRow() {}, createSelectRow() {},
     createSwitcherRow: (label, ...args) => fsRows.set(label, args) };
   new ZoneEditorSection({ ui: fsUi, state: fsState, config: { locations: { cellSize: 40, designCellSize: 40,
@@ -1121,7 +1126,7 @@ controlUI.dispose();
     map: { test: { name: "Test", zones: { collisions: [{ x: 1, y: 1, w: 2, h: 2 }, { x: 5, y: 5, w: 2, h: 2 }] } } } } };
   const allState = new ZoneEditorState(); allState.loadedLocationId = "test"; allState.setLocation("test");
   const allRows = new Map(), allRecord = kind => (label, ...args) => allRows.set(label, { kind, args });
-  const allUi = { syncValue() {}, releaseValueBindings() {}, createAlert: () => ({}), createInfoRow: allRecord("info"), createControlGroup: () => ({ replaceChildren() {} }),
+  const allUi = { syncValue() {}, redraw: devToolsRedraw, releaseValueBindings() {}, createAlert: () => ({}), createInfoRow: allRecord("info"), createControlGroup: () => ({ replaceChildren() {} }),
     createInputRow: allRecord("input"), createRangeRow: allRecord("range"), createButtonRow: allRecord("button"),
     createSelectRow: allRecord("select"), createSwitcherRow: allRecord("switch") };
   const sections = new Map();
@@ -1158,7 +1163,7 @@ controlUI.dispose();
   const snapState = new ZoneEditorState(); snapState.loadedLocationId = "test"; snapState.setLocation("test"); snapState.setFlag("enabled", true);
   const snapRows = new Map(), snapWrites = [];
   const snapRecord = kind => (label, ...args) => snapRows.set(label, { kind, args });
-  const snapUi = { syncValue() {}, releaseValueBindings() {}, createAlert: () => ({}), createInfoRow: () => ({}), createControlGroup: () => ({ replaceChildren() {} }),
+  const snapUi = { syncValue() {}, redraw: devToolsRedraw, releaseValueBindings() {}, createAlert: () => ({}), createInfoRow: () => ({}), createControlGroup: () => ({ replaceChildren() {} }),
     createInputRow: snapRecord("input"), createRangeRow: snapRecord("range"), createButtonRow: snapRecord("button"),
     createSelectRow: snapRecord("select"), createSwitcherRow: snapRecord("switch") };
   new ZoneEditorSection({ ui: snapUi, state: snapState, config: snapConfig, createSection: label => ({ label, replaceChildren() {} }),
@@ -1512,7 +1517,7 @@ controlUI.dispose();
     map.refreshConfig(cfg.locations, {});
   };
   const rows = new Map();
-  const ui = { createControlGroup: () => ({ label: 'Локація', replaceChildren() {} }), releaseValueBindings() {}, createAlert: () => ({}), syncValue() {}, createInfoRow() {},
+  const ui = { createControlGroup: () => ({ label: 'Локація', replaceChildren() {} }), redraw: devToolsRedraw, releaseValueBindings() {}, createAlert: () => ({}), syncValue() {}, createInfoRow() {},
     createSelectRow: (label, options, value, parent, action) => rows.set(`${parent.label}/${label}`, action),
     createInputRow: (label, value, parent, type, action) => rows.set(`${parent.label}/${label}`, action),
     createSwitcherRow() {}, createRangeRow() {}, createButtonRow: (label, parent, action) => rows.set(`${parent.label}/${label}`, action) };
@@ -1593,7 +1598,7 @@ controlUI.dispose();
     const parent = kind === "button" ? args[0] : kind === "select" ? args[2] : args[1];
     rows.set(`${parent?.label}/${label}`, { kind, args });
   };
-  const ui = { createControlGroup: () => ({ label: "Локація", replaceChildren() {} }), syncValue() {}, releaseValueBindings(parent) {
+  const ui = { createControlGroup: controlGroupDouble, syncValue() {}, redraw: devToolsRedraw, releaseValueBindings(parent) {
     for (const map of [rows, info]) for (const key of [...map.keys()]) if (key.startsWith(`${parent.label}/`)) map.delete(key);
   }, createInfoRow: (label, value, parent) => { const element = { innerText: value }; info.set(`${parent?.label}/${label}`, element); return element; },
   createAlert: () => ({}), createInputRow: record("input"), createRangeRow: record("range"), createButtonRow: record("button"),
@@ -1869,7 +1874,7 @@ controlUI.dispose();
     const parent = kind === "button" ? args[0] : kind === "select" ? args[2] : args[1];
     rows.set(`${parent?.label}/${label}`, { kind, args });
   };
-  const sectionUi = { syncValue() {}, releaseValueBindings() {}, createAlert: () => ({}), createInfoRow: () => ({}), createControlGroup: () => ({ label: "group", replaceChildren() {} }),
+  const sectionUi = { syncValue() {}, redraw: devToolsRedraw, releaseValueBindings() {}, createAlert: () => ({}), createInfoRow: () => ({}), createControlGroup: () => ({ label: "group", replaceChildren() {} }),
     createInputRow: record("input"), createRangeRow: record("range"), createButtonRow: record("button"), createSelectRow: record("select"),
     createSwitcherRow: record("switch") };
   new ZoneEditorSection({ ui: sectionUi, state: st, config: cfg, createSection: label => ({ label, replaceChildren() {} }), renderTree() {},
@@ -1945,7 +1950,7 @@ controlUI.dispose();
     spots.remove("lake", 0);
     assert.equal(spots.list("lake").length, 2, "a game zone cannot be removed in the editor");
     const listRows = new Map(), listRecord = kind => (label, ...args) => listRows.set(label, { kind, args });
-    new ZoneEditorSection({ ui: { syncValue() {}, releaseValueBindings() {}, createAlert: () => ({}), createInfoRow: listRecord("info"),
+    new ZoneEditorSection({ ui: { syncValue() {}, redraw: devToolsRedraw, releaseValueBindings() {}, createAlert: () => ({}), createInfoRow: listRecord("info"),
       createControlGroup: () => ({ replaceChildren() {} }), createInputRow: listRecord("input"), createRangeRow: listRecord("range"),
       createButtonRow: listRecord("button"), createSelectRow: listRecord("select"), createSwitcherRow: listRecord("switch") },
     state: st, config: cfg, createSection: label => ({ label, replaceChildren() {} }), renderTree() {}, updateConfig() {},
@@ -1955,7 +1960,7 @@ controlUI.dispose();
     listRows.get("Номер зони прикормки").args[3]("2");
     assert(spots.selected === 1 && listRows.has("Видалити вибрану зону прикормки"), "the test zone can be removed");
     // TK-089: «Всі» takes every zone, the one under the pointer; nothing is removed from there.
-    listRows.clear(); new ZoneEditorSection({ ui: { syncValue() {}, releaseValueBindings() {}, createAlert: () => ({}), createInfoRow: listRecord("info"),
+    listRows.clear(); new ZoneEditorSection({ ui: { syncValue() {}, redraw: devToolsRedraw, releaseValueBindings() {}, createAlert: () => ({}), createInfoRow: listRecord("info"),
       createControlGroup: () => ({ replaceChildren() {} }), createInputRow: listRecord("input"), createRangeRow: listRecord("range"),
       createButtonRow: listRecord("button"), createSelectRow: listRecord("select"), createSwitcherRow: listRecord("switch") },
     state: st, config: cfg, createSection: label => ({ label, replaceChildren() {} }), renderTree() {}, updateConfig() {},
@@ -1982,7 +1987,7 @@ controlUI.dispose();
     const all = new CastableDependentZones({ state: allState, config: allConfig, readings, projector: identity, getWaterMetric: () => flat,
       map: { getCastableBoundsVirtual: () => ({ left: 0, right: 1000, top: 0, bottom: 1000 }) }, canvasMetrics: { width: 1000 }, writeConfig() {} });
     const allRows = new Map(), allWrites = [], allRecord = kind => (label, ...args) => allRows.set(label, { kind, args });
-    new ZoneEditorSection({ ui: { syncValue() {}, releaseValueBindings() {}, createAlert: () => ({}), createInfoRow: () => ({}), createControlGroup: () => ({ replaceChildren() {} }),
+    new ZoneEditorSection({ ui: { syncValue() {}, redraw: devToolsRedraw, releaseValueBindings() {}, createAlert: () => ({}), createInfoRow: () => ({}), createControlGroup: () => ({ replaceChildren() {} }),
       createInputRow: allRecord("input"), createRangeRow: allRecord("range"), createButtonRow: allRecord("button"),
       createSelectRow: allRecord("select"), createSwitcherRow: allRecord("switch") },
     state: allState, config: allConfig, createSection: label => ({ label, replaceChildren() {} }), renderTree() {},
@@ -2167,7 +2172,7 @@ controlUI.dispose();
     const state = new ZoneEditorState(); state.loadedLocationId = "test"; state.setLocation("test");
     const config = { locations: { cellSize: 40, designCellSize: 40, baseResolution: { width: 2560, height: 1440 },
       map: { test: { name: "Test", zones: JSON.parse(JSON.stringify(ZONES)) } } } };
-    const ui = { syncValue() {}, releaseValueBindings() {}, createAlert: () => ({}), createInfoRow() {}, createControlGroup: () => ({ replaceChildren() {} }),
+    const ui = { syncValue() {}, redraw: devToolsRedraw, releaseValueBindings() {}, createAlert: () => ({}), createInfoRow() {}, createControlGroup: () => ({ replaceChildren() {} }),
       createInputRow() {}, createRangeRow() {}, createSelectRow() {}, createSwitcherRow() {},
       createButtonRow: (label, parent, callback) => buttons.set(label, { parent, callback }),
       showExportCommand: (parent, notice) => fixCommands.push(notice),
@@ -2248,7 +2253,7 @@ controlUI.dispose();
     const clipState = new ZoneEditorState(); clipState.loadedLocationId = "test"; clipState.setLocation("test");
     const clipConfig = { locations: { cellSize: 40, designCellSize: 40, baseResolution: { width: 2560, height: 1440 }, enableCollisions: true,
       map: { test: { name: "Test", zones: { castable, collisions: [{ x: 1, y: 22, w: 2, h: 2 }, { x: 60, y: 30, w: 8, h: 4 }] } } } } };
-    const clipUi = { syncValue() {}, releaseValueBindings() {}, createInfoRow: (label, text) => rows.set(label, text),
+    const clipUi = { syncValue() {}, redraw: devToolsRedraw, releaseValueBindings() {}, createInfoRow: (label, text) => rows.set(label, text),
       createControlGroup: () => ({ replaceChildren() {} }), createInputRow() {}, createRangeRow() {}, createSelectRow() {},
       createSwitcherRow() {}, createButtonRow: (label, parent, callback) => rows.set(label, callback),
       createAlert: () => ({}) };

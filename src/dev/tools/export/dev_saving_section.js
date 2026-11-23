@@ -46,9 +46,12 @@ export class DevSavingSection {
   render(host) {
     if (!host) return;
     this.#host = host;
+    // TK-387: the one redraw path (bindings, the section's «i», an open drill-in).
+    this.#ui.redraw(host, () => this.#draw(host));
+  }
+
+  #draw(host) {
     const ui = this.#ui;
-    ui.releaseValueBindings?.(host);
-    host.replaceChildren();
     const createStatusRow = this.#useTextStatus && ui.createTextRow
       ? ui.createTextRow.bind(ui)
       : ui.createInfoRow.bind(ui);

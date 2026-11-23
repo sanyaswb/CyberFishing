@@ -160,12 +160,14 @@ export class ZoneEditorSection {
 
   // D1/D2: the location select; the editor draws on the map only for the location on screen, another one is opened
   // by reloading the DEV page with it, after a warning when zone edits would be lost.
+  // TK-387: every list of the editor redraws through DevToolsUI.redraw (bindings, the section's «i», an open drill-in).
   #fillLocation() {
     const list = this.#location;
-    if (!list) return;
+    if (list) this.#ui.redraw(list, () => this.#drawLocation(list));
+  }
+
+  #drawLocation(list) {
     const ui = this.#ui, state = this.#state, maps = this.#config.locations.map;
-    ui.releaseValueBindings(list);
-    list.replaceChildren();
     const ids = Object.keys(maps);
     const labelOf = id => `${maps[id]?.name || id} (${id})`;
     ui.createSelectRow("Локація", ids.map(labelOf), labelOf(state.locationId), list, (label) => {
@@ -199,10 +201,11 @@ export class ZoneEditorSection {
   // until the code holds zones inside the map (npm run apply:zones with that file, then a reload) and the session too.
   #fillAlert() {
     const host = this.#alert;
-    if (!host) return;
+    if (host) this.#ui.redraw(host, () => this.#drawAlert(host));
+  }
+
+  #drawAlert(host) {
     const ui = this.#ui, id = this.#locationId(), map = this.#mapCells();
-    // The notice holds no bound values (only text and buttons), so it is simply replaced.
-    host.replaceChildren();
     const session = findZonesBeyondMap(this.#config.locations.map[id]?.zones, map);
     const base = this.#getBaseZones ? findZonesBeyondMap(this.#getBaseZones(id), map) : [];
     if (!session.length && !base.length) { this.#fixFile = null; this.#fixMessage = ""; return; }
@@ -440,10 +443,11 @@ export class ZoneEditorSection {
   // One category's list: the physics switch first; the items only while the physics is on.
   #fillCategory(category) {
     const list = this.#lists.get(category);
-    if (!list) return;
+    if (list) this.#ui.redraw(list, () => this.#drawCategory(category, list));
+  }
+
+  #drawCategory(category, list) {
     const ui = this.#ui, state = this.#state;
-    ui.releaseValueBindings(list);
-    list.replaceChildren();
     const physicsPath = ["CONFIG", "locations", PHYSICS_KEYS[category]];
     const physicsOn = this.#config.locations[PHYSICS_KEYS[category]] !== false;
     ui.createSwitcherRow("Фізика зони", physicsOn, list, (value) => {
@@ -671,10 +675,11 @@ export class ZoneEditorSection {
 
   #fillPerspective() {
     const content = this.#perspective;
-    if (!content) return;
+    if (content) this.#ui.redraw(content, () => this.#drawPerspective(content));
+  }
+
+  #drawPerspective(content) {
     const ui = this.#ui, state = this.#state, ranges = WATER_PROJECTION_RANGES;
-    ui.releaseValueBindings(content);
-    content.replaceChildren();
     const id = this.#locationId();
     const path = ["CONFIG", "locations", "map", id, "waterProjection"];
     const readProjection = () => this.#config.locations.map[id]?.waterProjection;
@@ -766,10 +771,11 @@ export class ZoneEditorSection {
   // Item, fish and physics values are never changed.
   #fillFishing() {
     const list = this.#fishing;
-    if (!list) return;
+    if (list) this.#ui.redraw(list, () => this.#drawFishing(list));
+  }
+
+  #drawFishing(list) {
     const ui = this.#ui, dependent = this.#getDependentZones?.() ?? null;
-    ui.releaseValueBindings(list);
-    list.replaceChildren();
     this.#configSwitch(list, "debugVisuals", "Показувати оверлеї гри");
     // Spec 131 prerequisites: a switch that cannot work while its parent is off is blocked, and the parent is shown.
     const locations = this.#config.locations;

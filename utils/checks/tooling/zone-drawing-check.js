@@ -2,6 +2,7 @@
 // Spec 141: drawing new zones on the grid in the DEV zone editor (LMB rectangles, RMB cuts, apply/cancel), on the real
 // LocationMap and validated config edits, through the drag tool, the geometry builder and the editor section.
 const assert = require("node:assert/strict");
+const { devToolsRedraw } = require("../../testing/doubles/dev_tools_redraw");
 const { SourceRuntime } = require("../../testing/core/source_runtime");
 const runtime = new SourceRuntime();
 const load = path => runtime.importModule(path);
@@ -155,7 +156,7 @@ assert.equal(frame.annotations.foreground, null, "applying removes the dimming")
 // The section: «Додати зону» turns on what it needs and draws; the list shows apply/cancel and the new zones only.
 const rows = new Map(), sections = [], created = new Map();
 const remember = (label, parent, args) => rows.set(`${parent?.label}/${label}`, args);
-const ui = { syncValue() {}, releaseValueBindings() {}, createInfoRow: (label, value, parent) => remember(label, parent, [value]),
+const ui = { syncValue() {}, redraw: devToolsRedraw, releaseValueBindings() {}, createInfoRow: (label, value, parent) => remember(label, parent, [value]),
   createControlGroup: parent => ({ label: parent.label, replaceChildren() {} }),
   createInputRow: (label, value, parent) => remember(label, parent, [value]), createRangeRow: (label, value, parent) => remember(label, parent, [value]),
   createButtonRow: (label, parent, action) => remember(label, parent, [action]),

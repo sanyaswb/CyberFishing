@@ -282,9 +282,8 @@ export class WeatherDevSection {
   #fill() {
     const content = this.#content;
     if (!content) return;
-    const rebuild = () => {
-      this.#ui.releaseValueBindings?.(content);
-      content.replaceChildren();
+    // TK-387: the one redraw path (R23: an open drill-in is reopened; bindings and the section's «i» released).
+    this.#ui.redraw(content, () => {
       this.#marks = [];
       this.#savingSection.clear();
       this.#renderSelector(content);
@@ -306,9 +305,7 @@ export class WeatherDevSection {
       this.#renderWater(content, mode);
       if (mode.location) this.#renderStart(content, mode);
       this.#savingSection.render(this.#createSection("Збереження", content, ["WEATHER", "saving"]));
-    };
-    if (typeof this.#ui.preserveDrill === "function") this.#ui.preserveDrill(content, rebuild);
-    else rebuild();
+    });
   }
 
   // TK-327.1: «Загальні», «Всі» (TK-333) and every location as buttons on top (all visible, one press).

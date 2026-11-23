@@ -2,6 +2,10 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.52.51 - DevTools sections redraw cleanly: one «i», bones and radio effects follow the choice (TK-387)
+
+- dev.html: «↻ Оновити» no longer adds another «i» beside a section's title each time; in «SPINE → вудка/кораблик → Кістки» choosing another bone shows its fields (before, the previous bone's fields stayed and an edit changed that bone); in «РАДІО → Звук → ефект» switching it on shows its parameters at once.
+
 ## v0.52.50 - DevTools no longer goes empty after a section's «i» (TK-306.1)
 
 - dev.html: sometimes, after a tap on the «i» of a deep section (for example «Зорепад»), every row of DevTools vanished and the «i» sat in the panel's top-right corner over the close button. It happened when such a section was opened a second time after leaving it. Fixed: the section always opens with its own rows, the «i» stays beside its title.
@@ -39,7 +43,3 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 
 - Two gas mask filters: «Фільтр ФПК-1 „Вугільний“» and «Фільтр ФПК-1 „Попіл“», 3 minutes each (same parameters), with simple icons. The gas mask now has two filter cells: a tap on the mask opens its editor, a filter goes into a free cell, «Спорядити» puts the mask on. Gas mask quality is 3.
 - dev.html: two of each filter in the DEV start and once in an existing DEV save; DEV shop «Фільтри протигаза». The filters do not act yet — the next stage makes the mask protect only through them.
-
-## v0.52.41 - God mode: a hold removes the vodka too (TK-380.1)
-
-- dev.html, God mode «GOD зняти ефект утриманням»: a hold now arms any effect with a timer, the vodka (its drunkenness) included — before it took debuffs only, and no debuff in the game has a timer. Effects held by their source (the location's radiation, the gas mask) stay.

@@ -5,6 +5,7 @@
 // battery's charge; saves keep it, saves without the slot load with it empty. The auxiliary wells scroll along the
 // axis their layout declares (HorizontalScrollController.resolveAxis).
 const assert = require("node:assert/strict");
+const { devToolsRedraw } = require("../../testing/doubles/dev_tools_redraw");
 const { SourceRuntime } = require("../../testing/core/source_runtime");
 
 const runtime = new SourceRuntime();
@@ -1271,7 +1272,7 @@ async function stageFive() {
   const buttons = new Map();
   const discharged = [];
   const switches = new Map();
-  const ui = { createInfoRow: (label, value) => rows.push([label, value]),
+  const ui = { releaseValueBindings() {}, redraw: devToolsRedraw, createInfoRow: (label, value) => rows.push([label, value]),
     createButtonRow: (label, parent, onClick) => buttons.set(label, onClick),
     createSwitcherRow: (label, value, parent, onChange, path) => switches.set(path.join("."), { value, onChange }),
     showExportCommand: (parent, notice) => exportCommands.push(notice) };

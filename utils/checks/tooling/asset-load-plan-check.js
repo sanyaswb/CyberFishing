@@ -5,6 +5,7 @@
 // failures that settle instead of rejecting) and the production plan: its first layer is exactly what the start loaded
 // before stage D (the current phase and the depth map, the float's scene art, the slot placeholders).
 const assert = require("node:assert/strict");
+const { devToolsRedraw } = require("../../testing/doubles/dev_tools_redraw");
 const path = require("node:path");
 const { pathToFileURL } = require("node:url");
 
@@ -512,7 +513,7 @@ const flush = async () => { for (let index = 0; index < 10; index += 1) await Pr
     const settings = new DevLoadStepperSettings({ cache: { get: (key, fallback) => kept.get(key) ?? fallback,
       set: (key, value) => kept.set(key, value), remove: (key) => kept.delete(key) } });
     const node = () => ({ isConnected: true, rows: [], replaceChildren() { this.rows = []; } });
-    const ui = { createSwitcherRow: (label, value, parent, change) => parent.rows.push({ label, value, change }),
+    const ui = { releaseValueBindings() {}, redraw: devToolsRedraw, createSwitcherRow: (label, value, parent, change) => parent.rows.push({ label, value, change }),
       createButtonRow: (label, parent, click) => parent.rows.push({ label, click }),
       createTextRow: (label, value, parent) => parent.rows.push({ label, value }) };
     const sections = new Map();

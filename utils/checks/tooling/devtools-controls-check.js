@@ -1877,6 +1877,89 @@ function choiceRow(options, value, path) {
   infoDrillUi.dispose();
 }
 
+// --- TK-387 (I-32): a section that redraws its own rows goes through DevToolsUI.redraw ---------------------------------
+// Found by the DevTools review (2026-11-23): every «↻ Оновити» of a section with description rows added one more «i»
+// (the «i» lives in the section, replaceChildren cleared only the container), and a choice inside a drill-in that
+// redrew its parent left the old rows in the drill-in (R23): in «SPINE → вудка → Кістки» the next bone's fields went
+// into the hidden rebuilt section, and editing «x» changed the previous bone. Real sections at their production depth.
+{
+  const redrawUi = new DevToolsUI(() => {}, {}, null, null, null, document.body, createElement("div"));
+  const page = redrawUi.createPages([{ id: "scene", title: "Сцена", icon: "scene" }], "scene", () => {}).get("scene");
+  const createSection = (label, parent, path) => redrawUi.createSection(label, parent, false, () => {}, path);
+  const titleOf = (text) => byClass("devtools__section-title", page).find((title) => title.textContent === text);
+  const drillPaths = () => byClass("devtools__row", byClass("devtools__drill", page)[0] ?? createElement("div"))
+    .map((row) => row.dataset.devtoolsPath).filter(Boolean);
+  const choose = (row, text) => {
+    byClass("devtools__choice-button", row)[0].click();
+    byClass("devtools__choice-option", row).find((option) => option.textContent.includes(text)).click();
+  };
+
+  // SPINE (depth 0) → the rod (1) → «Кістки» (2: a drill-in), as SpineModule builds it.
+  const bones = [
+    { name: "rod", parent: null, x: 1, y: 2, rotation: 0, scaleX: 1, scaleY: 1, canvasX: 0, canvasY: 0 },
+    { name: "tip", parent: "rod", x: 50, y: 60, rotation: 0, scaleX: 1, scaleY: 1, canvasX: 0, canvasY: 0 },
+  ];
+  const boneEdits = [];
+  const { SpineRodDevSection } = runtime.importModule("src/dev/tools/spine_rod_dev_section.js");
+  const spine = createSection("SPINE", page, ["SPINE"]);
+  new SpineRodDevSection({ ui: redrawUi, createSection, renderConfigTree() {}, documentRef: document, windowRef: {},
+    controller: { exportSkeleton: () => ({ fileName: "rod.json", text: "{}" }),
+      getStatus: () => ({ mode: "spine", missingClips: [], mipmapped: false, pixelRatio: 1 }),
+      isSpineEnabled: () => true, setSpineEnabled() {}, getClips: () => [], setClipEnabled() {}, getBones: () => bones,
+      setBoneSetup: (name, setup) => boneEdits.push([name, setup]), getBoneEdits: () => ({}) } }).render(spine);
+  titleOf("SPINE").click();
+  titleOf("rod").click();
+  const rodSection = titleOf("rod").parentNode;
+  const refresh = () => byClass("devtools__action", rodSection).find((button) => button.innerText.includes("Оновити")).click();
+  refresh();
+  refresh();
+  assert.equal(byClass("devtools__section-info-button", rodSection).filter((button) => button.parentNode === rodSection).length, 1,
+    "after two «Оновити» the section has one «i», not one per redraw");
+
+  titleOf("Кістки").click();
+  assert.ok(drillPaths().includes("SPINE_ROD.bones.rod.x"), "«Кістки» opens inside with the first bone");
+  choose(byClass("devtools__row", byClass("devtools__drill", page)[0]).find((row) =>
+    row.dataset.devtoolsPath === "SPINE_ROD.bones.selected"), "tip");
+  assert.ok(drillPaths().includes("SPINE_ROD.bones.tip.x") && !drillPaths().includes("SPINE_ROD.bones.rod.x"),
+    "choosing a bone inside the drill-in shows that bone's fields there");
+  assert.equal(byClass("devtools__drill", page).length, 1, "one drill area, the rebuilt one");
+  const tipX = byClass("devtools__row", byClass("devtools__drill", page)[0]).find((row) =>
+    row.dataset.devtoolsPath === "SPINE_ROD.bones.tip.x");
+  const input = byClass("devtools__input--number", tipX)[0];
+  input.value = "55";
+  input.fire("blur", { target: input });
+  // The edit comes from the sandboxed module's realm: compared by value.
+  assert.equal(JSON.stringify(boneEdits.at(-1)), JSON.stringify(["tip", { x: 55 }]), "an edit there changes the chosen bone");
+  assert.ok(drillPaths().includes("SPINE_ROD.bones.tip.x"), "and the drill-in stays on it after the redraw");
+  const crumbs = byClass("devtools__crumb", page).map((crumb) => crumb.textContent);
+  assert.deepEqual([...crumbs], ["Сцена", "SPINE", "rod", "Кістки"], "its crumbs lead to the rebuilt sections");
+
+  // РАДІО (0) → «Звук: ефекти й перешкоди» (1) → an effect (2: a drill-in): «увімкнено» shows the effect's parameters.
+  const radioConfig = { effects: { retro: { enabled: false, drive: 2 } } };
+  const { RadioDevSection } = runtime.importModule("src/dev/tools/radio_dev_section.js");
+  const radio = new RadioDevSection({ ui: redrawUi, createSection,
+    radio: { getStatus: () => ({ powered: true, status: "on", country: "UA", stationCount: 1, signal: 1 }),
+      batteryPercent: () => 50, discharge() {} },
+    config: () => radioConfig,
+    setConfig: (path, value) => { radioConfig.effects.retro.enabled = value; },
+    renderConfigTree: (settings, parent, path) => {
+      if (path.at(-1) === "retro") redrawUi.createTextRow("drive", String(settings.drive), parent);
+    } });
+  radio.render(page);
+  titleOf("РАДІО").click();
+  titleOf("Звук: ефекти й перешкоди").click();
+  titleOf("Ретро").click();
+  const drillText = () => byClass("devtools__label", byClass("devtools__drill", page)[0]).map((label) => label.dataset.devtoolsKey);
+  assert.ok(!drillText().includes("drive"), "«Ретро» is off: no parameters yet");
+  const enabled = byClass("devtools__row", byClass("devtools__drill", page)[0]).find((row) =>
+    row.dataset.devtoolsPath === "RADIO.effects.retro.enabled");
+  const toggle = byClass("devtools__switch-input", enabled)[0];
+  toggle.checked = true;
+  toggle.fire("change", { target: toggle });
+  assert.ok(drillText().includes("drive"), "switching it on inside the drill-in shows its parameters there");
+  redrawUi.dispose();
+}
+
 // --- TK-307 (spec 174 C5): the panel's text dialog and result line instead of prompt and alert --------------------------
 (async () => {
   const { ServiceModule } = runtime.importModule(

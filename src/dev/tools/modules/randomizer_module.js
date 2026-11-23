@@ -38,12 +38,13 @@ export class RandomizerModule {
     return this.#probes.find((probe) => probe.id === this.#probeId) ?? this.#probes[0];
   }
 
+  // TK-387: redrawn through DevToolsUI.redraw (bindings, an open drill-in).
   #fill() {
-    const content = this.#content;
-    if (!content) return;
+    if (this.#content) this.#context.ui.redraw(this.#content, () => this.#draw(this.#content));
+  }
+
+  #draw(content) {
     const { ui, createSection } = this.#context;
-    ui.releaseValueBindings?.(content);
-    content.replaceChildren();
     const labels = this.#probes.map((probe) => probe.label);
     ui.createSelectRow("тест", labels, this.#probe().label, content, (label) => {
       this.#probeId = this.#probes.find((probe) => probe.label === label)?.id ?? this.#probeId;

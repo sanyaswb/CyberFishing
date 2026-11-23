@@ -300,9 +300,9 @@ export class DevToolsUI {
     this.#body.scrollTop = 0;
   }
 
-  // TK-330: when a parent section redraws its own content (e.g. WeatherDevSection.#fill), return any open drill-in back
-  // into that parent so bindings release cleanly, then re-open the rebuilt drill-in (or refresh an active filter).
-  preserveDrill(container, rebuild) {
+  // TK-330: when a parent section redraws its own content (redraw), return any open drill-in back into that parent so
+  // bindings release cleanly, then re-open the rebuilt drill-in (or refresh an active filter).
+  #preserveDrill(container, rebuild) {
     const drillSection = this.#drill && container?.contains(this.#drill.section) ? this.#drill.section : null;
     const drillPath = drillSection?.dataset?.devtoolsPath || "";
     const scrollTop = drillSection ? this.#body.scrollTop : 0;
@@ -319,6 +319,24 @@ export class DevToolsUI {
       this.focusSection(target);
       this.#body.scrollTop = scrollTop;
     }
+  }
+
+  // TK-387 (I-32): the one way a section redraws its own rows («↻ Оновити», a choice that changes what it shows). An
+  // open drill-in inside the container is put back and reopened afterwards (R23); the old rows' bindings and paths are
+  // released; the «i» the container's section got for its description goes with them (it lives in the section, not in
+  // the container; the next createInfoRow makes it again, open as before); then draw() fills the container.
+  redraw(container, draw) {
+    this.#preserveDrill(container, () => {
+      this.releaseValueBindings(container);
+      const description = this.#descriptions.get(container);
+      if (description?.button) {
+        description.button.remove();
+        description.button = null;
+        this.#contentSections.get(container)?.classList.remove("devtools__section--has-info");
+      }
+      container.replaceChildren();
+      draw();
+    });
   }
 
   #crumb(text, onClick) {

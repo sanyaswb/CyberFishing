@@ -33,10 +33,8 @@ export class ActiveFishModule {
     this.#shapeKey = this.#shapeOf();
     const slot = this.#slot;
     if (!slot) return;
-    const { ui } = this.#context;
-    ui.releaseValueBindings(slot);
-    slot.replaceChildren();
-    this.#render(slot);
+    // TK-387: the one redraw path (bindings, an open drill-in of a fish's section).
+    this.#context.ui.redraw(slot, () => this.#render(slot));
   }
 
   #render(host) {

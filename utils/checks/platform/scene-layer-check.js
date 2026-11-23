@@ -8,6 +8,7 @@
 // transparent canvas, a real no-WebGL fallback in Node), the 2D gates, the DEV section, the runtime module, the CSS,
 // the vendored bundle and a production graph that loads Pixi only lazily.
 const assert = require("node:assert/strict");
+const { devToolsRedraw } = require("../../testing/doubles/dev_tools_redraw");
 const fs = require("node:fs");
 const path = require("node:path");
 const { spawnSync } = require("node:child_process");
@@ -2291,7 +2292,7 @@ async function checkDevWiring() {
     return node;
   };
   const flatten = (parent) => parent.children.flatMap((child) => (child.label === null ? flatten(child) : [child.label, ...flatten(child)]));
-  const ui = {
+  const ui = { releaseValueBindings() {}, redraw: devToolsRedraw,
     createInfoRow: (label, value, parent) => insert(parent, nodeOf(`${label}: ${value}`), 0),
     createSwitcherRow: (label, value, parent, onChange) => { insert(parent, nodeOf(`${label}: ${value}`), 0); switchHandler = onChange; },
     createButtonRow: (label, parent, onClick) => { actions.set(label, onClick); return insert(parent, nodeOf(label), 0); },

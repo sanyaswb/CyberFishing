@@ -1,4 +1,5 @@
 const assert = require("node:assert/strict");
+const { devToolsRedraw } = require("../../testing/doubles/dev_tools_redraw");
 const { TestDocument } = require("../../testing/keepnet/test_document");
 
 async function main() {
@@ -600,7 +601,7 @@ async function checkKeepnetDevFill() {
   let seed = 7;
   const random = () => { seed = (seed * 16807) % 2147483647; return (seed - 1) / 2147483646; };
   const rows = [], buttons = new Map();
-  const ui = { createInfoRow: (label, value) => rows.push([label, value]),
+  const ui = { releaseValueBindings() {}, redraw: devToolsRedraw, createInfoRow: (label, value) => rows.push([label, value]),
     createButtonRow: (label, parent, onClick) => buttons.set(label, onClick) };
   const section = new KeepnetDevSection({ ui, random, createSection: () => ({ replaceChildren() { rows.length = 0; buttons.clear(); } }),
     keepnet: { getView: () => service.getView(), keepCatch: (fish) => service.keepCatch(fish), species: FISH_DB,
