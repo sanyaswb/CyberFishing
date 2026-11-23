@@ -2,6 +2,10 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.52.67 - DevTools: «Хвилі» off when the water is flat (TK-398.1)
+
+- dev.html: with the automatic weather off and no wind the water was flat, but «Хвилі» in «Керування» (and the «i» of «ПОГОДА») still showed the waves on. Now they are on only while held by hand or while the waves really show; a wind that raises waves turns the switch on by itself.
+
 ## v0.52.66 - DevTools: the weather's «i» shows what is on now (TK-400)
 
 - dev.html: the «i» of the «ПОГОДА» section lists the automatic weather, the states on now, the radiation and a short line for each state (strength, phase, time left; the wind's direction and gusts), updated live while it is open.
@@ -37,7 +41,3 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 ## v0.52.58 - The DEV live snapshot at the overlay's cadence, not every frame (TK-392, spec 186)
 
 - dev.html: with the overlay, DevTools or console modules on, the game built the debug snapshot (bite chances of every species and more) every frame although everything reads it every 150 ms; now it builds it every 150 ms (60 → 6–7 times a second). Less DEV work in the frame, so «ПРОДУКТИВНІСТЬ» measures closer to the real game.
-
-## v0.52.57 - An overlay window that fails to draw shows why; the others keep updating (TK-391, spec 186)
-
-- dev.html: if one DEV overlay window ever fails to draw, it shows a red notice with the cause, and the other overlay windows keep updating (before, every window after it froze without a sign).

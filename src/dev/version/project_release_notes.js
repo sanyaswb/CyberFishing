@@ -1,6 +1,7 @@
 // Release notes, newest first (unshift with every patch). DEV only: no production code reads them, and in the start's
 // bundle they cost 13 KB gzip (spec 160). dev.html publishes them with the version: window.CYBER_FISHING_PROJECT_VERSION.notes.
 export const PROJECT_RELEASE_NOTES = Object.freeze([
+  "TK-398.1: DevTools «Хвилі» is on while held above 0 or while the live height is above 1% of the usual (WeatherDevSection.#wavesOn) — flat water without the automatic weather shows off (the switch and the «i»); it showed on unless held at 0.",
   "TK-400: DevTools «ПОГОДА» «i» — the automatic weather, the states on now (LIVE_BITS), the radiation and a short line per state; texts follow refreshLive only while the «i» is open, the lines follow the redraw; no waves reader in the port — no waves state.",
   "TK-399.1: weather.storm.rainChanceMult 6 → 10 — rain under ~85% of storms (was 72%) and ~61% of emissions (was 39%); weather-check counts 200 storms on the real config.",
   "TK-399: the emission holds the storm only (EnvironmentSystem → WeatherModel.update(dt, clock, stormFloor)); its rain floor (MAP_DB.<id>.weather.emission.storm.rain) is gone from the code, the config, the labels and the weather export format — under the emission's storm the rain comes only by its own raised chance.",

@@ -3039,7 +3039,9 @@ const step = (model, seconds, clock = null, dt = 0.1) => {
     weather: { locationId: "test", getModel: () => dev.weather, getEmissionModel: () => dev.emission,
       getStarfallModel: () => dev.starfall, isAutomatic: () => dev.env.automaticWeather,
       setAutomatic: (on) => dev.env.setAutomaticWeather(on), getWind: () => dev.env.getSnapshot().wind,
-      setWind: (direction) => dev.env.setWindOverride(direction), setWindStrength: (strength) => dev.env.setWindStrengthOverride(strength) },
+      setWind: (direction) => dev.env.setWindOverride(direction), setWindStrength: (strength) => dev.env.setWindStrengthOverride(strength),
+      getWavesHold: () => dev.sea.amplitudeHold, getWavesScale: () => dev.sea.state.amplitudeScale,
+      holdWaves: (scale) => dev.sea.holdAmplitude(scale) },
     config: () => MAP_DB.test.weather, locationConfig: () => MAP_DB.test.weather, locationsMap: () => ({ test: MAP_DB.test }),
     general: () => ({ rain: GAME_CONFIG.canvas.rain, ash: GAME_CONFIG.canvas.ash }),
     createSection: () => node(), renderConfigTree() {},
@@ -3050,6 +3052,17 @@ const step = (model, seconds, clock = null, dt = 0.1) => {
   assert.deepEqual([dev.env.automaticWeather, switches.get("WEATHER.controls.auto").value], [false, false],
     "off: the environment's automatic weather is off and the switch shows it");
   dev.run(60);
+  section.refreshLive();
+  // TK-398.1 (owner: «хвилі вода працювали»): the water went flat, and the «Хвилі» switch shows it off; on by hand it
+  // holds their height (on); «авто» gives them back to the weather (flat again: off).
+  assert.ok(dev.sea.state.amplitudeScale < 0.01, `the water is flat (${dev.sea.state.amplitudeScale})`);
+  assert.equal(switches.get("WEATHER.controls.wavesOn").value, false, "flat water: «Хвилі» off");
+  switches.get("WEATHER.controls.wavesOn").onChange(true);
+  assert.equal(switches.get("WEATHER.controls.wavesOn").value, true, "«Хвилі» on by hand: held, on");
+  dev.sea.holdAmplitude(null);
+  dev.run(60);
+  section.refreshLive();
+  assert.equal(switches.get("WEATHER.controls.wavesOn").value, false, "released without wind: flat again, off");
   switches.get("WEATHER.controls.emission").onChange(true);
   dev.run(30);
   section.refreshLive();

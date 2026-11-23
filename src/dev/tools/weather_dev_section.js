@@ -92,6 +92,8 @@ const LIVE_BITS = Object.freeze({ rain: 1, storm: 2, fog: 4, emission: 8, starfa
   current: 256 });
 // Below this a live share or speed counts as off.
 const LIVE_EPSILON = 1e-3;
+// TK-398.1: the waves' live height (× the usual) above which they count as on without a hold.
+const WAVES_SHOWN = 0.01;
 // TK-400: the states the section's «i» lists, in this order (each a LIVE_BITS key), with their short names.
 const SUMMARY_STATES = Object.freeze([["rain", "дощ"], ["storm", "шторм"], ["fog", "туман"], ["emission", "викид"],
   ["wind", "вітер"], ["ash", "попіл"], ["starfall", "зорепад"], ["waves", "хвилі"], ["current", "течія"]]);
@@ -343,9 +345,19 @@ export class WeatherDevSection {
     const weather = this.#weather;
     if ((weather.getAshStrength?.() ?? 0) > LIVE_EPSILON) state |= LIVE_BITS.ash;
     if (this.#windOn(weather.getWind?.() ?? null)) state |= LIVE_BITS.wind;
-    if (weather.getWavesHold && weather.getWavesHold() !== 0) state |= LIVE_BITS.waves;
+    if (this.#wavesOn()) state |= LIVE_BITS.waves;
     if (Number(weather.getCurrentSpeed?.() ?? 0) > LIVE_EPSILON) state |= LIVE_BITS.current;
     return state;
+  }
+
+  // TK-398.1 (owner): the waves are on while held above zero by hand, or, from the weather, while they really show (the
+  // live height above WAVES_SHOWN of the usual) — flat water without the automatic weather is off. No reader: off.
+  #wavesOn() {
+    const weather = this.#weather;
+    if (!weather.getWavesHold) return false;
+    const hold = weather.getWavesHold();
+    if (hold !== null) return hold > 0;
+    return Number(weather.getWavesScale?.() ?? 1) > WAVES_SHOWN;
   }
 
   // TK-398: on while it runs or heads above zero — an emission's floor shows it too, a hold at 0 (switched off) does not.
@@ -1161,7 +1173,7 @@ export class WeatherDevSection {
     const weather = this.#weather;
     if (!weather.holdWaves) return;
     const hold = weather.getWavesHold?.() ?? null;
-    const shown = hold !== 0;
+    const shown = this.#wavesOn();
     this.#ui.createSwitcherRow("Хвилі", shown, controls, (on) => {
       weather.holdWaves(on ? this.#levels.waves / 100 : 0);
       this.#fill();
