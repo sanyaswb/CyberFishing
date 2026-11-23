@@ -259,10 +259,8 @@ export class DevTools {
     try {
       module.mount(host, this.#context);
     } catch (error) {
-      console.error("[DevTools] a section failed to draw", error);
-      this.#ui.createAlert(`Розділ «${module.constructor?.name ?? pageId}» не намалювався`,
-        [String(error?.message ?? error), "Решта DevTools працює; деталі — у консолі."], host,
-        ["DEVTOOLS", "sectionError", pageId, module.constructor?.name ?? ""]);
+      const name = module.constructor?.name ?? pageId;
+      this.#ui.showDrawError(host, name, error, ["DEVTOOLS", "sectionError", pageId, name]);
     }
   }
 

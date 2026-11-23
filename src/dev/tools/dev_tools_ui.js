@@ -541,12 +541,25 @@ export class DevToolsUI {
     if (label && label.textContent !== labelStr) label.textContent = labelStr;
   }
 
-  // TK-308: draws a lazy section's content once.
+  // TK-308: draws a lazy section's content once. TK-388 (R29): a section that throws while it draws shows its error in
+  // its own content; the click that opened it, a search and a reveal (materializeAll) go on with the other sections.
   #materialize(content) {
     const render = this.#lazyContents.get(content);
     if (!render) return;
     this.#lazyContents.delete(content);
-    render();
+    try {
+      render();
+    } catch (error) {
+      this.showDrawError(content, this.#sectionLabels.get(content)?.textContent ?? "", error);
+    }
+  }
+
+  // TK-378.1, TK-388 (R29): what a part of the panel that failed to draw shows in its place (the owner on a phone has no
+  // console): its name, the error and that the rest still works; the details go to the console.
+  showDrawError(host, name, error, path = null) {
+    console.error("[DevTools] a section failed to draw", error);
+    return this.createAlert(`Розділ «${name}» не намалювався`,
+      [String(error?.message ?? error), "Решта DevTools працює; деталі — у консолі."], host, path);
   }
 
   // TK-308: draws every section still waiting in the panel (drawing may add more; they are drawn too). Returns whether

@@ -2,6 +2,10 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.52.52 - A DevTools section that fails to draw shows why (TK-388)
+
+- dev.html: if a DevTools section ever fails to draw when it is first opened, it opens with a red notice naming the error; the rest of the panel and the search keep working (before, it silently did not open, and a search stopped at it).
+
 ## v0.52.51 - DevTools sections redraw cleanly: one «i», bones and radio effects follow the choice (TK-387)
 
 - dev.html: «↻ Оновити» no longer adds another «i» beside a section's title each time; in «SPINE → вудка/кораблик → Кістки» choosing another bone shows its fields (before, the previous bone's fields stayed and an edit changed that bone); in «РАДІО → Звук → ефект» switching it on shows its parameters at once.
@@ -38,8 +42,3 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 
 - The gas mask protects only with a filter that has time left: then the emission's darkening and blur are gone and the radiation's hiss is half as strong. The filters work one at a time (the one with less time first, the other takes over without a gap), and their time runs only on the location under radiation or during an emission. A removed filter keeps its time.
 - Without a working filter (or with a cracked mask) the mask does not protect and there is no cast during an emission; the message says what is missing. When the protection ends, the effects come back smoothly over 10 seconds.
-
-## v0.52.42 - Gas mask filters and the mask's two filter cells (TK-381, spec 185)
-
-- Two gas mask filters: «Фільтр ФПК-1 „Вугільний“» and «Фільтр ФПК-1 „Попіл“», 3 minutes each (same parameters), with simple icons. The gas mask now has two filter cells: a tap on the mask opens its editor, a filter goes into a free cell, «Спорядити» puts the mask on. Gas mask quality is 3.
-- dev.html: two of each filter in the DEV start and once in an existing DEV save; DEV shop «Фільтри протигаза». The filters do not act yet — the next stage makes the mask protect only through them.

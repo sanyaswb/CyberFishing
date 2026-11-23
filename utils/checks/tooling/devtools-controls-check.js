@@ -2194,6 +2194,42 @@ function choiceRow(options, value, path) {
   tools.dispose();
 }
 
+// --- TK-388 (R29): a section drawn on first need that throws shows its error in itself; the rest still draws --------
+// The DevTools review (2026-11-23): TK-378.1 isolated module.mount only; a lazy section (TK-308) that threw left the
+// click with nothing opened (no console on a phone) and broke a search or a link, which draw every waiting section.
+{
+  const lazyUi = new DevToolsUI(() => {}, {}, null, null, null, document.body, createElement("div"));
+  const page = lazyUi.createPages([{ id: "config", title: "Конфіг", icon: "sliders" }], "config", () => {}).get("config");
+  const broken = (label) => lazyUi.createSection(label, page, false, () => {}, ["LAZY", label],
+    { render: () => { throw new TypeError(`${label} broke`); } });
+  const opened = broken("opened");
+  const waiting = broken("waiting");
+  const fine = lazyUi.createSection("fine", page, false, () => {}, ["LAZY", "fine"], { render: (content) =>
+    lazyUi.addParameter(content, { control: "number", label: "speedLimit", value: 1, onCommit() {},
+      path: ["LAZY", "fine", "speedLimit"] }) });
+  const errors = [];
+  const consoleError = console.error;
+  console.error = (...args) => errors.push(args);
+  try {
+    assert.doesNotThrow(() => opened.parentNode.children[0].click(), "a section whose drawing throws opens without a throw");
+    assert.equal(opened.style.display, "block", "it opens");
+    assert.ok(byClass("devtools__alert-line", opened).some((line) => line.innerText === "opened broke"),
+      "and shows its error inside (a phone has no console)");
+    const input = byClass("devtools__search-input", lazyUi.body.parentNode)[0];
+    input.value = "speedlimit";
+    assert.doesNotThrow(() => input.fire("input"), "a search draws every waiting section without a throw");
+    assert.ok(byClass("devtools__alert-line", waiting).some((line) => line.innerText === "waiting broke"),
+      "the waiting one shows its error");
+    const match = byClass("devtools__row", fine).filter((row) => row.dataset.devtoolsPath === "LAZY.fine.speedLimit");
+    assert.equal(match.length, 1, "the section after it is drawn");
+    assert.ok(match[0].classList.contains("devtools__row--match"), "and the search finds its row");
+    assert.equal(errors.length, 2, "each failure once in the console");
+  } finally {
+    console.error = consoleError;
+  }
+  lazyUi.dispose();
+}
+
 // --- TK-320: a section's description is behind an «i» beside its title and opens at the top of the section ----------
 {
   const infoUi = new DevToolsUI(

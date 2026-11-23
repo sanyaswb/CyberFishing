@@ -1,6 +1,7 @@
 // Release notes, newest first (unshift with every patch). DEV only: no production code reads them, and in the start's
 // bundle they cost 13 KB gzip (spec 160). dev.html publishes them with the version: window.CYBER_FISHING_PROJECT_VERSION.notes.
 export const PROJECT_RELEASE_NOTES = Object.freeze([
+  "TK-388 (R29): DevToolsUI.#materialize catches a lazy section's render error and shows it in the section (showDrawError, shared with DevTools.#mountModule); materializeAll goes on with the other sections.",
   "TK-387 (I-32, R23): DevToolsUI.redraw(container, draw) — the one redraw path (drill-in put back and reopened, bindings and paths released, the section's «i» removed); every section that redraws its rows uses it; preserveDrill private; doubles mix in devToolsRedraw.",
   "TK-306.1 (I-31, R31): DevToolsUI keeps each section's title and content in #sectionParts / #contentSections; focusSection, crumbs, createSectionInfo, revealPath use them; #leaveDrill puts the content back right after the title (it went after the «i», and the next drill-in took the «i» for the content).",
   "Review TK-382.1: DevicePowerService.reading(id) (no spending, no request object); GasMaskProtection reuses its use request and hold options; ~8 µs per frame idle, p95 ~21 µs filtering.",
