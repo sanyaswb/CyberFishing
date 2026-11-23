@@ -2,6 +2,10 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.52.69 - DevTools: the weather's strength sliders in their own sections (spec 187, stage A)
+
+- dev.html: «ПОГОДА» → «Керування» keeps only the switches, the wind's direction, «авто» and the actions. Each element's «Сила, %» slider is now on top of its own section (ДОЩ, ШТОРМ, ТУМАН, ВИКИД, ЗОРЕПАД, ПОПІЛ, ВІТЕР; ВОДА — the waves' height and the current's speed), for the location the game runs; it holds the element in the game and follows its live value.
+
 ## v0.52.68 - DevTools: the weather's sliders follow the live value (TK-401)
 
 - dev.html: in «ПОГОДА» → «Керування» the strength sliders (rain, storm, fog, emission, ash, the wind with its gusts, the waves, the current) move with the live value; one held by hand shows its value, and one the person is moving is not pulled away.
@@ -37,7 +41,3 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 ## v0.52.60 - Overlay core without fallbacks (TK-395, spec 186)
 
 - No visible change: the DEV overlay's core takes everything it needs from its composition (no hidden global defaults or optional calls), so a missing part fails at once instead of silently doing nothing.
-
-## v0.52.59 - «ПРОДУКТИВНІСТЬ» draws its frame bar with three shapes (TK-393, spec 186)
-
-- dev.html: the frame bar of the «ПРОДУКТИВНІСТЬ» overlay looks the same but is three shapes instead of up to 240, so the overlay itself costs the phone less while it measures.

@@ -2865,9 +2865,12 @@ function choiceRow(options, value, path) {
   events.fog.elapsedSec = 340;
   fireLive();
   assert.equal(summaryValue("fog"), "40% · пік · ще 4:20", "the next live update rewrites it without a redraw");
-  // TK-401 (owner): a «Керування» slider follows its element's live strength; the person's own move is not overridden.
+  // TK-401 (owner): a strength slider follows its element's live strength; the person's own move is not overridden.
+  // Spec 187 A: the slider is on top of the element's section (ТУМАН), none in «Керування».
+  assert.ok(!byClass("devtools__row", liveUi.body).some((row) => /^WEATHER\.controls\./u.test(row.dataset.devtoolsPath ?? "") &&
+    byClass("devtools__range", row).length), "«Керування» holds no slider (the real DevToolsUI)");
   const fogRange = () => byClass("devtools__range", byClass("devtools__row", liveUi.body)
-    .find((row) => row.dataset.devtoolsPath === "WEATHER.controls.fogStrength"))[0];
+    .find((row) => row.dataset.devtoolsPath === "WEATHER.fog.strength"))[0];
   assert.equal(String(fogRange().value), "40", "the fog's slider stands at its live strength");
   events.fog.strength = 0.55;
   fireLive();

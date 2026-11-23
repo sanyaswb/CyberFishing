@@ -934,7 +934,7 @@ const step = (model, seconds, clock = null, dt = 0.1) => {
         if (path) rowsByPath.set(path.join("."), { kind: "input", value, onChange, bindingPath });
       },
       createTextRow() {},
-      redraw: devToolsRedraw, releaseValueBindings() {},
+      redraw: devToolsRedraw, releaseValueBindings() {}, showLiveValue() {},
       syncValue(path, value) {
         this.syncCalls.push([path.join("."), value]);
       },
@@ -1022,28 +1022,38 @@ const step = (model, seconds, clock = null, dt = 0.1) => {
       "Weather Chances clamps fogChance to [0, 1] and calls updateConfig",
     );
     // TK-327.1: an event's switch starts a random event (like the game) and ends it; no «подія зараз» buttons.
-    // TK-360 (owner): a strength slider appears only once its element is on, and goes when it is off.
-    assert(!rowsByPath.has("WEATHER.controls.stormStrength") && !rowsByPath.has("WEATHER.controls.rainStrength") &&
-      !rowsByPath.has("WEATHER.controls.fogStrength") && !rowsByPath.has("WEATHER.controls.rainAt100"),
-    "nothing on: no strength sliders (and no rain «at 100» group)");
+    // Spec 187 A (owner: «повзунки там повинні бути відсутні взагалі»): «Керування» has no sliders and no settings.
+    const controlsSliders = () => [...rowsByPath.entries()]
+      .filter(([path, row]) => path.startsWith("WEATHER.controls.") && (row.kind === "range" || /Settings$|At100/u.test(path)))
+      .map(([path]) => path);
+    assert.deepEqual(controlsSliders(), [], "«Керування» holds no sliders and no settings");
     rowsByPath.get("WEATHER.controls.storm").onChange(true);
     assert(calls.some(([k, kind]) => k === "start" && kind === "storm"), "the storm switch on starts a random storm");
-    assert(rowsByPath.has("WEATHER.controls.stormStrength"), "the storm on: its slider appears");
-    rowsByPath.delete("WEATHER.controls.stormStrength");
     rowsByPath.get("WEATHER.controls.storm").onChange(false);
     assert(calls.some(([k, kind]) => k === "stop" && kind === "storm"), "off ends it");
-    assert(!rowsByPath.has("WEATHER.controls.stormStrength"), "off: the slider goes");
     assert(!rowsByPath.has("WEATHER.controls.stormStart"), "no «Шторм: подія зараз» button");
     rowsByPath.get("WEATHER.controls.storm").onChange(true);
     rowsByPath.get("WEATHER.controls.rain").onChange(true);
+    assert.deepEqual(controlsSliders(), [], "the elements on: still no sliders in «Керування»");
+    // Spec 187 A, Q1: the strength sliders are on top of each element's section, for the location the game runs only.
+    const sectionSliders = ["WEATHER.rain.strength", "WEATHER.storm.strength", "WEATHER.fog.strength", "WEATHER.wind.strength",
+      "WEATHER.ash.strength", "WEATHER.water.wavesHeight", "WEATHER.water.currentSpeed"];
+    rowsByPath.clear();
+    locChoice.onChange("lake");
+    assert(sectionSliders.every((path) => !rowsByPath.has(path)), "another location selected (lake): no sliders in the sections");
+    rowsByPath.clear();
+    locChoice.onChange("test");
+    assert(sectionSliders.every((path) => rowsByPath.get(path)?.kind === "range"),
+      `the running location: every section has its slider (${sectionSliders.filter((path) => !rowsByPath.has(path))})`);
+    assert.deepEqual(controlsSliders(), [], "and «Керування» still none");
     calls.length = 0;
     // Spec 180 D1, D10: a slider holds its own element only (no «manual» switches); the storm's never touches the rain.
-    rowsByPath.get("WEATHER.controls.stormStrength").onChange(40);
+    rowsByPath.get("WEATHER.storm.strength").onChange(40);
     const stormCalls = calls.filter(([k]) => k === "hold");
     assert.deepEqual(stormCalls.map(([, kind, strength]) => [kind, strength]), [["storm", 0.4]],
       "the storm's slider holds the storm only (never the rain)");
-    rowsByPath.get("WEATHER.controls.windStrength").onChange(82);
-    assert(calls.some(([k, v]) => k === "setWindStrength" && Math.abs(v - 0.82) < 1e-6), "strength slider drives setWindStrength");
+    rowsByPath.get("WEATHER.wind.strength").onChange(82);
+    assert(calls.some(([k, v]) => k === "setWindStrength" && Math.abs(v - 0.82) < 1e-6), "the wind's slider drives setWindStrength");
     assert(!rowsByPath.has("WEATHER.controls.windStrengthHold"), "no separate «manual wind strength» switch (D10)");
     // TK-367 (owner): «↻ Оновити» on top, «↺ Автоматична погода» right under it; the actions after every control.
     rowOrder.length = 0;
@@ -1070,14 +1080,13 @@ const step = (model, seconds, clock = null, dt = 0.1) => {
     assert(calls.some(([k, v]) => k === "setWind" && v === -1), "«← вліво» holds the wind to the left");
     rowsByPath.get("WEATHER.controls.wind").onChange(false);
     assert.deepEqual(calls.filter(([k]) => k === "setWind").at(-1), ["setWind", 0], "the wind off is calm");
-    // The ash (owner: managed apart from the emission): off with no emission, on holds the slider, off holds 0.
+    // The ash (owner: managed apart from the emission): off with no emission, on holds its level, off holds 0.
     assert.equal(rowsByPath.get("WEATHER.controls.ash").value, false, "no emission: the ash's switch is off");
-    assert(!rowsByPath.has("WEATHER.controls.ashStrength"), "and it has no slider");
     rowsByPath.get("WEATHER.controls.ash").onChange(true);
-    assert.deepEqual(calls.filter(([k]) => k === "holdAsh").at(-1), ["holdAsh", 1], "the ash on: held at the slider's 100 %");
+    assert.deepEqual(calls.filter(([k]) => k === "holdAsh").at(-1), ["holdAsh", 1], "the ash on: held at its last level (100 %)");
     assert.equal(rowsByPath.get("WEATHER.controls.ash").value, true, "the switch shows it on");
-    assert.match(rowsByPath.get("WEATHER.controls.ashStrength").label, /· вручну/u, "its slider says it is held by hand");
-    rowsByPath.get("WEATHER.controls.ashStrength").onChange(30);
+    assert.match(rowsByPath.get("WEATHER.ash.strength").label, /· вручну/u, "its section's slider says it is held by hand");
+    rowsByPath.get("WEATHER.ash.strength").onChange(30);
     assert(calls.some(([k, v]) => k === "holdAsh" && Math.abs(v - 0.3) < 1e-6), "the ash's slider holds the ash");
     rowsByPath.get("WEATHER.controls.ash").onChange(false);
     assert.deepEqual(calls.filter(([k]) => k === "holdAsh").at(-1), ["holdAsh", 0], "the ash off: held at 0 (even in an emission)");
@@ -1086,37 +1095,27 @@ const step = (model, seconds, clock = null, dt = 0.1) => {
     devState.ashEmission = 0.6;
     devWeather.refreshLive();
     assert.equal(rowsByPath.get("WEATHER.controls.ash").value, true, "an emission's ash turns the open switch on by itself (R26)");
-    // The waves: on by themselves; the slider holds the height; off — flat water.
+    // The waves: on by themselves; ВОДА's slider holds the height; off — flat water.
     assert.equal(rowsByPath.get("WEATHER.controls.wavesOn").value, true, "the waves are on by themselves");
-    rowsByPath.get("WEATHER.controls.waves").onChange(150);
-    assert(calls.some(([k, v]) => k === "holdWaves" && Math.abs(v - 1.5) < 1e-6), "the waves' slider holds their height");
+    rowsByPath.get("WEATHER.water.wavesHeight").onChange(150);
+    assert(calls.some(([k, v]) => k === "holdWaves" && Math.abs(v - 1.5) < 1e-6), "ВОДА's waves slider holds their height");
     rowsByPath.get("WEATHER.controls.wavesOn").onChange(false);
     assert.deepEqual(calls.filter(([k]) => k === "holdWaves").at(-1), ["holdWaves", 0], "the waves off: flat water");
     assert.equal(rowsByPath.get("WEATHER.controls.wavesOn").value, false);
     // The current: held in the running game — never written into the location's config (it would go to the export).
     const configWrites = calls.filter(([k]) => k === "updateConfig").length;
     assert.equal(rowsByPath.get("WEATHER.controls.currentOn").value, true, "the location's current is on");
-    rowsByPath.get("WEATHER.controls.current").onChange(20);
-    assert.deepEqual(calls.filter(([k]) => k === "holdCurrent").at(-1), ["holdCurrent", 20], "the slider holds the current's speed");
+    rowsByPath.get("WEATHER.water.currentSpeed").onChange(20);
+    assert.deepEqual(calls.filter(([k]) => k === "holdCurrent").at(-1), ["holdCurrent", 20], "ВОДА's slider holds the current's speed");
     rowsByPath.get("WEATHER.controls.currentOn").onChange(false);
     assert.deepEqual(calls.filter(([k]) => k === "holdCurrent").at(-1), ["holdCurrent", 0], "the current off: still water");
     assert.equal(rowsByPath.get("WEATHER.controls.currentOn").value, false);
     assert.equal(calls.filter(([k]) => k === "updateConfig").length, configWrites, "and no config write");
-    // D16: under the rain's strength, its look at 100 for the selected location — a real value within the range.
-    const density = rowsByPath.get("WEATHER.controls.rainAt100.maxDrops");
-    assert(density && density.value === GAME_CONFIG.canvas.rain.strength.maxDrops[1] && density.max === 2000,
-      "the density slider stands at the real value at 100 within its range");
-    density.onChange(1100);
-    assert(calls.some(([k, p, v]) => k === "updateConfig" && p === "CONFIG.locations.map.lake.weather.look.rain.maxDrops" && v === 1100),
-      "with a location selected it writes that location's override at 100");
-    // TK-333: «Всі» replaced the «Параметри локації» switch; «Загальні» shows the general parts alone.
+    // TK-333: «Всі» replaced the «Параметри локації» switch; «Загальні» shows the general parts alone, no sliders (D8).
     assert(!rowsByPath.has("WEATHER.location.only"), "no «Параметри локації» switch (its «off» is «Всі»)");
     rowsByPath.clear();
     locChoice.onChange("Загальні");
-    rowsByPath.get("WEATHER.controls.rainAt100.maxDrops").onChange(900);
-    assert(calls.some(([k, p, v]) => k === "updateConfig" && p === "CONFIG.canvas.rain.strength.maxDrops" &&
-      JSON.stringify(v) === JSON.stringify([GAME_CONFIG.canvas.rain.strength.maxDrops[0], 900])),
-    "with «Загальні» it writes the general end at 100");
+    assert(sectionSliders.every((path) => !rowsByPath.has(path)), "«Загальні»: no strength sliders (D8)");
     rowsByPath.get("WEATHER.controls.gust").onClick();
     assert(calls.some(([k]) => k === "triggerWindGust"), "gust button calls triggerWindGust");
     // TK-398: the switch off and on — each way the automatic weather follows it and every hold is released (off:
@@ -2358,7 +2357,7 @@ const step = (model, seconds, clock = null, dt = 0.1) => {
   const node = () => ({ replaceChildren() {}, appendChild() {} });
   const ui = {
     createInfoRow() {}, createTextRow() {}, createRangeRow() {}, createSelectRow() {}, createInputRow() {}, createSwitcherRow() {},
-    addParameter() {}, redraw: devToolsRedraw, releaseValueBindings() {}, createButtonGrid: (parent) => parent,
+    addParameter() {}, redraw: devToolsRedraw, releaseValueBindings() {}, showLiveValue() {}, createButtonGrid: (parent) => parent,
     createButtonRow(label, parent, onClick, navigation, icon, path) {
       const row = { style: {} };
       buttons.set(path ? path.join(".") : label, onClick);
@@ -2477,9 +2476,11 @@ const step = (model, seconds, clock = null, dt = 0.1) => {
     switches.get("WEATHER.controls.starfall").onChange(true);
     assert.deepEqual([hours.join(), starNight.snapshot.inWindow, starNight.snapshot.held], ["23", true, true],
       "«Зорепад (ніч)» on: the game clock jumps to the night and the starfall is held");
-    ranges.get("WEATHER.controls.starfallStrength")(40);
+    // Spec 187 A: the strength slider is on top of «ЗОРЕПАД» (not in «Керування»).
+    assert.ok(!ranges.has("WEATHER.controls.starfallStrength"), "no starfall slider in «Керування»");
+    ranges.get("WEATHER.starfall.strength")(40);
     starNight.update({ hour: 23.1 });
-    assert.equal(starNight.snapshot.strength, 0.4, "«Зорепад: сила» sets it");
+    assert.equal(starNight.snapshot.strength, 0.4, "«ЗОРЕПАД» → «Сила, %» sets it");
     switches.get("WEATHER.controls.starfall").onChange(false);
     assert.equal(starNight.snapshot.held, false, "off: the night's own plan again");
     switches.get("WEATHER.controls.starfall").onChange(true);
@@ -2517,7 +2518,7 @@ const step = (model, seconds, clock = null, dt = 0.1) => {
     const section360 = new WeatherDevSection({
       view: { selected: "test" },
       ui: {
-        createInfoRow() {}, createTextRow() {}, redraw: devToolsRedraw, releaseValueBindings() {}, setSectionLabel() {},
+        createInfoRow() {}, createTextRow() {}, redraw: devToolsRedraw, releaseValueBindings() {}, showLiveValue() {}, setSectionLabel() {},
         createSelectRow(label, choices, value, parent, onChange, path) { inControls(parent, path.join(".")); },
         createInputRow(label, value, parent) { inControls(parent, `input:${label}`); },
         addParameter(parent, { path }) { if (path) inControls(parent, path.join(".")); },
@@ -2568,6 +2569,7 @@ const step = (model, seconds, clock = null, dt = 0.1) => {
       return on.join();
     };
     const shown = () => KINDS360.filter((kind) => switches360.get(`WEATHER.controls.${kind}`)?.value === true).join();
+    // Spec 187 A: «Керування» never has a strength slider (they are on top of the elements' sections).
     const sliders = () => KINDS360.filter((kind) => ranges360.has(`WEATHER.controls.${kind}Strength`)).join();
     assert.deepEqual([live(), shown(), sliders()], ["", "", ""], "noon, nothing on: no switch on and no strength slider");
     assert.ok(!rows.includes("WEATHER.controls.rainAt100"), "the rain's «at 100» group waits for the rain too");
@@ -2579,14 +2581,14 @@ const step = (model, seconds, clock = null, dt = 0.1) => {
     // Every switch alone and every pair: a switch turns its own element on or off and nothing else.
     for (const first of KINDS360) {
       flip(first, true);
-      assert.deepEqual([live(), shown(), sliders()], [first, first, first], `«${first}» on: only it is on, with its slider`);
+      assert.deepEqual([live(), shown(), sliders()], [first, first, ""], `«${first}» on: only it is on (no slider in «Керування»)`);
       for (const second of KINDS360) {
         if (second === first) continue;
         const both = KINDS360.filter((kind) => kind === first || kind === second).join();
         flip(second, true);
         assert.deepEqual([live(), shown()], [both, both], `«${second}» on beside «${first}»: both on`);
         flip(second, false);
-        assert.deepEqual([live(), shown(), sliders()], [first, first, first], `«${second}» off: «${first}» alone stays on`);
+        assert.deepEqual([live(), shown(), sliders()], [first, first, ""], `«${second}» off: «${first}» alone stays on`);
       }
       flip(first, false);
       assert.deepEqual([live(), shown(), sliders()], ["", "", ""], `«${first}» off: nothing else came on`);
@@ -2603,8 +2605,8 @@ const step = (model, seconds, clock = null, dt = 0.1) => {
     }
     assert.ok(weather.snapshot.events.fog.active, "at 23:00 a fog starts by itself (seeded)");
     section360.refreshLive();
-    assert.ok(switches360.get("WEATHER.controls.fog").value === true && ranges360.has("WEATHER.controls.fogStrength"),
-      "the fog's switch shows it at once, with its slider — no other control had to redraw the section");
+    assert.ok(switches360.get("WEATHER.controls.fog").value === true,
+      "the fog's switch shows it at once — no other control had to redraw the section");
     const redrawn = renders;
     section360.refreshLive();
     assert.equal(renders, redrawn, "and only once");
@@ -3033,7 +3035,7 @@ const step = (model, seconds, clock = null, dt = 0.1) => {
   const section = new WeatherDevSection({
     view: { selected: "test" },
     ui: { createInfoRow() {}, createTextRow() {}, createRangeRow() {}, createSelectRow() {}, createInputRow() {},
-      addParameter() {}, redraw: devToolsRedraw, releaseValueBindings() {}, setSectionLabel() {}, createButtonGrid: (parent) => parent,
+      addParameter() {}, redraw: devToolsRedraw, releaseValueBindings() {}, showLiveValue() {}, setSectionLabel() {}, createButtonGrid: (parent) => parent,
       createButtonRow: () => ({ style: {} }),
       createSwitcherRow: (label, value, parent, onChange, path) => switches.set(path.join("."), { value, onChange }) },
     weather: { locationId: "test", getModel: () => dev.weather, getEmissionModel: () => dev.emission,

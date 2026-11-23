@@ -234,7 +234,7 @@ const tick = () => new Promise((resolve) => setTimeout(resolve, 0));
     const resets = [];
 
     const fakeUi = {
-      redraw: devToolsRedraw, releaseValueBindings() {},
+      redraw: devToolsRedraw, releaseValueBindings() {}, showLiveValue() {},
       createSection(label, parent) {
         const node = doc.createElement("div");
         parent.appendChild(node);

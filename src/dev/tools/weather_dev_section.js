@@ -30,6 +30,9 @@ import {
 //   starts by itself and everything goes out; every element's own switch still turns it on, with its links to the
 //   others (the emission's ash and storm, TK-399: not the rain; the storm's wind and waves). An event's switch off
 //   under the emission's floor holds it at 0.
+//   Spec 187 stage A (owner): «Керування» holds no sliders and no settings — only the switches, the wind's direction,
+//   «авто» and the actions; each element's strength slider is on top of its own section (ВОДА: the waves' height and
+//   the current's speed), for the location the game runs, holding the running game.
 // - TK-360: the switches follow the live state. While the panel is open, refreshLive() (each live update) compares
 //   which elements are on — one integer — with what the section shows, and redraws it only when that changed: a fog
 //   that started by itself shows at once, not at the next redraw caused by another control.
@@ -536,6 +539,7 @@ export class WeatherDevSection {
     if (mode.general) parts.push(["canvas", "rain"]);
     if (mode.location) parts.push(this.#locationParts(mode.location, "rain"), this.#locationParts(mode.location, "look", "rain"));
     this.#elementSection("ДОЩ", "rain", content, parts, (section) => {
+      this.#renderStrength("rain", section, mode);
       if (mode.general) this.#tree(general, this.#group("Вигляд (загальний)", section, ["WEATHER", "rain", "look"]), ["canvas", "rain"]);
       if (!mode.location) return;
       const weather = this.#locationWeather(mode.location);
@@ -551,6 +555,7 @@ export class WeatherDevSection {
     if (mode.general) parts.push(["weather", "storm"]);
     if (mode.location) parts.push(this.#locationParts(mode.location, "storm"));
     this.#elementSection("ШТОРМ", "storm", content, parts, (section) => {
+      this.#renderStrength("storm", section, mode);
       if (mode.general) {
         this.#tree(this.#general()?.storm, this.#group("Що робить шторм (загальне)", section, ["WEATHER", "storm", "effects"]),
           ["weather", "storm"]);
@@ -567,6 +572,7 @@ export class WeatherDevSection {
     if (mode.general) parts.push(["weather", "wind"]);
     if (mode.location) parts.push(this.#locationParts(mode.location, "wind"));
     this.#elementSection("ВІТЕР", "wind", content, parts, (section) => {
+      this.#renderStrength("wind", section, mode);
       if (mode.general) {
         this.#tree(this.#general()?.wind, this.#group("Як діє вітер і порив (загальне)", section, ["WEATHER", "wind", "effects"]),
           ["weather", "wind"]);
@@ -601,6 +607,7 @@ export class WeatherDevSection {
 
   #renderFog(content, mode) {
     this.#elementSection("ТУМАН", "fog", content, [this.#locationParts(mode.location, "fog")], (section) => {
+      this.#renderStrength("fog", section, mode);
       this.#chanceRow("fog", mode.location, section);
       this.#tree(this.#locationWeather(mode.location)?.fog, this.#group("Подія туману (локація)", section, ["WEATHER", "fog", "event"]),
         this.#locationParts(mode.location, "fog"));
@@ -613,6 +620,7 @@ export class WeatherDevSection {
     if (mode.general) parts.push(["emission", "screen"]);
     if (mode.location) parts.push(this.#locationParts(mode.location, "emission"));
     this.#elementSection("ВИКИД", "emission", content, parts, (section) => {
+      this.#renderStrength("emission", section, mode);
       if (emission) {
         const snapshot = emission.snapshot;
         this.#ui.createSwitcherRow("заморозити викид", snapshot.frozen === true, section, (frozen) => {
@@ -686,6 +694,7 @@ export class WeatherDevSection {
     if (mode.general) parts.push(["canvas", "starfall"]);
     if (mode.location) parts.push(this.#locationParts(mode.location, "starfall"));
     this.#elementSection("ЗОРЕПАД", "starfall", content, parts, (section) => {
+      this.#renderStrength("starfall", section, mode);
       if (starfall) {
         const snapshot = starfall.snapshot;
         // TK-354.1 (owner): the test switch, its strength and «Болід зараз» live in «Стан і керування».
@@ -714,6 +723,7 @@ export class WeatherDevSection {
     if (mode.general) parts.push(["canvas", "ash"]);
     if (mode.location) parts.push(this.#locationParts(mode.location, "look", "ash"));
     this.#elementSection("ПОПІЛ", "ash", content, parts, (section) => {
+      this.#renderStrength("ash", section, mode);
       if (mode.general) this.#tree(this.#general()?.ash ?? this.#ashConfig(), this.#group("Вигляд (загальний)", section,
         ["WEATHER", "ash", "look"]), ["canvas", "ash"]);
       if (mode.location) this.#renderAt100Numbers("ash", mode.location, this.#group("При силі 100 (локація)", section, ["WEATHER", "ash", "at100"]));
@@ -726,6 +736,7 @@ export class WeatherDevSection {
     if (mode.general) parts.push(["canvas", "water"]);
     if (mode.location) parts.push(["locations", "map", mode.location, "environment", "current"]);
     this.#elementSection("ВОДА", "water", content, parts, (section) => {
+      this.#renderWaterStrength(section, mode);
       if (mode.general) {
         const testOn = this.#general()?.debug?.waveTestBackground === true;
         const waveTestPath = ["CONFIG", "debug", "waveTestBackground"];
@@ -778,33 +789,6 @@ export class WeatherDevSection {
     if (!weather.look) this.#updateConfig?.(["CONFIG", ...this.#locationParts(id, "look")], { rain: {}, ash: {} });
     if (!this.#locationWeather(id)?.look?.[kind]) this.#updateConfig?.(["CONFIG", ...this.#locationParts(id, "look", kind)], {});
     this.#updateConfig?.(["CONFIG", ...this.#locationParts(id, "look", kind, key)], value);
-  }
-
-  // The sliders under an element's strength: each at its real value within its range (D16).
-  #renderAt100Sliders(kind, parent) {
-    const selectedId = this.#view.selected === GENERAL ? null : this.#locationId();
-    for (const [key, [min, max, step]] of Object.entries(STRENGTH_LIMITS[kind])) {
-      const value = this.#at100(kind, key);
-      if (!Number.isFinite(value)) continue;
-      const cfgPath = selectedId
-        ? ["CONFIG", ...this.#locationParts(selectedId, "look", kind, key)]
-        : ["CONFIG", "canvas", kind, "strength", key];
-      const sliderPath = ["WEATHER", "controls", `${kind}At100`, key];
-      const syncPath = selectedId ? cfgPath : sliderPath;
-      this.#ui.addParameter(parent, {
-        control: "range",
-        label: STRENGTH_LABELS[key] ?? key,
-        value: clamp(value, min, max),
-        min,
-        max,
-        step,
-        onCommit: (next) => this.#setAt100(kind, key, Number(next)),
-        path: sliderPath,
-        bindingPath: syncPath,
-        configPath: cfgPath,
-        ...this.#changeTracking(cfgPath, () => this.#ui.syncValue?.(syncPath, clamp(this.#at100(kind, key), min, max))),
-      });
-    }
   }
 
   // The same values as numbers in the element's section (location overrides).
@@ -1034,13 +1018,6 @@ export class WeatherDevSection {
     }, false, "", ["WEATHER", "controls", `${key}Auto`], { icon: "reset" });
   }
 
-  // TK-367 (owner: «всі інші також повинні мати такі розділи для налаштування»): an element's settings, collapsed under
-  // its controls — the same live config the element's section edits.
-  #renderSettings(label, key, value, parts, controls) {
-    if (!value || typeof value !== "object") return;
-    this.#tree(value, this.#group(label, controls, ["WEATHER", "controls", `${key}Settings`]), parts);
-  }
-
   // A live share 0…1 as the slider's percent; remembered as the level a switch turns on with when above zero.
   #liveLevel(key, share, scale = 100) {
     const value = Math.round(Math.max(0, Number(share) || 0) * scale * 10) / 10;
@@ -1062,26 +1039,86 @@ export class WeatherDevSection {
       }
       this.#fill();
     }, ["WEATHER", "controls", kind]);
-    // TK-360 (owner): the strength appears once the element is on; TK-367: it stands at the live strength.
-    if (shown) {
-      const level = Math.round(this.#liveLevel(kind, event?.strength));
-      this.#ui.createRangeRow(this.#heldLabel(`${label}: сила, %`, event?.held === true), level, controls, (value) => {
-        this.#levels[kind] = clamp(value, 0, 100);
-        model.hold(kind, this.#levels[kind] / 100, { fadeSec: this.#fadeSec });
-      }, ["WEATHER", "controls", `${kind}Strength`]);
-      this.#followLive(["WEATHER", "controls", `${kind}Strength`], () => {
-        const live = model.snapshot?.events?.[kind];
-        return Math.round(Number(live?.held ? live.target : live?.strength) * 100) || 0;
-      });
-    }
     this.#renderAutoButton(kind, event?.held === true, controls, () => model.hold(kind, null, { fadeSec: this.#fadeSec }));
-    if (!shown) return;
-    const id = this.#weather.locationId;
-    if (kind === "rain") this.#renderAt100Sliders("rain", this.#group("Дощ при силі 100", controls, ["WEATHER", "controls", "rainAt100"]));
-    else if (kind === "storm") {
-      this.#renderSettings("Шторм: що робить (загальне)", "storm", this.#general()?.storm, ["weather", "storm"], controls);
-    } else {
-      this.#renderSettings("Туман: подія (локація)", "fog", this.#locationWeather(id)?.fog, this.#locationParts(id, "fog"), controls);
+  }
+
+  // Spec 187 A (owner: «повзунки там повинні бути відсутні взагалі, всі повзунки перенести у відповідні розділи»): an
+  // element's strength slider on top of its own section, only for the location the game runs (it holds the running
+  // game, Q1); it stands at the live value and follows it (TK-401); moving it holds the element by hand.
+  #renderStrength(kind, section, mode) {
+    if (!mode.location || mode.location !== this.#weather.locationId) return;
+    const weather = this.#weather;
+    const path = ["WEATHER", kind, "strength"];
+    const percentRow = (label, held, live, hold, read) => {
+      const level = Math.round(this.#liveLevel(kind, live));
+      this.#ui.createRangeRow(this.#heldLabel(label, held), level, section, (value) => {
+        this.#levels[kind] = clamp(value, 0, 100);
+        hold(this.#levels[kind] / 100);
+      }, path);
+      this.#followLive(path, () => Math.round(Number(read()) * 100) || 0);
+    };
+    if (kind === "rain" || kind === "storm" || kind === "fog") {
+      const model = weather.getModel();
+      if (!model) return;
+      const eventNow = () => model.snapshot?.events?.[kind];
+      const event = eventNow();
+      percentRow("Сила, %", event?.held === true, event?.held ? event.target : event?.strength,
+        (share) => model.hold(kind, share, { fadeSec: this.#fadeSec }),
+        () => (eventNow()?.held ? eventNow().target : eventNow()?.strength));
+    } else if (kind === "emission") {
+      const emission = weather.getEmissionModel?.() ?? null;
+      if (!emission) return;
+      percentRow("Сила, %", emission.snapshot.intensityHeld === true, emission.snapshot.intensity,
+        (share) => emission.holdIntensity(share), () => emission.snapshot.intensity);
+    } else if (kind === "ash") {
+      if (!weather.holdAsh) return;
+      const hold = weather.getAshHold?.() ?? null;
+      percentRow("Сила, %", hold !== null, hold ?? weather.getAshStrength?.(),
+        (share) => weather.holdAsh(share), () => weather.getAshHold?.() ?? weather.getAshStrength?.() ?? 0);
+    } else if (kind === "starfall") {
+      const starfall = weather.getStarfallModel?.() ?? null;
+      if (!starfall) return;
+      percentRow("Сила, %", starfall.snapshot.held === true, starfall.snapshot.strength,
+        (share) => starfall.hold(share), () => starfall.snapshot.strength);
+    } else if (kind === "wind") {
+      if (!weather.setWindStrength) return;
+      const wind = weather.getWind?.() ?? null;
+      // TK-401: the wind's own strength with its gusts; a strength held by hand shows that value. A wind held calm
+      // (its switch off) blows again once the slider is moved.
+      percentRow("Сила, %", wind?.forcedStrength != null, wind?.forcedStrength ?? wind?.strength, (share) => {
+        if ((weather.getWind?.()?.forcedDirection ?? null) === 0) weather.setWind(null);
+        weather.setWindStrength(share);
+      }, () => weather.getWind?.()?.forcedStrength ?? weather.getWind?.()?.strength ?? 0);
+    }
+  }
+
+  // Spec 187 A: the waves' height and the current's speed on top of ВОДА (the running location only).
+  #renderWaterStrength(section, mode) {
+    if (!mode.location || mode.location !== this.#weather.locationId) return;
+    const weather = this.#weather;
+    if (weather.holdWaves) {
+      const hold = weather.getWavesHold?.() ?? null;
+      const level = Math.round(this.#liveLevel("waves", hold ?? weather.getWavesScale?.() ?? 1) / 5) * 5;
+      const path = ["WEATHER", "water", "wavesHeight"];
+      this.#ui.addParameter(section, { control: "range", label: this.#heldLabel("Хвилі: висота, % від звичайної", hold !== null),
+        value: clamp(level, 0, 300), min: 0, max: 300, step: 5, onCommit: (value) => {
+          this.#levels.waves = clamp(value, 0, 300);
+          weather.holdWaves(this.#levels.waves / 100);
+        }, path });
+      this.#followLive(path, () =>
+        clamp(Math.round(Number(weather.getWavesHold?.() ?? weather.getWavesScale?.() ?? 1) * 100 / 5) * 5, 0, 300));
+    }
+    const speed = weather.getCurrentSpeed?.();
+    if (weather.holdCurrent && speed !== null && speed !== undefined) {
+      const hold = weather.getCurrentHold?.() ?? null;
+      const path = ["WEATHER", "water", "currentSpeed"];
+      this.#ui.addParameter(section, { control: "range", label: this.#heldLabel("Течія: швидкість, px/с", hold !== null),
+        value: clamp(this.#liveLevel("current", speed, 1), 0, 60), min: 0, max: 60, step: 0.5, onCommit: (value) => {
+          this.#levels.current = clamp(value, 0, 60);
+          weather.holdCurrent(this.#levels.current);
+        }, path });
+      this.#followLive(path, () =>
+        clamp(Math.round(Number(weather.getCurrentHold?.() ?? weather.getCurrentSpeed?.() ?? 0) * 2) / 2, 0, 60));
     }
   }
 
@@ -1097,16 +1134,7 @@ export class WeatherDevSection {
       }
       this.#fill();
     }, ["WEATHER", "controls", "emission"]);
-    if (!shown) return;
-    const level = Math.round(this.#liveLevel("emission", snapshot.intensity));
-    this.#ui.createRangeRow(this.#heldLabel("Викид: сила, %", snapshot.intensityHeld === true), level, controls, (value) => {
-      this.#levels.emission = clamp(value, 0, 100);
-      emission.holdIntensity(this.#levels.emission / 100);
-    }, ["WEATHER", "controls", "emissionStrength"]);
-    this.#followLive(["WEATHER", "controls", "emissionStrength"], () => Math.round(Number(emission.snapshot.intensity) * 100) || 0);
     this.#renderAutoButton("emission", snapshot.intensityHeld === true, controls, () => emission.holdIntensity(null));
-    this.#renderSettings("Викид: затемнення й розмиття (загальне)", "emission", this.#general()?.screen, ["emission", "screen"],
-      controls);
   }
 
   // TK-354.1 (owner): «Зорепад» for a test — on: the game clock jumps to the night (unless it is already inside the
@@ -1124,12 +1152,6 @@ export class WeatherDevSection {
       } else starfall.hold(null);
       this.#fill();
     }, ["WEATHER", "controls", "starfall"]);
-    if (!snapshot.held) return;
-    this.#ui.createRangeRow("Зорепад: сила, %", this.#starfallLevel, controls, (value) => {
-      this.#starfallLevel = clamp(value, 0, 100);
-      starfall.hold(this.#starfallLevel / 100);
-    }, ["WEATHER", "controls", "starfallStrength"]);
-    this.#renderSettings("Зорепад: зорі й болід (загальне)", "starfall", this.#general()?.starfall, ["canvas", "starfall"], controls);
   }
 
   // TK-367 (owner: «попіл … з'являється з викидом але керувати я повинен ним і окремо»): on — the ash held at the
@@ -1143,17 +1165,7 @@ export class WeatherDevSection {
       weather.holdAsh(on ? this.#levels.ash / 100 : 0);
       this.#fill();
     }, ["WEATHER", "controls", "ash"]);
-    if (shown) {
-      const level = Math.round(this.#liveLevel("ash", weather.getAshStrength?.() ?? hold));
-      this.#ui.createRangeRow(this.#heldLabel("Попіл: сила, %", hold !== null), level, controls, (value) => {
-        this.#levels.ash = clamp(value, 0, 100);
-        weather.holdAsh(this.#levels.ash / 100);
-      }, ["WEATHER", "controls", "ashStrength"]);
-      this.#followLive(["WEATHER", "controls", "ashStrength"],
-        () => Math.round(Number(weather.getAshHold?.() ?? weather.getAshStrength?.() ?? 0) * 100) || 0);
-    }
     this.#renderAutoButton("ash", hold !== null, controls, () => weather.holdAsh(null));
-    if (shown) this.#renderAt100Sliders("ash", this.#group("Попіл при силі 100", controls, ["WEATHER", "controls", "ashAt100"]));
   }
 
   // TK-367 (owner): on — the wind blows at the slider's strength (the direction «← вліво | авто | вправо →»); off — calm.
@@ -1179,24 +1191,11 @@ export class WeatherDevSection {
           weather.setWind(WIND_CHOICES.find((option) => option.value === next)?.direction ?? null);
           this.#fill();
         }, path: ["WEATHER", "controls", "windDirection"] });
-      if (weather.setWindStrength) {
-        const level = Math.round(this.#liveLevel("wind", wind?.forcedStrength ?? wind?.strength));
-        this.#ui.createRangeRow(this.#heldLabel("Вітер: сила, %", wind?.forcedStrength != null), level, controls, (value) => {
-          this.#levels.wind = clamp(value, 0, 100);
-          weather.setWindStrength(this.#levels.wind / 100);
-        }, ["WEATHER", "controls", "windStrength"]);
-        // TK-401 (owner): the wind's own strength with its gusts; a strength held by hand stays where it was put.
-        this.#followLive(["WEATHER", "controls", "windStrength"], () => {
-          const live = weather.getWind?.() ?? null;
-          return Math.round(Number(live?.forcedStrength ?? live?.strength) * 100) || 0;
-        });
-      }
     }
     this.#renderAutoButton("wind", held || forcedDirection === 0, controls, () => {
       weather.setWind(null);
       weather.setWindStrength?.(null);
     });
-    if (shown) this.#renderSettings("Вітер: як діє (загальне)", "wind", this.#general()?.wind, ["weather", "wind"], controls);
   }
 
   #windOn(wind) {
@@ -1213,19 +1212,7 @@ export class WeatherDevSection {
       weather.holdWaves(on ? this.#levels.waves / 100 : 0);
       this.#fill();
     }, ["WEATHER", "controls", "wavesOn"]);
-    if (shown) {
-      const level = Math.round(this.#liveLevel("waves", hold ?? weather.getWavesScale?.() ?? 1) / 5) * 5;
-      this.#ui.addParameter(controls, { control: "range", label: this.#heldLabel("Хвилі: висота, % від звичайної", hold !== null),
-        value: clamp(level, 0, 300), min: 0, max: 300, step: 5, onCommit: (value) => {
-          this.#levels.waves = clamp(value, 0, 300);
-          weather.holdWaves(this.#levels.waves / 100);
-        }, path: ["WEATHER", "controls", "waves"] });
-      this.#followLive(["WEATHER", "controls", "waves"], () =>
-        clamp(Math.round(Number(weather.getWavesHold?.() ?? weather.getWavesScale?.() ?? 1) * 100 / 5) * 5, 0, 300));
-    }
     this.#renderAutoButton("waves", hold !== null, controls, () => weather.holdWaves(null));
-    if (shown) this.#renderSettings("Хвилі: стан моря (загальне)", "waves", this.#general()?.water?.seaState,
-      ["canvas", "water", "seaState"], controls);
   }
 
   // TK-367: on — the water current held at the slider's speed; off — still water; «авто» — the location's own current.
@@ -1241,20 +1228,7 @@ export class WeatherDevSection {
       weather.holdCurrent(on ? this.#levels.current : 0);
       this.#fill();
     }, ["WEATHER", "controls", "currentOn"]);
-    if (shown) {
-      const level = this.#liveLevel("current", speed, 1);
-      this.#ui.addParameter(controls, { control: "range", label: this.#heldLabel("Течія: швидкість, px/с", hold !== null),
-        value: clamp(level, 0, 60), min: 0, max: 60, step: 0.5, onCommit: (value) => {
-          this.#levels.current = clamp(value, 0, 60);
-          weather.holdCurrent(this.#levels.current);
-        }, path: ["WEATHER", "controls", "current"] });
-      this.#followLive(["WEATHER", "controls", "current"], () =>
-        clamp(Math.round(Number(weather.getCurrentHold?.() ?? weather.getCurrentSpeed?.() ?? 0) * 2) / 2, 0, 60));
-    }
     this.#renderAutoButton("current", hold !== null, controls, () => weather.holdCurrent(null));
-    const id = this.#weather.locationId;
-    if (shown) this.#renderSettings("Течія (локація)", "current", this.#locationsMap?.()?.[id]?.environment?.current,
-      ["locations", "map", id, "environment", "current"], controls);
   }
 
   // TK-360 (owner): «Болід зараз» is the last row; on a phone the panel closes at once, so the bolide is seen falling.

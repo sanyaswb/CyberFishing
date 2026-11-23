@@ -1,6 +1,7 @@
 // Release notes, newest first (unshift with every patch). DEV only: no production code reads them, and in the start's
 // bundle they cost 13 KB gzip (spec 160). dev.html publishes them with the version: window.CYBER_FISHING_PROJECT_VERSION.notes.
 export const PROJECT_RELEASE_NOTES = Object.freeze([
+  "Spec 187 A: «Керування» without sliders or settings; WeatherDevSection.#renderStrength puts «Сила, %» on top of each element's section (ВОДА: waves' height, current's speed), for the running location only, holding the game and following the live value (WEATHER.<kind>.strength).",
   "TK-401: «Керування» sliders (rain, storm, fog, emission, ash, wind with gusts, waves, current) follow the live value on refreshLive when it changes (DevToolsUI.showLiveValue: bindings only); held — the held value; RangeField keeps a value the person moved within 1 s.",
   "TK-398.1: DevTools «Хвилі» is on while held above 0 or while the live height is above 1% of the usual (WeatherDevSection.#wavesOn) — flat water without the automatic weather shows off (the switch and the «i»); it showed on unless held at 0.",
   "TK-400: DevTools «ПОГОДА» «i» — the automatic weather, the states on now (LIVE_BITS), the radiation and a short line per state; texts follow refreshLive only while the «i» is open, the lines follow the redraw; no waves reader in the port — no waves state.",
