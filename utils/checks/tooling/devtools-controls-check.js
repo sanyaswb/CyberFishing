@@ -3150,6 +3150,13 @@ function choiceRow(options, value, path) {
   assert.ok(byClass("devtools__row", drunk.panelUi.body).some((row) => row.children[0]?.dataset?.devtoolsKey === "vodka"),
     "«СТАТУСИ» shows the active vodka");
   assert.ok(drunk.page("config").length > 0, "and the other pages are drawn");
+  // TK-396 (spec 186): the overlay's startup report without a clipboard goes to the panel's text dialog, never the
+  // browser's prompt.
+  drunk.tools.toggle();
+  assert.equal(drunk.tools.showText("Звіт завантаження", "{\"version\":\"1\"}"), true, "DevTools shows a handed-over text");
+  assert.equal(drunk.tools.isOpen, true, "and opens itself for it");
+  const textDialog = byClass("devtools__dialog-text", document.body).at(-1);
+  assert.equal(textDialog?.value, "{\"version\":\"1\"}", "in its text dialog, read-only, to copy from");
   drunk.tools.dispose();
   const broken = openPanel({ ...createPlayerStatusesDevPort(statuses), stacks: () => { throw new TypeError("stacks broke"); } });
   assert.equal(broken.errors.length, 1, "a section that throws is reported once in the console");

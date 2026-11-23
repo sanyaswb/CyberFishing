@@ -321,6 +321,8 @@ async function startGame() {
       readWeather: () => compositionRoot?.getWeatherReading?.() ?? null,
       // Spec 177 (TK-296): hyperlinks in overlays open DevTools at the corresponding parameter.
       revealDevToolsParameter: (path) => devTools?.revealParameter?.(path),
+      // TK-396: the startup report without a clipboard goes to the DevTools text dialog.
+      showDevToolsText: (title, text) => devTools?.showText(title, text) === true,
     });
     balanceWindows = composeFightBalanceWindows({
       documentTarget,

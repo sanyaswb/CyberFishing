@@ -299,4 +299,34 @@
 @media (prefers-reduced-motion: reduce) {
   .debug-overlay__metric-label--link { transition: none; }
 }
+.debug-overlay__metric-label--link[aria-expanded="true"] { color: var(--ui-text); }
+
+/* TK-396 (spec 186 Q2): a metric's explanation under its row, the look of a DevTools «i» hint; it wraps to the rows'
+   width instead of widening the window. */
+.debug-overlay__hint {
+  contain: inline-size;
+  margin: 2px 0 6px;
+  padding: 6px 8px;
+  border-radius: var(--ui-radius-control);
+  background: rgba(255, 255, 255, 0.06);
+  font-size: 11px;
+  line-height: 1.4;
+  white-space: normal;
+}
+.debug-overlay__hint-text { color: var(--ui-text); }
+.debug-overlay__hint-formula {
+  margin-top: 4px;
+  color: var(--ui-info);
+  font-family: var(--ui-font-mono);
+  overflow-wrap: anywhere;
+}
+.debug-overlay__hint-param {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 8px;
+  margin-top: 2px;
+}
+.debug-overlay__hint-path { color: var(--ui-muted); overflow-wrap: anywhere; }
+.debug-overlay__hint-value { color: var(--ui-text); font-family: var(--ui-font-mono); white-space: nowrap; }
 

@@ -10,6 +10,8 @@ const { GameControls } = require("../../../src/platform/browser/ui/game_controls
 const { InventoryTooltipPresenter } = require("../../../src/game/presentation/inventory/inventory_tooltip_presenter.js");
 const { OverlayMetricInfoBridge } = require("../../../src/dev/overlay/dom/overlay_metric_info_bridge.js");
 const { OverlayHtmlBuilder } = require("../../../src/dev/overlay/services/overlay_html_builder.js");
+const { OverlayMetricHints } = require("../../../src/dev/overlay/services/overlay_metric_hints.js");
+const { OverlayViewStateStore } = require("../../../src/dev/overlay/services/overlay_view_state_store.js");
 const { TestDocument } = require("../../testing/keepnet/test_document.js");
 
 function environment(width, height = 600, viewport = false, capabilities = null) {
@@ -143,10 +145,12 @@ const metricContent = hoverEnv.document.createElement("div");
 const metricLabel = hoverEnv.document.createElement("span");
 metricLabel.dataset.metric = "Fixture";
 metricLabel.closest = selector => selector === ".debug-overlay__metric-label" ? metricLabel : null;
-hoverEnv.document.querySelector = () => metricContent;
 const inspected = [];
-const bridge = new OverlayMetricInfoBridge({ documentTarget: hoverEnv.document,
-  catalog: { getEntry: () => ({ description: "Fixture help" }) }, inspector: { inspect: (entry) => inspected.push(entry.label) } });
+const fixtureCatalog = { getEntry: () => ({ description: "Fixture help" }), dispose() {} };
+const fixtureHints = new OverlayMetricHints({ catalog: fixtureCatalog, viewState: new OverlayViewStateStore({}),
+  resolver: { buildParameterRow: (parameterPath) => ({ path: parameterPath, value: 1, status: "ok" }) } });
+const bridge = new OverlayMetricInfoBridge({ documentTarget: hoverEnv.document, eventTarget: metricContent,
+  catalog: fixtureCatalog, hints: fixtureHints, inspector: { inspect: (entry) => inspected.push(entry.label) } });
 bridge.start();
 // TK-217: metric rows have no hover, tooltip or underline on any device; a click still writes the formula to the console.
 assert.deepEqual([...metricContent.listeners.keys()].filter((type) => metricContent.listeners.get(type).size > 0).sort(),
@@ -167,34 +171,49 @@ assert.match(titleBlock, /background\s*:/u, "Tool window titles have a backgroun
 assert.match(titleBlock, /border-radius\s*:/u, "Tool window titles have rounded corners (TK-296.1)");
 const metricHtml = new OverlayHtmlBuilder().metricRow("Fixture", "1");
 assert.doesNotMatch(metricHtml, /\btitle=/u, "A metric row has no browser tooltip");
-// TK-309: the weather module's links for every module: a metric whose catalog entry names parameters DevTools can
-// show is a link (and a release control, so a press does not drag the window); a click still explains it and opens the
-// first parameter DevTools has.
+// TK-309 / TK-396 (spec 186 Q2, owner: «підказка під рядком»): a metric the catalog explains is a link and a release
+// control (a press neither drags the window nor runs another overlay action). A press opens its hint under the row — a
+// phone has no console — with what it is, the formula, the parameters' values now and a DevTools button for each
+// parameter DevTools can show; a second press closes it; the console still gets the explanation.
 {
-  const catalog = { getEntry: (label) => (label === "Water weight" ? { paths: ["HOOKED_FISH.physics.behaviors.<state>.x",
-    "CONFIG.physics.water.tautBodyResistancePerKg", "HOOKED_FISH.weight", "derived.value"] } : { paths: ["derived.only"] }) };
-  const builder = new OverlayHtmlBuilder({ metricCatalog: catalog });
-  const linked = builder.metricRow("Water weight", "1 kg");
-  assert.match(linked, /debug-overlay__metric-label--link/u, "a metric with parameters looks like the weather links");
-  assert.match(linked, /data-overlay-control="metric" data-overlay-activate="release"/u,
+  const catalog = { dispose() {}, getEntry: (label) => (label === "Water weight" ? { description: "Вага риби у воді.",
+    formula: "fishPassiveKg = weight * k", paths: ["HOOKED_FISH.physics.behaviors.<state>.x",
+      "CONFIG.physics.water.tautBodyResistancePerKg", "HOOKED_FISH.weight", "DEBUG_DATA.fishPassiveKg"] } : null) };
+  const values = { "CONFIG.physics.water.tautBodyResistancePerKg": 0.8, "HOOKED_FISH.weight": 2.5, "DEBUG_DATA.fishPassiveKg": 2 };
+  const hints = new OverlayMetricHints({ catalog, viewState: new OverlayViewStateStore({}), resolver: { buildParameterRow:
+    (parameterPath) => parameterPath in values ? { path: parameterPath, value: values[parameterPath], status: "ok" }
+      : { path: parameterPath, value: "not available", status: "state-specific path" } } });
+  const builder = new OverlayHtmlBuilder({ metricCatalog: catalog, metricHints: hints });
+  const closed = builder.metricRow("Water weight", "1 kg");
+  assert.match(closed, /debug-overlay__metric-label--link/u, "an explained metric looks like the weather links");
+  assert.match(closed, /data-overlay-control="metric" data-overlay-activate="release"/u,
     "a press on it neither drags the window nor runs another overlay action");
-  assert.match(linked, /data-devtools-paths="CONFIG\.physics\.water\.tautBodyResistancePerKg\|HOOKED_FISH\.weight"/u,
-    "state-specific and derived names are not offered");
-  assert.doesNotMatch(builder.metricRow("Other", "2"), /--link|data-devtools-paths/u, "a metric without parameters stays plain");
-  const revealed = [];
+  assert.match(closed, /aria-expanded="false"/u, "its hint starts closed");
+  assert.doesNotMatch(closed, /debug-overlay__hint/u, "nothing under the row yet");
+  const plain = builder.metricRow("Other", "2");
+  assert.doesNotMatch(plain, /--link|role="button"|data-overlay-control/u, "a metric the catalog does not explain stays plain");
   const linkBridge = new OverlayMetricInfoBridge({ documentTarget: hoverEnv.document, eventTarget: metricContent,
-    catalog: { getEntry: () => null }, inspector: { inspect: (entry) => inspected.push(entry.label) },
-    revealParameter: (devtoolsPath) => { revealed.push(devtoolsPath); return devtoolsPath === "HOOKED_FISH.weight"; } });
+    catalog, hints, inspector: { inspect: (entry) => inspected.push(entry.label) } });
   bridge.stop();
   linkBridge.start();
   const linkLabel = hoverEnv.document.createElement("span");
   linkLabel.dataset.metric = "Water weight";
-  linkLabel.dataset.devtoolsPaths = "CONFIG.physics.water.tautBodyResistancePerKg|HOOKED_FISH.weight|CONFIG.later";
   linkLabel.closest = (selector) => (selector === ".debug-overlay__metric-label" ? linkLabel : null);
   metricContent.fire("click", { target: linkLabel, preventDefault() {}, stopPropagation() {} });
-  assert.equal(inspected.at(-1), "Water weight", "the formula is still explained");
-  assert.deepEqual(revealed, ["CONFIG.physics.water.tautBodyResistancePerKg", "HOOKED_FISH.weight"],
-    "the first parameter DevTools shows is opened; the next ones are not tried");
+  assert.equal(inspected.at(-1), "Water weight", "the console still explains it");
+  const open = builder.metricRow("Water weight", "1 kg");
+  assert.match(open, /aria-expanded="true"[\s\S]*<\/div><div class="debug-overlay__hint" role="note">/u,
+    "the press opens its hint right under the row");
+  assert.match(open, /Вага риби у воді\.[\s\S]*fishPassiveKg = weight \* k/u, "what it is and the formula");
+  assert.match(open, /tautBodyResistancePerKg<\/button><\/span><span class="debug-overlay__hint-value">0\.8</u,
+    "a parameter with its value now");
+  const buttons = [...open.matchAll(/data-overlay-control="devtools-link" data-overlay-activate="release" data-devtools-path="([^"]+)"/gu)]
+    .map((match) => match[1]);
+  assert.equal(JSON.stringify(buttons), JSON.stringify(["CONFIG.physics.water.tautBodyResistancePerKg", "HOOKED_FISH.weight"]),
+    "a DevTools button for each parameter DevTools can show (not a state-specific or snapshot one)");
+  assert.match(open, /DEBUG_DATA\.fishPassiveKg<\/span><span class="debug-overlay__hint-value">2</u, "a snapshot value is shown too");
+  metricContent.fire("click", { target: linkLabel, preventDefault() {}, stopPropagation() {} });
+  assert.doesNotMatch(builder.metricRow("Water weight", "1 kg"), /debug-overlay__hint/u, "a second press closes it");
   linkBridge.dispose();
 }
 bridge.dispose();

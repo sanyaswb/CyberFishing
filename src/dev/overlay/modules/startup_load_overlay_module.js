@@ -19,7 +19,7 @@ const KIND_LABELS = Object.freeze({
 });
 const STATUS_LABELS = Object.freeze({
   copied: () => "Звіт скопійовано в буфер.",
-  prompted: () => "Буфер недоступний: звіт у вікні для копіювання.",
+  prompted: () => "Буфер недоступний: звіт у вікні DevTools для копіювання.",
   copyFailed: () => "Не вдалося скопіювати звіт.",
   saved: (fileName) => `Звіт збережено у файл ${fileName}.`,
   saveFailed: () => "Не вдалося зберегти файл звіту.",

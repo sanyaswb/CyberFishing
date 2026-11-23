@@ -216,6 +216,15 @@ export class DevTools {
     if (this.#isOpen && globalThis.matchMedia?.("(pointer: coarse)")?.matches === true) this.toggle();
   }
 
+  // TK-396 (spec 186): a text another DEV tool has to hand over (the overlay's startup report without a clipboard) in the
+  // panel's text dialog — never the browser's prompt (spec 174 C5); opens the panel. Returns whether it was shown.
+  showText(title, text) {
+    if (this.#isDisposed) return false;
+    if (!this.#isOpen) this.open();
+    this.#ui.openTextDialog({ title, text, readOnly: true });
+    return true;
+  }
+
   // Spec 177 (TK-296): open DevTools (if closed), expand ancestor sections and highlight the parameter green.
   revealParameter(path) {
     if (this.#isDisposed) return false;

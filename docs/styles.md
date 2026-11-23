@@ -160,10 +160,13 @@ with `devtools__dialog` (`__dialog-head`, `__dialog-title`, `__dialog-close`, `_
 (`--error`), `__dialog-actions`, `__dialog-action` (`--primary`)); `DevToolsUI.notify` shows `devtools__toast`
 (`--error`) at the panel's bottom for 4 s. No DevTools module uses the browser's prompt or alert.
 
-TK-309 (overlay): a metric row (`OverlayHtmlBuilder.metricRow`) whose metric catalog entry names a parameter DevTools can
-show gets `debug-overlay__metric-label--link` (the look of `debug-overlay__dev-link`: info colour, hover/active
-background) with `data-overlay-control="metric"`, `data-overlay-activate="release"` and `data-devtools-paths`; other
-metric rows stay plain text without hover (TK-217).
+TK-309, TK-396 (overlay, spec 186): a metric row (`OverlayHtmlBuilder.metricRow`) the metric catalog explains gets
+`debug-overlay__metric-label--link` (the look of `debug-overlay__dev-link`: info colour, hover/active background) with
+`data-overlay-control="metric"`, `data-overlay-activate="release"` and `aria-expanded`; a press opens its hint right
+after the row (`OverlayMetricHints`): `debug-overlay__hint` (the look of a DevTools «i» hint, wraps to the rows' width)
+with `__hint-text`, `__hint-formula` (mono, info colour) and `__hint-param` rows (`__hint-path` — a
+`debug-overlay__dev-link` for a parameter DevTools can show — and `__hint-value`, mono). Other metric rows stay plain
+text without hover (TK-217).
 
 Spec 174 D (TK-310): the DevTools layouts are container queries on `ui-surface` (no JS measuring): a landscape phone
 (`orientation: landscape`, height ≤ 480) gets a compact side panel (≤ 50 % width, 52 px rail without labels); a narrow

@@ -1,6 +1,7 @@
 // Release notes, newest first (unshift with every patch). DEV only: no production code reads them, and in the start's
 // bundle they cost 13 KB gzip (spec 160). dev.html publishes them with the version: window.CYBER_FISHING_PROJECT_VERSION.notes.
 export const PROJECT_RELEASE_NOTES = Object.freeze([
+  "Spec 186 TK-396: OverlayMetricHints (open hints in the overlay view state, rendered after the row by OverlayHtmlBuilder.metricRow: description, formula, parameter values via one OverlayMetricResolver, DevTools buttons); OverlayMetricInfoBridge toggles it; DevTools.showText for the startup report fallback.",
   "Spec 186 TK-395: OverlayController / OverlayUpdateLoop require their collaborators (documentTarget, updateLoop, viewStateStore, interactionBridge, timer); OverlayInteractionBridge without rootElementProvider, one clock; OverlaySettingsModule without fallbacks.",
   "Spec 186 TK-393: the PerformanceOverlayModule freeze bar is one <path> per colour (a rectangle per frame in d) instead of a <rect> per frame.",
   "Spec 186 TK-392: DebugService builds debug-live-update at most every CONFIG.debug.overlayUpdateMs (injected now = performance.now); after a pause the first asked frame builds at once.",

@@ -37,6 +37,7 @@ import { OverlayInteractionBridge } from "../../dev/overlay/dom/overlay_interact
 import { OverlayMetricCatalog } from "../../dev/overlay/services/overlay_metric_catalog.js";
 import { OverlayMetricInfoBridge } from "../../dev/overlay/dom/overlay_metric_info_bridge.js";
 import { OverlayMetricResolver } from "../../dev/overlay/overlay_metric_resolver.js";
+import { OverlayMetricHints } from "../../dev/overlay/services/overlay_metric_hints.js";
 import { OverlayModuleRegistry } from "../../dev/overlay/core/overlay_module_registry.js";
 import { OverlayScaleControls } from "../../dev/overlay/dom/overlay_scale_controls.js";
 import { OverlayUpdateLoop } from "../../dev/overlay/core/overlay_update_loop.js";
@@ -57,14 +58,18 @@ import { WorstCaseOverlayModule } from "../../dev/overlay/modules/worst_case_ove
 // frameProfiler: the DEV frame probe the game loop reports into (spec 101); readRenderInfo: canvas size and heap;
 // gameVersion: written into the startup report (spec 157).
 export function createDebugOverlayRuntime({config, baseConfig, settingsStore, documentTarget, windowTarget, storageCache, uiSurface = null, mountNode = uiSurface?.mountRoot || documentTarget.body,
-  frameProfiler, readRenderInfo, gameVersion, readAssetLoadStatus = () => null, readWeather = () => null, revealDevToolsParameter = null}) {
+  frameProfiler, readRenderInfo, gameVersion, readAssetLoadStatus = () => null, readWeather = () => null, revealDevToolsParameter = null,
+  showDevToolsText = () => false}) {
   const configSource = () => config;
-  // TK-309: one metric catalog for the rows (links to parameters) and the console explanations.
+  // TK-309: one metric catalog for the rows, the hints and the console explanations; TK-396: one resolver of the
+  // parameters' values now for the hints and the console.
   const metricCatalog = new OverlayMetricCatalog();
-  const htmlBuilder = new OverlayHtmlBuilder({ metricCatalog });
+  const metricResolver = new OverlayMetricResolver({ baseConfig, configSource });
   const formatter = new OverlayValueFormatter();
   const viewStateStore = new OverlayViewStateStore({fishStatesDirectionMode: "away",
     fishStateForceDetails: {active: false, force: false, speed: false, weight: false}});
+  const metricHints = new OverlayMetricHints({ catalog: metricCatalog, resolver: metricResolver, viewState: viewStateStore });
+  const htmlBuilder = new OverlayHtmlBuilder({ metricCatalog, metricHints });
   const moduleOptions = {settingsStore, htmlBuilder, formatter, viewStateStore, configSource};
   const sectionOptions = {settingsStore, htmlBuilder, formatter};
   const rodSections = [
@@ -116,14 +121,15 @@ export function createDebugOverlayRuntime({config, baseConfig, settingsStore, do
           sections: [new FightRodStrokeSection(sectionOptions)],
         },
       ];
-  // Spec 157 R9: the startup report goes to the clipboard, or to a prompt the owner copies from when it is unavailable.
+  // Spec 157 R9: the startup report goes to the clipboard; TK-396 (spec 186): without one, to the DevTools text dialog the
+  // owner copies from (never the browser's prompt, spec 174 C5).
   const copyText = async (text, title) => {
     try {
       await windowTarget.navigator.clipboard.writeText(text);
       return "copied";
     } catch {
-      windowTarget.prompt?.(title, text);
-      return "prompted";
+      if (showDevToolsText(title, text) === true) return "prompted";
+      throw new Error("no clipboard and no DevTools to show the report in");
     }
   };
   // TK-168: the same report saved as a JSON file.
@@ -204,10 +210,8 @@ export function createDebugOverlayRuntime({config, baseConfig, settingsStore, do
     documentTarget,
     eventTarget: mountNode,
     catalog: metricCatalog,
-    revealParameter: revealDevToolsParameter,
-    inspector: new OverlayConsoleMetricInspector({
-      resolver: new OverlayMetricResolver({ baseConfig, configSource }),
-    }),
+    hints: metricHints,
+    inspector: new OverlayConsoleMetricInspector({ resolver: metricResolver }),
   });
   metricInfoBridge.start();
   let disposed = false;
