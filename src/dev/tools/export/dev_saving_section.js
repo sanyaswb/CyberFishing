@@ -52,9 +52,7 @@ export class DevSavingSection {
 
   #draw(host) {
     const ui = this.#ui;
-    const createStatusRow = this.#useTextStatus && ui.createTextRow
-      ? ui.createTextRow.bind(ui)
-      : ui.createInfoRow.bind(ui);
+    const createStatusRow = this.#useTextStatus ? ui.createTextRow.bind(ui) : ui.createInfoRow.bind(ui);
     this.#statusEl = createStatusRow(this.#labels.statusLabel, "", host);
     this.refreshStatus();
     if (this.#files) {

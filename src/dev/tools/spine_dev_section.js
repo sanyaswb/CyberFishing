@@ -52,7 +52,7 @@ export class SpineDevSection {
   constructor({ ui, subject, controller, createSection, renderConfigTree, files = null }) {
     this.#ui = ui;
     this.#subject = subject;
-    this.#controller = controller?.controller ?? controller;
+    this.#controller = controller;
     this.#createSection = createSection;
     this.#renderConfigTree = renderConfigTree;
     this.#files = files;

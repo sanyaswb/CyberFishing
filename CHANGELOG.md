@@ -2,6 +2,10 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.52.56 - Review: DevTools without fallbacks for what always exists (TK-389.1)
+
+- No visible change: two DevTools parts no longer carry a fallback for a method or a wrapper that is always there (the saving section's status row, the Spine section's controller).
+
 ## v0.52.55 - Review: a DevTools search filters once per redraw (TK-387.1)
 
 - dev.html: while a DevTools search or «Змінені» is on, a redraw of ПОГОДА or the zone editor filtered the panel twice (once over a half-built section); now once.
@@ -37,7 +41,3 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 ## v0.52.47 - Review: a background inventory write no longer rebuilds the closed inventory (TK-386)
 
 - Smoother play under radiation: every few seconds the game writes a battery's charge, the items' wear and now the gas mask's filter and wear; each such write rebuilt the whole inventory window, even when it was closed (~7 ms on a PC, more on a phone). Now the closed inventory is left alone and drawn when it opens; a write takes about a fifth of the time.
-
-## v0.52.46 - Gas mask filters change while fishing, one at a time under radiation (TK-385, spec 185)
-
-- With the tackle in the water the gas mask's filters can still be changed in its editor (the rest of the equipment stays locked, the mask stays on). Under radiation or during an emission the filters change one at a time: the last filter with time left cannot come out until a new one is in. Without radiation and an emission — freely.

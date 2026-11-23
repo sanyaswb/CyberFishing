@@ -2318,7 +2318,7 @@ const step = (model, seconds, clock = null, dt = 0.1) => {
   const inlineTrees = [];
   const node = () => ({ replaceChildren() {}, appendChild() {} });
   const ui = {
-    createInfoRow() {}, createRangeRow() {}, createSelectRow() {}, createInputRow() {}, createSwitcherRow() {},
+    createInfoRow() {}, createTextRow() {}, createRangeRow() {}, createSelectRow() {}, createInputRow() {}, createSwitcherRow() {},
     addParameter() {}, redraw: devToolsRedraw, releaseValueBindings() {}, createButtonGrid: (parent) => parent,
     createButtonRow(label, parent, onClick, navigation, icon, path) {
       const row = { style: {} };
@@ -2478,7 +2478,7 @@ const step = (model, seconds, clock = null, dt = 0.1) => {
     const section360 = new WeatherDevSection({
       view: { selected: "test" },
       ui: {
-        createInfoRow() {}, redraw: devToolsRedraw, releaseValueBindings() {}, setSectionLabel() {},
+        createInfoRow() {}, createTextRow() {}, redraw: devToolsRedraw, releaseValueBindings() {}, setSectionLabel() {},
         createSelectRow(label, choices, value, parent, onChange, path) { inControls(parent, path.join(".")); },
         createInputRow(label, value, parent) { inControls(parent, `input:${label}`); },
         addParameter(parent, { path }) { if (path) inControls(parent, path.join(".")); },
