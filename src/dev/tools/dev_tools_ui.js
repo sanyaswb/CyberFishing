@@ -51,6 +51,8 @@ export class DevToolsUI {
   // TK-308: section contents drawn on first need.
   #lazyContents = new Map();
   #drill = null;
+  // TK-387.1: a redraw is going on (one inside it only clears and draws).
+  #redrawing = false;
   // Spec 174 C5: the open text dialog and the result line.
   #dialog = null;
   #toast = null;
@@ -329,8 +331,10 @@ export class DevToolsUI {
   // open drill-in inside the container is put back and reopened afterwards (R23); the old rows' bindings and paths are
   // released; the «i» the container's section got for its description goes with them (it lives in the section, not in
   // the container; the next createInfoRow makes it again, open as before); then draw() fills the container.
+  // TK-387.1: a redraw inside another one (a section's «Збереження» drawn while the section redraws) only clears and
+  // draws: the outer one puts the drill-in back and refreshes the search once, over the finished rows.
   redraw(container, draw) {
-    this.#preserveDrill(container, () => {
+    const clearAndDraw = () => {
       this.releaseValueBindings(container);
       const description = this.#descriptions.get(container);
       if (description?.button) {
@@ -340,7 +344,17 @@ export class DevToolsUI {
       }
       container.replaceChildren();
       draw();
-    });
+    };
+    if (this.#redrawing) {
+      clearAndDraw();
+      return;
+    }
+    this.#redrawing = true;
+    try {
+      this.#preserveDrill(container, clearAndDraw);
+    } finally {
+      this.#redrawing = false;
+    }
   }
 
   #crumb(text, onClick) {

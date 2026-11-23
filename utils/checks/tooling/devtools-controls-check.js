@@ -1982,6 +1982,30 @@ function choiceRow(options, value, path) {
   toggle.checked = true;
   toggle.fire("change", { target: toggle });
   assert.ok(drillText().includes("drive"), "switching it on inside the drill-in shows its parameters there");
+
+  // TK-387.1 (review before push): a redraw inside another one (the weather's «Збереження», DevSavingSection.render)
+  // leaves the search to the outer one: one filter pass over the finished rows, not one per nested redraw.
+  byClass("devtools__crumb", page).find((crumb) => crumb.textContent === "Сцена")?.click();
+  const status = byClass("devtools__search-status", redrawUi.body.parentNode)[0];
+  let filterPasses = 0;
+  let statusText = "";
+  Object.defineProperty(status, "textContent", { configurable: true, get: () => statusText,
+    set: (value) => { filterPasses++; statusText = value; } });
+  const weather = redrawUi.createSection("ПОГОДА", page, true, () => {}, ["WEATHER"]);
+  const search = byClass("devtools__search-input", redrawUi.body.parentNode)[0];
+  search.value = "rain";
+  search.fire("input");
+  filterPasses = 0;
+  redrawUi.redraw(weather, () => {
+    redrawUi.addParameter(weather, { control: "number", label: "rain", value: 1, onCommit() {}, path: ["WEATHER", "rain"] });
+    const saving = redrawUi.createSection("Збереження", weather, false, () => {}, ["WEATHER", "saving"]);
+    redrawUi.redraw(saving, () => redrawUi.createTextRow("стан", "ok", saving));
+  });
+  assert.equal(filterPasses, 1, "one search pass for a redraw with a nested one");
+  assert.ok(byClass("devtools__row", weather).some((row) => row.dataset.devtoolsPath === "WEATHER.rain"
+    && row.classList.contains("devtools__row--match")), "and it marks the redrawn rows");
+  search.value = "";
+  search.fire("input");
   redrawUi.dispose();
 }
 
