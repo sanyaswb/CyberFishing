@@ -1,3 +1,5 @@
+import { devIconMarkup } from "../../tools/controls/dev_icon.js";
+
 export class OverlayHtmlBuilder {
   #metricCatalog;
   #metricHints;
@@ -10,8 +12,10 @@ export class OverlayHtmlBuilder {
     this.#metricHints = metricHints;
   }
 
-  formatHeader(title, color = "#00ccff") {
-    return `<div class="debug-overlay__text debug-overlay__text--custom debug-overlay__heading" style="--debug-overlay-color:${this.escapeAttr(color)};">${this.escapeHtml(title)}</div>`;
+  // icon: a DevTools icon name before the title (TK-397, spec 186 Q3: the same SVG icons as DevTools, no emoji).
+  formatHeader(title, color = "#00ccff", icon = "") {
+    const iconHtml = icon ? devIconMarkup(icon, "debug-overlay__heading-icon") : "";
+    return `<div class="debug-overlay__text debug-overlay__text--custom debug-overlay__heading" style="--debug-overlay-color:${this.escapeAttr(color)};">${iconHtml}${this.escapeHtml(title)}</div>`;
   }
 
   // TK-391 (R29): what a window shows when its module failed to draw: the title, the cause, that the rest works.

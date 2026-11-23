@@ -2,6 +2,10 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.52.62 - Overlay windows with DevTools icons instead of emoji (TK-397, spec 186)
+
+- dev.html: overlay window headings that had emoji (ПРОДУКТИВНІСТЬ, ЗАВАНТАЖЕННЯ, ЕХОЛОТ, ДЕБАФИ, …) show the same line icons as DevTools, the same on every phone; emoji in the overlays' text are gone; the balance windows' reset button shows the reset icon.
+
 ## v0.52.61 - Overlay: a metric's explanation under its row (TK-396, spec 186)
 
 - dev.html: a tap on a highlighted metric name in an overlay window opens its explanation right under the row — what it is, the formula, the parameters with their values now and a button to open each parameter in DevTools; a second tap closes it (on a phone there is no console). The startup report without a clipboard now opens in the DevTools text window instead of the browser's prompt.
@@ -37,7 +41,3 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 ## v0.52.53 - DevTools cleanup: one Spine section, icons instead of symbols (TK-389)
 
 - dev.html: the rod's and the boat's Spine sections are one section in code (no visible change; the boat's export now saves the skeleton with the latest bone edits). Buttons «Оновити», «Авто погода», «авто», «Скинути розділ до коду» and the loading layers show icons instead of the symbols ↻ ↺ ✓; the shop says «· видано ×N» after a grant.
-
-## v0.52.52 - A DevTools section that fails to draw shows why (TK-388)
-
-- dev.html: if a DevTools section ever fails to draw when it is first opened, it opens with a red notice naming the error; the rest of the panel and the search keep working (before, it silently did not open, and a search stopped at it).

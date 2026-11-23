@@ -37,7 +37,7 @@ const FILE_STATE_LABELS = Object.freeze({ full: "повний", low: "low-коп
 export const STARTUP_REPORT_COPY_CONTROL = "startup-report-copy";
 export const STARTUP_REPORT_DOWNLOAD_CONTROL = "startup-report-download";
 
-// DEV overlay "⏱ ЗАВАНТАЖЕННЯ" (spec 157 R9): the startup stages and T-paint/T-play, requests and bytes by kind up to
+// DEV overlay "ЗАВАНТАЖЕННЯ" (spec 157 R9): the startup stages and T-paint/T-play, requests and bytes by kind up to
 // T-play (transferred = compressed over the network, then uncompressed), the sequential network steps, the 10 largest
 // and 10 longest requests, "Копіювати звіт" and "Завантажити JSON" (the JSON report for the owner's phone, to the
 // clipboard or as a file, TK-168). The report is rebuilt only when a timing entry was added. Spec 157 D6: the asset
@@ -75,7 +75,7 @@ export class StartupLoadOverlayModule extends OverlayModule {
   render() {
     const report = this.#currentReport();
     const ms = (value) => value === null ? "—" : `${Math.round(value)} мс`;
-    let html = this.formatHeader("⏱ ЗАВАНТАЖЕННЯ", "#7fd1ff");
+    let html = this.formatHeader("ЗАВАНТАЖЕННЯ", "#7fd1ff", "clock");
     // TK-251.2: with step-by-step loading on, only what the current step loaded.
     const stepStatus = this.#readAssetLoadStatus();
     if (stepStatus?.stepper) return `${html}${this.#currentStepRows(stepStatus)}${this.#reportControls()}`

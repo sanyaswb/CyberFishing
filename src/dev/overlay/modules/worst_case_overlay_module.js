@@ -16,7 +16,7 @@ export class WorstCaseOverlayModule extends OverlayModule {
     const worstCase = this.#selector.select(d);
     if (!worstCase) return "";
 
-    let html = this.formatHeader("💀 НАЙГІРШІ УМОВИ (КУТ)", "#ff4444");
+    let html = this.formatHeader("НАЙГІРШІ УМОВИ (КУТ)", "#ff4444", "warning");
     html += `<div class="debug-overlay__text debug-overlay__text--muted debug-overlay__caption">Максимальна тяга X:</div>
              <div class="debug-overlay__pair debug-overlay__pair--tight"><span>Риба:</span> <span class="debug-overlay__text debug-overlay__text--danger debug-overlay__text--emphasis">${worstCase.worstFishX.toFixed(3)}</span></div>
              <div class="debug-overlay__pair debug-overlay__pair--separated"><span>Гравець:</span> <span class="debug-overlay__text debug-overlay__text--warning debug-overlay__text--emphasis">${worstCase.playerSteerMin.toFixed(3)}</span></div>`;

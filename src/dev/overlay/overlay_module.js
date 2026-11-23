@@ -29,8 +29,8 @@ export class OverlayModule {
     this.settingsStore?.setEnabled?.(this.key, false);
   }
 
-  formatHeader(title, color = "#00ccff") {
-    return this.htmlBuilder.formatHeader(title, color);
+  formatHeader(title, color = "#00ccff", icon = "") {
+    return this.htmlBuilder.formatHeader(title, color, icon);
   }
 
   metricRow(label, value, options = {}) {

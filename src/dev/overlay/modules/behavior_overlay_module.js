@@ -11,9 +11,7 @@ export class BehaviorOverlayModule extends OverlayModule {
 
   render(d) {
     const color = this.getStateColor(d.fishState);
-    let html = this.formatHeader(
-      `🧠 ПОВЕДІНКА (${d.hookedFish.name || "Риба"})`,
-    );
+    let html = this.formatHeader(`ПОВЕДІНКА (${d.hookedFish.name || "Риба"})`, "#00ccff", "fish");
 
     // Основні параметри поведінки
     html += `<div class="debug-overlay__line">Стан: <span class="debug-overlay__text debug-overlay__text--custom debug-overlay__text--state" style="--debug-overlay-color:${color};">${d.fishState || "---"}</span></div>`;
@@ -32,7 +30,7 @@ export class BehaviorOverlayModule extends OverlayModule {
 
       if (activeBonus > 1) {
         html += `<div class="debug-overlay__divider">`;
-        html += `<span class="debug-overlay__text debug-overlay__text--highlight">🧲 БОНУС ПРИКОРМКИ:</span> <span class="debug-overlay__text debug-overlay__text--success debug-overlay__text--emphasis">x${activeBonus.toFixed(2)}</span>`;
+        html += `<span class="debug-overlay__text debug-overlay__text--highlight">БОНУС ПРИКОРМКИ:</span> <span class="debug-overlay__text debug-overlay__text--success debug-overlay__text--emphasis">x${activeBonus.toFixed(2)}</span>`;
         html += `</div>`;
       } else {
         html += `<div class="debug-overlay__text debug-overlay__text--muted debug-overlay__note">Прикормка не впливає на цей вид</div>`;

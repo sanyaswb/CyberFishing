@@ -12,7 +12,7 @@ export class EchoOverlayModule extends OverlayModule {
   render(d) {
     if (!this.shouldRender(d)) return "";
 
-    let html = this.formatHeader("📡 ЕХОЛОТ", "#00ff80");
+    let html = this.formatHeader("ЕХОЛОТ", "#00ff80", "sonar");
     const stateText = d.isBoatSonar ? "СКАНУВАННЯ (КОРАБЛИК)" : d.gameState;
 
     html += `<div class="debug-overlay__line">Стан: <span class="debug-overlay__text debug-overlay__text--accent debug-overlay__text--uppercase">${stateText}</span></div>`;
@@ -36,10 +36,10 @@ export class EchoOverlayModule extends OverlayModule {
       html += `<div class="debug-overlay__line debug-overlay__line--spaced">Фаза: <span class="debug-overlay__text debug-overlay__text--highlight">${d.phase || "---"}</span></div>`;
 
       let weather = d.isRaining
-        ? "🌧️ Дощ "
+        ? "Дощ"
         : d.isFoggy
-          ? "🌫️ Туман"
-          : "☀️ Ясно";
+          ? "Туман"
+          : "Ясно";
       html += `<div class="debug-overlay__line debug-overlay__line--spaced">Погода: <span class="debug-overlay__text debug-overlay__text--accent">${weather}</span></div>`;
 
       if (d.liveChances?.length > 0) {

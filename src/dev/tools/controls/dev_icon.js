@@ -37,10 +37,23 @@ export const DEV_ICONS = Object.freeze({
   // «refresh» and «done».
   refresh: ["M16 10a6 6 0 1 1-1.8-4.3", "M16 3v3.5h-3.5"],
   check: ["M4.5 10.5l3.5 3.5 7.5-8"],
+  // TK-397 (spec 186 Q3): the overlay windows' headings that had emoji.
+  bolt: ["M11 2.5L4.5 11h5l-1 6.5L15.5 9h-5z"],
+  clock: ["M10 3a7 7 0 1 0 0 14a7 7 0 1 0 0-14z", "M10 6.5V10l2.5 1.5"],
+  sonar: ["M10 15.5h.01", "M7.2 12.6a4 4 0 0 1 5.6 0", "M4.6 10a7.6 7.6 0 0 1 10.8 0", "M2 7.4a11.3 11.3 0 0 1 16 0"],
   search: ["M8.5 3.5a5 5 0 1 0 0 10a5 5 0 1 0 0-10z", "M12.2 12.2L17 17"],
   changed: ["M10 7a3 3 0 1 0 0 6a3 3 0 1 0 0-6z"],
   camera: ["M3 7h3l1.5-2h5L14 7h3v9H3z", "M10 9a2.5 2.5 0 1 0 0 5a2.5 2.5 0 1 0 0-5z"],
 });
+
+// TK-397 (spec 186 Q3): the same icon as markup, for the DEV overlay whose windows are rendered from HTML strings.
+export function devIconMarkup(name, className = "") {
+  const paths = DEV_ICONS[name];
+  if (!paths) throw new RangeError(`Unknown DevTools icon: ${name}`);
+  const classes = className ? `devtools__icon ${className}` : "devtools__icon";
+  return `<svg class="${classes}" viewBox="0 0 20 20" aria-hidden="true" focusable="false">`
+    + `${paths.map((d) => `<path d="${d}"/>`).join("")}</svg>`;
+}
 
 // An inline SVG of one icon; className: the consumer's sizing class besides the shared devtools__icon.
 export function createDevIcon(documentRef, name, className = "") {

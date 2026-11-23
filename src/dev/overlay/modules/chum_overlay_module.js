@@ -8,7 +8,7 @@ export class ChumOverlayModule extends OverlayModule {
     return d.chumZones?.length > 0;
   }
   render(d) {
-    let html = this.formatHeader("🧲 АКТИВНІ ПРИКОРМКИ", "#ffff00");
+    let html = this.formatHeader("АКТИВНІ ПРИКОРМКИ", "#ffff00", "net");
     d.chumZones.forEach((z, idx) => {
       const color = z.isExpired ? "#888" : "#00ff80";
       html += `<div class="debug-overlay__pair debug-overlay__pair--compact">

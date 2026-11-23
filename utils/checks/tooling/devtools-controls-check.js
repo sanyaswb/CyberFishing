@@ -873,14 +873,19 @@ function choiceRow(options, value, path) {
   // refresh, reset, done, failed): icons replace them, the same on every platform. Arrows in prose (a path «A → B»,
   // a direction «← вліво») stay text.
   const forbidden = /[\p{Extended_Pictographic}▶▼⏩↻↺⟳⟲✓✗]/u;
-  for (const file of walk(toolsRoot).filter((name) => name.endsWith(".js"))) {
+  // TK-397 (spec 186 Q3): the DEV overlay too (its windows and their composition) — the same icons as DevTools.
+  const overlayRoot = path.resolve(__dirname, "../../../src/dev/overlay");
+  const scanned = [...walk(toolsRoot), ...walk(overlayRoot),
+    path.resolve(__dirname, "../../../src/bootstrap/development/fight_balance_windows_composition.js")]
+    .filter((name) => name.endsWith(".js"));
+  for (const file of scanned) {
     fs.readFileSync(file, "utf8")
       .split("\n")
       .forEach((line, index) => {
         assert.equal(
           forbidden.test(line),
           false,
-          `${path.relative(toolsRoot, file)}:${index + 1} draws an emoji; use createDevIcon`,
+          `${path.relative(path.resolve(__dirname, "../../.."), file)}:${index + 1} draws an emoji; use a DevTools icon`,
         );
       });
   }
@@ -899,11 +904,25 @@ function choiceRow(options, value, path) {
     ))
       named.add(name);
   }
+  // TK-397: the overlay's headings name their icon as formatHeader's third argument.
+  const overlayHeadingIcons = new Set();
+  for (const file of walk(overlayRoot).filter((name) => name.endsWith(".js"))) {
+    const text = fs.readFileSync(file, "utf8");
+    for (const [, name] of text.matchAll(/formatHeader\([^;]*?, "#[0-9a-f]{6}", "([a-z]+)"\)/gu)) overlayHeadingIcons.add(name);
+    for (const [, name] of text.matchAll(/createDevIcon\([^,]+, "([a-z]+)"/gu)) overlayHeadingIcons.add(name);
+  }
+  for (const name of overlayHeadingIcons) named.add(name);
   for (const name of named) assert.ok(DEV_ICONS[name], `icon "${name}" exists`);
   assert.ok(
     named.has("gear") && named.has("chevron") && named.has("map"),
     "the scan found the panel's icons",
   );
+  assert.ok(["bolt", "clock", "sonar", "reset"].every((name) => overlayHeadingIcons.has(name)),
+    "the scan found the overlay's icons");
+  const { OverlayHtmlBuilder: HeadingBuilder } = runtime.importModule("src/dev/overlay/services/overlay_html_builder.js");
+  assert.match(new HeadingBuilder().formatHeader("ПРОДУКТИВНІСТЬ", "#ffcc00", "bolt"),
+    /^<div[^>]*debug-overlay__heading[^>]*><svg class="devtools__icon debug-overlay__heading-icon" viewBox="0 0 20 20" aria-hidden="true"/u,
+    "an overlay heading draws its DevTools icon before the title");
   const icon = createDevIcon(document, "chevron", "devtools__section-chevron");
   assert.equal(
     icon.getAttribute("class"),

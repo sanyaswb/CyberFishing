@@ -246,6 +246,12 @@
   text-transform: uppercase;
   font-size: 13px;
 }
+/* TK-397 (spec 186 Q3): a heading's DevTools icon (in the heading's colour) in place of the emoji it had. */
+.debug-overlay__heading-icon {
+  --devtools-icon-size: 15px;
+  margin-right: 6px;
+  vertical-align: -3px;
+}
 
 .debug-overlay__dev-link {
   appearance: none;

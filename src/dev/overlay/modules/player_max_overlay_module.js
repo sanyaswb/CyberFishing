@@ -10,7 +10,7 @@ export class PlayerMaxOverlayModule extends OverlayModule {
   }
 
   render(d) {
-    let html = this.formatHeader("📊 СИЛА ГРАВЦЯ", "#00ff80");
+    let html = this.formatHeader("СИЛА ГРАВЦЯ", "#00ff80", "chart");
     html += `<div class="debug-overlay__pair debug-overlay__pair--tight"><span>ЛІМІТ СНАСТІ:</span> <span class="debug-overlay__text debug-overlay__text--success debug-overlay__text--emphasis">${(d.maxTackleLoadKg || d.playerMaxPowerY || 0).toFixed(3)} кг</span></div>`;
     html += `<div class="debug-overlay__pair debug-overlay__pair--tight"><span>Rod hold:</span><span class="debug-overlay__text debug-overlay__text--success">${(d.rodPullForceKg || 0).toFixed(3)}kg</span></div>`;
     html += `<div class="debug-overlay__pair debug-overlay__pair--tight"><span>Model speed:</span><span class="debug-overlay__text debug-overlay__text--success">${(d.modelFightSpeedMps || 0).toFixed(2)}m/s</span></div>`;

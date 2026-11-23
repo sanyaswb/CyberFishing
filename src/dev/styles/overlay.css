@@ -354,6 +354,9 @@
   pointer-events: auto;
 }
 .debug-overlay__reset {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   width: 24px;
   height: 20px;
   padding: 0;
@@ -374,3 +377,5 @@
 .debug-overlay__number:focus-visible,
 .debug-overlay__switch:focus-visible,
 .debug-overlay__reset:focus-visible { outline: 2px solid var(--ui-info); outline-offset: 2px; }
+/* TK-397 (spec 186 Q3): the DevTools reset icon in the balance windows' reset button. */
+.debug-overlay__reset-icon { --devtools-icon-size: 14px; }

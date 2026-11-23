@@ -11,7 +11,7 @@ export class DebuffsOverlayModule extends OverlayModule {
   }
 
   render(d) {
-    let html = this.formatHeader("☠️ АКТИВНІ ДЕБАФИ", "#ff00ff");
+    let html = this.formatHeader("АКТИВНІ ДЕБАФИ", "#ff00ff", "warning");
 
     // Секція рандомних дебафів
     const debuffName = formatDebuffName(d.debuffState);

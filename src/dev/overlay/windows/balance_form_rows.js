@@ -7,7 +7,7 @@ export class BalanceFormRows {
     this.#schema = schema;
   }
 
-  // value: the object; path: its edit path; base: the same object's base values (for ↺), or null; idPrefix: section ids.
+  // value: the object; path: its edit path; base: the same object's base values (for the reset), or null; idPrefix: section ids.
   section({ id, title, value, path, base = null, skip = () => false }) {
     const rows = [];
     const sections = [];

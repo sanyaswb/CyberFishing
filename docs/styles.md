@@ -167,6 +167,10 @@ after the row (`OverlayMetricHints`): `debug-overlay__hint` (the look of a DevTo
 with `__hint-text`, `__hint-formula` (mono, info colour) and `__hint-param` rows (`__hint-path` — a
 `debug-overlay__dev-link` for a parameter DevTools can show — and `__hint-value`, mono). Other metric rows stay plain
 text without hover (TK-217).
+TK-397 (overlay, spec 186 Q3): the overlay draws no emoji or icon glyphs either (`devtools-controls` scans
+`src/dev/overlay` too). A heading takes a DevTools icon (`formatHeader(title, color, icon)` → `devIconMarkup`, the
+`devtools__icon` SVG as markup, sized by `debug-overlay__heading-icon`, in the heading's colour); the balance windows'
+reset button holds the `reset` icon (`debug-overlay__reset-icon`).
 
 Spec 174 D (TK-310): the DevTools layouts are container queries on `ui-surface` (no JS measuring): a landscape phone
 (`orientation: landscape`, height ≤ 480) gets a compact side panel (≤ 50 % width, 52 px rail without labels); a narrow

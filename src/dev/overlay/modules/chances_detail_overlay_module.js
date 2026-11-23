@@ -15,7 +15,7 @@ export class ChancesDetailOverlayModule extends OverlayModule {
   }
 
   render(d) {
-    let html = this.formatHeader("🧮 РОЗРАХУНОК ШАНСІВ", "#b066ff");
+    let html = this.formatHeader("РОЗРАХУНОК ШАНСІВ", "#b066ff", "chart");
     const godMode =
       typeof this.configSource() !== "undefined" ? this.configSource().debug?.godMode : null;
     if (godMode?.enabled) {

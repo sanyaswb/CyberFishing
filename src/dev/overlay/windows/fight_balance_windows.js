@@ -3,7 +3,7 @@ import { BalanceControlPanel } from "./balance_control_panel.js";
 const SECTIONS_STORAGE_KEY = "overlay_balance_sections";
 const LIVE_UPDATE_EVENT = "debug-live-update";
 
-// The overlay windows «🐟 ACTIVE FISH» and «🎣 ACTIVE ROD» (spec 168): each shows while its overlay switch
+// The overlay windows «ACTIVE FISH» and «ACTIVE ROD» (spec 168): each shows while its overlay switch
 // (settingsStore keys activeFish / activeRod) is on, refreshed every intervalMs from the latest `debug-live-update`;
 // isLiveDataRequested() is true while either is on, so the game sends that data (R17). Section states are remembered.
 export class FightBalanceWindows {

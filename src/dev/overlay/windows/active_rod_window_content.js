@@ -1,9 +1,9 @@
 import { BalanceFormRows } from "./balance_form_rows.js";
 
-// What the overlay window «🎣 ACTIVE ROD» shows and edits (spec 168, owner answers Q2 (а), Q3 (б)): the equipped rod's
+// What the overlay window «ACTIVE ROD» shows and edits (spec 168, owner answers Q2 (а), Q3 (б)): the equipped rod's
 // catalog item (ITEM_DB.rods.<id>.gameplayStats: every rod of this kind; the inventory and the fight refresh) and the
 // shared rod rules of the fight (CONFIG.physics.fight rodHold, rodStroke, rodControl: live overrides, exported by
-// DevTools). ↺ returns a value to the catalog item at first sight / the base config.
+// DevTools). The reset returns a value to the catalog item at first sight / the base config.
 const FIGHT_RULES = Object.freeze([
   ["rodHold", "Утримання вудилищем (rodHold)"],
   ["rodStroke", "Ривок вудилищем (rodStroke)"],

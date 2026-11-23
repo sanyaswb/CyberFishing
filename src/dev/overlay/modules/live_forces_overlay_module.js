@@ -38,10 +38,10 @@ export class LiveForcesOverlayModule extends OverlayModule {
       );
       const yLead =
         fY > pY
-          ? `<span class="debug-overlay__text debug-overlay__text--danger">🚨 Риба тягне сильніше на ${yDiff}%</span>`
-          : `<span class="debug-overlay__text debug-overlay__text--success">💪 Гравець тягне сильніше на ${yDiff}%</span>`;
+          ? `<span class="debug-overlay__text debug-overlay__text--danger">Риба тягне сильніше на ${yDiff}%</span>`
+          : `<span class="debug-overlay__text debug-overlay__text--success">Гравець тягне сильніше на ${yDiff}%</span>`;
 
-      html += this.formatHeader("⚖️ LIVE: ТЯГА (Y)");
+      html += this.formatHeader("LIVE: ТЯГА (Y)", "#00ccff", "sliders");
       html += `<div class="debug-overlay__line">Гравець: <span class="debug-overlay__text debug-overlay__text--success">${pY.toFixed(3)}</span> | Риба: <span class="debug-overlay__text debug-overlay__text--danger">${fY.toFixed(3)}</span></div>`;
       html += `<div class="debug-overlay__comparison">${yLead}</div>`;
     }
@@ -50,10 +50,10 @@ export class LiveForcesOverlayModule extends OverlayModule {
     if (this.settingsStore?.isEnabled?.("liveX")) {
       const xLead =
         fX > pX
-          ? `<span class="debug-overlay__text debug-overlay__text--danger">🚨 Риба втікає (Домінує)</span>`
-          : `<span class="debug-overlay__text debug-overlay__text--success">✅ Керування стабільне</span>`;
+          ? `<span class="debug-overlay__text debug-overlay__text--danger">Риба втікає (домінує)</span>`
+          : `<span class="debug-overlay__text debug-overlay__text--success">Керування стабільне</span>`;
 
-      html += this.formatHeader("⚖️ LIVE: КЕРУВАННЯ (X)");
+      html += this.formatHeader("LIVE: КЕРУВАННЯ (X)", "#00ccff", "sliders");
       html += `<div class="debug-overlay__line">Гравець: <span class="debug-overlay__text debug-overlay__text--success">${pX.toFixed(3)}</span> | Риба: <span class="debug-overlay__text debug-overlay__text--danger">${fX.toFixed(3)}</span></div>`;
       html += `<div class="debug-overlay__comparison">${xLead}</div>`;
     }

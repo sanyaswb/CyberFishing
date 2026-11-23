@@ -1,11 +1,11 @@
 import { BalanceFormRows } from "./balance_form_rows.js";
 
-// What the overlay window «🐟 ACTIVE FISH» shows and edits (spec 168, owner answers Q1 (в), Q4 (б)):
+// What the overlay window «ACTIVE FISH» shows and edits (spec 168, owner answers Q1 (в), Q4 (б)):
 // - in the fight: the hooked fish (HOOKED_FISH) — level and weight, force, stamina, movement, every behaviour state; a
-//   change acts at once (DevTools.updateConfig → the fight), and «💾 Записати у вид» copies this fish's physics changes
+//   change acts at once (DevTools.updateConfig → the fight), and «Записати у вид» copies this fish's physics changes
 //   into its species (FISH_DB), so every later fish of the kind has them;
 // - outside the fight: the Fixed Catch species (FISH_DB) while Fixed Catch is on, edited directly.
-// ↺ returns a value to the species' own (for the hooked fish) or to the value at start (for the species).
+// The reset returns a value to the species' own (for the hooked fish) or to the value at start (for the species).
 const PHYSICS_SECTIONS = Object.freeze([
   ["forceProfile", "Сила"],
   ["staminaProfile", "Витривалість"],
@@ -38,7 +38,7 @@ export class ActiveFishWindowContent {
   #lastSaved = 0;
   #current = null;
 
-  // config: the live CONFIG (Fixed Catch, stamina rules); baseConfig: the config without overrides (↺ of the rules);
+  // config: the live CONFIG (Fixed Catch, stamina rules); baseConfig: the config without overrides (the reset of the rules);
   // fishes: FISH_DB; schema: FightBalanceParameterSchema; updateConfig(path, value): DevTools.updateConfig.
   constructor({ config, baseConfig, fishes, schema, updateConfig }) {
     this.#config = config;
@@ -112,7 +112,7 @@ export class ActiveFishWindowContent {
       ],
       note: pending > 0 ? `Змінено в цій рибі: ${pending}, ще не записано у вид.`
         : this.#lastSaved > 0 ? `Записано у вид: ${this.#lastSaved}.` : "Зміни діють на цю рибу одразу.",
-      actions: index >= 0 ? [{ id: "save", label: "💾 Записати у вид" }] : [],
+      actions: index >= 0 ? [{ id: "save", label: "Записати у вид" }] : [],
       sections,
     };
   }

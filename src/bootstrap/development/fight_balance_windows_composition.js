@@ -7,7 +7,7 @@ import { OverlayToolWindow } from "../../dev/overlay/windows/overlay_tool_window
 import { OverlayUpdateLoop } from "../../dev/overlay/core/overlay_update_loop.js";
 import { OverlayWindowDragController } from "../../dev/overlay/dom/overlay_window_drag_controller.js";
 
-// Spec 168: the DEV overlay windows «🐟 ACTIVE FISH» and «🎣 ACTIVE ROD» (switches activeFish / activeRod in the overlay
+// Spec 168: the DEV overlay windows «ACTIVE FISH» and «ACTIVE ROD» (switches activeFish / activeRod in the overlay
 // settings). Every edit goes through updateConfig (DevTools.updateConfig); the windows start at once and ask for the live
 // data only while one of them is on.
 export function composeFightBalanceWindows({ documentTarget, windowTarget, mountNode, uiSurface, settingsStore, storageCache,
@@ -24,9 +24,9 @@ export function composeFightBalanceWindows({ documentTarget, windowTarget, mount
     createUpdateLoop: (callback) => new OverlayUpdateLoop({ callback, intervalMs: Number(config.debug?.overlayUpdateMs) || 150,
       timer: windowTarget }),
     windows: [
-      { key: "activeFish", window: toolWindow("overlay_active_fish", "debug-overlay--active-fish", "🐟 ACTIVE FISH", "activeFish"),
+      { key: "activeFish", window: toolWindow("overlay_active_fish", "debug-overlay--active-fish", "ACTIVE FISH", "activeFish"),
         content: new ActiveFishWindowContent({ config, baseConfig, fishes, schema, updateConfig }) },
-      { key: "activeRod", window: toolWindow("overlay_active_rod", "debug-overlay--active-rod", "🎣 ACTIVE ROD", "activeRod"),
+      { key: "activeRod", window: toolWindow("overlay_active_rod", "debug-overlay--active-rod", "ACTIVE ROD", "activeRod"),
         content: new ActiveRodWindowContent({ config, baseConfig, items, schema, updateConfig }) },
     ] });
   windows.start();

@@ -137,11 +137,11 @@ export const OVERLAY_MODULE_GROUPS = Object.freeze([
 
 export const OVERLAY_MODULE_LABELS = Object.freeze({
   activeFish: Object.freeze({
-    label: "🐟 ACTIVE FISH (вікно)",
+    label: "ACTIVE FISH (вікно)",
     original: "activeFish",
   }),
   activeRod: Object.freeze({
-    label: "🎣 ACTIVE ROD (вікно)",
+    label: "ACTIVE ROD (вікно)",
     original: "activeRod",
   }),
   startup: Object.freeze({

@@ -1,5 +1,7 @@
+import { createDevIcon } from "../../tools/controls/dev_icon.js";
+
 // The content of a fight balance window (spec 168 D2): a form of read-only lines, action buttons and collapsible sections
-// of controls (a slider with a number field and ↺ for a number, a switch for a boolean). The DOM is built once per form
+// of controls (a slider with a number field and a reset for a number, a switch for a boolean). The DOM is built once per form
 // key; later renders of the same key only write changed values, and a control being dragged, focused or typed into is
 // never overwritten. Changes go to onChange(path, value); buttons to onAction(id).
 //
@@ -158,9 +160,12 @@ export class BalanceControlPanel {
     number.addEventListener("change", () => send(Number(number.value)));
     element.append(slider, number);
     if (Number.isFinite(Number(row.base))) {
-      const reset = this.#element("button", "debug-overlay__reset", "↺");
+      // TK-397 (spec 186 Q3): the DevTools reset icon, not a text glyph.
+      const reset = this.#element("button", "debug-overlay__reset");
       reset.type = "button";
       reset.title = `Базове: ${row.base}`;
+      reset.setAttribute("aria-label", `Повернути базове значення ${row.base}`);
+      reset.appendChild(createDevIcon(this.#documentTarget, "reset", "debug-overlay__reset-icon"));
       reset.addEventListener("click", () => send(Number(row.base)));
       element.append(reset);
     }
