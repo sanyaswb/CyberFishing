@@ -2,6 +2,10 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.52.66 - DevTools: the weather's «i» shows what is on now (TK-400)
+
+- dev.html: the «i» of the «ПОГОДА» section lists the automatic weather, the states on now, the radiation and a short line for each state (strength, phase, time left; the wind's direction and gusts), updated live while it is open.
+
 ## v0.52.65 - Rain comes more often under a storm (TK-399.1)
 
 - A storm raises the rain's chance more (×10 instead of ×6): rain now falls under most storms (~85%) and more than half of the emissions (~61%), and a storm without rain still happens.
@@ -37,7 +41,3 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 ## v0.52.57 - An overlay window that fails to draw shows why; the others keep updating (TK-391, spec 186)
 
 - dev.html: if one DEV overlay window ever fails to draw, it shows a red notice with the cause, and the other overlay windows keep updating (before, every window after it froze without a sign).
-
-## v0.52.56 - Review: DevTools without fallbacks for what always exists (TK-389.1)
-
-- No visible change: two DevTools parts no longer carry a fallback for a method or a wrapper that is always there (the saving section's status row, the Spine section's controller).

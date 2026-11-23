@@ -2847,6 +2847,24 @@ function choiceRow(options, value, path) {
   events.fog.active = true;
   fireLive();
   assert.equal(fogChecked(), true, "a fog that started by itself shows on its switch with the next live update");
+  // TK-400 (owner): the section's «i» shows what is on now, in short, and follows the live updates while it is open.
+  const summaryValue = (kind) => byClass("devtools__row", liveUi.body)
+    .find((row) => row.dataset.devtoolsPath === `WEATHER.summary.${kind}`)?.children[1]?.innerText;
+  assert.equal(summaryValue("active"), "туман", "«активні» names the fog that started");
+  assert.equal(summaryValue("rain"), undefined, "a state that is off has no line");
+  assert.equal(summaryValue("automatic"), "увімкнена", "the automatic weather is shown");
+  const closedText = summaryValue("fog");
+  Object.assign(events.fog, { strength: 0.4, phase: "peak", durationSec: 600, elapsedSec: 330 });
+  fireLive();
+  assert.ok(closedText.startsWith("0%") && summaryValue("fog") === closedText, "the «i» closed: its texts are not rewritten");
+  const weatherSection = byClass("devtools__section", liveUi.body).find((section) => section.dataset.devtoolsPath === "WEATHER");
+  // Its own «i» (a direct child; the nested sections have their own).
+  [...weatherSection.children].find((child) => child.classList?.contains("devtools__section-info-button")).click();
+  fireLive();
+  assert.equal(summaryValue("fog"), "40% · пік · ще 4:30", "open: the fog's strength, phase and time left, live");
+  events.fog.elapsedSec = 340;
+  fireLive();
+  assert.equal(summaryValue("fog"), "40% · пік · ще 4:20", "the next live update rewrites it without a redraw");
   // TK-367.1 (owner: «по 2 кнопки в ряду», short labels): «Керування»'s buttons sit in two-column grids, each button in
   // its own row with its own devtools path (links, search and the reveal outline still find it).
   const gridPaths = byClass("devtools__button-grid", liveUi.body)

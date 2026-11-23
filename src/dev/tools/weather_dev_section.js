@@ -33,6 +33,8 @@ import {
 // - TK-360: the switches follow the live state. While the panel is open, refreshLive() (each live update) compares
 //   which elements are on — one integer — with what the section shows, and redraws it only when that changed: a fog
 //   that started by itself shows at once, not at the next redraw caused by another control.
+// - TK-400 (owner): the section's own «i» — the automatic weather, the states on now and a short line for each (strength,
+//   phase, time left), the radiation; its texts follow the live updates while it is open.
 // - Sections by element: ДОЩ, ШТОРМ, ВІТЕР, ТУМАН, ВИКИД, РАДІАЦІЯ (TK-337), ПОПІЛ, ВОДА, ПОЧАТОК І ПОРОГИ — general and location parts by
 //   the selector; a section with edits not in the code is marked «· змінено» and has «Скинути розділ до коду» (D8).
 // - «Збереження» (spec 175, spec 180 stage D, TK-332): the file holds the level the selector shows — «Загальні»: the
@@ -90,6 +92,13 @@ const LIVE_BITS = Object.freeze({ rain: 1, storm: 2, fog: 4, emission: 8, starfa
   current: 256 });
 // Below this a live share or speed counts as off.
 const LIVE_EPSILON = 1e-3;
+// TK-400: the states the section's «i» lists, in this order (each a LIVE_BITS key), with their short names.
+const SUMMARY_STATES = Object.freeze([["rain", "дощ"], ["storm", "шторм"], ["fog", "туман"], ["emission", "викид"],
+  ["wind", "вітер"], ["ash", "попіл"], ["starfall", "зорепад"], ["waves", "хвилі"], ["current", "течія"]]);
+const clockText = (sec) => {
+  const total = Math.max(0, Math.round(Number(sec) || 0));
+  return `${Math.floor(total / 60)}:${String(total % 60).padStart(2, "0")}`;
+};
 
 export class WeatherDevSection {
   #ui;
@@ -113,6 +122,8 @@ export class WeatherDevSection {
   #content = null;
   #view;
   #marks = [];
+  // TK-400: the «i» rows that follow the live state: { kind, element } (the value element).
+  #summary = [];
   #listening = false;
   // The levels a switch turns on with (the last live value above zero): %, the waves' % of the usual, the current px/s.
   #levels = { rain: 70, storm: 80, fog: 60, emission: 100, ash: 100, wind: 40, waves: 100, current: 10 };
@@ -226,14 +237,98 @@ export class WeatherDevSection {
     this.#listening = false;
     this.#savingSection.clear();
     this.#marks = [];
+    this.#summary.length = 0;
     this.#content = null;
     this.#shownLive = -1;
   }
 
   // TK-360: called on every live update while the panel is open; redraws only when an element turned on or off.
+  // TK-400: otherwise the section's «i» texts follow the live state, only while that «i» is open.
   refreshLive() {
     if (!this.#content || this.#shownLive < 0) return;
     if (this.#liveState() !== this.#shownLive) this.#fill();
+    else this.#refreshSummary();
+  }
+
+  // TK-400 (owner: «актуальну інформацію які стани активні і параметри коротко»): the section's «i» — the automatic
+  // weather, which states are on, the radiation, and one short line per state that is on. Which lines exist follows the
+  // redraw (LIVE_BITS); their texts follow refreshLive.
+  #renderSummary(content) {
+    const add = (kind, label) => {
+      const element = this.#ui.createInfoRow(label, this.#summaryText(kind), content, ["WEATHER", "summary", kind]);
+      if (element) this.#summary.push({ kind, element });
+    };
+    add("automatic", "автоматика");
+    add("active", "активні");
+    add("radiation", "радіація");
+    const live = this.#liveState();
+    for (const [kind, label] of SUMMARY_STATES) if (live & LIVE_BITS[kind]) add(kind, label);
+  }
+
+  // Rewrites the «i» texts that changed; nothing while the «i» is closed (its rows' container is hidden).
+  #refreshSummary() {
+    const first = this.#summary[0]?.element;
+    const info = first?.parentNode?.parentNode;
+    if (!info || info.hidden !== false) return;
+    for (const entry of this.#summary) {
+      const text = this.#summaryText(entry.kind);
+      if (entry.element.innerText !== text) entry.element.innerText = text;
+    }
+  }
+
+  #summaryText(kind) {
+    const weather = this.#weather;
+    const snapshot = weather.getModel()?.snapshot ?? null;
+    switch (kind) {
+      case "automatic": return weather.isAutomatic?.() === false ? "вимкнена (лише вручну)" : "увімкнена";
+      case "active": {
+        const live = this.#liveState();
+        const names = SUMMARY_STATES.filter(([state]) => live & LIVE_BITS[state]).map(([, label]) => label);
+        return names.length ? names.join(", ") : "нічого";
+      }
+      case "radiation": {
+        const emission = weather.getEmissionModel?.()?.snapshot ?? null;
+        return emission ? `${percent(emission.radiation)}${emission.radiationForced ? " · вручну" : ""}` : "—";
+      }
+      case "rain":
+      case "storm":
+      case "fog": return this.#summaryEvent(kind, snapshot);
+      case "emission": {
+        const emission = weather.getEmissionModel?.()?.snapshot ?? null;
+        if (!emission) return "—";
+        if (emission.intensityHeld) return `${percent(emission.intensity)} · вручну`;
+        return `${EMISSION_LABELS[emission.phase] ?? emission.phase} · ${percent(emission.intensity)} · ще ${clockText(emission.phaseLeftSec)}`;
+      }
+      case "wind": {
+        const wind = weather.getWind?.() ?? null;
+        if (!wind) return "—";
+        return `${WIND_NAMES[wind.direction] ?? wind.direction} · ${percent(wind.strength)}${wind.isGusting ? " · порив" : ""}` +
+          `${wind.forced || wind.forcedStrength != null ? " · вручну" : ""}`;
+      }
+      case "ash": return percent(weather.getAshStrength?.() ?? 0);
+      case "starfall": {
+        const starfall = weather.getStarfallModel?.()?.snapshot ?? null;
+        return starfall ? `${percent(starfall.strength)}${starfall.held ? " · вручну" : ""}` : "—";
+      }
+      case "waves": {
+        const hold = weather.getWavesHold?.() ?? null;
+        return hold === null ? "від вітру й шторму" : `${percent(hold)} звичайних · вручну`;
+      }
+      case "current": return `${Math.round(Number(weather.getCurrentSpeed?.() ?? 0) * 10) / 10} px/с`;
+      default: return "—";
+    }
+  }
+
+  // A weather event in short: its strength, phase and time left; by hand, or held up by the emission's floor.
+  #summaryEvent(kind, snapshot) {
+    const event = snapshot?.events?.[kind];
+    if (!event) return "—";
+    const strength = percent(event.strength);
+    const lightning = kind === "storm" && snapshot.lightningActive ? " · блискавки" : "";
+    if (event.held) return `${strength} · вручну${lightning}`;
+    if (!event.active) return `${strength} · від викиду${lightning}`;
+    const left = Math.max(0, (Number(event.durationSec) || 0) - (Number(event.elapsedSec) || 0));
+    return `${strength} · ${EVENT_PHASES[event.phase] ?? event.phase} · ще ${clockText(left)}${lightning}`;
   }
 
   // Which switched elements are on now (LIVE_BITS); reads the snapshots, allocates nothing.
@@ -248,7 +343,7 @@ export class WeatherDevSection {
     const weather = this.#weather;
     if ((weather.getAshStrength?.() ?? 0) > LIVE_EPSILON) state |= LIVE_BITS.ash;
     if (this.#windOn(weather.getWind?.() ?? null)) state |= LIVE_BITS.wind;
-    if ((weather.getWavesHold?.() ?? null) !== 0) state |= LIVE_BITS.waves;
+    if (weather.getWavesHold && weather.getWavesHold() !== 0) state |= LIVE_BITS.waves;
     if (Number(weather.getCurrentSpeed?.() ?? 0) > LIVE_EPSILON) state |= LIVE_BITS.current;
     return state;
   }
@@ -292,6 +387,7 @@ export class WeatherDevSection {
     // TK-387: the one redraw path (R23: an open drill-in is reopened; bindings and the section's «i» released).
     this.#ui.redraw(content, () => {
       this.#marks = [];
+      this.#summary.length = 0;
       this.#savingSection.clear();
       this.#renderSelector(content);
       const model = this.#weather.getModel();
@@ -299,6 +395,7 @@ export class WeatherDevSection {
         this.#ui.createInfoRow("стан", "погода не створена", content);
         return;
       }
+      this.#renderSummary(content);
       this.#renderControls(model, content);
       const mode = this.#mode();
       this.#renderRain(content, mode);
