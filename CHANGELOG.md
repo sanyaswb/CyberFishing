@@ -2,6 +2,10 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.52.60 - Overlay core without fallbacks (TK-395, spec 186)
+
+- No visible change: the DEV overlay's core takes everything it needs from its composition (no hidden global defaults or optional calls), so a missing part fails at once instead of silently doing nothing.
+
 ## v0.52.59 - «ПРОДУКТИВНІСТЬ» draws its frame bar with three shapes (TK-393, spec 186)
 
 - dev.html: the frame bar of the «ПРОДУКТИВНІСТЬ» overlay looks the same but is three shapes instead of up to 240, so the overlay itself costs the phone less while it measures.
@@ -37,7 +41,3 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 ## v0.52.51 - DevTools sections redraw cleanly: one «i», bones and radio effects follow the choice (TK-387)
 
 - dev.html: «↻ Оновити» no longer adds another «i» beside a section's title each time; in «SPINE → вудка/кораблик → Кістки» choosing another bone shows its fields (before, the previous bone's fields stayed and an edit changed that bone); in «РАДІО → Звук → ефект» switching it on shows its parameters at once.
-
-## v0.52.50 - DevTools no longer goes empty after a section's «i» (TK-306.1)
-
-- dev.html: sometimes, after a tap on the «i» of a deep section (for example «Зорепад»), every row of DevTools vanished and the «i» sat in the panel's top-right corner over the close button. It happened when such a section was opened a second time after leaving it. Fixed: the section always opens with its own rows, the «i» stays beside its title.

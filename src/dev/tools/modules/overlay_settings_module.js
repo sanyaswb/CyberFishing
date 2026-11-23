@@ -8,12 +8,14 @@ export class OverlaySettingsModule {
   #unsubscribe = null;
   #syncValue = null;
 
-  // settingsStore: the overlay modules' settings (getSnapshot, keys, isEnabled, setEnabled, subscribe) or null.
+  // settingsStore: the overlay modules' settings (OverlaySettingsStore), or null on a page without the overlay.
+  // TK-395 (spec 186 D5): the store's own methods, no fallbacks for ones it always has.
   constructor({ config, settingsStore = null }) {
     this.#config = config;
     this.#settingsStore = settingsStore;
-    this.#unsubscribe = settingsStore?.subscribe?.((key, enabled) => this.#syncValue?.(["OVERLAY_MODULES", key], enabled))
-      || null;
+    this.#unsubscribe = settingsStore
+      ? settingsStore.subscribe((key, enabled) => this.#syncValue?.(["OVERLAY_MODULES", key], enabled))
+      : null;
   }
 
   mount(host, { ui, createSection, tree }) {
@@ -25,19 +27,15 @@ export class OverlaySettingsModule {
         parentElement: overlayContent, displayPath: path, canonicalPath: path });
     }
     const store = this.#settingsStore;
-    const modules = store?.getSnapshot?.();
-    const keys = store?.keys?.() || Object.keys(modules || {});
-    if (!modules || keys.length === 0) return;
+    const keys = store ? store.keys() : [];
+    if (keys.length === 0) return;
     const content = createSection("OVERLAY MODULES (В live time)", overlayContent, ["OVERLAY_MODULES"]);
     const rendered = new Set();
     const renderSwitch = (key, parent) => {
       if (!keys.includes(key) || rendered.has(key)) return;
       rendered.add(key);
-      const enabled = store.isEnabled ? store.isEnabled(key) : !!modules[key];
-      ui.createSwitcherRow(OVERLAY_MODULE_LABELS[key]?.label || key, enabled, parent, (value) => {
-        if (store.setEnabled) store.setEnabled(key, value);
-        else modules[key] = value;
-      }, ["OVERLAY_MODULES", key]);
+      ui.createSwitcherRow(OVERLAY_MODULE_LABELS[key]?.label || key, store.isEnabled(key), parent,
+        (value) => store.setEnabled(key, value), ["OVERLAY_MODULES", key]);
     };
     for (const group of OVERLAY_MODULE_GROUPS) {
       const visible = (group.keys || []).filter((key) => keys.includes(key));

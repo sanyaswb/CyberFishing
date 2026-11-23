@@ -1,6 +1,5 @@
 export class OverlayInteractionBridge {
   #rootElement;
-  #rootElementProvider;
   #roots = new Set();
   #viewStateStore;
   #actions;
@@ -15,15 +14,14 @@ export class OverlayInteractionBridge {
   // startup report). They run on pointerup, which carries the user activation the clipboard needs on touch screens,
   // and the control is looked up at release time because the overlay may have rebuilt its HTML since pointerdown.
   // onRevealDevToolsParameter: (path) => void handles data-overlay-control="devtools-link" hyperlinks (spec 177).
+  // rootElement: a root to attach at once (the controller attaches each window's root itself, attachRoot).
   constructor({
     rootElement = null,
-    rootElementProvider = null,
     viewStateStore,
     actions = {},
     onRevealDevToolsParameter = null,
   } = {}) {
     this.#rootElement = rootElement;
-    this.#rootElementProvider = rootElementProvider;
     this.#viewStateStore = viewStateStore;
     this.#actions = actions;
     this.#onRevealDevToolsParameter = onRevealDevToolsParameter;
@@ -33,8 +31,7 @@ export class OverlayInteractionBridge {
     if (this.#isAttached) return;
     if (!this.#hasHandlers()) return;
     this.#isAttached = true;
-    const root = this.#resolveRootElement();
-    if (root) this.attachRoot(root);
+    if (this.#rootElement) this.attachRoot(this.#rootElement);
   }
 
   attachRoot(root) {
@@ -79,7 +76,7 @@ export class OverlayInteractionBridge {
     event.preventDefault();
     event.stopPropagation();
     event.stopImmediatePropagation?.();
-    const now = typeof performance !== "undefined" ? performance.now() : Date.now();
+    const now = this.#now();
     if (event.type === "mousedown" && now - this.#lastPointerHandledAt < 400) {
       return;
     }
@@ -92,7 +89,7 @@ export class OverlayInteractionBridge {
     if (!control || !this.#ownsControl(control) || !this.#isReleaseControl(control)) return;
     event.preventDefault();
     event.stopPropagation();
-    this.#lastPointerHandledAt = typeof performance !== "undefined" ? performance.now() : Date.now();
+    this.#lastPointerHandledAt = this.#now();
     this.#runReleaseControl(control);
   }
 
@@ -105,14 +102,14 @@ export class OverlayInteractionBridge {
     if (!control || !this.#ownsControl(control)) return;
     if (this.#isReleaseControl(control)) {
       // Keyboard activation (Enter/Space) has no pointerup; a pointer release already ran the action.
-      const now = typeof performance !== "undefined" ? performance.now() : Date.now();
+      const now = this.#now();
       event.preventDefault();
       event.stopPropagation();
       if (now - this.#lastPointerHandledAt >= 400) this.#runReleaseControl(control);
       return;
     }
 
-    const now = typeof performance !== "undefined" ? performance.now() : Date.now();
+    const now = this.#now();
     if (now - this.#lastPointerHandledAt < 400) {
       event.preventDefault();
       event.stopPropagation();
@@ -170,11 +167,8 @@ export class OverlayInteractionBridge {
     this.#actions[controlType]?.();
   }
 
-  #resolveRootElement() {
-    if (this.#rootElement?.isConnected) return this.#rootElement;
-    if (typeof this.#rootElementProvider === "function") {
-      return this.#rootElementProvider();
-    }
-    return this.#rootElement;
+  // TK-395: one clock for the click-after-release guard.
+  #now() {
+    return typeof performance !== "undefined" ? performance.now() : Date.now();
   }
 }

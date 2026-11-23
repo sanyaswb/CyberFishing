@@ -367,6 +367,7 @@ async function checkScaleSliderAndSeparateWindows() {
   const { OverlaySettingsStore } = await importSource("src/dev/overlay/overlay_settings_store.js");
   const { OverlayModule } = await importSource("src/dev/overlay/overlay_module.js");
   const { OverlayHtmlBuilder } = await importSource("src/dev/overlay/services/overlay_html_builder.js");
+  const { OverlayViewStateStore } = await importSource("src/dev/overlay/services/overlay_view_state_store.js");
   const { FightPhysicsOverlayModule } = await importSource("src/dev/overlay/modules/fight_physics/fight_physics_overlay_module.js");
   const { LiveForcesOverlayModule } = await importSource("src/dev/overlay/modules/live_forces_overlay_module.js");
   const { FIGHT_PHYSICS_RENDER_KEYS } = await importSource("src/dev/overlay/config/overlay_modules_config.js");
@@ -401,6 +402,7 @@ async function checkScaleSliderAndSeparateWindows() {
     configSource: () => ({ debug: { overlay: overlayEnabled.value } }),
     updateLoop: loop,
     interactionBridge: bridge,
+    viewStateStore: new OverlayViewStateStore({}),
     htmlBuilder: new OverlayHtmlBuilder(),
     createWindowAdapter: (module, _slot, { onClose = null } = {}) => new OverlayDomAdapter({
       documentTarget: doc3,
@@ -414,6 +416,14 @@ async function checkScaleSliderAndSeparateWindows() {
       createDragController: () => ({ attach() {}, detach() {}, clampToViewport() {} }),
     }),
   });
+
+  // TK-395 (spec 186 D5): the controller and its loop take every collaborator from the composition — no global document
+  // or window behind a default, no optional call that hides a missing one.
+  const { OverlayUpdateLoop } = await importSource("src/dev/overlay/core/overlay_update_loop.js");
+  assert.throws(() => new OverlayController({ registry, documentTarget: doc3, configSource: () => ({}), updateLoop: loop,
+    interactionBridge: bridge, htmlBuilder: new OverlayHtmlBuilder(), createWindowAdapter: () => null }),
+  /requires viewStateStore/u, "a controller without its view state store is refused");
+  assert.throws(() => new OverlayUpdateLoop({ callback() {} }), /requires timer/u, "an update loop needs the page's timer");
 
   controller.start();
   controller.update();

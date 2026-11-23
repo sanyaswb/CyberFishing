@@ -1,4 +1,5 @@
 // Drives the registered overlay modules, giving each active module its own lazy-created window adapter.
+// TK-395 (spec 186 D5): every collaborator comes from the composition (no global document, no optional calls).
 export class OverlayController {
   #registry;
   #createWindowAdapter;
@@ -22,18 +23,24 @@ export class OverlayController {
   constructor({
     registry,
     createWindowAdapter,
-    documentTarget = document,
+    documentTarget,
     configSource,
-    updateLoop = null,
-    viewStateStore = null,
-    interactionBridge = null,
+    updateLoop,
+    viewStateStore,
+    interactionBridge,
     // OverlayHtmlBuilder: the error block of a module that failed to draw (TK-391).
     htmlBuilder,
-  } = {}) {
+  }) {
     if (typeof createWindowAdapter !== "function") {
       throw new TypeError("OverlayController requires createWindowAdapter");
     }
     if (typeof htmlBuilder?.errorBlock !== "function") throw new TypeError("OverlayController requires htmlBuilder");
+    if (typeof configSource !== "function") throw new TypeError("OverlayController requires configSource");
+    for (const [name, value, method] of [["documentTarget", documentTarget, "addEventListener"],
+      ["updateLoop", updateLoop, "start"], ["viewStateStore", viewStateStore, "subscribe"],
+      ["interactionBridge", interactionBridge, "attachRoot"]]) {
+      if (typeof value?.[method] !== "function") throw new TypeError(`OverlayController requires ${name}`);
+    }
     this.#htmlBuilder = htmlBuilder;
     this.#registry = registry;
     this.#createWindowAdapter = createWindowAdapter;
@@ -47,11 +54,11 @@ export class OverlayController {
   start() {
     if (this.#isStarted) return;
     this.#isStarted = true;
-    this.#interactionBridge?.attach?.();
-    this.#unsubscribeViewState = this.#viewStateStore?.subscribe?.(() => {
+    this.#interactionBridge.attach();
+    this.#unsubscribeViewState = this.#viewStateStore.subscribe(() => {
       for (const entry of this.#windows.values()) entry.lastHtml = "";
       this.update();
-    }) || null;
+    });
     this.#documentTarget.addEventListener(
       "debug-live-update",
       this.#onDebugLiveUpdate,
@@ -63,7 +70,7 @@ export class OverlayController {
     if (!this.#isStarted) return;
     this.#isStarted = false;
     this.#updateLoop.stop();
-    this.#interactionBridge?.detach?.();
+    this.#interactionBridge.detach();
     this.#unsubscribeViewState?.();
     this.#unsubscribeViewState = null;
     this.#documentTarget.removeEventListener(
@@ -76,7 +83,7 @@ export class OverlayController {
     this.stop();
     this.#data = {};
     for (const entry of this.#windows.values()) {
-      entry.adapter.dispose?.();
+      entry.adapter.dispose();
     }
     this.#windows.clear();
     this.#createdCount = 0;
@@ -134,16 +141,15 @@ export class OverlayController {
       onClose: () => this.#closeModule(module),
     });
     adapter.init();
-    const root = adapter.getRootElement?.();
-    if (root) this.#interactionBridge?.attachRoot?.(root);
+    this.#interactionBridge.attachRoot(adapter.getRootElement());
     const entry = { adapter, lastHtml: "" };
     this.#windows.set(module, entry);
     return entry;
   }
 
   #closeModule(module) {
-    module.close?.();
-    this.#windows.get(module)?.adapter?.hide?.();
+    module.close();
+    this.#windows.get(module)?.adapter.hide();
     this.update();
   }
 

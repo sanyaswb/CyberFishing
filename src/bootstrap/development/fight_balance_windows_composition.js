@@ -16,12 +16,13 @@ export function composeFightBalanceWindows({ documentTarget, windowTarget, mount
   let windows;
   const toolWindow = (id, modifier, title, key) => new OverlayToolWindow({ documentTarget, mountNode, title, modifier,
     cache: storageCache, scaleStorageKey: `overlay_scale_${id}`,
-    onClose: () => { settingsStore?.setEnabled?.(key, false); windows?.update?.(); },
+    onClose: () => { settingsStore.setEnabled(key, false); windows.update(); },
     createScaleControls: (options) => new OverlayScaleControls(options),
     createDragController: (element) => new OverlayWindowDragController({ element, config, id,
       windowTarget, cache: storageCache, uiSurface }) });
   windows = new FightBalanceWindows({ documentTarget, settingsStore, cache: storageCache,
-    createUpdateLoop: (callback) => new OverlayUpdateLoop({ callback, intervalMs: Number(config.debug?.overlayUpdateMs) || 150 }),
+    createUpdateLoop: (callback) => new OverlayUpdateLoop({ callback, intervalMs: Number(config.debug?.overlayUpdateMs) || 150,
+      timer: windowTarget }),
     windows: [
       { key: "activeFish", window: toolWindow("overlay_active_fish", "debug-overlay--active-fish", "🐟 ACTIVE FISH", "activeFish"),
         content: new ActiveFishWindowContent({ config, baseConfig, fishes, schema, updateConfig }) },

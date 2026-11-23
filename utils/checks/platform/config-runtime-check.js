@@ -681,7 +681,7 @@ function checkLocationMapConfigChanges() {
   const editorMetric = new LocationWaterMetricResolver({pixelsPerMeter:50,logger:console});
   const tools = new DevTools(config,{synchronize(){}},{configRuntime:context,
     catalogs:{items:{rods:{testRod:{itemType:'rod',name:'Test rod',strength:4}}},fishes:[],maps:{}},
-    settingsStore:{getSnapshot:()=>({player:true}),keys:()=>['player'],isEnabled:()=>true,setEnabled:()=>overlayEdits++},
+    settingsStore:{getSnapshot:()=>({player:true}),keys:()=>['player'],isEnabled:()=>true,setEnabled:()=>overlayEdits++,subscribe:()=>()=>{}},
     grantCatalogItem:()=>{itemGrants++;return {success:true};},
     itemProgressionDebugProvider:{getSnapshots:()=>[{itemId:'testRod',capacity:'N/A',breakdown:[]}]},
     rodSpine:{getStatus:()=>({mode:'rectangle',missingClips:[],pixelRatio:1}),exportSkeleton:()=>({fileName:'test-rod.json',text:'{}'}),

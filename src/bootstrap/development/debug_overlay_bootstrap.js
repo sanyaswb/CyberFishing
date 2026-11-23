@@ -187,6 +187,7 @@ export function createDebugOverlayRuntime({config, baseConfig, settingsStore, do
   const updateLoop = new OverlayUpdateLoop({
     callback: () => frameProfiler.measure("overlay", () => controller.update()),
     intervalMs: Number(configSource()?.debug?.overlayUpdateMs) || 150,
+    timer: windowTarget,
   });
   controller = new OverlayController({
     registry,
