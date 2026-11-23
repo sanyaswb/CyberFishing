@@ -12,6 +12,9 @@ export class OverlayController {
   #interactionBridge;
   #unsubscribeViewState = null;
   #isStarted = false;
+  #htmlBuilder;
+  // TK-391: the last error each failing module showed (logged once per new cause).
+  #errors = new Map();
   #onDebugLiveUpdate = (event) => {
     this.#data = event.detail || {};
   };
@@ -24,10 +27,14 @@ export class OverlayController {
     updateLoop = null,
     viewStateStore = null,
     interactionBridge = null,
+    // OverlayHtmlBuilder: the error block of a module that failed to draw (TK-391).
+    htmlBuilder,
   } = {}) {
     if (typeof createWindowAdapter !== "function") {
       throw new TypeError("OverlayController requires createWindowAdapter");
     }
+    if (typeof htmlBuilder?.errorBlock !== "function") throw new TypeError("OverlayController requires htmlBuilder");
+    this.#htmlBuilder = htmlBuilder;
     this.#registry = registry;
     this.#createWindowAdapter = createWindowAdapter;
     this.#documentTarget = documentTarget;
@@ -84,12 +91,11 @@ export class OverlayController {
 
     for (const module of this.#registry.getModules()) {
       const existing = this.#windows.get(module);
-      if (!module.isActive(this.#data)) {
+      const html = this.#renderModule(module);
+      if (html === null) {
         existing?.adapter.hide();
         continue;
       }
-
-      const html = module.render(this.#data);
       if (html === "") {
         existing?.adapter.hide();
         continue;
@@ -101,6 +107,24 @@ export class OverlayController {
         entry.lastHtml = html;
       }
       entry.adapter.show();
+    }
+  }
+
+  // TK-391 (R29, spec 186 D1): the module's HTML, null while it is off. A module that throws shows its error in its own
+  // window (the owner on a phone has no console) and the modules after it still update; the console gets each new
+  // cause once, not every 150 ms.
+  #renderModule(module) {
+    try {
+      const html = module.isActive(this.#data) ? module.render(this.#data) : null;
+      this.#errors.delete(module);
+      return html;
+    } catch (error) {
+      const message = String(error?.message ?? error);
+      if (this.#errors.get(module) !== message) {
+        this.#errors.set(module, message);
+        console.error(`[Overlay] the module «${module.key}» failed to draw`, error);
+      }
+      return this.#htmlBuilder.errorBlock(`Модуль «${module.key}» не намалювався`, message);
     }
   }
 

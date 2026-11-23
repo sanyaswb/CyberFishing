@@ -196,6 +196,7 @@ export function createDebugOverlayRuntime({config, baseConfig, settingsStore, do
     updateLoop,
     viewStateStore,
     interactionBridge,
+    htmlBuilder,
   });
   controller.start();
   const metricInfoBridge = new OverlayMetricInfoBridge({

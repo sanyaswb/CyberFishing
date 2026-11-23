@@ -14,6 +14,14 @@ export class OverlayHtmlBuilder {
     return `<div class="debug-overlay__text debug-overlay__text--custom debug-overlay__heading" style="--debug-overlay-color:${this.escapeAttr(color)};">${this.escapeHtml(title)}</div>`;
   }
 
+  // TK-391 (R29): what a window shows when its module failed to draw: the title, the cause, that the rest works.
+  errorBlock(title, message) {
+    return this.formatHeader(title, "#ff4444")
+      + `<div class="debug-overlay__line debug-overlay__text debug-overlay__text--danger">${this.escapeHtml(message)}</div>`
+      + "<div class=\"debug-overlay__note debug-overlay__text debug-overlay__text--muted\">"
+      + "Решта overlay працює; деталі — у консолі.</div>";
+  }
+
   metricRow(label, value, options = {}) {
     const metricKey = options.metricKey || label;
     const color = options.color || "#8a9bac";

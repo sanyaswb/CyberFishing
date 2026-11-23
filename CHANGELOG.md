@@ -2,6 +2,10 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.52.57 - An overlay window that fails to draw shows why; the others keep updating (TK-391, spec 186)
+
+- dev.html: if one DEV overlay window ever fails to draw, it shows a red notice with the cause, and the other overlay windows keep updating (before, every window after it froze without a sign).
+
 ## v0.52.56 - Review: DevTools without fallbacks for what always exists (TK-389.1)
 
 - No visible change: two DevTools parts no longer carry a fallback for a method or a wrapper that is always there (the saving section's status row, the Spine section's controller).
@@ -37,7 +41,3 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 ## v0.52.48 - Review: browsing the inventory under radiation saves nothing (TK-385.1)
 
 - Under radiation with a gas mask on (and while the bait boat is on the water) opening the inventory, choosing a section, a filter or going back no longer writes the whole save each time; only real changes are saved.
-
-## v0.52.47 - Review: a background inventory write no longer rebuilds the closed inventory (TK-386)
-
-- Smoother play under radiation: every few seconds the game writes a battery's charge, the items' wear and now the gas mask's filter and wear; each such write rebuilt the whole inventory window, even when it was closed (~7 ms on a PC, more on a phone). Now the closed inventory is left alone and drawn when it opens; a write takes about a fifth of the time.

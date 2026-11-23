@@ -401,6 +401,7 @@ async function checkScaleSliderAndSeparateWindows() {
     configSource: () => ({ debug: { overlay: overlayEnabled.value } }),
     updateLoop: loop,
     interactionBridge: bridge,
+    htmlBuilder: new OverlayHtmlBuilder(),
     createWindowAdapter: (module, _slot, { onClose = null } = {}) => new OverlayDomAdapter({
       documentTarget: doc3,
       mountNode: doc3.body,
@@ -491,6 +492,26 @@ async function checkScaleSliderAndSeparateWindows() {
   liveMod.close();
   assert.equal(store3.isEnabled("liveY"), false);
   assert.equal(store3.isEnabled("liveX"), false, "LiveForcesOverlayModule closes both liveY and liveX");
+
+  // TK-391 (R29, spec 186 D1): a module that throws while it draws shows its error in its own window (a phone has no
+  // console), the modules after it still update, and the console gets the cause once, not every 150 ms.
+  let laterRenders = 0;
+  registry.register({ key: "broken", isActive: () => true, render: () => { throw new TypeError("render broke"); } });
+  registry.register({ key: "later", isActive: () => true, render: () => `<div>later ${++laterRenders}</div>` });
+  const consoleErrors = [];
+  const consoleError = console.error;
+  console.error = (...args) => consoleErrors.push(args);
+  try {
+    controller.update();
+    controller.update();
+  } finally {
+    console.error = consoleError;
+  }
+  const windowOf = (key) => doc3.byClass("debug-overlay").find((element) => element.dataset.overlayModule === key);
+  assert.match(String(windowOf("broken").children[1].innerHTML), /render broke/, "the failing module's window shows why");
+  assert.equal(windowOf("broken").style.display, "flex", "and it is shown");
+  assert.equal(laterRenders, 2, "the module after it still updates");
+  assert.equal(consoleErrors.length, 1, "the cause goes to the console once");
 
   const clickCountBeforeDispose = windowsOnDom[1].listeners.get("click")?.size ?? 0;
   controller.dispose();
