@@ -6,20 +6,26 @@ export class DevFlagsProvider {
   #godModeSource;
   #debugModulesSource;
   #zoneEditorState;
+  #weatherSettings;
 
+  // weatherSettings: DevWeatherSettings (spec 187 D21) or null.
   constructor({
     config,
     godModeSource,
     debugModulesSource,
     zoneEditorState = null,
+    weatherSettings = null,
   } = {}) {
     this.#config = config || {};
     this.#godModeSource = godModeSource;
     this.#debugModulesSource = debugModulesSource;
     this.#zoneEditorState = zoneEditorState;
+    this.#weatherSettings = weatherSettings;
   }
 
   isEnabled(flag) {
+    // Spec 187 D21: dev.html starts with the automatic weather off when the owner left it off.
+    if (flag === "frozenWeather") return this.#weatherSettings?.isManual() === true;
     if (flag === "showBoatRoute") return this.#zoneEditorState?.boatRoute === true;
     if (flag === "pauseDynamicZones") return this.#zoneEditorState?.enabled === true &&
       this.#zoneEditorState.editsLoadedLocation && this.#zoneEditorState.isEditable("dynamic") &&

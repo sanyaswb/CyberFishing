@@ -1656,7 +1656,7 @@ export class GameCompositionRoot {
   // seed, so weather never changes the fish's random numbers. The model reads the location's live weather settings.
   // Spec 179: the emission and the radiation have their own stream too (they never shift the weather's numbers).
   // TK-321.2: every stream derives from the one session seed (#sessionSeed: random per launch unless a DEV seed is set).
-  #composeEnvironment({ locId, locCfg, gameTimeClock }) {
+  #composeEnvironment({ locId, locCfg, gameTimeClock, devFlags }) {
     const seed = this.#sessionSeed();
     const weatherRng = new SeededRng(`${seed}:weather`);
     const windRng = new SeededRng(`${seed}:wind`);
@@ -1693,7 +1693,7 @@ export class GameCompositionRoot {
       canStart: () => emissionArtReady,
     });
     const starfall = new StarfallNight({ rng: starfallRng, getSettings: () => getWeatherSettings()?.starfall ?? null });
-    return new EnvironmentSystem(
+    const environment = new EnvironmentSystem(
       locCfg,
       this.#config.debug?.initialTime ?? GAME_TIME_CONFIG.initialHours,
       weatherRng,
@@ -1704,6 +1704,9 @@ export class GameCompositionRoot {
       emission,
       starfall,
     );
+    // Spec 187 D21: dev.html remembers «Автоматична погода» off (the DEV flag; production's flags are always off).
+    if (devFlags.isEnabled("frozenWeather")) environment.setAutomaticWeather(false);
+    return environment;
   }
 
   #composeWorldSystems({
@@ -1757,7 +1760,7 @@ export class GameCompositionRoot {
       devicePower,
       map: locationMap,
       waterMetricSource,
-      env: this.#composeEnvironment({ locId, locCfg, gameTimeClock }),
+      env: this.#composeEnvironment({ locId, locCfg, gameTimeClock, devFlags }),
       input: own(
         new InputController(canvas, Number(this.#config.ui?.rod?.x) || null, {
           runtimeConfig: this.#runtimeConfig,

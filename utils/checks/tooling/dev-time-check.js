@@ -27,7 +27,8 @@ config.debug.timeAccelerationEnabled = true;
 control.update(clock.getHours());
 assert.equal(button.disabled, false);
 let expected = 12;
-for (const multiplier of [1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5, 1]) {
+// Spec 187 D20 (owner): ×10 and ×20 after ×5, then back to ×1.
+for (const multiplier of [1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5, 10, 20, 1]) {
   expected = (expected + clock.getRateMultiplier()) % 24;
   now += 15000;
   assert.equal(clock.getHours(), expected);
@@ -40,6 +41,9 @@ for (const multiplier of [1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5, 1]) {
   assert.equal(root.classList.contains("ui-surface--time-accelerated"), multiplier > 1);
   assert.equal(JSON.parse(values.get("cyber_fishing_game_time_v1")).timeScale, 240, "DEV factors never become the persisted base rate");
 }
+
+// ×10 and ×20 ran the clock 30 game hours (6 past a whole day); 18 more at ×1 bring it to the same hour as before.
+now += 18 * 15000;
 
 const env = new EnvironmentSystem({ environment: {} },
   12, { chance: () => false }, { timePhases: { day: { startHour: 9, endHour: 21 }, night: { startHour: 21, endHour: 9 } } }, clock);
@@ -176,5 +180,5 @@ async function checkHouseToolsComposition() {
   ui.dispose();
 }
 
-checkHouseToolsComposition().then(() => console.log("DEV time passed: 1.5..5/reset, disabled/production isolation, continuous hours/phase, normal saved rate, House screen rate transfer/tools, compact navigation, tablet/orientation and bounded work."))
+checkHouseToolsComposition().then(() => console.log("DEV time passed: 1.5..5, 10, 20/reset, disabled/production isolation, continuous hours/phase, normal saved rate, House screen rate transfer/tools, compact navigation, tablet/orientation and bounded work."))
   .catch(error => { console.error(error); process.exitCode = 1; });

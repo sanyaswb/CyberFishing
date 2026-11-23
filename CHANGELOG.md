@@ -2,6 +2,10 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.52.71 - DEV: time ×10 and ×20; «Автоматична погода» remembered (spec 187)
+
+- dev.html: a press on the time now goes on after ×5 to ×10 and ×20, then back to ×1. «Автоматична погода» left off stays off after a reload (the weather starts frozen); the game itself is not affected.
+
 ## v0.52.70 - DevTools: the weather by hand only without the automatic weather; off freezes it (spec 187)
 
 - dev.html: with «Автоматична погода» on nothing is set by hand (the switches, the direction, the sliders and the actions are inactive and point at the switch). Turning it off freezes the weather where it is: no event starts or ends, the levels stay until you change them; the wind still gusts, a storm still strikes lightning and the stars still fall at the frozen level; the current and the calm swell stay. Turning it on releases everything.
@@ -37,7 +41,3 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 ## v0.52.62 - Overlay windows with DevTools icons instead of emoji (TK-397, spec 186)
 
 - dev.html: overlay window headings that had emoji (ПРОДУКТИВНІСТЬ, ЗАВАНТАЖЕННЯ, ЕХОЛОТ, ДЕБАФИ, …) show the same line icons as DevTools, the same on every phone; emoji in the overlays' text are gone; the balance windows' reset button shows the reset icon.
-
-## v0.52.61 - Overlay: a metric's explanation under its row (TK-396, spec 186)
-
-- dev.html: a tap on a highlighted metric name in an overlay window opens its explanation right under the row — what it is, the formula, the parameters with their values now and a button to open each parameter in DevTools; a second tap closes it (on a phone there is no console). The startup report without a clipboard now opens in the DevTools text window instead of the browser's prompt.

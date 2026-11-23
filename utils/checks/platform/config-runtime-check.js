@@ -209,7 +209,7 @@ function checkDevelopmentInputs() {
   const developmentPlayerStart = { spec184: "the DEV player start" };
   class VersionBadge { constructor({ element }) { this.element = element; } render() { renderedVersions.push(this.element); } }
   const runtime = new SourceRuntime({ globals: { window, DevFlagsProvider: Flags, WorldDebugRenderer: Renderer, GameVersionBadge: VersionBadge,
-    LocationDebugRenderFrameBuilder: Renderer, ZoneEditorGeometryBuilder: Renderer, ZoneEditorDragController: class extends Renderer { dispose() { this.disposed = true; } }, ZoneEditorBrowserPort: Renderer, ZoneEditorFullscreen: Renderer, BrowserFullscreen: Renderer, CastableDependentZones: Renderer, CastableZoneReadings: Renderer, PROJECT_VERSION_CONFIG: { version: "0.0.0" }, zoneEditorDrag: null, WaterMetric: { illustrated: options => new Renderer(options) }, zoneEditorState: {}, readLocationMetric: null, DevTools: Tools, RenderAllocationDiagnostics: diagnostics,
+    LocationDebugRenderFrameBuilder: Renderer, ZoneEditorGeometryBuilder: Renderer, ZoneEditorDragController: class extends Renderer { dispose() { this.disposed = true; } }, ZoneEditorBrowserPort: Renderer, ZoneEditorFullscreen: Renderer, BrowserFullscreen: Renderer, CastableDependentZones: Renderer, CastableZoneReadings: Renderer, PROJECT_VERSION_CONFIG: { version: "0.0.0" }, zoneEditorDrag: null, WaterMetric: { illustrated: options => new Renderer(options) }, zoneEditorState: {}, weatherSettings: { isManual: () => false }, readLocationMetric: null, DevTools: Tools, RenderAllocationDiagnostics: diagnostics,
     CONFIG_RUNTIME_CONTEXT: configRuntime, configRuntime, configValidation, LocationDebugMapBuilder: Renderer, ItemProgressionDebugSnapshotProvider: Renderer,
     FixedCatchFishFactory: Renderer, FixedCatchHook: Renderer, HookedFishProfileSynchronizer: Renderer, DebugService: DebugServiceSpy,
     ConsoleLogger: class { warn() {} }, isLiveDataRequested,
@@ -241,6 +241,7 @@ function checkDevelopmentInputs() {
   const config = {}, flags = ports.createDevFlags(config);
   assert.equal(flags.options.config, config);
   assert.equal(flags.options.godModeSource(), runtime.context.godMode);
+  assert.equal(flags.options.weatherSettings, runtime.context.weatherSettings, "spec 187 D21: the DEV flags read the stored weather switch");
   assert.equal(flags.options.debugModulesSource(), runtime.context.debugModules);
   runtime.context.debugModules.catchResolution = false;
   assert.equal(flags.options.debugModulesSource().catchResolution, false, "flag source stays live");
@@ -808,7 +809,11 @@ async function checkNativeDevelopmentLifecycle() {
   const counts={root:0,start:0,stop:0,gameDispose:0,consoleDispose:0,overlayDispose:0,balanceDispose:0,watchdogDispose:0,surfaces:0,surfaceDispose:0};
   let balanceOptions=null;
   const listeners=new Map(), registered=new Map();
+  // Spec 187 D21: the page's local storage (DEV settings are kept there).
+  const storedValues=new Map();
   const windowTarget={console,URLSearchParams,performance:{mark(){}},requestAnimationFrame(){},setTimeout,clearTimeout,location:{origin:"https://game.example",search:""},
+    localStorage:{getItem:(key)=>storedValues.has(key)?storedValues.get(key):null,setItem:(key,value)=>storedValues.set(key,String(value)),removeItem:(key)=>storedValues.delete(key),
+      key:(index)=>[...storedValues.keys()][index]??null,get length(){return storedValues.size;}},
     addEventListener(type,fn){if(!registered.has(type))registered.set(type,new Set());registered.get(type).add(fn);listeners.set(type,fn);},
     removeEventListener(type,fn){registered.get(type)?.delete(fn);const remaining=[...(registered.get(type)||[])];if(remaining.length)listeners.set(type,remaining.at(-1));else listeners.delete(type);}};
   const config={liveBait:{visual:{showZone:false}},rarity:{},spawns:{fishes:[]},locations:{map:{}},debug:{timeScale:240,timeAccelerationEnabled:false,godMode:{enabled:false,noEquipmentLoss:true},fixedCatch:{enabled:false},consoleModules:{},memoryWatchdog:{enabled:true}}};
@@ -882,6 +887,18 @@ async function checkNativeDevelopmentLifecycle() {
   assert.equal(rootPorts.toolbarMountNode.className, "game-toolbar", "DEV startup composes the production toolbar");
   assert.deepEqual([...listeners.keys()].sort(),['blur','keydown','pagehide'],'DEV cheat and page cleanup listeners are active');
   rootPorts.createTimeDisplay({clock:{},documentRef:documentTarget,mount:{}});
+  // Spec 187 D21 (owner: «запам'ятовувати (тільки в dev)»): DevTools' «Автоматична погода» off is stored, and the next
+  // start's DEV flags tell the composition to start the weather frozen; on again forgets it. (Made before the page's
+  // DevTools below: the startup keeps the last one it made.)
+  assert.equal(rootPorts.createDevFlags(config).isEnabled("frozenWeather"), false, "a first start: the automatic weather on");
+  const automaticCalls = [];
+  const weatherTools = rootPorts.createDevTools(config, { synchronize(){} }, { weather: { setAutomatic: (on) => automaticCalls.push(on) } });
+  weatherTools.options.weather.setAutomatic(false);
+  assert.deepEqual([automaticCalls, storedValues.get("fishing_game_cyber-fishing:dev-weather-manual"), rootPorts.createDevFlags(config).isEnabled("frozenWeather")],
+    [[false], "true", true], "off reaches the game, is stored, and the next start's flags see it");
+  weatherTools.options.weather.setAutomatic(true);
+  assert.deepEqual([automaticCalls, storedValues.has("fishing_game_cyber-fishing:dev-weather-manual"), rootPorts.createDevFlags(config).isEnabled("frozenWeather")],
+    [[false, true], false, false], "on again: forgotten");
   const navigationTools=rootPorts.createDevTools(config,{synchronize(){}},{});
   assert.equal(navigationTools.options.catalogs.items, rootPorts.itemDb, 'the free shop uses the same catalog without obsolete DEV builds');
   // Spec 168: the balance windows edit through DevTools and share the overlay's switches and catalogs.

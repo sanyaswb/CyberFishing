@@ -1,4 +1,7 @@
 // The calendar clock owns its transient rate; this DEV control owns activation and its view lifecycle.
+// Each press steps the rate through RATE_STEPS and back to ×1; spec 187 D20 (owner): ×10 and ×20 after ×5.
+const RATE_STEPS = Object.freeze([1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5, 10, 20]);
+
 export class DevTimeControl {
   #clock;
   #view;
@@ -33,7 +36,7 @@ export class DevTimeControl {
   advance() {
     if (this.#disposed || this.#suspended || this.#isEnabled() !== true) return;
     const current = this.#clock.getRateMultiplier();
-    this.#clock.setRateMultiplier(current >= 5 ? 1 : current + 0.5);
+    this.#clock.setRateMultiplier(RATE_STEPS.find((step) => step > current) ?? 1);
     this.update(this.#clock.getHours());
   }
   getSnapshot() {
@@ -59,8 +62,7 @@ export class DevTimeControl {
     this.#suspended = false;
     this.#clock.sync();
     const multiplier = snapshot?.multiplier;
-    this.#clock.setRateMultiplier(this.#isEnabled() === true && Number.isFinite(multiplier) &&
-      multiplier >= 1 && multiplier <= 5 && Number.isInteger(multiplier * 2) ? multiplier : 1);
+    this.#clock.setRateMultiplier(this.#isEnabled() === true && RATE_STEPS.includes(multiplier) ? multiplier : 1);
     this.update(this.#clock.getHours());
   }
   dispose() {

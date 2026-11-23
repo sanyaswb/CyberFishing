@@ -1,6 +1,7 @@
 // Release notes, newest first (unshift with every patch). DEV only: no production code reads them, and in the start's
 // bundle they cost 13 KB gzip (spec 160). dev.html publishes them with the version: window.CYBER_FISHING_PROJECT_VERSION.notes.
 export const PROJECT_RELEASE_NOTES = Object.freeze([
+  "Spec 187 D20, D21: DevTimeControl RATE_STEPS 1…5, 10, 20; DevWeatherSettings (localStorage) remembers «Автоматична погода» off in DEV — the wrapped DevTools weather port writes it, DevFlagsProvider «frozenWeather» starts the environment frozen (production flags always off).",
   "Spec 187 D11–D14: automatic weather on — every manual control requires it off (DevToolsUI requires for sliders and buttons); off — the models freeze their levels (WeatherEventProcess/EmissionModel/StarfallNight hold, WindModel #freezeOwnCourse; a held wind keeps floors and gusts), a frozen storm strikes by its strength; the current and the calm swell stay; «авто» and the emission phase buttons removed.",
   "Spec 187 A: «Керування» without sliders or settings; WeatherDevSection.#renderStrength puts «Сила, %» on top of each element's section (ВОДА: waves' height, current's speed), for the running location only, holding the game and following the live value (WEATHER.<kind>.strength).",
   "TK-401: «Керування» sliders (rain, storm, fog, emission, ash, wind with gusts, waves, current) follow the live value on refreshLive when it changes (DevToolsUI.showLiveValue: bindings only); held — the held value; RangeField keeps a value the person moved within 1 s.",

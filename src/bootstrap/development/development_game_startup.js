@@ -64,6 +64,7 @@ import { composeFightBalanceWindows } from "./fight_balance_windows_composition.
 import { DevAssetLoadPlanStore } from "../../dev/assets/dev_asset_load_plan_store.js";
 import { AssetLoadGate } from "../../dev/assets/asset_load_gate.js";
 import { DevLoadStepperSettings } from "../../dev/assets/dev_load_stepper_settings.js";
+import { DevWeatherSettings } from "../../dev/weather/dev_weather_settings.js";
 import { AssetLoadStepPlan } from "../../engine/assets/asset_load_step_plan.js";
 import { ASSET_LOAD_PLAN } from "../../game/config/raw/assets/asset_load_plan.js";
 import { ASSET_REGISTRY } from "../../game/config/generated/asset_registry.js";
@@ -195,6 +196,8 @@ async function startGame() {
   const loadStepperSettings = new DevLoadStepperSettings({
     cache: storageCache,
   });
+  // Spec 187 D21: «Автоматична погода» off is remembered between starts of dev.html (DEV only).
+  const weatherSettings = new DevWeatherSettings({ cache: storageCache });
   let assetLoadGate = null;
   const createAssetLoadGate = loadStepperSettings.isEnabled()
     ? (plan) =>
@@ -358,6 +361,7 @@ async function startGame() {
           godModeSource: () => godMode,
           debugModulesSource,
           zoneEditorState,
+          weatherSettings,
         }),
       createFrameProbe: () => frameProfiler,
       startupMarks,
@@ -410,6 +414,11 @@ async function startGame() {
       createDevTools: (config, synchronizer, options) =>
         (devTools = new DevTools(config, synchronizer, {
           ...options,
+          // Spec 187 D21: «Автоматична погода» is remembered for the next start of dev.html.
+          weather: options.weather ? { ...options.weather, setAutomatic: (on) => {
+            options.weather.setAutomatic(on);
+            weatherSettings.setAutomatic(on);
+          } } : options.weather,
           configRuntime,
           configValidation,
           zoneEditorState,
