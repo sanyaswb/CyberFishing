@@ -1861,7 +1861,10 @@ function choiceRow(options, value, path) {
     assert.equal(host.children.length, 1, `${how}: one thing in the drill area`);
     // Nodes are compared by identity (assert.equal would diff the whole tree on a failure).
     assert.ok(host.children[0] === starfall, `${how}: the drill area holds the section's content, not its «i»`);
-    assert.ok(infoButton.parentNode === starfallSection, `${how}: the «i» stays beside the section's title`);
+    // TK-390: the hidden section's «i» stands at the right of the crumbs while the section is shown alone.
+    const crumbs = byClass("devtools__crumbs", page)[0];
+    assert.ok(infoButton.parentNode === crumbs && crumbs.children.at(-1) === infoButton,
+      `${how}: the «i» is the crumbs' last part`);
   };
   const description = byClass("devtools__section-info", starfall)[0];
   starfallSection.children[0].click();
@@ -1869,6 +1872,7 @@ function choiceRow(options, value, path) {
   crumbTo("Погода");
   assert.ok(starfall.parentNode === starfallSection, "the content is back in its section");
   assert.ok(starfallSection.children[1] === starfall, "back in its own place: after the title, before the «i»");
+  assert.ok(starfallSection.children[2] === infoButton, "TK-390: the «i» is back in its section, its last part");
   // The owner's case: «i» of a closed section opens it (a drill-in) with its description.
   infoButton.click();
   assertDrilledIn("«i» after leaving");
@@ -1876,6 +1880,19 @@ function choiceRow(options, value, path) {
   crumbTo("Гра");
   starfallSection.children[0].click();
   assertDrilledIn("the title after leaving again");
+  // TK-390 (owner): entered by the title, the description opens and closes from the crumbs' «i».
+  description.hidden = true;
+  infoButton.click();
+  assert.equal(description.hidden, false, "TK-390: the crumbs' «i» opens the description inside");
+  infoButton.click();
+  assert.equal(description.hidden, true, "and closes it");
+  // A redraw of the shown section's own rows makes its «i» again — in the crumbs, not in the hidden section.
+  infoDrillUi.redraw(starfall, () => infoDrillUi.createInfoRow("зорепадних ночей", "4", starfall));
+  const redrawnInfo = byClass("devtools__section-info-button", page);
+  assert.equal(redrawnInfo.length, 1, "TK-390: one «i» after the redraw");
+  assert.ok(redrawnInfo[0].parentNode === byClass("devtools__crumbs", page)[0], "TK-390: it is in the crumbs");
+  crumbTo("Гра");
+  assert.ok(redrawnInfo[0].parentNode === starfallSection, "TK-390: and goes to its section on leaving");
   infoDrillUi.dispose();
 }
 

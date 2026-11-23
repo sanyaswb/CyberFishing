@@ -370,6 +370,11 @@
 .ui-surface:not(.ui-surface--desktop-hover) .devtools__crumb:active { background: rgba(var(--ui-accent-rgb), 0.14); }
 .devtools__crumb:focus-visible { outline: 2px solid var(--ui-info); outline-offset: -2px; }
 .devtools__crumb--current { color: var(--ui-text); font-weight: 700; cursor: default; }
+/* TK-390 (owner): the «i» of the section shown alone, at the right end of the crumbs, in their flow. */
+.devtools__crumbs > .devtools__section-info-button {
+  position: static;
+  margin-left: auto;
+}
 .devtools__drill > .devtools__section-content {
   margin-left: 0;
   padding-left: 0;

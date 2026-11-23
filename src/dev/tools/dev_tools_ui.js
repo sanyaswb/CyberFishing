@@ -290,6 +290,10 @@ export class DevToolsUI {
     current.textContent = title.textContent;
     current.setAttribute("aria-current", "location");
     crumbs.appendChild(current);
+    // TK-390 (owner): the section itself is hidden while it is shown alone, so its «i» stands at the right of the crumbs
+    // (moved by reference; #leaveDrill puts it back in its section).
+    const info = this.#descriptions.get(content)?.button;
+    if (info) crumbs.appendChild(info);
     const host = document.createElement("div");
     host.className = "devtools__drill";
     content.style.display = "block";
@@ -355,6 +359,9 @@ export class DevToolsUI {
     drill.content.style.display = "none";
     // Back in its own place, right after the title (the «i» after it stays last).
     drill.section.insertBefore(drill.content, drill.title.nextSibling);
+    // TK-390: the «i» from the crumbs back to its own place, the section's last part.
+    const info = this.#descriptions.get(drill.content)?.button;
+    if (info?.parentNode === drill.crumbs) drill.section.appendChild(info);
     drill.crumbs.remove();
     drill.host.remove();
     drill.page.classList.remove("devtools__page--drilled");
@@ -623,7 +630,9 @@ export class DevToolsUI {
     });
     show(expanded);
     section.classList.add("devtools__section--has-info");
-    section.appendChild(button);
+    // TK-390: a description made while its section is shown alone (a redraw of its own rows) goes to the crumbs.
+    if (this.#drill?.content === content) this.#drill.crumbs.appendChild(button);
+    else section.appendChild(button);
     record.button = button;
     this.#sectionInfoButtons.set(record.content, button);
     return record;

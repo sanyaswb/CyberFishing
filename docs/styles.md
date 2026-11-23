@@ -151,6 +151,8 @@ row `devtools__tools` holds `devtools__search` (+ `__search-input`), the `devtoo
 Spec 174 C4 (TK-306): a section at depth 2 or deeper of its page is `devtools__section--drill`; its title shows it alone
 (`DevToolsUI.focusSection`): the page gets `devtools__page--drilled`, the section's content moves into `devtools__drill`
 under the sticky `devtools__crumbs` (`devtools__crumb`, current `devtools__crumb--current`) and back when leaving.
+TK-390: while a section is shown alone its description «i» (`devtools__section-info-button`) is the crumbs' last part,
+in their flow at the right (`margin-left: auto`), and goes back to its section on leaving.
 TK-387: a section that redraws its own rows calls `DevToolsUI.redraw(container, draw)` — it puts an open drill-in back
 and reopens it, releases the old rows' bindings and the section's «i», then draws; no section empties itself.
 Spec 174 C5 (TK-307): `DevToolsUI.openTextDialog` lays `devtools__dialog-layer` over the panel (absolute in `.devtools`)

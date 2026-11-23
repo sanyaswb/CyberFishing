@@ -1,6 +1,7 @@
 // Release notes, newest first (unshift with every patch). DEV only: no production code reads them, and in the start's
 // bundle they cost 13 KB gzip (spec 160). dev.html publishes them with the version: window.CYBER_FISHING_PROJECT_VERSION.notes.
 export const PROJECT_RELEASE_NOTES = Object.freeze([
+  "TK-390: focusSection moves the section's description «i» to the end of devtools__crumbs (margin-left: auto), #leaveDrill puts it back as the section's last part; #createSectionInfo places one made while drilled into the crumbs.",
   "TK-389: SpineDevSection (ROD/BOAT subjects) replaces SpineRodDevSection/SpineBoatDevSection, the file through files.download; DevToolsUI #watchDependencies, one clipboard path, #revealPageOf via #pageOf, one label path in createButtonRow; icons refresh/check; the glyph ban covers ↻ ↺ ⟳ ⟲ ✓ ✗.",
   "TK-388 (R29): DevToolsUI.#materialize catches a lazy section's render error and shows it in the section (showDrawError, shared with DevTools.#mountModule); materializeAll goes on with the other sections.",
   "TK-387 (I-32, R23): DevToolsUI.redraw(container, draw) — the one redraw path (drill-in put back and reopened, bindings and paths released, the section's «i» removed); every section that redraws its rows uses it; preserveDrill private; doubles mix in devToolsRedraw.",

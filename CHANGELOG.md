@@ -2,6 +2,10 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.52.54 - A deep DevTools section's «i» is in the breadcrumbs (TK-390)
+
+- dev.html: a section opened inside (third level, with breadcrumbs) shows its «i» at the right of the breadcrumbs, so its description opens and closes there; back in the tree the «i» is beside the section's title again.
+
 ## v0.52.53 - DevTools cleanup: one Spine section, icons instead of symbols (TK-389)
 
 - dev.html: the rod's and the boat's Spine sections are one section in code (no visible change; the boat's export now saves the skeleton with the latest bone edits). Buttons «Оновити», «Авто погода», «авто», «Скинути розділ до коду» and the loading layers show icons instead of the symbols ↻ ↺ ✓; the shop says «· видано ×N» after a grant.
@@ -37,7 +41,3 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 ## v0.52.45 - The gas mask's HUD indicator with cracks (TK-384, spec 185)
 
 - While a gas mask is worn, a round indicator stands in the HUD column after the radio: its fill is the mask's condition, cracks appear at 80, 60, 40, 20 and 0 % (at 0 it is cracked through, with a red outline), and it fades while the mask does not protect. A tap shows the filters' time left. (A Spine effect of cracked glass comes later.)
-
-## v0.52.44 - The gas mask wears by its quality while it filters (TK-383, spec 185)
-
-- While a filter is working (on the location under radiation or during an emission) the gas mask wears: quality 3 goes from 100 % to 0 in 5 minutes. At 0 it cracks: it stops protecting and its filters stop; the other filter keeps what is left. Without radiation or an emission the mask does not wear.
