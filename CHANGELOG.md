@@ -2,6 +2,10 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.52.59 - «ПРОДУКТИВНІСТЬ» draws its frame bar with three shapes (TK-393, spec 186)
+
+- dev.html: the frame bar of the «ПРОДУКТИВНІСТЬ» overlay looks the same but is three shapes instead of up to 240, so the overlay itself costs the phone less while it measures.
+
 ## v0.52.58 - The DEV live snapshot at the overlay's cadence, not every frame (TK-392, spec 186)
 
 - dev.html: with the overlay, DevTools or console modules on, the game built the debug snapshot (bite chances of every species and more) every frame although everything reads it every 150 ms; now it builds it every 150 ms (60 → 6–7 times a second). Less DEV work in the frame, so «ПРОДУКТИВНІСТЬ» measures closer to the real game.
@@ -37,7 +41,3 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 ## v0.52.50 - DevTools no longer goes empty after a section's «i» (TK-306.1)
 
 - dev.html: sometimes, after a tap on the «i» of a deep section (for example «Зорепад»), every row of DevTools vanished and the «i» sat in the panel's top-right corner over the close button. It happened when such a section was opened a second time after leaving it. Fixed: the section always opens with its own rows, the «i» stays beside its title.
-
-## v0.52.49 - Review: the gas mask's per-frame check allocates nothing (TK-382.1)
-
-- No change in play: the gas mask's check every frame no longer creates temporary objects (less garbage collection while a mask is worn).

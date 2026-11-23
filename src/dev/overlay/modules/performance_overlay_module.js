@@ -72,18 +72,25 @@ export class PerformanceOverlayModule extends OverlayModule {
   }
 
   // One bar per frame interval, scaled to 66 ms; lines at 16.7 ms (60 FPS) and 33.3 ms (30 FPS).
+  // TK-393 (spec 186 D3): the bars of one colour are one <path> (a rectangle per bar in its d), so the window holds three
+  // elements whatever the number of frames — not 240 <rect> parsed and patched ~7 times a second on the phone this
+  // module measures.
   #freezeBar(snapshot) {
     const recent = snapshot.recent;
     const width = Math.max(1, recent.length);
     const y = (valueMs) => BAR_HEIGHT - Math.min(BAR_HEIGHT, (valueMs / BAR_SCALE_MS) * BAR_HEIGHT);
-    let bars = "";
+    let calm = "";
+    let jank = "";
+    let freeze = "";
     for (let index = 0; index < recent.length; index += 1) {
       const value = recent[index];
-      const color = value > snapshot.thresholds.freezeMs ? "#ff4444"
-        : value > snapshot.thresholds.jankMs ? "#ffaa00" : "#00cc66";
-      const top = y(value);
-      bars += `<rect x="${index}" y="${top.toFixed(2)}" width="0.8" height="${(BAR_HEIGHT - top).toFixed(2)}" fill="${color}"/>`;
+      const bar = `M${index} ${y(value).toFixed(2)}h0.8V${BAR_HEIGHT}h-0.8Z`;
+      if (value > snapshot.thresholds.freezeMs) freeze += bar;
+      else if (value > snapshot.thresholds.jankMs) jank += bar;
+      else calm += bar;
     }
+    const bars = [[calm, "#00cc66"], [jank, "#ffaa00"], [freeze, "#ff4444"]]
+      .map(([d, color]) => `<path d="${d}" fill="${color}"/>`).join("");
     const line = (valueMs, color) =>
       `<line x1="0" x2="${width}" y1="${y(valueMs).toFixed(2)}" y2="${y(valueMs).toFixed(2)}" stroke="${color}" stroke-width="0.4"/>`;
     return `<svg viewBox="0 0 ${width} ${BAR_HEIGHT}" width="100%" height="${BAR_HEIGHT}" preserveAspectRatio="none" role="img" aria-label="Інтервали кадрів">${

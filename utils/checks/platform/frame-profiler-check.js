@@ -105,7 +105,11 @@ async function checkOverlayModule(FrameProfiler) {
   const html = module.render();
   assert.match(html, /ПРОДУКТИВНІСТЬ/u);
   assert.match(html, /<svg[^>]+aria-label="Інтервали кадрів"/u, "the freeze bar");
-  assert.equal((html.match(/<rect /gu) || []).length, 4, "one bar per counted interval");
+  // TK-393 (spec 186 D3): three <path> elements, one per colour, whatever the number of frames; one rectangle per bar.
+  const paths = [...html.matchAll(/<path d="([^"]*)" fill="([^"]+)"\/>/gu)].map(([, d, fill]) => [fill, (d.match(/M/gu) || []).length]);
+  assert.equal(JSON.stringify(paths), JSON.stringify([["#00cc66", 2], ["#ffaa00", 1], ["#ff4444", 1]]),
+    "one bar per counted interval, grouped by colour: 16 and 16 calm, 30 a jank, 90 a freeze");
+  assert.equal((html.match(/<(rect|path) /gu) || []).length, 3, "three elements, not one per frame");
   assert.match(html, /1688×780 @ 2×/u, "the backing store and pixel ratio");
   assert.match(html, /сцена WebGL \(Pixi\)[\s\S]*1\.0 мс/u, "the scene layer section (spec 103)");
   assert.match(html, /сцена WebGL \(backing\)[\s\S]*1\.32 Мпікс/u, "the scene backing pixels");
