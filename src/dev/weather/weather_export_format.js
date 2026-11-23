@@ -251,7 +251,6 @@ function validateLocationWeatherDomain(weather, errors) {
     checkRange(emission.cooldownSec, "locationWeather.emission.cooldownSec", 0, Infinity, errors);
     const storm = emission.storm;
     if (isRecord(storm)) {
-      checkRange(storm.rain, "locationWeather.emission.storm.rain", 0, 1, errors);
       checkRange(storm.storm, "locationWeather.emission.storm.storm", 0, 1, errors);
     }
   }

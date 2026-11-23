@@ -2,6 +2,10 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.52.64 - The emission no longer brings rain (TK-399)
+
+- An emission brings its storm and ash, but no rain: a storm may now come without rain. Rain during an emission comes only by its own chance, raised by the storm as under any storm.
+
 ## v0.52.63 - DevTools: one switch for the whole automatic weather (TK-398)
 
 - dev.html: «ПОГОДА» → «Керування» has the switch «Автоматична погода» (instead of the button «Авто погода»). Off: no rain, storm, fog, emission, starfall or wind starts by itself, the water is flat and still; each element's own switch still turns it on, with its effects on the others (the emission's ash and rain, the rain's and the storm's wind). The rain or the storm switched off during an emission now stays off, a wind switched off leaves the waves without wind under a storm, and the water's picture drifts with the current the tackle feels.
@@ -37,7 +41,3 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 ## v0.52.55 - Review: a DevTools search filters once per redraw (TK-387.1)
 
 - dev.html: while a DevTools search or «Змінені» is on, a redraw of ПОГОДА or the zone editor filtered the panel twice (once over a half-built section); now once.
-
-## v0.52.54 - A deep DevTools section's «i» is in the breadcrumbs (TK-390)
-
-- dev.html: a section opened inside (third level, with breadcrumbs) shows its «i» at the right of the breadcrumbs, so its description opens and closes there; back in the tree the «i» is beside the section's title again.

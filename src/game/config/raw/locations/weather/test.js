@@ -24,7 +24,6 @@ export const WEATHER = {
       1
     ],
     "storm": {
-      "rain": 1,
       "storm": 0.9
     }
   },

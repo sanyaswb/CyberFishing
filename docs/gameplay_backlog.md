@@ -20,6 +20,14 @@ Notes: suspected owner module, related checks.
 
 ## Open
 
+### G-150 An emission does not bring rain (P2, done in v0.52.64; owner acceptance pending)
+Found: 2026-11-23, owner (TK-399).
+Reproduce: start an emission on the test location (DevTools «ПОГОДА» → «Викид», or wait for one).
+Expected: the emission holds the storm; rain comes only by its own chance (raised by the storm, as under any storm),
+so a storm without rain is possible.
+Actual: the emission held the rain at `weather.emission.storm.rain` (1) × its intensity — it rained every emission.
+Notes: EnvironmentSystem emission floors; weather-check (d) and the TK-398 block.
+
 ### G-149 The gas mask works through its filters and wears by its quality (P2, done in v0.52.42–0.52.46; owner acceptance pending)
 Found: 2026-11-21, owner (spec 185).
 Reproduce: wear the gas mask on the location under radiation or an emission, with none, one or two filters.

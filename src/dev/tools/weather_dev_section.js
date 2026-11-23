@@ -28,7 +28,8 @@ import {
 //   «Викид: пік | Викид: спад», «Порив вітру | Блискавка», «Болід» at the bottom.
 //   TK-398 (owner): the switch «Автоматична погода» under «Оновити» (it replaced the button «Авто погода»): off — nothing
 //   starts by itself and everything goes out; every element's own switch still turns it on, with its links to the
-//   others (the emission's ash, rain and storm; the storm's wind and waves). An event's switch off holds it at 0.
+//   others (the emission's ash and storm, TK-399: not the rain; the storm's wind and waves). An event's switch off
+//   under the emission's floor holds it at 0.
 // - TK-360: the switches follow the live state. While the panel is open, refreshLive() (each live update) compares
 //   which elements are on — one integer — with what the section shows, and redraws it only when that changed: a fog
 //   that started by itself shows at once, not at the next redraw caused by another control.

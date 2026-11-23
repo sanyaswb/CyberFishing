@@ -12,7 +12,8 @@ import { WeatherEventProcess } from "./weather_event_process.js";
 // clock's pace (the shown strength still eases in real seconds). Its chance is × the multiplier of the game-hour window
 // it falls in (fog.hours: [{ fromHour, toHour, chanceMult }], ×1 outside) and × the rain's boost: every rain that ends
 // adds fog.rainBoost.perRain (up to fog.rainBoost.max), and the boost goes back to ×1 when a fog starts.
-// An emission holds a storm and rain from outside (update's floors, spec 179 D3). initial (spec 180 D14): the weather a
+// An emission holds a storm from outside (update's stormFloor, spec 179 D3); TK-399 (owner): not the rain — under the
+// emission's storm the rain comes only by its own chance, raised by the storm as under any storm. initial (spec 180 D14): the weather a
 // session starts with. All times are real seconds; the rng is the weather's own stream (spec 172 Q1). snapshot is one
 // object rewritten in place: rain, storm, fog, cloud (0…1), strike*, the processes' own snapshots, and compatibility
 // fields for the views (precipitation, fogState, frozen = any manual hold).
@@ -76,13 +77,13 @@ export class WeatherModel {
   }
 
   // dtMs: real milliseconds; clock: { hour (game hours, 0…24), timeScale (game seconds per real second) } or null (real
-  // time, no hour windows); floors: { storm, rain } 0…1 held from outside (an emission), or null.
-  update(dtMs, clock = null, floors = null) {
+  // time, no hour windows); stormFloor: the storm's strength 0…1 held from outside (an emission), 0 — none.
+  update(dtMs, clock = null, stormFloor = 0) {
     const settings = this.#getSettings() || null;
     if (!this.#started) this.#startInitial(settings);
     const dtSec = Math.max(0, finiteOr(dtMs, 0)) / 1000;
     const storm = this.#processes.storm;
-    storm.update(dtSec, true, 1, 1, finiteOr(floors?.storm, 0));
+    storm.update(dtSec, true, 1, 1, finiteOr(stormFloor, 0));
     if (storm.snapshot.serial !== this.#stormSerial) {
       this.#stormSerial = storm.snapshot.serial;
       this.#rollLightning(settings?.storm?.lightning, storm);
@@ -91,7 +92,7 @@ export class WeatherModel {
     const general = this.#getGeneral()?.storm;
     const rainChanceMult = 1 + (Math.max(1, finiteOr(general?.rainChanceMult, 1)) - 1) * stormStrength;
     const rainStrengthMult = 1 + (Math.max(1, finiteOr(general?.rainStrengthMult, 1)) - 1) * stormStrength;
-    this.#processes.rain.update(dtSec, true, rainChanceMult, rainStrengthMult, finiteOr(floors?.rain, 0));
+    this.#processes.rain.update(dtSec, true, rainChanceMult, rainStrengthMult);
     this.#updateFog(settings?.fog, clock, dtSec);
     this.#updateLightning(settings?.storm?.lightning, storm, dtSec);
     this.#sync();

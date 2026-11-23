@@ -5,9 +5,10 @@ import { timePhaseAt } from "../../domain/time/time_phase.js";
 // 1 + rain × (environment.wind.rainMultiplier − 1), continuous with the rain's intensity. Without a weather model the
 // weather stays clear. rng: the weather's stream (spec 172 Q1), also used by the wind.
 // Spec 179 stage A: an injected EmissionModel gives the emission's part and intensity and the location's radiation
-// (snapshot.emission, snapshot.radiation); while an emission runs the weather's storm and rain are held at least at
-// the emission's own strengths (MAP_DB.<id>.weather.emission.storm: storm, rain) × its intensity (spec 180: floors,
-// recomputed each frame, so they rise and fall with the emission). Without an emission model: no emission, radiation 0.
+// (snapshot.emission, snapshot.radiation); while an emission runs the weather's storm is held at least at the
+// emission's own strength (MAP_DB.<id>.weather.emission.storm.storm) × its intensity (spec 180: a floor, recomputed
+// each frame, so it rises and falls with the emission). TK-399 (owner): the emission holds no rain — a storm may come
+// without it. Without an emission model: no emission, radiation 0.
 const DEFAULT_RAIN_THRESHOLD = 0.15;
 const DEFAULT_FOG_THRESHOLD = 0.3;
 const CLEAR_WEATHER = Object.freeze({
@@ -35,7 +36,6 @@ export class EnvironmentSystem {
   #wind;
   #emission;
   #starfall;
-  #weatherFloors = { storm: 0, rain: 0 };
   #windState = { direction: 0, rainMult: 1.0, timer: 0 };
   // Spec 172 TK-271: a direction (−1 | 0 | 1) set by DEV or a script replaces the random one until cleared (null).
   #windOverride = null;
@@ -293,17 +293,14 @@ export class EnvironmentSystem {
     }
   }
 
-  // Spec 180: the emission's floors for the weather (storm, rain) × its intensity; null outside an emission.
+  // Spec 180: the emission's floor for the storm × its intensity; 0 outside an emission (TK-399: no rain floor).
   #updateEmission(dt) {
-    if (!this.#emission) return null;
+    if (!this.#emission) return 0;
     this.#emission.update(dt);
     const intensity = this.#emission.snapshot.intensity;
-    if (!(intensity > 0)) return null;
+    if (!(intensity > 0)) return 0;
     const hold = this.#config?.weather?.emission?.storm;
-    const floors = this.#weatherFloors;
-    floors.storm = Math.max(0, Math.min(1, Number(hold?.storm) || 0)) * intensity;
-    floors.rain = Math.max(0, Math.min(1, Number(hold?.rain) || 0)) * intensity;
-    return floors;
+    return Math.max(0, Math.min(1, Number(hold?.storm) || 0)) * intensity;
   }
 
   #windDirection() {

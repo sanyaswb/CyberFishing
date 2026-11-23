@@ -1314,6 +1314,7 @@ const step = (model, seconds, clock = null, dt = 0.1) => {
       enabled: true, cooldownSec: 10, checkIntervalSec: 1, chancePerCheck: 1, chanceGrowthPerCheck: 0,
       // Spec 180 D13: the shared timeline — 90 s: onset 20 s, peak 30 s, fade 40 s, full strength.
       durationSec: [90, 90], peakAtShare: [20 / 90, 20 / 90], peakShare: [30 / 90, 30 / 90], peakStrength: [1, 1],
+      // TK-399: a leftover rain value of the old format holds no rain (the emission holds the storm only).
       storm: { rain: 0.9, storm: 0.8 },
     },
     radiation: { base: 0.1, emissionPeak: 0.9 },
@@ -1444,8 +1445,9 @@ const step = (model, seconds, clock = null, dt = 0.1) => {
   tick(disabled, 500, 1);
   assert.equal(disabled.snapshot.phase, "idle", "a disabled emission never starts on its own");
 
-  // (d) The environment (spec 180): a running emission holds the storm and the rain at least at its own strengths ×
-  //     its intensity; they rise and fall with it; after it the weather runs on its own.
+  // (d) The environment (spec 180): a running emission holds the storm at least at its own strength × its intensity;
+  //     it rises and falls with it; after it the weather runs on its own. TK-399 (owner): the emission brings no rain
+  //     (a storm may come without it) — with the rain's own events off it stays dry.
   const location = { weather: { ...settings(), ...emissionSettings() } };
   for (const kind of ["rain", "storm", "fog"]) location.weather[kind].enabled = false;
   location.weather.storm.lightning.chance = 1;
@@ -1465,11 +1467,12 @@ const step = (model, seconds, clock = null, dt = 0.1) => {
   const half = held.emission.intensity;
   assert.ok(half > 0.3 && half < 0.7, `half way up the onset (${half})`);
   near(held.weather.storm, 0.8 * half, "the storm follows the emission's strength × its own", 0.02);
-  near(held.weather.rain, 0.9 * half, "and so does the rain", 0.02);
+  assert.equal(held.weather.rain, 0, "the emission holds no rain");
   run(20);
   assert.equal(held.emission.phase, "peak", "at the peak");
   near(held.weather.storm, 0.8, "the emission's own storm strength", 1e-6);
-  near(held.weather.rain, 0.9, "the emission's own rain strength", 1e-6);
+  assert.equal(held.weather.rain, 0, "a storm without rain at the emission's peak");
+  assert.equal(MAP_DB.test.weather.emission.storm.rain, undefined, "the location has no emission rain setting");
   assert.equal(held.weather.frozen, false, "an emission is not a manual hold");
   run(70);
   assert.equal(held.emission.phase, "idle", "the emission ended");
@@ -1479,7 +1482,11 @@ const step = (model, seconds, clock = null, dt = 0.1) => {
   // (e) A manual hold wins over the emission's floor (DevTools tests the look by hand).
   const handWeather = new WeatherModel({ rng: new SeededRng(5), getSettings: () => location.weather });
   handWeather.hold("rain", 0.3, { fadeSec: 0 });
-  handWeather.update(5000, null, { storm: 1, rain: 1 });
+  handWeather.hold("storm", 0.4, { fadeSec: 0 });
+  handWeather.update(5000, null, 1);
+  near(handWeather.snapshot.storm, 0.4, "DEV's held storm stays under the emission's floor");
+  handWeather.hold("storm", null);
+  handWeather.update(5000, null, 1);
   near(handWeather.snapshot.rain, 0.3, "DEV's held rain stays under the emission");
   near(handWeather.snapshot.storm, 1, "the storm follows the emission's floor");
 
@@ -2863,10 +2870,11 @@ const step = (model, seconds, clock = null, dt = 0.1) => {
 
 // TK-398 (owner): «Автоматична погода» off — nothing starts by itself or rolls a chance (rain, storm, fog, the emission,
 // the starfall's night, the wind's episodes and gusts, the initial weather), the location's current is still and the sea
-// has no swell of its own; every element switched on by hand runs as always with its links (the emission's ash, rain
-// and storm, the rain's and the storm's wind, no starfall during an emission); a switch off takes away its effect on the
-// others (the wind off: no drift of the ash or the rain, the storm no longer counts as wind for the waves; the rain off
-// under an emission: no rain). The real models composed as the game composes them; seeds fixed, explicit steps.
+// has no swell of its own; every element switched on by hand runs as always with its links (the emission's ash and
+// storm — TK-399: no rain —, the rain's and the storm's wind, no starfall during an emission); a switch off takes away
+// its effect on the others (the wind off: no drift of the ash or the rain, the storm no longer counts as wind for the
+// waves; the storm off under an emission: no storm). The real models composed as the game composes them; seeds fixed,
+// explicit steps.
 {
   const { EmissionModel } = require("../../../src/game/domain/weather/emission_model.js");
   const { StarfallNight } = require("../../../src/game/domain/weather/starfall_night.js");
@@ -2881,7 +2889,7 @@ const step = (model, seconds, clock = null, dt = 0.1) => {
     for (const kind of ["rain", "storm", "fog", "emission"]) {
       Object.assign(weather[kind], { enabled: true, chancePerCheck: 1, checkIntervalSec: 1, cooldownSec: 0, durationSec: [40, 40] });
     }
-    // The emission lasts through the DevTools steps below (its floor holds the rain and the storm meanwhile).
+    // The emission lasts through the DevTools steps below (its floor holds the storm meanwhile).
     weather.emission.durationSec = [200, 200];
     weather.initial = { rain: 0.5, storm: 0, fog: 0 };
     Object.assign(weather.starfall, { enabled: true, nightChance: 1, fromHour: 21, toHour: 5 });
@@ -2966,12 +2974,13 @@ const step = (model, seconds, clock = null, dt = 0.1) => {
   const after = off.run(300);
   assert.ok(!after.started && off.env.getSnapshot().weather.rain === 0 && off.env.getSnapshot().wind.strength === 0,
     "after its timeline it does not come again, and the wind it brought calms down");
-  // The emission by hand: its ash, its storm and rain (floors), and no starfall while it runs (owner Q3).
+  // The emission by hand: its ash, its storm (floor), and no starfall while it runs (owner Q3). TK-399: no rain — the
+  // storm does not bring it, and with the automatic weather off nothing rolls the rain's raised chance.
   off.starfall.hold(0.6);
   off.emission.force("peak");
   const emitted = off.run(5);
-  assert.ok(emitted.ash > 0.9 && emitted.storm > 0.5 && emitted.rain > 0.5 && emitted.starfall === 0,
-    `the emission switched on by hand brings its ash, storm and rain, and hides the starfall (${JSON.stringify(emitted)})`);
+  assert.ok(emitted.ash > 0.9 && emitted.storm > 0.5 && emitted.rain === 0 && emitted.starfall === 0,
+    `the emission switched on by hand brings its ash and storm, no rain, and hides the starfall (${JSON.stringify(emitted)})`);
   // The wind switched off: no drift, no wind waves — the storm no longer counts as wind for the sea.
   off.env.setWindOverride(0);
   off.run(2);
@@ -3025,15 +3034,20 @@ const step = (model, seconds, clock = null, dt = 0.1) => {
   switches.get("WEATHER.controls.emission").onChange(true);
   dev.run(30);
   section.refreshLive();
-  assert.equal(switches.get("WEATHER.controls.rain").value, true, "the emission's floor shows the rain on its switch");
-  switches.get("WEATHER.controls.rain").onChange(false);
-  const dry = dev.run(20);
-  assert.equal(dev.emission.snapshot.phase === "idle", false, "the emission still runs (its floor would hold the rain)");
-  assert.equal(dev.env.getSnapshot().weather.rain, 0, "the rain switched off under the emission stays off (held at 0)");
-  assert.ok(dry.storm > 0.3 && switches.get("WEATHER.controls.rain").value === false, "the storm keeps its own course; the switch shows off");
+  assert.deepEqual([switches.get("WEATHER.controls.storm").value, switches.get("WEATHER.controls.rain").value], [true, false],
+    "the emission's floor shows the storm on its switch; the rain stays off (TK-399)");
+  switches.get("WEATHER.controls.storm").onChange(false);
+  const calmed = dev.run(20);
+  assert.equal(dev.emission.snapshot.phase === "idle", false, "the emission still runs (its floor would hold the storm)");
+  assert.equal(dev.env.getSnapshot().weather.storm, 0, "the storm switched off under the emission stays off (held at 0)");
+  assert.ok(calmed.ash > 0.5 && calmed.rain === 0 && switches.get("WEATHER.controls.storm").value === false,
+    "the emission keeps its ash; no rain; the switch shows off");
+  switches.get("WEATHER.controls.storm").onChange(true);
+  dev.run(20);
+  assert.ok(dev.env.getSnapshot().weather.storm > 0.3, "on again, the storm comes back");
   switches.get("WEATHER.controls.rain").onChange(true);
   dev.run(20);
-  assert.ok(dev.env.getSnapshot().weather.rain > 0.2, "on again, the rain comes back");
+  assert.ok(dev.env.getSnapshot().weather.rain > 0.2, "the rain by hand still runs under the emission");
   section.dispose();
 }
 
