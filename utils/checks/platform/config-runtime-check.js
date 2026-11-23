@@ -733,7 +733,7 @@ function checkLocationMapConfigChanges() {
   assert.equal(buttonBadges.get('Test rod'),'FREE','a shop item shows the FREE badge, not the word (TK-314)');
   navigationButtons.get('Test rod')({currentTarget:{querySelector:selector=>selector==='.devtools__action-label'?grantTarget:null}});
   assert.equal(itemGrants,1,'the top shop retains its real grant action');
-  assert.match(grantTarget.innerText,/✓×1$/,'grant confirmation stays with the selected item');
+  assert.match(grantTarget.innerText,/· видано ×1$/,'grant confirmation stays with the selected item');
   assert.equal(navigationButtons.has("Каталог UI 🧩"), false, "DEV menu no longer exposes the removed UI catalog");
   navigationButtons.get("Будинок рибалки")();
   assert.equal(houseOpens, 1);

@@ -151,6 +151,6 @@ export class SceneLayerDevSection {
         this.#fill();
       });
     }
-    this.#ui.createButtonRow("↻ Оновити", bottom, () => this.#fill());
+    this.#ui.createButtonRow("Оновити", bottom, () => this.#fill(), false, "", null, { icon: "refresh" });
   }
 }

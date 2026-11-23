@@ -33,6 +33,10 @@ export const DEV_ICONS = Object.freeze({
   cloud: ["M6 15h8.5a3 3 0 0 0 .3-6A4.5 4.5 0 0 0 6 8a3.5 3.5 0 0 0 0 7z"],
   info: ["M10 3a7 7 0 1 0 0 14a7 7 0 1 0 0-14z", "M10 9v5M10 6.5h.01"],
   reset: ["M4 10a6 6 0 1 0 1.8-4.3", "M4 3v3.5h3.5"],
+  // TK-389: «Оновити» (the reset's arrow turned the other way) and a passed step, in place of the text glyphs for
+  // «refresh» and «done».
+  refresh: ["M16 10a6 6 0 1 1-1.8-4.3", "M16 3v3.5h-3.5"],
+  check: ["M4.5 10.5l3.5 3.5 7.5-8"],
   search: ["M8.5 3.5a5 5 0 1 0 0 10a5 5 0 1 0 0-10z", "M12.2 12.2L17 17"],
   changed: ["M10 7a3 3 0 1 0 0 6a3 3 0 1 0 0-6z"],
   camera: ["M3 7h3l1.5-2h5L14 7h3v9H3z", "M10 9a2.5 2.5 0 1 0 0 5a2.5 2.5 0 1 0 0-5z"],

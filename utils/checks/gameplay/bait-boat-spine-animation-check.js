@@ -388,7 +388,7 @@ async function checkBoatRenderPipeline() {
 
 async function checkDevToolsAndBoatConfig() {
   const { CONFIG } = await import("../../../src/game/config/runtime/game_config.js");
-  const { SpineBoatDevSection } = await import("../../../src/dev/tools/spine_boat_dev_section.js");
+  const { SpineDevSection } = await import("../../../src/dev/tools/spine_dev_section.js");
 
   assert.ok(CONFIG.ui?.boat, "CONFIG.ui.boat must exist");
   assert.equal(typeof CONFIG.ui.boat.displayScale, "number");
@@ -431,16 +431,22 @@ async function checkDevToolsAndBoatConfig() {
   };
 
   let renderedConfigTree = false;
-  const section = new SpineBoatDevSection({
+  const downloads = [];
+  const section = new SpineDevSection({
     ui: fakeUi,
+    subject: SpineDevSection.BOAT,
     controller: fakeController,
     createSection: (label, parent, path) => ({ label, path, replaceChildren() {} }),
     renderConfigTree: (parent) => { renderedConfigTree = true; },
+    files: { download: (name, text) => downloads.push(name) },
   });
 
   section.render({});
-  assert.ok(createdElements.length > 0, "SpineBoatDevSection creates UI rows");
-  assert.equal(renderedConfigTree, true, "SpineBoatDevSection renders config tree for CONFIG.ui.boat");
+  assert.ok(createdElements.length > 0, "the boat's Spine section creates UI rows");
+  assert.equal(renderedConfigTree, true, "the boat's Spine section renders config tree for CONFIG.ui.boat");
+  assert.ok(createdElements.some((row) => row.label === "нічні ліхтарі"), "the boat's own state rows");
+  createdElements.find((row) => row.label === "Завантажити boat-lvl--3.json із правками кісток").onClick();
+  assert.deepEqual(downloads, ["boat-lvl--3.json"], "the skeleton's file goes through the DEV file port");
 }
 
 async function checkRealSpineSceneSlotVisibility() {

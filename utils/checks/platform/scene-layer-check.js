@@ -2315,7 +2315,7 @@ async function checkDevWiring() {
   assert(rowsOf()[0].startsWith("Сцена WebGL (інакше все на 2D)"), "the mode switch is the section's first parameter");
   // Spec 180 D4: the weather (with the water) above; the context buttons and «Оновити» at the bottom.
   assert(rowsOf().indexOf("WEATHER") >= 0 && rowsOf().indexOf("WEATHER") < rowsOf().indexOf("Втратити WebGL-контекст") &&
-    rowsOf().at(-1) === "↻ Оновити", "the WebGL buttons come after every section");
+    rowsOf().at(-1) === "Оновити", "the WebGL buttons come after every section");
   assert(rowsOf().includes("шар WebGL: активний") && rowsOf().includes("рендерер: WebGL 2 · 400×816 @ 1.76×"));
   assert(rowsOf().includes("текстури сцени: 3 · 56.3 МБ"), "texture memory is shown (rule 19)");
   assert(rowsOf().includes("background: 2D (рендерера сцени ще немає)"), "the routing per kind is shown");
@@ -2325,7 +2325,7 @@ async function checkDevWiring() {
   actions.get("Відновити WebGL-контекст")();
   assert.deepEqual(layerCalls, ["lose", "restore"]);
   status = { state: "inactive" };
-  actions.get("↻ Оновити")();
+  actions.get("Оновити")();
   assert(rowsOf()[0].startsWith("шар WebGL: немає: режим canvas"));
   assert(!rowsOf().some((row) => row.startsWith("Сцена WebGL")) && !actions.has("Втратити WebGL-контекст"),
     "\"canvas\" mode shows no switch and no context buttons");

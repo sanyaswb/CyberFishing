@@ -321,7 +321,7 @@ export class DevToolsUI {
     }
   }
 
-  // TK-387 (I-32): the one way a section redraws its own rows («↻ Оновити», a choice that changes what it shows). An
+  // TK-387 (I-32): the one way a section redraws its own rows («Оновити», a choice that changes what it shows). An
   // open drill-in inside the container is put back and reopened afterwards (R23); the old rows' bindings and paths are
   // released; the «i» the container's section got for its description goes with them (it lives in the section, not in
   // the container; the next createInfoRow makes it again, open as before); then draw() fills the container.
@@ -435,13 +435,8 @@ export class DevToolsUI {
 
   // The page holding an element is shown first (a link from the overlay, a blocking switch in another module).
   #revealPageOf(element) {
-    for (let node = element; node; node = node.parentNode) {
-      const id = node.dataset?.devtoolsPage;
-      if (id) {
-        this.selectPage(id);
-        return;
-      }
-    }
+    const page = this.#pageOf(element);
+    if (page) this.selectPage(page.dataset.devtoolsPage);
   }
 
   #showBlocker(blocker, row) {
@@ -661,11 +656,10 @@ export class DevToolsUI {
   // a new export in the same place replaces the notice. onClose() tells the section the notice was closed.
   showExportCommand(parentElement, { fileName, command, onClose = null }) {
     this.#exportNotices.get(parentElement)?.dispose();
+    // TK-389: the panel's one clipboard path (copyText); a refusal makes the notice select the command instead.
     const notice = new ExportCommandNotice({ fileName, command, documentRef: document,
-      copyText: (text) => {
-        const clipboard = globalThis.navigator?.clipboard;
-        if (!clipboard?.writeText) throw new Error("clipboard unavailable");
-        return clipboard.writeText(text);
+      copyText: async (text) => {
+        if (!(await this.copyText(text))) throw new Error("clipboard unavailable");
       },
       onClose: () => { this.#exportNotices.delete(parentElement); onClose?.(); } });
     this.#exportNotices.set(parentElement, notice);
@@ -715,34 +709,29 @@ export class DevToolsUI {
     btn.type = "button";
     btn.className = "devtools__action";
     btn.innerText = labelStr;
-    if (icon) {
+    // TK-389: with an icon, an item's art or a badge the label is its own span (the shop writes the grant result into it).
+    if (icon || iconUrl || badge) {
       const label = document.createElement("span");
       label.className = "devtools__action-label";
       label.innerText = labelStr;
-      btn.replaceChildren(createDevIcon(document, icon, "devtools__action-icon"), label);
-    }
-    if (iconUrl) {
-      const image = document.createElement("img");
-      image.className = "devtools__action-image";
-      image.src = iconUrl;
-      image.alt = "";
-      image.draggable = false;
-      const label = document.createElement("span");
-      label.className = "devtools__action-label";
-      label.innerText = labelStr;
-      btn.replaceChildren(image, label);
-    }
-    if (badge) {
-      if (!btn.querySelector(".devtools__action-label")) {
-        const label = document.createElement("span");
-        label.className = "devtools__action-label";
-        label.innerText = labelStr;
-        btn.replaceChildren(label);
+      const parts = [label];
+      if (iconUrl) {
+        const image = document.createElement("img");
+        image.className = "devtools__action-image";
+        image.src = iconUrl;
+        image.alt = "";
+        image.draggable = false;
+        parts.unshift(image);
+      } else if (icon) {
+        parts.unshift(createDevIcon(document, icon, "devtools__action-icon"));
       }
-      const mark = document.createElement("span");
-      mark.className = "ui-free-badge";
-      mark.innerText = badge;
-      btn.appendChild(mark);
+      if (badge) {
+        const mark = document.createElement("span");
+        mark.className = "ui-free-badge";
+        mark.innerText = badge;
+        parts.push(mark);
+      }
+      btn.replaceChildren(...parts);
     }
     btn.addEventListener("click", onClickCallback);
     row.appendChild(btn);
@@ -786,16 +775,7 @@ export class DevToolsUI {
     };
     // Capture: the row answers before its control does.
     for (const type of ["pointerdown", "mousedown", "click", "keydown", "beforeinput"]) row.addEventListener(type, intercept, true);
-    let previousBlocked = null;
-    const refresh = () => {
-      const blocked = unmet() !== null;
-      if (blocked === previousBlocked) return;
-      previousBlocked = blocked;
-      row.classList.toggle("devtools__row--dependency-disabled", blocked);
-      row.setAttribute("aria-disabled", String(blocked));
-    };
-    this.#dependentSwitches.set(row, refresh);
-    refresh();
+    this.#watchDependencies(row, requires, (blocked) => row.setAttribute("aria-disabled", String(blocked)));
     return {
       commit: (next) => {
         const blocker = unmet();
@@ -1086,20 +1066,24 @@ export class DevToolsUI {
       return true;
     } });
     this.#controlBindings.register(bindingPath, (next) => field.setValue(next), row);
-    if (requires.length) {
-      let previousBlocked = null;
-      const refresh = () => {
-        const blocked = requires.some((requirement) => !requirement.isEnabled());
-        if (blocked === previousBlocked) return;
-        previousBlocked = blocked;
-        row.classList.toggle("devtools__row--dependency-disabled", blocked);
-        // Keep explanation clicks and turning an already-on value off available; activation remains guarded.
-        field.setBlocked(blocked);
-      };
-      this.#dependentSwitches.set(row, refresh);
-      refresh();
-    }
+    // Keep explanation clicks and turning an already-on value off available; activation remains guarded.
+    if (requires.length) this.#watchDependencies(row, requires, (blocked) => field.setBlocked(blocked));
     return field;
+  }
+
+  // TK-389: the one way a dependent row (any control, spec 131) follows its prerequisites: the row's inactive mark and
+  // apply(blocked) for its control, written only when the state changes; #refreshDependencies calls it.
+  #watchDependencies(row, requires, apply) {
+    let previousBlocked = null;
+    const refresh = () => {
+      const blocked = requires.some((requirement) => !requirement.isEnabled());
+      if (blocked === previousBlocked) return;
+      previousBlocked = blocked;
+      row.classList.toggle("devtools__row--dependency-disabled", blocked);
+      apply(blocked);
+    };
+    this.#dependentSwitches.set(row, refresh);
+    refresh();
   }
 
   // Keep DOM and keyboard order together: controls, nested sections, then the parent's description.
@@ -1161,7 +1145,7 @@ export class DevToolsUI {
     }
     if (innermost) this.focusSection(innermost);
 
-    if (typeof this.#dependencyFeedback?.showRevealed === "function") {
+    if (this.#dependencyFeedback) {
       this.#dependencyFeedback.showRevealed([target]);
       return true;
     }

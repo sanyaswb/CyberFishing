@@ -532,7 +532,7 @@ const flush = async () => { for (let index = 0; index < 10; index += 1) await Pr
     assert.equal(row("стан").value, "вимкнено", "mode off: no steps");
     row("Покроковий режим").change(true);
     assert.equal(settings.isEnabled(), true, "the switch keeps the mode for the next start");
-    row("↻ Почати спочатку").click();
+    row("Почати спочатку").click();
     assert.equal(restarts, 1, "the restart reloads the page");
     sectionGate = new AssetLoadGate({ steps, now: () => 0 });
     section.render(body, ui);

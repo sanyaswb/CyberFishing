@@ -54,7 +54,7 @@ export class StatusEffectsModule {
       }
     }
     ui.createButtonRow("Зняти всі", section, () => this.#act(() => this.#statuses.clear()));
-    ui.createButtonRow("↻ Оновити", section, () => this.#renderActive());
+    ui.createButtonRow("Оновити", section, () => this.#renderActive(), false, "", null, { icon: "refresh" });
   }
 
   #act(command) {

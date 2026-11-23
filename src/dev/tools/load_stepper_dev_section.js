@@ -49,7 +49,8 @@ export class LoadStepperDevSection {
     const ui = this.#ui;
     ui.createSwitcherRow("Покроковий режим (з наступного старту)", this.#settings.isEnabled(), content,
       (enabled) => this.#settings.setEnabled(enabled), ["LOAD_STEPPER", "enabled"]);
-    ui.createButtonRow("↻ Почати спочатку (оновити сторінку)", content, () => this.#restart());
+    ui.createButtonRow("Почати спочатку (оновити сторінку)", content, () => this.#restart(), false, "", null,
+      { icon: "refresh" });
     const gate = this.#getGate();
     if (!gate) {
       ui.createTextRow("стан", this.#settings.isEnabled() ? "увімкнеться після оновлення сторінки" : "вимкнено", content);
@@ -68,8 +69,8 @@ export class LoadStepperDevSection {
     for (const layerId of [...new Set(steps.map((step) => step.layerId))]) {
       const layerSteps = steps.filter((step) => step.layerId === layerId);
       const passed = layerSteps.every((step) => step.index < nextIndex);
-      ui.createButtonRow(`${passed ? "✓" : "→"} ${layerSteps[0].layerLabel} (${layerSteps.length} кр.)`, layers,
-        () => gate.jumpToLayer(layerId));
+      ui.createButtonRow(`${layerSteps[0].layerLabel} (${layerSteps.length} кр.)`, layers,
+        () => gate.jumpToLayer(layerId), false, "", null, { icon: passed ? "check" : "play" });
     }
     const status = this.#readStatus();
     const last = steps[nextIndex - 1] ?? null;

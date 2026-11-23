@@ -16,21 +16,21 @@ import {
 // DevTools «ПОГОДА» (spec 172, 175, 179; spec 180 stage C, TK-327).
 // - On top: the selector «Загальні» | «Всі» | a location (spec 180 D4, D11; TK-333): «Загальні» — the general settings,
 //   a location — only what belongs to it, «Всі» — both together in every section (the location picked last).
-// - «Керування» (TK-360; was «Стан і керування») of the location the game runs (D10). TK-367 (owner): «↻ Оновити» on top,
-//   «↺ Автоматична погода» under it, the live state of every process; then every element (rain, storm, fog, emission,
+// - «Керування» (TK-360; was «Стан і керування») of the location the game runs (D10). TK-367 (owner): «Оновити» on top,
+//   «Автоматична погода» under it, the live state of every process; then every element (rain, storm, fog, emission,
 //   starfall, ash, wind, waves, current) as a switch that follows its live state. While an element is on: its slider
 //   (standing at the live value; moving it holds the element by hand, the label then says «· вручну»), the wind's
-//   direction «← вліво | авто | вправо →», «↺ авто» (this element back to its own course) while it is held, and its
+//   direction «← вліво | авто | вправо →», «авто» (this element back to its own course) while it is held, and its
 //   settings collapsed under it — the rain's and the ash's look at strength 100 (D16), the others' config trees. The
 //   ash, waves, current and wind: on holds the slider's value, off holds 0 (the wind calm). The actions (emission parts,
 //   a gust, a strike) come last, «Болід» at the very end (on a phone it closes the panel, so the bolide is seen).
-//   TK-367.1 (owner): the buttons two to a line with short labels (DevToolsUI.createButtonGrid): «↻ Оновити | ↺ Авто
+//   TK-367.1 (owner): the buttons two to a line with short labels (DevToolsUI.createButtonGrid): «Оновити | Авто
 //   погода» on top; «Викид: пік | Викид: спад», «Порив вітру | Блискавка», «Болід» at the bottom.
 // - TK-360: the switches follow the live state. While the panel is open, refreshLive() (each live update) compares
 //   which elements are on — one integer — with what the section shows, and redraws it only when that changed: a fog
 //   that started by itself shows at once, not at the next redraw caused by another control.
 // - Sections by element: ДОЩ, ШТОРМ, ВІТЕР, ТУМАН, ВИКИД, РАДІАЦІЯ (TK-337), ПОПІЛ, ВОДА, ПОЧАТОК І ПОРОГИ — general and location parts by
-//   the selector; a section with edits not in the code is marked «· змінено» and has «↺ Скинути розділ до коду» (D8).
+//   the selector; a section with edits not in the code is marked «· змінено» and has «Скинути розділ до коду» (D8).
 // - «Збереження» (spec 175, spec 180 stage D, TK-332): the file holds the level the selector shows — «Загальні»: the
 //   general rain, ash, storm and wind settings; a location: its weather; «Всі»: both.
 //   The status names every part of both levels that differs from the code, and what an export would leave out.
@@ -333,10 +333,10 @@ export class WeatherDevSection {
     const section = this.#createSection(changed ? `${title} · змінено` : title, content, ["WEATHER", key]);
     body(section);
     if (!this.#edits) return;
-    const resetRow = this.#ui.createButtonRow("↺ Скинути розділ до коду", section, () => {
+    const resetRow = this.#ui.createButtonRow("Скинути розділ до коду", section, () => {
       for (const part of parts) this.#edits.resetTree(part);
       this.#fill();
-    }, false, "", ["WEATHER", key, "reset"]);
+    }, false, "", ["WEATHER", key, "reset"], { icon: "reset" });
     resetRow.style.display = changed ? "" : "none";
     this.#marks.push({ section, title, parts, resetRow });
   }
@@ -829,8 +829,8 @@ export class WeatherDevSection {
     }
   }
 
-  // TK-367 (owner): «↻ Оновити» on top and «↺ Автоматична погода» under it, then the state; then every element as a
-  // switch that follows its live state (R26) with its strength, «↺ авто» and settings only while it is on; the actions
+  // TK-367 (owner): «Оновити» on top and «Автоматична погода» under it, then the state; then every element as a
+  // switch that follows its live state (R26) with its strength, «авто» and settings only while it is on; the actions
   // at the bottom, «Болід зараз» last.
   #renderControls(model, content) {
     const weather = model.snapshot;
@@ -838,11 +838,12 @@ export class WeatherDevSection {
     this.#shownLive = this.#liveState();
     // TK-367.1 (owner): the buttons two to a line with short labels.
     const top = this.#ui.createButtonGrid(controls);
-    this.#ui.createButtonRow("↻ Оновити", top, () => this.#fill(), false, "", ["WEATHER", "controls", "refresh"]);
-    this.#ui.createButtonRow("↺ Авто погода", top, () => {
+    this.#ui.createButtonRow("Оновити", top, () => this.#fill(), false, "", ["WEATHER", "controls", "refresh"],
+      { icon: "refresh" });
+    this.#ui.createButtonRow("Авто погода", top, () => {
       this.#automaticWeather(model);
       this.#fill();
-    }, false, "", ["WEATHER", "controls", "auto"]);
+    }, false, "", ["WEATHER", "controls", "auto"], { icon: "reset" });
     this.#renderGenerated(weather, this.#weather.getEmissionModel?.()?.snapshot ?? null, controls);
     this.#renderStatus(weather, controls);
     for (const [kind, label] of EVENTS) this.#renderEventControl(model, kind, label, weather.events?.[kind], controls);
@@ -877,13 +878,13 @@ export class WeatherDevSection {
     return held ? `${label} · вручну` : label;
   }
 
-  // TK-367: «↺ авто» returns this one element to its own course (the others keep theirs), shown only while it is held.
+  // TK-367: «авто» returns this one element to its own course (the others keep theirs), shown only while it is held.
   #renderAutoButton(key, held, controls, release) {
     if (!held) return;
-    this.#ui.createButtonRow("↺ авто", controls, () => {
+    this.#ui.createButtonRow("авто", controls, () => {
       release();
       this.#fill();
-    }, false, "", ["WEATHER", "controls", `${key}Auto`]);
+    }, false, "", ["WEATHER", "controls", `${key}Auto`], { icon: "reset" });
   }
 
   // TK-367 (owner: «всі інші також повинні мати такі розділи для налаштування»): an element's settings, collapsed under
@@ -975,7 +976,7 @@ export class WeatherDevSection {
   }
 
   // TK-367 (owner: «попіл … з'являється з викидом але керувати я повинен ним і окремо»): on — the ash held at the
-  // slider; off — held at 0 even during an emission; «↺ авто» — it follows the emission again.
+  // slider; off — held at 0 even during an emission; «авто» — it follows the emission again.
   #renderAshControl(controls) {
     const weather = this.#weather;
     if (!weather.holdAsh) return;
@@ -1038,7 +1039,7 @@ export class WeatherDevSection {
     return !!wind && wind.direction !== 0 && Number(wind.strength) > LIVE_EPSILON;
   }
 
-  // TK-367: on — the waves' height held at the slider (% of the usual); off — flat water; «↺ авто» — from wind and storm.
+  // TK-367: on — the waves' height held at the slider (% of the usual); off — flat water; «авто» — from wind and storm.
   #renderWavesControl(controls) {
     const weather = this.#weather;
     if (!weather.holdWaves) return;
@@ -1061,7 +1062,7 @@ export class WeatherDevSection {
       ["canvas", "water", "seaState"], controls);
   }
 
-  // TK-367: on — the water current held at the slider's speed; off — still water; «↺ авто» — the location's own current.
+  // TK-367: on — the water current held at the slider's speed; off — still water; «авто» — the location's own current.
   // A hold of the running game, not a config edit (the location's current is edited in «ВОДА» → «Течія»).
   #renderCurrentControl(controls) {
     const weather = this.#weather;

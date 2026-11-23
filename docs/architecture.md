@@ -230,8 +230,8 @@ its one named importer imports it. The rod (presentation, `game/presentation/fis
 advanced by `FishingEquipmentRenderModelBuilder.prepareRod` while the fishing frame is built. `RodStaticRenderer`,
 and `RodLineRenderer` draw the 2D reserve from the frame model; Spine draws only on the WebGL scene (spec 170). `bootstrap/production/rod_animation_composition.js`
 wires them for the session. `SpineSetupPoseReader` (platform) gives the static picture without the runtime. DEV:
-`SpineRodDevSection` (DevTools "SPINE ВУДКА") uses only the controller's DEV port: Spine on/off, clip switches, live
-bone setup edits and the export of the edited skeleton JSON.
+`SpineDevSection` (DevTools «SPINE», subjects `ROD` and `BOAT`, TK-389) uses only the controller's DEV port: Spine
+on/off, clip switches, live bone setup edits and the export of the edited skeleton JSON through the DEV file port.
 
 WebGL scene layer ([spec 103](../specs/103-webgl-scene-layer/spec.md); stages 0 and 1, the latter in
 [spec 104](../specs/104-scene-layer-infrastructure/spec.md)): `engine/scene` holds the port (`SCENE_LAYER_METHODS`:

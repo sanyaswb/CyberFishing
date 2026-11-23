@@ -84,7 +84,7 @@ export class RadioDevSection {
     this.#ui.createInfoRow("країна · станцій", `${status.country} · ${status.stationCount}`, content);
     this.#ui.createInfoRow("сигнал", `${Math.round((status.signal ?? 1) * 100)}%`, content);
     this.#ui.createInfoRow("заряд батарейки", charge === null ? "немає батарейки" : `${charge.toFixed(1)}%`, content);
-    this.#ui.createButtonRow("↻ Оновити", content, () => this.#fill());
+    this.#ui.createButtonRow("Оновити", content, () => this.#fill(), false, "", null, { icon: "refresh" });
     for (const target of [20, 5, 0]) {
       this.#ui.createButtonRow(`Розрядити до ${target}%`, content, () => {
         this.#radio.discharge(target);

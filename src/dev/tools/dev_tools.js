@@ -161,7 +161,7 @@ export class DevTools {
           getWaterMetric, createWaterMetric }) : null] },
       { id: "scene", title: "Сцена", icon: "scene", empty: "На цій сторінці немає сцени, Spine чи радіо.",
         modules: [new SceneModule({ config, configRuntime, scene, weather, files: zoneEditorFiles, gameVersion }),
-          new SpineModule({ config, rodSpine, boatSpine }),
+          new SpineModule({ config, rodSpine, boatSpine, files: zoneEditorFiles }),
           radio ? new RadioModule({ config, radio, files: zoneEditorFiles, gameVersion }) : null] },
       { id: "diagnostics", title: "Діагностика", icon: "bug", empty: "",
         modules: [new OverlaySettingsModule({ config, settingsStore }), this.#activeFish,

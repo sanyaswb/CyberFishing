@@ -116,7 +116,9 @@ in the capture phase, refuses a write and shows the blocking switch with `devtoo
 `devtools__row--stacked` row: the label above, the field and its list across the row under it; an option's `swatch`
 uses the shared `devtools__swatch`.
 
-Spec 174 C1 (TK-303): DevTools draws no emoji or text arrows (`devtools-controls` scans `src/dev/tools/**`). Icons
+Spec 174 C1 (TK-303): DevTools draws no emoji or text arrows (`devtools-controls` scans `src/dev/tools/**`; TK-389: nor
+the glyphs ↻ ↺ ✓ ✗ that stood for an icon — «Оновити» has `refresh`, «авто» / «Скинути» `reset`, a passed step `check`;
+arrows in prose and the wind's «← вліво | вправо →» stay text). Icons
 come from `src/dev/tools/controls/dev_icon.js` (`createDevIcon`: inline outline SVG on a 20 × 20 grid, `stroke:
 currentColor`, the shared `devtools__icon` sized by `--devtools-icon-size`; consumer classes `devtools__section-chevron`
 (turned 90° under `[aria-expanded="true"]`), `devtools__section-icon`, `devtools__action-icon`, `devtools__toggle-icon`,

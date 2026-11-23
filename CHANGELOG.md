@@ -2,6 +2,10 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.52.53 - DevTools cleanup: one Spine section, icons instead of symbols (TK-389)
+
+- dev.html: the rod's and the boat's Spine sections are one section in code (no visible change; the boat's export now saves the skeleton with the latest bone edits). Buttons «Оновити», «Авто погода», «авто», «Скинути розділ до коду» and the loading layers show icons instead of the symbols ↻ ↺ ✓; the shop says «· видано ×N» after a grant.
+
 ## v0.52.52 - A DevTools section that fails to draw shows why (TK-388)
 
 - dev.html: if a DevTools section ever fails to draw when it is first opened, it opens with a red notice naming the error; the rest of the panel and the search keep working (before, it silently did not open, and a search stopped at it).
@@ -37,8 +41,3 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 ## v0.52.44 - The gas mask wears by its quality while it filters (TK-383, spec 185)
 
 - While a filter is working (on the location under radiation or during an emission) the gas mask wears: quality 3 goes from 100 % to 0 in 5 minutes. At 0 it cracks: it stops protecting and its filters stop; the other filter keeps what is left. Without radiation or an emission the mask does not wear.
-
-## v0.52.43 - The gas mask protects through its filters (TK-382, spec 185)
-
-- The gas mask protects only with a filter that has time left: then the emission's darkening and blur are gone and the radiation's hiss is half as strong. The filters work one at a time (the one with less time first, the other takes over without a gap), and their time runs only on the location under radiation or during an emission. A removed filter keeps its time.
-- Without a working filter (or with a cracked mask) the mask does not protect and there is no cast during an emission; the message says what is missing. When the protection ends, the effects come back smoothly over 10 seconds.

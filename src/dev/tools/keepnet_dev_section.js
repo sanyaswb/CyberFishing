@@ -62,7 +62,7 @@ export class KeepnetDevSection {
     const percent = view.keepnetCapacity > 0 ? Math.round(occupied / view.keepnetCapacity * 100) : 0;
     this.#ui.createInfoRow("заповнено", `${occupied} / ${view.keepnetCapacity} (${percent}%)`, content);
     this.#ui.createInfoRow("улов · живці · на гачку", `${view.keepnet.length} · ${live} · ${view.keepnetReservedCount || 0}`, content);
-    this.#ui.createButtonRow("↻ Оновити", content, () => this.#render());
+    this.#ui.createButtonRow("Оновити", content, () => this.#render(), false, "", null, { icon: "refresh" });
     for (const target of KEEPNET_FILL_TARGETS) {
       this.#ui.createButtonRow(`Заповнити на ${target}%`, content, () => {
         this.fill(target);

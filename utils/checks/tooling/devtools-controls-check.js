@@ -869,8 +869,10 @@ function choiceRow(options, value, path) {
           ? walk(path.join(dir, entry.name))
           : [path.join(dir, entry.name)],
       );
-  // Emoji and the text arrows the panel used to draw (▶ ▼ ⏩): icons replace them, the same on every platform.
-  const forbidden = /[\p{Extended_Pictographic}▶▼⏩]/u;
+  // Emoji, the text arrows the panel used to draw (▶ ▼ ⏩) and the glyphs that stood for an icon on a button (TK-389:
+  // refresh, reset, done, failed): icons replace them, the same on every platform. Arrows in prose (a path «A → B»,
+  // a direction «← вліво») stay text.
+  const forbidden = /[\p{Extended_Pictographic}▶▼⏩↻↺⟳⟲✓✗]/u;
   for (const file of walk(toolsRoot).filter((name) => name.endsWith(".js"))) {
     fs.readFileSync(file, "utf8")
       .split("\n")
@@ -1900,9 +1902,11 @@ function choiceRow(options, value, path) {
     { name: "tip", parent: "rod", x: 50, y: 60, rotation: 0, scaleX: 1, scaleY: 1, canvasX: 0, canvasY: 0 },
   ];
   const boneEdits = [];
-  const { SpineRodDevSection } = runtime.importModule("src/dev/tools/spine_rod_dev_section.js");
+  const { SpineDevSection } = runtime.importModule("src/dev/tools/spine_dev_section.js");
   const spine = createSection("SPINE", page, ["SPINE"]);
-  new SpineRodDevSection({ ui: redrawUi, createSection, renderConfigTree() {}, documentRef: document, windowRef: {},
+  const downloads = [];
+  new SpineDevSection({ ui: redrawUi, subject: SpineDevSection.ROD, createSection, renderConfigTree() {},
+    files: { download: (name, text) => downloads.push([name, text]) },
     controller: { exportSkeleton: () => ({ fileName: "rod.json", text: "{}" }),
       getStatus: () => ({ mode: "spine", missingClips: [], mipmapped: false, pixelRatio: 1 }),
       isSpineEnabled: () => true, setSpineEnabled() {}, getClips: () => [], setClipEnabled() {}, getBones: () => bones,
@@ -1933,6 +1937,10 @@ function choiceRow(options, value, path) {
   assert.ok(drillPaths().includes("SPINE_ROD.bones.tip.x"), "and the drill-in stays on it after the redraw");
   const crumbs = byClass("devtools__crumb", page).map((crumb) => crumb.textContent);
   assert.deepEqual([...crumbs], ["Сцена", "SPINE", "rod", "Кістки"], "its crumbs lead to the rebuilt sections");
+  // TK-389: one Spine section for the rod and the boat; the skeleton's file goes through the DEV file port.
+  byClass("devtools__crumb", page).find((crumb) => crumb.textContent === "rod").click();
+  byClass("devtools__action", rodSection).find((button) => button.innerText === "Експорт rod.json").click();
+  assert.equal(JSON.stringify(downloads), JSON.stringify([["rod.json", "{}"]]), "«Експорт» saves the skeleton through files");
 
   // РАДІО (0) → «Звук: ефекти й перешкоди» (1) → an effect (2: a drill-in): «увімкнено» shows the effect's parameters.
   const radioConfig = { effects: { retro: { enabled: false, drive: 2 } } };
@@ -2783,7 +2791,7 @@ function choiceRow(options, value, path) {
   const gridPaths = byClass("devtools__button-grid", liveUi.body)
     .map((grid) => byClass("devtools__row", grid).map((row) => row.dataset.devtoolsPath));
   assert.equal(JSON.stringify(gridPaths[0]), JSON.stringify(["WEATHER.controls.refresh", "WEATHER.controls.auto"]),
-    "«↻ Оновити | ↺ Авто погода» share the first line");
+    "«Оновити | Авто погода» share the first line");
   assert.ok(gridPaths.at(-1).includes("WEATHER.controls.strike") && gridPaths.at(-1).at(-1) === "WEATHER.controls.bolide",
     "the actions share the last grid, «Болід» at its end");
   const gridCss = require("node:fs").readFileSync(require("node:path").resolve(__dirname,

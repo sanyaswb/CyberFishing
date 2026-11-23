@@ -52,7 +52,7 @@ export class ItemShopModule {
           const result = this.#grantCatalogItem(itemId, quantity);
           if (result?.success) granted += 1;
           const labelNode = event.currentTarget.querySelector(".devtools__action-label");
-          labelNode.innerText = result?.success ? `${label} ✓×${granted}` : `${label} ✗`;
+          labelNode.innerText = result?.success ? `${label} · видано ×${granted}` : `${label} · не видано`;
         }, false, iconUrl, null, { badge: "FREE" });
       }
     }
