@@ -74,6 +74,19 @@ const tick = () => new Promise((resolve) => setTimeout(resolve, 0));
   assert.deepEqual(format.validateWeatherFile(generalOnly, { generalTemplates: real }), []);
   assert.deepEqual(format.validateWeatherFile(JSON.parse(v1(real.rain, WEATHER)), { generalTemplates: real, locationWeatherTemplate: WEATHER }), [],
     "a v1 file (rain + location) is still valid");
+  // Spec 187 D18 (owner: «підтримую»): a file exported before the storm's and the wind's effects became [від, до] holds
+  // plain multipliers; it reads (and validates) as the pairs that act the same — here the very pairs of the code.
+  const legacy = clone(real);
+  Object.assign(legacy.storm, { rainChanceMult: 10, rainStrengthMult: 1.3, gustChanceMult: 2.5, rainDropsShare: 0.6,
+    rainSlantDeg: 48, windMinStrength: 0.7 });
+  Object.assign(legacy.wind, { rainSlantDeg: 34, ashDriftPx: 90 });
+  Object.assign(legacy.wind.rain, { minStrength: 0.25, bonus: 0.2, gustChanceMult: 1.5 });
+  const legacyFile = JSON.parse(v2(legacy, null));
+  assert.deepEqual(format.validateWeatherFile(legacyFile, { generalTemplates: real }), [], "an old file with multipliers is valid");
+  const upgraded = format.readWeatherFile(legacyFile).general;
+  assert.equal(JSON.stringify([upgraded.storm, upgraded.wind]), JSON.stringify([real.storm, real.wind]),
+    "its multipliers read as the code's [від, до] pairs");
+  assert.equal(legacyFile.general.storm.rainChanceMult, 10, "the file itself is not changed");
   // Spec 187 D8: a location's look holds its own [від, до] (the code's look is empty — such a file used to be refused
   // as «unknown setting», so a location's override could never reach the code).
   const lookWeather = JSON.parse(JSON.stringify(WEATHER));

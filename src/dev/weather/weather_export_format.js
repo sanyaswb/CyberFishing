@@ -6,6 +6,7 @@ import {
   formatExportFileName,
 } from "../tools/export/canonical_export_format.js";
 import { generalWeatherRangeIssues } from "../../game/config/validation/weather_settings_ranges.js";
+import { VISIBLE_STRENGTH } from "../../engine/math/strength_value.js";
 
 // Canonical form of weather settings (spec 175, spec 176, spec 180 D7): DevTools «ПОГОДА» export/import and
 // `npm run apply:weather` read and write through this module so hashes and written modules never depend on key order.
@@ -133,6 +134,41 @@ export function buildWeatherFile({
 
 // One shape for both versions: { version, general: { part: value } | null, generalBaseHashes, locationId | null,
 // locationWeather | null, locationWeatherBaseHash | null }. A v1 file is the rain part plus its location.
+// Spec 187 D18 (owner: «apply:weather переводить старі множники … підтримую»): a file exported before the storm's and
+// the wind's effects became [від, до] holds plain multipliers; each becomes the pair that acts exactly as it did (від =
+// its value at the visible strength). `whole` — the old number was the whole multiplier (1 + (m − 1) × s), `plus1` —
+// 1 + m × s, otherwise m × s. A pair stays as it is; the file is not changed (a copy is returned).
+const LEGACY_EFFECTS = Object.freeze({
+  storm: Object.freeze({ rainChanceMult: "whole", rainStrengthMult: "whole", gustChanceMult: "plus1", rainDropsShare: "times",
+    rainSlantDeg: "times", windMinStrength: "times" }),
+  wind: Object.freeze({ rainSlantDeg: "times", ashDriftPx: "times" }),
+  windRain: Object.freeze({ minStrength: "times", bonus: "times", gustChanceMult: "plus1" }),
+});
+
+function legacyPair(value, kind) {
+  if (typeof value !== "number" || !Number.isFinite(value)) return value;
+  const at = (share) => (kind === "whole" ? 1 + (value - 1) * share : kind === "plus1" ? 1 + value * share : value * share);
+  return [Number(at(VISIBLE_STRENGTH).toFixed(6)), Number(at(1).toFixed(6))];
+}
+
+function upgradeTable(record, table) {
+  if (!isRecord(record)) return record;
+  const next = { ...record };
+  for (const [key, kind] of Object.entries(table)) if (key in next) next[key] = legacyPair(next[key], kind);
+  return next;
+}
+
+export function upgradeLegacyEffects(general) {
+  if (!isRecord(general)) return general;
+  const next = { ...general };
+  if (isRecord(next.storm)) next.storm = upgradeTable(next.storm, LEGACY_EFFECTS.storm);
+  if (isRecord(next.wind)) {
+    next.wind = upgradeTable(next.wind, LEGACY_EFFECTS.wind);
+    if (isRecord(next.wind.rain)) next.wind.rain = upgradeTable(next.wind.rain, LEGACY_EFFECTS.windRain);
+  }
+  return next;
+}
+
 export function readWeatherFile(file) {
   if (!isRecord(file)) return null;
   const hashes = isRecord(file.baseHashes) ? file.baseHashes : {};
@@ -148,7 +184,7 @@ export function readWeatherFile(file) {
   }
   return {
     version: file.formatVersion,
-    general: "general" in file ? file.general : null,
+    general: "general" in file ? upgradeLegacyEffects(file.general) : null,
     generalBaseHashes: isRecord(hashes.general) ? hashes.general : {},
     locationId: "locationId" in file ? file.locationId : null,
     locationWeather: "locationWeather" in file ? file.locationWeather : null,

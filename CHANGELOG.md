@@ -2,6 +2,10 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.52.76 - Old weather files with multipliers still apply (spec 187)
+
+- `npm run apply:weather` and the DevTools import read a weather file exported before the storm's and the wind's «від / до» as the pairs that act the same (such a file still reports a conflict with the changed code: apply it with --force or export again).
+
 ## v0.52.75 - The waves' response to wind and storm as «від / до» (spec 187, stage C)
 
 - How high and fast the waves get with the wind, and how a storm raises, speeds up and lengthens them, are now set by two values — at 5 % and at 100 % — instead of multipliers. The game plays the same.
@@ -38,7 +42,3 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 ## v0.52.67 - DevTools: «Хвилі» off when the water is flat (TK-398.1)
 
 - dev.html: with the automatic weather off and no wind the water was flat, but «Хвилі» in «Керування» (and the «i» of «ПОГОДА») still showed the waves on. Now they are on only while held by hand or while the waves really show; a wind that raises waves turns the switch on by itself.
-
-## v0.52.66 - DevTools: the weather's «i» shows what is on now (TK-400)
-
-- dev.html: the «i» of the «ПОГОДА» section lists the automatic weather, the states on now, the radiation and a short line for each state (strength, phase, time left; the wind's direction and gusts), updated live while it is open.
