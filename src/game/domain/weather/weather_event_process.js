@@ -126,10 +126,17 @@ export class WeatherEventProcess {
     this.#snapshot.target = this.#target();
   }
 
-  // TK-398: on — the checks roll as usual; off — none, and the running event ends (its strength fades).
+  // TK-398: on — the checks roll as usual. Spec 187 D12, D13 (owner: «погода застигає»): off — no checks, and the
+  // strength freezes where it is (held at it unless already held); the running event's timeline ends (no fade).
   setAutomatic(on) {
-    this.#automatic = on !== false;
-    if (!this.#automatic) this.stop();
+    const automatic = on !== false;
+    if (automatic === this.#automatic) return;
+    this.#automatic = automatic;
+    if (!automatic) {
+      // Nothing to freeze at zero: without checks it stays there (an emission's floor may still raise it).
+      if (this.#held === null && this.#snapshot.strength > 0) this.hold(this.#snapshot.strength, { fadeSec: 0 });
+      this.stop();
+    }
     this.#snapshot.automatic = this.#automatic;
   }
 

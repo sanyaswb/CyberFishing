@@ -18,21 +18,17 @@ import {
 //   a location — only what belongs to it, «Всі» — both together in every section (the location picked last).
 // - «Керування» (TK-360; was «Стан і керування») of the location the game runs (D10). TK-367 (owner): «Оновити» on top,
 //   «Автоматична погода» under it, the live state of every process; then every element (rain, storm, fog, emission,
-//   starfall, ash, wind, waves, current) as a switch that follows its live state. While an element is on: its slider
-//   (standing at the live value; moving it holds the element by hand, the label then says «· вручну»), the wind's
-//   direction «← вліво | авто | вправо →», «авто» (this element back to its own course) while it is held, and its
-//   settings collapsed under it — the rain's and the ash's look at strength 100 (D16), the others' config trees. The
-//   ash, waves, current and wind: on holds the slider's value, off holds 0 (the wind calm). The actions (emission parts,
-//   a gust, a strike) come last, «Болід» at the very end (on a phone it closes the panel, so the bolide is seen).
-//   TK-367.1 (owner): the buttons two to a line with short labels (DevToolsUI.createButtonGrid): «Оновити» on top;
-//   «Викид: пік | Викид: спад», «Порив вітру | Блискавка», «Болід» at the bottom.
-//   TK-398 (owner): the switch «Автоматична погода» under «Оновити» (it replaced the button «Авто погода»): off — nothing
-//   starts by itself and everything goes out; every element's own switch still turns it on, with its links to the
-//   others (the emission's ash and storm, TK-399: not the rain; the storm's wind and waves). An event's switch off
-//   under the emission's floor holds it at 0.
-//   Spec 187 stage A (owner): «Керування» holds no sliders and no settings — only the switches, the wind's direction,
-//   «авто» and the actions; each element's strength slider is on top of its own section (ВОДА: the waves' height and
-//   the current's speed), for the location the game runs, holding the running game.
+//   starfall, ash, wind, waves, current) as a switch that follows its live state, the wind's direction while it
+//   blows, «перехід, с»; the actions («Порив вітру | Блискавка», «Болід» last — on a phone it closes the panel, so
+//   the bolide is seen) two to a line (TK-367.1, DevToolsUI.createButtonGrid).
+//   Spec 187 (owner) — replaces TK-398's «off: everything goes out»:
+//   - A: no sliders and no settings here; each element's «Сила, %» is on top of its own section (ВОДА: the waves'
+//     height and the current's speed), for the location the game runs, holding the running game.
+//   - D11: «Автоматична погода» on — nothing is set by hand: the switches, the direction and the sliders show the live
+//     state but require the automatic weather off (DevToolsUI `requires`), the actions are not there; turning it on
+//     releases every hold. D12–D14: off — the weather freezes where it is (each model holds its own level); a switch
+//     on holds its element at its last level, off at 0 (no random event, no timeline, no «авто»); the chances within
+//     a level (gusts, strikes, falling stars) still act.
 // - TK-360: the switches follow the live state. While the panel is open, refreshLive() (each live update) compares
 //   which elements are on — one integer — with what the section shows, and redraws it only when that changed: a fog
 //   that started by itself shows at once, not at the next redraw caused by another control.
@@ -52,11 +48,8 @@ const ALL = "Всі";
 const EVENT_PHASES = Object.freeze({ rise: "розгін", peak: "пік", fall: "затухання", idle: "немає" });
 const EVENTS = Object.freeze([["rain", "Дощ"], ["storm", "Шторм"], ["fog", "Туман"]]);
 const EMISSION_LABELS = Object.freeze({ idle: "немає", onset: "початок", peak: "пік", fade: "затихання" });
-// TK-327.1: starting and ending the emission is its switch; these jump within the running one.
-const EMISSION_ACTIONS = Object.freeze([
-  Object.freeze(["Викид: пік", "peak"]),
-  Object.freeze(["Викид: спад", "fade"]),
-]);
+// Spec 187 D11: the switch «Автоматична погода» — every manual control requires it off.
+const AUTO_PATH = Object.freeze(["WEATHER", "controls", "auto"]);
 // TK-367 (owner): the wind's direction as buttons «← вліво | авто | вправо →»; calm is the wind's switch off.
 const WIND_CHOICES = Object.freeze([
   Object.freeze({ value: "left", label: "← вліво", direction: -1 }),
@@ -954,9 +947,12 @@ export class WeatherDevSection {
     }
   }
 
-  // TK-367 (owner): «Оновити» on top and «Автоматична погода» (TK-398: a switch) under it, then the state; then every element as a
-  // switch that follows its live state (R26) with its strength, «авто» and settings only while it is on; the actions
-  // at the bottom, «Болід зараз» last.
+  // TK-367 (owner): «Оновити» on top and «Автоматична погода» (TK-398: a switch) under it, then the state; then every
+  // element as a switch that follows its live state (R26); the actions at the bottom, «Болід зараз» last.
+  // Spec 187 D11–D14 (owner): with the automatic weather on nothing is set by hand — the switches, the wind's direction
+  // and the strength sliders show the live state but need the automatic weather off (DevToolsUI `requires`), and the
+  // actions are not there; off — the weather is frozen and changed only here: a switch on holds its element at its last
+  // level, off at 0 (no random event, no timeline).
   #renderControls(model, content) {
     const weather = model.snapshot;
     const controls = this.#createSection("Керування", content, ["WEATHER", "controls"]);
@@ -965,15 +961,14 @@ export class WeatherDevSection {
     const top = this.#ui.createButtonGrid(controls);
     this.#ui.createButtonRow("Оновити", top, () => this.#fill(), false, "", ["WEATHER", "controls", "refresh"],
       { icon: "refresh" });
-    // TK-398 (owner): one switch for the whole automatic weather (it replaced the button «Авто погода»). Either way every
-    // hold is released: on — everything back to its own course; off — everything goes out (what runs by itself ends, the
-    // holds are dropped) and nothing starts by itself; each element's own switch still turns it on.
+    // TK-398 (owner): one switch for the whole automatic weather. Spec 187 D11, D12: on — every hold is released and
+    // the weather runs by itself; off — it freezes where it is (the models hold their levels), nothing is released.
     if (this.#weather.setAutomatic) {
       this.#ui.createSwitcherRow("Автоматична погода", this.#weather.isAutomatic?.() !== false, controls, (on) => {
         this.#weather.setAutomatic(on === true);
-        this.#automaticWeather(model);
+        if (on === true) this.#releaseHolds(model);
         this.#fill();
-      }, ["WEATHER", "controls", "auto"]);
+      }, AUTO_PATH);
     }
     this.#renderGenerated(weather, this.#weather.getEmissionModel?.()?.snapshot ?? null, controls);
     this.#renderStatus(weather, controls);
@@ -989,16 +984,28 @@ export class WeatherDevSection {
       this.#fadeSec = Math.max(0, Number(value) || 0);
     }, ["WEATHER", "controls", "fadeSec"]);
     const actions = this.#ui.createButtonGrid(controls);
-    this.#renderActions(model, emission, actions);
+    this.#renderActions(model, actions);
     this.#renderBolide(actions);
   }
 
-  // D10: every hold released — each element returns to its own course (TK-398: without automatic weather, off).
-  #automaticWeather(model) {
+  // Spec 187 D11: setting the weather by hand needs the automatic weather off (no automatic port: always allowed).
+  #manualAllowed() {
+    return !this.#weather.setAutomatic || this.#weather.isAutomatic?.() === false;
+  }
+
+  // The prerequisite of every manual control (DevToolsUI `requires`: inactive, and a press points at the switch).
+  #manualRequires() {
+    if (!this.#weather.setAutomatic) return [];
+    return [{ path: AUTO_PATH, isEnabled: () => this.#manualAllowed() }];
+  }
+
+  // D10, TK-398: every hold released — each element back to its own course (the automatic weather turned on).
+  #releaseHolds(model) {
     model.releaseAll();
     this.#weather.setWind?.(null);
     this.#weather.setWindStrength?.(null);
     this.#weather.getEmissionModel?.()?.holdIntensity(null);
+    this.#weather.getStarfallModel?.()?.hold(null);
     this.#weather.holdAsh?.(null);
     this.#weather.holdWaves?.(null);
     this.#weather.holdCurrent?.(null);
@@ -1009,13 +1016,9 @@ export class WeatherDevSection {
     return held ? `${label} · вручну` : label;
   }
 
-  // TK-367: «авто» returns this one element to its own course (the others keep theirs), shown only while it is held.
-  #renderAutoButton(key, held, controls, release) {
-    if (!held) return;
-    this.#ui.createButtonRow("авто", controls, () => {
-      release();
-      this.#fill();
-    }, false, "", ["WEATHER", "controls", `${key}Auto`], { icon: "reset" });
+  // A switch of «Керування» that needs the automatic weather off (spec 187 D11).
+  #manualSwitch(label, value, controls, onChange, path) {
+    this.#ui.createSwitcherRow(label, value, controls, onChange, path, path, { requires: this.#manualRequires() });
   }
 
   // A live share 0…1 as the slider's percent; remembered as the level a switch turns on with when above zero.
@@ -1025,36 +1028,28 @@ export class WeatherDevSection {
     return value;
   }
 
+  // Spec 187 D12, D13: on holds the event at its last level, off at 0 — no random event, no timeline.
   #renderEventControl(model, kind, label, event, controls) {
-    const shown = this.#eventOn(event);
-    // TK-327.1: on starts a random event (as the game would), off ends it and releases its slider's hold. TK-398: when
-    // something else still holds it up (an emission's floor — it used to stay with its switch off), off holds it at 0;
-    // «авто» (below) returns it to its course.
-    this.#ui.createSwitcherRow(label, shown, controls, (on) => {
-      model.hold(kind, null, { fadeSec: this.#fadeSec });
-      if (on) model.start(kind);
-      else {
-        model.stop(kind);
-        if (Number(model.snapshot?.events?.[kind]?.target) > LIVE_EPSILON) model.hold(kind, 0, { fadeSec: this.#fadeSec });
-      }
+    this.#manualSwitch(label, this.#eventOn(event), controls, (on) => {
+      model.hold(kind, on ? this.#levels[kind] / 100 : 0, { fadeSec: this.#fadeSec });
       this.#fill();
     }, ["WEATHER", "controls", kind]);
-    this.#renderAutoButton(kind, event?.held === true, controls, () => model.hold(kind, null, { fadeSec: this.#fadeSec }));
   }
 
   // Spec 187 A (owner: «повзунки там повинні бути відсутні взагалі, всі повзунки перенести у відповідні розділи»): an
   // element's strength slider on top of its own section, only for the location the game runs (it holds the running
-  // game, Q1); it stands at the live value and follows it (TK-401); moving it holds the element by hand.
+  // game, Q1); it stands at the live value and follows it (TK-401); D11: moving it needs the automatic weather off.
   #renderStrength(kind, section, mode) {
     if (!mode.location || mode.location !== this.#weather.locationId) return;
     const weather = this.#weather;
     const path = ["WEATHER", kind, "strength"];
-    const percentRow = (label, held, live, hold, read) => {
+    const percentRow = (held, live, hold, read) => {
       const level = Math.round(this.#liveLevel(kind, live));
-      this.#ui.createRangeRow(this.#heldLabel(label, held), level, section, (value) => {
-        this.#levels[kind] = clamp(value, 0, 100);
-        hold(this.#levels[kind] / 100);
-      }, path);
+      this.#ui.addParameter(section, { control: "range", label: this.#heldLabel("Сила, %", held), value: level,
+        onCommit: (value) => {
+          this.#levels[kind] = clamp(value, 0, 100);
+          hold(this.#levels[kind] / 100);
+        }, path, requires: this.#manualRequires() });
       this.#followLive(path, () => Math.round(Number(read()) * 100) || 0);
     };
     if (kind === "rain" || kind === "storm" || kind === "fog") {
@@ -1062,31 +1057,31 @@ export class WeatherDevSection {
       if (!model) return;
       const eventNow = () => model.snapshot?.events?.[kind];
       const event = eventNow();
-      percentRow("Сила, %", event?.held === true, event?.held ? event.target : event?.strength,
+      percentRow(event?.held === true, event?.held ? event.target : event?.strength,
         (share) => model.hold(kind, share, { fadeSec: this.#fadeSec }),
         () => (eventNow()?.held ? eventNow().target : eventNow()?.strength));
     } else if (kind === "emission") {
       const emission = weather.getEmissionModel?.() ?? null;
       if (!emission) return;
-      percentRow("Сила, %", emission.snapshot.intensityHeld === true, emission.snapshot.intensity,
+      percentRow(emission.snapshot.intensityHeld === true, emission.snapshot.intensity,
         (share) => emission.holdIntensity(share), () => emission.snapshot.intensity);
     } else if (kind === "ash") {
       if (!weather.holdAsh) return;
       const hold = weather.getAshHold?.() ?? null;
-      percentRow("Сила, %", hold !== null, hold ?? weather.getAshStrength?.(),
+      percentRow(hold !== null, hold ?? weather.getAshStrength?.(),
         (share) => weather.holdAsh(share), () => weather.getAshHold?.() ?? weather.getAshStrength?.() ?? 0);
     } else if (kind === "starfall") {
       const starfall = weather.getStarfallModel?.() ?? null;
       if (!starfall) return;
-      percentRow("Сила, %", starfall.snapshot.held === true, starfall.snapshot.strength,
+      percentRow(starfall.snapshot.held === true, starfall.snapshot.strength,
         (share) => starfall.hold(share), () => starfall.snapshot.strength);
     } else if (kind === "wind") {
       if (!weather.setWindStrength) return;
       const wind = weather.getWind?.() ?? null;
       // TK-401: the wind's own strength with its gusts; a strength held by hand shows that value. A wind held calm
       // (its switch off) blows again once the slider is moved.
-      percentRow("Сила, %", wind?.forcedStrength != null, wind?.forcedStrength ?? wind?.strength, (share) => {
-        if ((weather.getWind?.()?.forcedDirection ?? null) === 0) weather.setWind(null);
+      percentRow(wind?.forcedStrength != null, wind?.forcedStrength ?? wind?.strength, (share) => {
+        if ((weather.getWind?.()?.forcedDirection ?? null) === 0) weather.setWind(this.#windDirectionOn(weather.getWind?.()));
         weather.setWindStrength(share);
       }, () => weather.getWind?.()?.forcedStrength ?? weather.getWind?.()?.strength ?? 0);
     }
@@ -1104,7 +1099,7 @@ export class WeatherDevSection {
         value: clamp(level, 0, 300), min: 0, max: 300, step: 5, onCommit: (value) => {
           this.#levels.waves = clamp(value, 0, 300);
           weather.holdWaves(this.#levels.waves / 100);
-        }, path });
+        }, path, requires: this.#manualRequires() });
       this.#followLive(path, () =>
         clamp(Math.round(Number(weather.getWavesHold?.() ?? weather.getWavesScale?.() ?? 1) * 100 / 5) * 5, 0, 300));
     }
@@ -1116,36 +1111,30 @@ export class WeatherDevSection {
         value: clamp(this.#liveLevel("current", speed, 1), 0, 60), min: 0, max: 60, step: 0.5, onCommit: (value) => {
           this.#levels.current = clamp(value, 0, 60);
           weather.holdCurrent(this.#levels.current);
-        }, path });
+        }, path, requires: this.#manualRequires() });
       this.#followLive(path, () =>
         clamp(Math.round(Number(weather.getCurrentHold?.() ?? weather.getCurrentSpeed?.() ?? 0) * 2) / 2, 0, 60));
     }
   }
 
+  // Spec 187 D12, D13: the emission held at its last strength (its phase then «пік») or at 0 — no phases pass.
   #renderEmissionControl(emission, controls) {
     if (!emission) return;
-    const snapshot = emission.snapshot;
-    const shown = snapshot.phase !== "idle";
-    this.#ui.createSwitcherRow("Викид", shown, controls, (on) => {
-      if (on) emission.force("onset");
-      else {
-        emission.holdIntensity(null);
-        emission.force("idle");
-      }
+    this.#manualSwitch("Викид", emission.snapshot.phase !== "idle", controls, (on) => {
+      emission.holdIntensity(on ? this.#levels.emission / 100 : 0);
       this.#fill();
     }, ["WEATHER", "controls", "emission"]);
-    this.#renderAutoButton("emission", snapshot.intensityHeld === true, controls, () => emission.holdIntensity(null));
   }
 
   // TK-354.1 (owner): «Зорепад» for a test — on: the game clock jumps to the night (unless it is already inside the
-  // starfall's window) and the starfall is held at the slider's strength; off: the night's own plan again. Under it,
-  // while on, the strength (TK-360) and the stars' look (TK-367).
+  // starfall's window) and the starfall is held at its last strength; off: released (no night plan without the
+  // automatic weather: none).
   #renderStarfallControls(controls) {
     const starfall = this.#weather.getStarfallModel?.() ?? null;
     if (!starfall) return;
     const snapshot = starfall.snapshot;
     if (snapshot.held) this.#starfallLevel = Math.round(snapshot.strength * 100);
-    this.#ui.createSwitcherRow("Зорепад (ніч)", snapshot.held === true, controls, (on) => {
+    this.#manualSwitch("Зорепад (ніч)", snapshot.held === true, controls, (on) => {
       if (on) {
         if (!snapshot.inWindow) this.#weather.setGameHour?.(STARFALL_TEST_HOUR);
         starfall.hold(this.#starfallLevel / 100);
@@ -1154,81 +1143,76 @@ export class WeatherDevSection {
     }, ["WEATHER", "controls", "starfall"]);
   }
 
-  // TK-367 (owner: «попіл … з'являється з викидом але керувати я повинен ним і окремо»): on — the ash held at the
-  // slider; off — held at 0 even during an emission; «авто» — it follows the emission again.
+  // TK-367 (owner: «попіл … з'являється з викидом але керувати я повинен ним і окремо»): on — the ash held at its last
+  // level; off — held at 0 even during an emission.
   #renderAshControl(controls) {
     const weather = this.#weather;
     if (!weather.holdAsh) return;
     const hold = weather.getAshHold?.() ?? null;
-    const shown = (weather.getAshStrength?.() ?? hold ?? 0) > LIVE_EPSILON;
-    this.#ui.createSwitcherRow("Попіл", shown, controls, (on) => {
+    this.#manualSwitch("Попіл", (weather.getAshStrength?.() ?? hold ?? 0) > LIVE_EPSILON, controls, (on) => {
       weather.holdAsh(on ? this.#levels.ash / 100 : 0);
       this.#fill();
     }, ["WEATHER", "controls", "ash"]);
-    this.#renderAutoButton("ash", hold !== null, controls, () => weather.holdAsh(null));
   }
 
-  // TK-367 (owner): on — the wind blows at the slider's strength (the direction «← вліво | авто | вправо →»); off — calm.
+  // TK-367 (owner): on — the wind blows at its last strength in a direction (the one held, or the live one, or to the
+  // right); off — calm. The direction «← вліво | авто | вправо →» while it blows.
   #renderWindControls(controls) {
     const weather = this.#weather;
     if (!weather.setWind) return;
     const wind = weather.getWind?.() ?? null;
     const shown = this.#windOn(wind);
     const forcedDirection = wind?.forcedDirection ?? null;
-    const held = wind?.forcedStrength != null || forcedDirection === -1 || forcedDirection === 1;
-    this.#ui.createSwitcherRow("Вітер", shown, controls, (on) => {
+    this.#manualSwitch("Вітер", shown, controls, (on) => {
       if (on) {
-        weather.setWind(forcedDirection === -1 || forcedDirection === 1 ? forcedDirection : null);
+        weather.setWind(this.#windDirectionOn(weather.getWind?.() ?? null));
         weather.setWindStrength?.(this.#levels.wind / 100);
       } else weather.setWind(0);
       this.#fill();
     }, ["WEATHER", "controls", "wind"]);
-    if (shown) {
-      const choice = WIND_CHOICES.find((option) => option.direction === forcedDirection) ?? WIND_CHOICES[1];
-      this.#ui.addParameter(controls, { control: "segments", label: "Вітер: напрям",
-        options: WIND_CHOICES.map((option) => ({ value: option.value, label: option.label })), value: choice.value,
-        onCommit: (next) => {
-          weather.setWind(WIND_CHOICES.find((option) => option.value === next)?.direction ?? null);
-          this.#fill();
-        }, path: ["WEATHER", "controls", "windDirection"] });
-    }
-    this.#renderAutoButton("wind", held || forcedDirection === 0, controls, () => {
-      weather.setWind(null);
-      weather.setWindStrength?.(null);
-    });
+    if (!shown) return;
+    const choice = WIND_CHOICES.find((option) => option.direction === forcedDirection) ?? WIND_CHOICES[1];
+    this.#ui.addParameter(controls, { control: "segments", label: "Вітер: напрям",
+      options: WIND_CHOICES.map((option) => ({ value: option.value, label: option.label })), value: choice.value,
+      onCommit: (next) => {
+        weather.setWind(WIND_CHOICES.find((option) => option.value === next)?.direction ?? null);
+        this.#fill();
+      }, path: ["WEATHER", "controls", "windDirection"], requires: this.#manualRequires() });
+  }
+
+  // The direction a wind turned on by hand blows in: the one held, else the live one, else to the right.
+  #windDirectionOn(wind) {
+    const held = wind?.forcedDirection ?? null;
+    if (held === -1 || held === 1) return held;
+    const live = Math.sign(Number(wind?.direction) || 0);
+    return live === -1 || live === 1 ? live : 1;
   }
 
   #windOn(wind) {
     return !!wind && wind.direction !== 0 && Number(wind.strength) > LIVE_EPSILON;
   }
 
-  // TK-367: on — the waves' height held at the slider (% of the usual); off — flat water; «авто» — from wind and storm.
+  // TK-367: on — the waves' height held at its last level (% of the usual); off — flat water.
   #renderWavesControl(controls) {
     const weather = this.#weather;
     if (!weather.holdWaves) return;
-    const hold = weather.getWavesHold?.() ?? null;
-    const shown = this.#wavesOn();
-    this.#ui.createSwitcherRow("Хвилі", shown, controls, (on) => {
+    this.#manualSwitch("Хвилі", this.#wavesOn(), controls, (on) => {
       weather.holdWaves(on ? this.#levels.waves / 100 : 0);
       this.#fill();
     }, ["WEATHER", "controls", "wavesOn"]);
-    this.#renderAutoButton("waves", hold !== null, controls, () => weather.holdWaves(null));
   }
 
-  // TK-367: on — the water current held at the slider's speed; off — still water; «авто» — the location's own current.
-  // A hold of the running game, not a config edit (the location's current is edited in «ВОДА» → «Течія»).
+  // TK-367: on — the water current held at its last speed; off — still water. A hold of the running game, not a config
+  // edit (the location's current is edited in «ВОДА» → «Течія»).
   #renderCurrentControl(controls) {
     const weather = this.#weather;
     if (!weather.holdCurrent) return;
     const speed = weather.getCurrentSpeed?.();
     if (speed === null || speed === undefined) return;
-    const hold = weather.getCurrentHold?.() ?? null;
-    const shown = Number(speed) > LIVE_EPSILON;
-    this.#ui.createSwitcherRow("Течія", shown, controls, (on) => {
+    this.#manualSwitch("Течія", Number(speed) > LIVE_EPSILON, controls, (on) => {
       weather.holdCurrent(on ? this.#levels.current : 0);
       this.#fill();
     }, ["WEATHER", "controls", "currentOn"]);
-    this.#renderAutoButton("current", hold !== null, controls, () => weather.holdCurrent(null));
   }
 
   // TK-360 (owner): «Болід зараз» is the last row; on a phone the panel closes at once, so the bolide is seen falling.
@@ -1238,28 +1222,22 @@ export class WeatherDevSection {
     this.#ui.createButtonRow("Болід", controls, () => {
       starfall.bolideNow();
       this.#closeOnPhone();
-    }, false, "", ["WEATHER", "controls", "bolide"]);
+    }, false, "", ["WEATHER", "controls", "bolide"], { requires: this.#manualRequires() });
   }
 
-  // TK-367 (owner: «Всі інші кнопки в самому низу»): the actions after every control.
-  #renderActions(model, emission, controls) {
-    if (emission) {
-      for (const [label, phase] of EMISSION_ACTIONS) {
-        this.#ui.createButtonRow(label, controls, () => {
-          emission.force(phase);
-          this.#fill();
-        }, false, "", ["WEATHER", "emission", phase]);
-      }
-    }
+  // TK-367 (owner: «Всі інші кнопки в самому низу»): the actions after every control — they need the automatic weather
+  // off (spec 187 D11, D14: a gust or a strike now, beside the ones its level's chances give).
+  #renderActions(model, controls) {
+    const requires = this.#manualRequires();
     if (this.#weather.triggerWindGust) {
       this.#ui.createButtonRow("Порив вітру", controls, () => {
         this.#weather.triggerWindGust();
         this.#fill();
-      }, false, "", ["WEATHER", "controls", "gust"]);
+      }, false, "", ["WEATHER", "controls", "gust"], { requires });
     }
     this.#ui.createButtonRow("Блискавка", controls, () => {
       model.strike();
       this.#fill();
-    }, false, "", ["WEATHER", "controls", "strike"]);
+    }, false, "", ["WEATHER", "controls", "strike"], { requires });
   }
 }

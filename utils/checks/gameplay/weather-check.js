@@ -885,6 +885,16 @@ const step = (model, seconds, clock = null, dt = 0.1) => {
   const rowOrder = [];
   const buttonGridRows = [];
   try {
+    // DevToolsUI's `requires` contract (spec 131, spec 187 D11): a control whose prerequisite is unmet refuses the
+    // change and points at the prerequisite (recorded here as ["blocked", row, prerequisite]).
+    const guarded = (path, requires = [], handler) => (...args) => {
+      const unmet = requires.find((requirement) => !requirement.isEnabled());
+      if (unmet) {
+        calls.push(["blocked", path?.join("."), unmet.path.join(".")]);
+        return undefined;
+      }
+      return handler(...args);
+    };
     const fakeUi = {
       syncCalls: [],
       createDetailsSection(_label, parent, path) {
@@ -902,17 +912,18 @@ const step = (model, seconds, clock = null, dt = 0.1) => {
         parent.append(grid);
         return grid;
       },
-      createButtonRow(label, parent, onClick, _danger, _title, path) {
+      createButtonRow(label, parent, onClick, _danger, _title, path, options = {}) {
         if (parent?.buttonGrid) buttonGridRows.push(path ? path.join(".") : label);
         rowOrder.push(path ? path.join(".") : `button:${label}`);
-        if (path) rowsByPath.set(path.join("."), { kind: "button", label, onClick });
-        else rowsByPath.set(`button:${label}`, { kind: "button", label, onClick });
+        const row = { kind: "button", label, onClick: guarded(path, options.requires, onClick), requires: options.requires ?? [] };
+        rowsByPath.set(path ? path.join(".") : `button:${label}`, row);
         return { style: {} };
       },
       setSectionLabel() {},
-      createSwitcherRow(label, value, parent, onChange, path) {
+      createSwitcherRow(label, value, parent, onChange, path, _bindingPath, options = {}) {
         if (path) rowOrder.push(path.join("."));
-        if (path) rowsByPath.set(path.join("."), { kind: "switcher", value, onChange });
+        if (path) rowsByPath.set(path.join("."), { kind: "switcher", value, onChange: guarded(path, options.requires, onChange),
+          requires: options.requires ?? [] });
       },
       createRangeRow(label, value, parent, onChange, path) {
         if (path) rowOrder.push(path.join("."));
@@ -921,12 +932,13 @@ const step = (model, seconds, clock = null, dt = 0.1) => {
       createSelectRow(label, _choices, value, parent, onChange, path) {
         if (path) rowsByPath.set(path.join("."), { kind: "select", value, onChange });
       },
-      addParameter(parent, { control, label, options, value, onCommit, path, min, max }) {
+      addParameter(parent, { control, label, options, value, onCommit, path, min, max, requires = [] }) {
         if (path) rowOrder.push(path.join("."));
-        if (control === "range" && path) rowsByPath.set(path.join("."), { kind: "range", label, value, min, max, onChange: onCommit });
-        if (control === "switch" && path) rowsByPath.set(path.join("."), { kind: "switch", value, onChange: onCommit });
+        const onChange = guarded(path, requires, onCommit);
+        if (control === "range" && path) rowsByPath.set(path.join("."), { kind: "range", label, value, min, max, onChange, requires });
+        if (control === "switch" && path) rowsByPath.set(path.join("."), { kind: "switch", value, onChange, requires });
         if ((control === "choice" || control === "segments") && path) {
-          rowsByPath.set(path.join("."), { kind: "choice", choices: options, value, onChange: onCommit });
+          rowsByPath.set(path.join("."), { kind: "choice", choices: options, value, onChange, requires });
         }
       },
       createInputRow(label, value, parent, _type, onChange, path, bindingPath) {
@@ -1021,17 +1033,40 @@ const step = (model, seconds, clock = null, dt = 0.1) => {
       calls.some(([k, p, v]) => k === "updateConfig" && p === "CONFIG.locations.map.lake.weather.fog.chancePerCheck" && v === 1),
       "Weather Chances clamps fogChance to [0, 1] and calls updateConfig",
     );
-    // TK-327.1: an event's switch starts a random event (like the game) and ends it; no «подія зараз» buttons.
     // Spec 187 A (owner: «повзунки там повинні бути відсутні взагалі»): «Керування» has no sliders and no settings.
     const controlsSliders = () => [...rowsByPath.entries()]
       .filter(([path, row]) => path.startsWith("WEATHER.controls.") && (row.kind === "range" || /Settings$|At100/u.test(path)))
       .map(([path]) => path);
     assert.deepEqual(controlsSliders(), [], "«Керування» holds no sliders and no settings");
+    // Spec 187 D11 (owner: «якщо увімкнено автоматична погода то змінювати параметри неможна»): every manual control
+    // requires the automatic weather off; with it on (the default) each refuses and points at «Автоматична погода».
+    const manualPaths = ["rain", "storm", "fog", "ash", "wind", "wavesOn", "currentOn", "gust", "strike"]
+      .map((key) => `WEATHER.controls.${key}`);
+    assert(manualPaths.every((path) => rowsByPath.get(path)?.requires?.[0]?.path?.join(".") === "WEATHER.controls.auto"),
+      "every switch and action of «Керування» requires «Автоматична погода»");
+    calls.length = 0;
     rowsByPath.get("WEATHER.controls.storm").onChange(true);
-    assert(calls.some(([k, kind]) => k === "start" && kind === "storm"), "the storm switch on starts a random storm");
+    rowsByPath.get("WEATHER.controls.gust").onClick();
+    assert.deepEqual(calls, [["blocked", "WEATHER.controls.storm", "WEATHER.controls.auto"],
+      ["blocked", "WEATHER.controls.gust", "WEATHER.controls.auto"]], "automatic on: the storm's switch and the gust are refused");
+    assert(!rowsByPath.has("WEATHER.controls.stormAuto") && !rowsByPath.has("WEATHER.controls.ashAuto") &&
+      !rowsByPath.has("WEATHER.emission.peak") && !rowsByPath.has("WEATHER.controls.stormStart"),
+    "no «авто», no emission phase buttons, no «подія зараз»");
+    // D12 (owner: «Погода застигає»): off freezes the weather where it is — nothing is released here (the models hold
+    // their own levels).
+    rowsByPath.get("WEATHER.controls.auto").onChange(false);
+    assert.deepEqual(calls.find(([k]) => k === "setAutomatic"), ["setAutomatic", false], "the switch off: setAutomatic(false)");
+    assert(!calls.some(([k, v]) => k === "releaseAll" || (k.startsWith("hold") && v === null) || (k === "setWindStrength" && v === null)),
+      "off releases nothing (the weather freezes)");
+    // D12, D13: a switch holds its element at its last level, off at 0 — no random event, no timeline.
+    calls.length = 0;
+    rowsByPath.get("WEATHER.controls.storm").onChange(true);
+    const stormOn = calls.filter(([k]) => k === "hold").at(-1);
+    assert(!calls.some(([k]) => k === "start") && stormOn[1] === "storm" && stormOn[2] > 0,
+      `the storm's switch on holds it at its last level, no random storm (${JSON.stringify(calls)})`);
     rowsByPath.get("WEATHER.controls.storm").onChange(false);
-    assert(calls.some(([k, kind]) => k === "stop" && kind === "storm"), "off ends it");
-    assert(!rowsByPath.has("WEATHER.controls.stormStart"), "no «Шторм: подія зараз» button");
+    assert.deepEqual(calls.filter(([k]) => k === "hold").at(-1), ["hold", "storm", 0], "off holds it at 0, no stop");
+    assert(!calls.some(([k]) => k === "stop"), "no event ends by a timeline");
     rowsByPath.get("WEATHER.controls.storm").onChange(true);
     rowsByPath.get("WEATHER.controls.rain").onChange(true);
     assert.deepEqual(controlsSliders(), [], "the elements on: still no sliders in «Керування»");
@@ -1043,8 +1078,9 @@ const step = (model, seconds, clock = null, dt = 0.1) => {
     assert(sectionSliders.every((path) => !rowsByPath.has(path)), "another location selected (lake): no sliders in the sections");
     rowsByPath.clear();
     locChoice.onChange("test");
-    assert(sectionSliders.every((path) => rowsByPath.get(path)?.kind === "range"),
-      `the running location: every section has its slider (${sectionSliders.filter((path) => !rowsByPath.has(path))})`);
+    assert(sectionSliders.every((path) => rowsByPath.get(path)?.kind === "range" &&
+      rowsByPath.get(path).requires?.[0]?.path?.join(".") === "WEATHER.controls.auto"),
+    `the running location: every section has its slider, requiring the automatic weather off (${sectionSliders.filter((path) => !rowsByPath.has(path))})`);
     assert.deepEqual(controlsSliders(), [], "and «Керування» still none");
     calls.length = 0;
     // Spec 180 D1, D10: a slider holds its own element only (no «manual» switches); the storm's never touches the rain.
@@ -1065,13 +1101,13 @@ const step = (model, seconds, clock = null, dt = 0.1) => {
       at("WEATHER.controls.currentOn"), at("WEATHER.controls.fadeSec"));
     assert(at("WEATHER.controls.gust") > lastControl && at("WEATHER.controls.strike") > lastControl,
       "the action buttons come after every control");
-    // TK-367.1 (owner): two to a line — «Оновити» and the actions in button grids; the per-element «↺ авто» not.
-    // TK-398: «Автоматична погода» is a switch under the grid (no longer a button in it), on while the weather is automatic.
+    // TK-367.1 (owner): two to a line — «Оновити» and the actions in button grids.
+    // TK-398: «Автоматична погода» is a switch under the grid (no longer a button in it); off now.
     assert.equal(rowOrder[at("WEATHER.controls.refresh") - 1], "grid", "«↻ Оновити» opens a button grid");
     assert(["WEATHER.controls.refresh", "WEATHER.controls.gust", "WEATHER.controls.strike"]
       .every((path) => buttonGridRows.includes(path)), "«Оновити» and the actions are in button grids");
     assert(!buttonGridRows.includes("WEATHER.controls.auto") && rowsByPath.get("WEATHER.controls.auto").kind === "switcher" &&
-      rowsByPath.get("WEATHER.controls.auto").value === true, "«Автоматична погода» is a switch, on by default");
+      rowsByPath.get("WEATHER.controls.auto").value === false, "«Автоматична погода» is a switch, shown off");
     // The wind: «← вліво | авто | вправо →» (no «немає» — calm is its switch off).
     const direction = rowsByPath.get("WEATHER.controls.windDirection");
     assert.equal(JSON.stringify(direction.choices.map((option) => option.label)), JSON.stringify(["← вліво", "авто", "вправо →"]),
@@ -1090,11 +1126,6 @@ const step = (model, seconds, clock = null, dt = 0.1) => {
     assert(calls.some(([k, v]) => k === "holdAsh" && Math.abs(v - 0.3) < 1e-6), "the ash's slider holds the ash");
     rowsByPath.get("WEATHER.controls.ash").onChange(false);
     assert.deepEqual(calls.filter(([k]) => k === "holdAsh").at(-1), ["holdAsh", 0], "the ash off: held at 0 (even in an emission)");
-    rowsByPath.get("WEATHER.controls.ashAuto").onClick();
-    assert.deepEqual(calls.filter(([k]) => k === "holdAsh").at(-1), ["holdAsh", null], "«↺ авто»: it follows the emission again");
-    devState.ashEmission = 0.6;
-    devWeather.refreshLive();
-    assert.equal(rowsByPath.get("WEATHER.controls.ash").value, true, "an emission's ash turns the open switch on by itself (R26)");
     // The waves: on by themselves; ВОДА's slider holds the height; off — flat water.
     assert.equal(rowsByPath.get("WEATHER.controls.wavesOn").value, true, "the waves are on by themselves");
     rowsByPath.get("WEATHER.water.wavesHeight").onChange(150);
@@ -1117,19 +1148,16 @@ const step = (model, seconds, clock = null, dt = 0.1) => {
     locChoice.onChange("Загальні");
     assert(sectionSliders.every((path) => !rowsByPath.has(path)), "«Загальні»: no strength sliders (D8)");
     rowsByPath.get("WEATHER.controls.gust").onClick();
-    assert(calls.some(([k]) => k === "triggerWindGust"), "gust button calls triggerWindGust");
-    // TK-398: the switch off and on — each way the automatic weather follows it and every hold is released (off:
-    // everything goes out; on: everything back to its own course).
-    for (const on of [false, true]) {
-      calls.length = 0;
-      rowsByPath.get("WEATHER.controls.auto").onChange(on);
-      assert.deepEqual(calls.find(([k]) => k === "setAutomatic"), ["setAutomatic", on], `the switch ${on ? "on" : "off"}: setAutomatic(${on})`);
-      assert(calls.some(([k, v]) => k === "setWindStrength" && v === null), "it resets forced wind strength");
-      assert(["holdAsh", "holdWaves", "holdCurrent"].every((kind) => calls.filter(([k]) => k === kind).at(-1)[1] === null),
-        "TK-367: it releases the ash, the waves and the current too");
-      assert(calls.some(([k]) => k === "releaseAll"), "it releases every weather process");
-      assert.equal(rowsByPath.get("WEATHER.controls.auto").value, on, "the redrawn switch shows the automatic weather");
-    }
+    assert(calls.some(([k]) => k === "triggerWindGust"), "automatic off: the gust button calls triggerWindGust");
+    // D11, TK-398: on again — the weather runs by itself and every hold is released.
+    calls.length = 0;
+    rowsByPath.get("WEATHER.controls.auto").onChange(true);
+    assert.deepEqual(calls.find(([k]) => k === "setAutomatic"), ["setAutomatic", true], "the switch on: setAutomatic(true)");
+    assert(calls.some(([k, v]) => k === "setWindStrength" && v === null), "it resets forced wind strength");
+    assert(["holdAsh", "holdWaves", "holdCurrent"].every((kind) => calls.filter(([k]) => k === kind).at(-1)[1] === null),
+      "TK-367: it releases the ash, the waves and the current too");
+    assert(calls.some(([k]) => k === "releaseAll"), "it releases every weather process");
+    assert.equal(rowsByPath.get("WEATHER.controls.auto").value, true, "the redrawn switch shows the automatic weather");
 
     // TK-298.1: Location selector stays visible even when only one location is configured.
     rowsByPath.clear();
@@ -2453,6 +2481,7 @@ const step = (model, seconds, clock = null, dt = 0.1) => {
       ui: { ...ui, createInfoRow: (label, value) => { infos.push([label, value]); return {}; },
         createSwitcherRow: (label, value, parent, onChange, path) => switches.set(path.join("."), { value, onChange }),
         createRangeRow: (label, value, parent, onChange, path) => ranges.set(path.join("."), onChange),
+        addParameter: (parent, { control, onCommit, path }) => { if (control === "range" && path) ranges.set(path.join("."), onCommit); },
         createButtonGrid: (parent) => parent,
         createButtonRow: (label, parent, onClick, navigation, icon, path) => { starButtons.set(path ? path.join(".") : label, onClick);
           return { style: {} }; } },
@@ -2594,6 +2623,13 @@ const step = (model, seconds, clock = null, dt = 0.1) => {
       assert.deepEqual([live(), shown(), sliders()], ["", "", ""], `«${first}» off: nothing else came on`);
     }
     assert.equal(clock.hour, 23, "the starfall's test switch moved the clock into the night (the fog's ×3 window)");
+    // Spec 187 D12, D13: a switch off holds its element at 0 (no timeline); D11: turning the automatic weather on
+    // releases every hold — done here as the section does it, so the weather runs by itself again.
+    weather.releaseAll();
+    emission.holdIntensity(null);
+    star.hold(null);
+    tick(16);
+    section360.refreshLive();
     // A fog that starts by itself shows on its switch at once; an unchanged state never redraws.
     const before = renders;
     section360.refreshLive();
@@ -2889,13 +2925,14 @@ const step = (model, seconds, clock = null, dt = 0.1) => {
     "a seed repeats the report");
 }
 
-// TK-398 (owner): «Автоматична погода» off — nothing starts by itself or rolls a chance (rain, storm, fog, the emission,
-// the starfall's night, the wind's episodes and gusts, the initial weather), the location's current is still and the sea
-// has no swell of its own; every element switched on by hand runs as always with its links (the emission's ash and
-// storm — TK-399: no rain —, the rain's and the storm's wind, no starfall during an emission); a switch off takes away
-// its effect on the others (the wind off: no drift of the ash or the rain, the storm no longer counts as wind for the
-// waves; the storm off under an emission: no storm). The real models composed as the game composes them; seeds fixed,
-// explicit steps.
+// TK-398 (owner): «Автоматична погода»; spec 187 D11–D14 (owner: «світчер автоматична вимкнуто то вся погода перестає
+// піддаватися рандому а відповідає згідно поточних параметрів»; «Погода застигає»; «шанси застивають на своїх
+// коефіцієнтах і діють при поточному рівні»). Off: nothing starts or ends by itself, every level freezes where it is
+// (no timeline, no fade, no wind episode), the derived ones follow their sources (the calm swell and the current stay);
+// the chances within a level still act (gusts, strikes); every element is set by hand with its links (the emission's
+// ash and storm — TK-399: no rain —, the rain's and the storm's wind); a switch off takes away its effect on the others
+// (the wind off: no drift, the storm no longer counts as wind for the waves; the storm off under an emission: none).
+// The real models composed as the game composes them; seeds fixed, explicit steps.
 {
   const { EmissionModel } = require("../../../src/game/domain/weather/emission_model.js");
   const { StarfallNight } = require("../../../src/game/domain/weather/starfall_night.js");
@@ -2910,7 +2947,6 @@ const step = (model, seconds, clock = null, dt = 0.1) => {
     for (const kind of ["rain", "storm", "fog", "emission"]) {
       Object.assign(weather[kind], { enabled: true, chancePerCheck: 1, checkIntervalSec: 1, cooldownSec: 0, durationSec: [40, 40] });
     }
-    // The emission lasts through the DevTools steps below (its floor holds the storm meanwhile).
     weather.emission.durationSec = [200, 200];
     weather.initial = { rain: 0.5, storm: 0, fog: 0 };
     Object.assign(weather.starfall, { enabled: true, nightChance: 1, fromHour: 21, toHour: 5 });
@@ -2942,8 +2978,9 @@ const step = (model, seconds, clock = null, dt = 0.1) => {
     let nowMs = 0;
     // The most each effect reached over a run; the frame and the sea are built as the game builds them every frame.
     const run = (seconds) => {
+      const strikesBefore = env.getSnapshot().weather.strikeSerial;
       const most = { rain: 0, storm: 0, fog: 0, emission: 0, starfall: 0, wind: 0, ash: 0, drift: 0, waves: 0, current: 0,
-        started: false, physicsWind: false };
+        gust: 0, strikes: 0, started: false, physicsWind: false };
       for (let t = 0; t < seconds - 1e-9; t += 0.1) {
         env.update(100, 1);
         nowMs += 100;
@@ -2958,6 +2995,7 @@ const step = (model, seconds, clock = null, dt = 0.1) => {
         most.emission = Math.max(most.emission, now.emission.intensity);
         most.starfall = Math.max(most.starfall, now.starfall.strength);
         most.wind = Math.max(most.wind, now.wind.strength);
+        most.gust = Math.max(most.gust, wind.snapshot.gustStrength);
         most.ash = Math.max(most.ash, shown.ash);
         // What the ash's drift and the rain's slant read: the wind's direction × (strength + gust).
         most.drift = Math.max(most.drift, Math.abs(shown.windDirection) * (shown.windStrength + shown.windGust));
@@ -2968,9 +3006,18 @@ const step = (model, seconds, clock = null, dt = 0.1) => {
           now.starfall.active;
         most.physicsWind ||= env.getPhysicsEnv().wind !== null;
       }
+      most.strikes = env.getSnapshot().weather.strikeSerial - strikesBefore;
       return most;
     };
-    return { env, weather, wind, emission, starfall, sea, run, frame };
+    // D11: what the section does when the automatic weather is turned on — every hold released.
+    const releaseHolds = () => {
+      weather.releaseAll();
+      env.setWindOverride(null);
+      env.setWindStrengthOverride(null);
+      emission.holdIntensity(null);
+      starfall.hold(null);
+    };
+    return { env, weather, wind, emission, starfall, sea, run, frame, releaseHolds };
   };
 
   // The same location with the automatic weather on: everything comes by itself (the check is not empty).
@@ -2978,57 +3025,43 @@ const step = (model, seconds, clock = null, dt = 0.1) => {
   assert.ok(auto.started && auto.rain > 0 && auto.emission > 0 && auto.wind > 0 && auto.waves > 0 && auto.current > 0,
     `automatic weather: the events, the emission, the wind, the waves and the current come by themselves (${JSON.stringify(auto)})`);
 
-  // Off: not one of them in ten minutes.
+  // Off from the start: no event, emission, starfall night or initial weather in ten minutes; the calm swell and the
+  // location's current stay (D12: the weather freezes, it does not go out).
   const off = compose(false);
-  assert.equal(off.env.getSnapshot().automaticWeather, false, "the environment tells the switch (the sea state reads it)");
+  assert.equal(off.env.getSnapshot().automaticWeather, false, "the environment tells the switch");
   const still = off.run(600);
-  assert.deepEqual(still, { rain: 0, storm: 0, fog: 0, emission: 0, starfall: 0, wind: 0, ash: 0, drift: 0, waves: 0, current: 0,
-    started: false, physicsWind: false }, "automatic weather off: nothing starts, rolls or blows by itself, flat still water");
+  assert.ok(!still.started && still.rain === 0 && still.storm === 0 && still.fog === 0 && still.emission === 0 &&
+    still.starfall === 0 && still.ash === 0 && still.waves > 0 && still.current > 0,
+  `automatic weather off: nothing starts by itself; the calm swell and the current stay (${JSON.stringify(still)})`);
   assert.equal(off.weather.snapshot.events.rain.chance, 0, "no chance is shown for a check that is not rolled");
 
-  // By hand, with the automatic weather off: the rain runs its own course once, with its wind (the rain's floor), and
-  // does not come again; the wind blows the ash's drift and raises waves.
-  off.weather.start("rain");
-  const rainy = off.run(45);
-  assert.ok(rainy.rain > 0.2 && rainy.wind > 0 && rainy.drift > 0 && rainy.waves > 0,
-    `the rain switched on by hand runs with its wind and waves (${JSON.stringify(rainy)})`);
-  const after = off.run(300);
-  assert.ok(!after.started && off.env.getSnapshot().weather.rain === 0 && off.env.getSnapshot().wind.strength === 0,
-    "after its timeline it does not come again, and the wind it brought calms down");
-  // The emission by hand: its ash, its storm (floor), and no starfall while it runs (owner Q3). TK-399: no rain — the
-  // storm does not bring it, and with the automatic weather off nothing rolls the rain's raised chance.
-  off.starfall.hold(0.6);
-  off.emission.force("peak");
-  const emitted = off.run(5);
-  assert.ok(emitted.ash > 0.9 && emitted.storm > 0.5 && emitted.rain === 0 && emitted.starfall === 0,
-    `the emission switched on by hand brings its ash and storm, no rain, and hides the starfall (${JSON.stringify(emitted)})`);
-  // The wind switched off: no drift, no wind waves — the storm no longer counts as wind for the sea.
-  off.env.setWindOverride(0);
-  off.run(2);
-  const calm = off.run(1);
-  assert.ok(calm.drift === 0 && calm.wind === 0 && !calm.physicsWind, `the wind off: no drift of the ash and the rain (${JSON.stringify(calm)})`);
-  assert.equal(off.sea.state.wind, 0, "the wind off: the sea feels no wind under the storm");
-  assert.equal(calm.waves, 0, "and without the automatic swell or a wind the water stays flat, storm or not");
-  off.emission.force("idle");
-  off.starfall.hold(null);
-  off.env.setWindOverride(null);
+  // D12, D13: turned off while the weather runs — every level freezes where it is for good; D14: the frozen storm still
+  // strikes and the frozen wind still gusts by their chances.
+  const frozen = compose(true);
+  frozen.run(30);
+  const level = () => {
+    const now = frozen.env.getSnapshot();
+    return { rain: now.weather.rain, storm: now.weather.storm, fog: now.weather.fog, emission: now.emission.intensity,
+      wind: frozen.wind.snapshot.baseStrength, direction: now.wind.direction };
+  };
+  const atOff = level();
+  assert.ok(atOff.emission > 0 && atOff.storm > 0 && atOff.wind > 0.02, `something runs at the moment of the switch (${JSON.stringify(atOff)})`);
+  frozen.env.setAutomaticWeather(false);
+  const held = frozen.run(300);
+  const later = level();
+  for (const key of Object.keys(atOff)) {
+    assert.ok(Math.abs(later[key] - atOff[key]) < 1e-6, `off: ${key} stays where it was (${atOff[key]} → ${later[key]})`);
+  }
+  assert.ok(held.strikes > 0 && held.gust > 0, `the frozen storm strikes and the frozen wind gusts (${JSON.stringify(held)})`);
+  // On again (the section releases every hold): the weather runs by itself.
+  frozen.env.setAutomaticWeather(true);
+  frozen.releaseHolds();
+  const back = frozen.run(60);
+  assert.ok(back.started && back.current > 0 && back.waves > 0, "on again: the weather runs by itself");
 
-  // Turning it off ends what runs by itself; on again, it rolls as before.
-  const turning = compose(true);
-  turning.run(30);
-  assert.ok(turning.emission.snapshot.phase !== "idle" || turning.weather.snapshot.events.rain.active, "something runs by itself");
-  turning.env.setAutomaticWeather(false);
-  assert.ok(["rain", "storm", "fog"].every((kind) => !turning.weather.snapshot.events[kind].active) &&
-    turning.emission.snapshot.phase === "idle" && !turning.starfall.snapshot.active, "off: the running events end at once");
-  const fading = turning.run(60);
-  assert.ok(turning.env.getSnapshot().weather.rain === 0 && turning.env.getSnapshot().weather.storm === 0 &&
-    turning.env.getSnapshot().wind.strength === 0 && !fading.started, "and fade out; nothing starts again");
-  turning.env.setAutomaticWeather(true);
-  const back = turning.run(30);
-  assert.ok(back.started && back.current > 0 && back.waves > 0, "on again: the weather runs by itself, the current and the swell are back");
-
-  // DevTools «Керування» over the real models: the switch, and an event's switch off under an emission's floor.
-  const dev = compose(true);
+  // DevTools «Керування» over the real models, the automatic weather off from the start (nothing held): every element by
+  // hand, with its links.
+  const dev = compose(false);
   dev.run(1);
   const switches = new Map();
   const node = () => ({ replaceChildren() {}, appendChild() {} });
@@ -3049,39 +3082,43 @@ const step = (model, seconds, clock = null, dt = 0.1) => {
     createSection: () => node(), renderConfigTree() {},
   });
   section.render(node());
-  assert.equal(switches.get("WEATHER.controls.auto").value, true, "«Автоматична погода» shows on");
-  switches.get("WEATHER.controls.auto").onChange(false);
-  assert.deepEqual([dev.env.automaticWeather, switches.get("WEATHER.controls.auto").value], [false, false],
-    "off: the environment's automatic weather is off and the switch shows it");
-  dev.run(60);
+  assert.equal(switches.get("WEATHER.controls.auto").value, false, "«Автоматична погода» shows off");
+  // TK-398.1 (owner: «хвилі вода працювали»): «Хвилі» is on only while the waves show; off holds flat water.
+  switches.get("WEATHER.controls.wavesOn").onChange(false);
+  dev.run(1);
   section.refreshLive();
-  // TK-398.1 (owner: «хвилі вода працювали»): the water went flat, and the «Хвилі» switch shows it off; on by hand it
-  // holds their height (on); «авто» gives them back to the weather (flat again: off).
-  assert.ok(dev.sea.state.amplitudeScale < 0.01, `the water is flat (${dev.sea.state.amplitudeScale})`);
-  assert.equal(switches.get("WEATHER.controls.wavesOn").value, false, "flat water: «Хвилі» off");
+  assert.ok(dev.sea.state.amplitudeScale < 0.01 && switches.get("WEATHER.controls.wavesOn").value === false, "«Хвилі» off: flat water, off");
   switches.get("WEATHER.controls.wavesOn").onChange(true);
   assert.equal(switches.get("WEATHER.controls.wavesOn").value, true, "«Хвилі» on by hand: held, on");
-  dev.sea.holdAmplitude(null);
-  dev.run(60);
-  section.refreshLive();
-  assert.equal(switches.get("WEATHER.controls.wavesOn").value, false, "released without wind: flat again, off");
+  // The emission by hand: its ash and its storm (floor), no rain (TK-399), for good (no phases pass).
   switches.get("WEATHER.controls.emission").onChange(true);
-  dev.run(30);
+  const emitted = dev.run(300);
   section.refreshLive();
+  assert.ok(emitted.ash > 0.5 && emitted.storm > 0.3 && emitted.rain === 0 && dev.emission.snapshot.phase !== "idle",
+    `the emission on by hand: ash and storm, no rain, still on after five minutes (${JSON.stringify(emitted)})`);
   assert.deepEqual([switches.get("WEATHER.controls.storm").value, switches.get("WEATHER.controls.rain").value], [true, false],
     "the emission's floor shows the storm on its switch; the rain stays off (TK-399)");
+  // The storm off under the emission: none (held at 0).
   switches.get("WEATHER.controls.storm").onChange(false);
   const calmed = dev.run(20);
-  assert.equal(dev.emission.snapshot.phase === "idle", false, "the emission still runs (its floor would hold the storm)");
   assert.equal(dev.env.getSnapshot().weather.storm, 0, "the storm switched off under the emission stays off (held at 0)");
-  assert.ok(calmed.ash > 0.5 && calmed.rain === 0 && switches.get("WEATHER.controls.storm").value === false,
-    "the emission keeps its ash; no rain; the switch shows off");
+  assert.ok(calmed.ash > 0.5 && switches.get("WEATHER.controls.storm").value === false, "the emission keeps its ash; the switch shows off");
+  // The rain by hand brings its wind (the rain's floor); the wind off: no drift, and the storm is no wind for the sea.
   switches.get("WEATHER.controls.storm").onChange(true);
-  dev.run(20);
-  assert.ok(dev.env.getSnapshot().weather.storm > 0.3, "on again, the storm comes back");
   switches.get("WEATHER.controls.rain").onChange(true);
-  dev.run(20);
-  assert.ok(dev.env.getSnapshot().weather.rain > 0.2, "the rain by hand still runs under the emission");
+  const rainy = dev.run(20);
+  assert.ok(rainy.rain > 0.2 && rainy.storm > 0.3 && rainy.wind > 0 && rainy.drift > 0,
+    `the rain and the storm by hand, with their wind (${JSON.stringify(rainy)})`);
+  switches.get("WEATHER.controls.wind").onChange(false);
+  dev.run(2);
+  const calm = dev.run(1);
+  assert.ok(calm.drift === 0 && calm.wind === 0 && !calm.physicsWind, `the wind off: no drift of the ash and the rain (${JSON.stringify(calm)})`);
+  assert.equal(dev.sea.state.wind, 0, "the wind off: the sea feels no wind under the storm");
+  // On again: every hold released, the weather runs by itself.
+  switches.get("WEATHER.controls.auto").onChange(true);
+  const freed = dev.run(60);
+  assert.ok(dev.env.automaticWeather && dev.weather.snapshot.events.rain.held === false && dev.emission.snapshot.intensityHeld === false &&
+    freed.started, "«Автоматична погода» on: every hold released, the weather runs by itself");
   section.dispose();
 }
 

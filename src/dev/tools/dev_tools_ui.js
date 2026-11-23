@@ -730,7 +730,7 @@ export class DevToolsUI {
   // iconUrl: item art before the label (the shop); icon: a DevTools icon name (spec 174 C1).
   // badge: a short word drawn as the shared badge after the label (TK-314: "FREE" → `ui-free-badge`).
   createButtonRow(labelStr, parentElement, onClickCallback, navigation = false, iconUrl = "", path = null,
-    { icon = "", badge = "" } = {}) {
+    { icon = "", badge = "", requires = [] } = {}) {
     const row = document.createElement("div");
     row.className = navigation ? "devtools__row devtools__row--navigation" : "devtools__row";
     this.#assignDevToolsPath(row, path);
@@ -763,6 +763,8 @@ export class DevToolsUI {
       btn.replaceChildren(...parts);
     }
     btn.addEventListener("click", onClickCallback);
+    // Spec 187 D11: a button can depend on a prerequisite (inactive; a press points at what it needs).
+    if (requires.length) this.#guardDependentRow(row, requires, null, () => {}, () => {});
     row.appendChild(btn);
     this.#insertTreeNode(parentElement, row, 0);
     return row;
@@ -868,7 +870,10 @@ export class DevToolsUI {
     if (control === "switch") {
       field = this.#createSwitch(row, { value, onCommit, ariaLabel, bindingPath, requires });
     } else if (control === "range") {
-      field = new RangeField({ value, onInput: onCommit, ariaLabel, documentRef: document, min, max, step });
+      // Spec 187 D11: a slider can depend on a prerequisite too (inactive and explained until it is met).
+      const guard = this.#guardDependentRow(row, requires, value, onCommit, (shown) => field.resetValue(shown));
+      field = new RangeField({ value, onInput: guard.commit, ariaLabel, documentRef: document, min, max, step });
+      if (bindingPath) this.#controlBindings.register(bindingPath, (next) => { guard.remember(next); field.setValue(next); }, row);
     } else {
       const guard = this.#guardDependentRow(row, requires, value, onCommit, (shown) => field.setValue(shown));
       const commit = guard.commit;
@@ -884,7 +889,6 @@ export class DevToolsUI {
       else field = new TextField({ value, onCommit: commit, ariaLabel, documentRef: document });
       if (bindingPath) this.#controlBindings.register(bindingPath, (next) => { guard.remember(next); field.setValue(next); }, row);
     }
-    if (control === "range" && bindingPath) this.#controlBindings.register(bindingPath, (next) => field.setValue(next), row);
     if (isChanged && onReset) this.#addResetButton(row, bindingPath, isChanged, onReset, configPath);
     row.appendChild(field.element);
     // TK-314.1: the hint comes after the control (a list: between its label and its field), so opening it never moves

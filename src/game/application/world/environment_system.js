@@ -139,10 +139,10 @@ export class EnvironmentSystem {
   }
 
   // TK-398: automatic weather on / off (DevTools «Керування» → «Автоматична погода»; on by default, not saved). This
-  // system owns the switch and passes it to every model: off — no chances are rolled and nothing starts by itself
-  // (rain, storm, fog, the emission, the starfall's night, the wind's episodes and gusts), the running events end; the
-  // location's own current is still water and the sea has no calm swell of its own (snapshot.automaticWeather, read by
-  // the sea state). What is switched on by hand runs as always, with its effect on the others.
+  // system owns the switch and passes it to every model. Spec 187 D12–D14 (owner: «погода застигає»): off — nothing
+  // is rolled to start or end, every level freezes where it is (each model holds its own), the derived ones follow
+  // their sources (the ash the emission, the waves the wind and the storm, the current as it is); the chances within a
+  // level (gusts, strikes, falling stars) still act. snapshot.automaticWeather tells the views.
   setAutomaticWeather(on) {
     const automatic = on !== false;
     this.#automatic = automatic;
@@ -150,7 +150,6 @@ export class EnvironmentSystem {
     this.#wind?.setAutomatic(automatic);
     this.#emission?.setAutomatic(automatic);
     this.#starfall?.setAutomatic(automatic);
-    if (!automatic) this.#windState.direction = 0;
     this.#snapshot.automaticWeather = automatic;
     this.#syncSnapshot();
   }
@@ -171,13 +170,11 @@ export class EnvironmentSystem {
 
   // The water current the tackle, the fish and the boats feel: base (a location's current or null) as it is, or a copy
   // with the held speed. Reused; each reader passes its own base (the boats read the live location, GameWorld).
-  // TK-398: without automatic weather the location's own current is still (speed 0) unless held.
   resolveCurrent(base) {
-    const speed = this.#currentHold ?? (this.#automatic ? null : 0);
-    if (!base || speed === null) return base ?? null;
+    if (!base || this.#currentHold === null) return base ?? null;
     const held = this.#heldCurrent;
     for (const key in base) held[key] = base[key];
-    held.speedPxPerSec = speed;
+    held.speedPxPerSec = this.#currentHold;
     return held;
   }
 

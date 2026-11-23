@@ -2875,11 +2875,25 @@ function choiceRow(options, value, path) {
   events.fog.strength = 0.55;
   fireLive();
   assert.equal(String(fogRange().value), "55", "the next live update moves it");
+  // Spec 187 D11 (owner: «якщо увімкнено автоматична погода то змінювати параметри неможна»): with the automatic weather
+  // on the slider is inactive and a move is refused (the live value comes back at once).
+  const fogSliderRow = () => byClass("devtools__row", liveUi.body).find((row) => row.dataset.devtoolsPath === "WEATHER.fog.strength");
+  assert.equal(fogSliderRow().getAttribute("aria-disabled"), "true", "automatic on: the slider is inactive");
+  fogRange().value = "70";
+  fogRange().fire("input", { target: fogRange() });
+  assert.equal(String(fogRange().value), "55", "automatic on: a move is refused, the live value comes back");
+  const autoSwitch = () => byClass("devtools__switch-input", byClass("devtools__row", liveUi.body)
+    .find((row) => row.dataset.devtoolsPath === "WEATHER.controls.auto"))[0];
+  autoSwitch().checked = false;
+  autoSwitch().fire("change", { target: autoSwitch() });
+  assert.equal(fogSliderRow().getAttribute("aria-disabled"), "false", "automatic off: the slider is active");
   fogRange().value = "70";
   fogRange().fire("input", { target: fogRange() });
   events.fog.strength = 0.6;
   fireLive();
   assert.equal(String(fogRange().value), "70", "a slider just moved by the person keeps their value");
+  autoSwitch().checked = true;
+  autoSwitch().fire("change", { target: autoSwitch() });
   // TK-367.1 (owner: «по 2 кнопки в ряду», short labels): «Керування»'s buttons sit in two-column grids, each button in
   // its own row with its own devtools path (links, search and the reveal outline still find it).
   const gridPaths = byClass("devtools__button-grid", liveUi.body)
@@ -4035,10 +4049,9 @@ function choiceRow(options, value, path) {
       byClass("devtools__row", byClass("devtools__drill", scenePage)[0]).find(
         (row) => row.dataset.devtoolsPath === "WEATHER.controls.emission",
       )?.children[1]?.children[0];
-    const visiblePeakBtn = () =>
-      byClass("devtools__row", byClass("devtools__drill", scenePage)[0]).find(
-        (row) => row.dataset.devtoolsPath === "WEATHER.emission.peak",
-      )?.children[0];
+    // Spec 187 D12: the emission's phase buttons are gone (no phases pass by hand); its switch holds its level.
+    assert.equal(byClass("devtools__row", byClass("devtools__drill", scenePage)[0])
+      .some((row) => row.dataset.devtoolsPath === "WEATHER.emission.peak"), false, "no «Викид: пік» button");
 
     assert.equal(
       visibleEmissionSwitch().checked,
@@ -4048,11 +4061,12 @@ function choiceRow(options, value, path) {
     emission.holdIntensity(0);
     assert.equal(emission.snapshot.phase, "idle");
 
-    visiblePeakBtn().click();
+    visibleEmissionSwitch().checked = true;
+    visibleEmissionSwitch().fire("change", { target: visibleEmissionSwitch() });
     assert.equal(
       emission.snapshot.phase,
       "peak",
-      "force('peak') clears zero hold and enters peak",
+      "the emission's switch on holds it at its level (phase «пік»)",
     );
     assert.equal(
       scenePage.classList.contains("devtools__page--drilled"),

@@ -54,6 +54,12 @@ export class RangeField {
     this.#output.textContent = shown;
   }
 
+  // Spec 187 D11: a refused move (an unmet prerequisite) puts the value back at once, the person's move notwithstanding.
+  resetValue(value) {
+    this.#lastInputAt = -Infinity;
+    this.setValue(value);
+  }
+
   dispose() {
     for (const dispose of this.#disposers) dispose();
     this.#disposers.length = 0;

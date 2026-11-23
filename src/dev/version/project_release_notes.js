@@ -1,6 +1,7 @@
 // Release notes, newest first (unshift with every patch). DEV only: no production code reads them, and in the start's
 // bundle they cost 13 KB gzip (spec 160). dev.html publishes them with the version: window.CYBER_FISHING_PROJECT_VERSION.notes.
 export const PROJECT_RELEASE_NOTES = Object.freeze([
+  "Spec 187 D11–D14: automatic weather on — every manual control requires it off (DevToolsUI requires for sliders and buttons); off — the models freeze their levels (WeatherEventProcess/EmissionModel/StarfallNight hold, WindModel #freezeOwnCourse; a held wind keeps floors and gusts), a frozen storm strikes by its strength; the current and the calm swell stay; «авто» and the emission phase buttons removed.",
   "Spec 187 A: «Керування» without sliders or settings; WeatherDevSection.#renderStrength puts «Сила, %» on top of each element's section (ВОДА: waves' height, current's speed), for the running location only, holding the game and following the live value (WEATHER.<kind>.strength).",
   "TK-401: «Керування» sliders (rain, storm, fog, emission, ash, wind with gusts, waves, current) follow the live value on refreshLive when it changes (DevToolsUI.showLiveValue: bindings only); held — the held value; RangeField keeps a value the person moved within 1 s.",
   "TK-398.1: DevTools «Хвилі» is on while held above 0 or while the live height is above 1% of the usual (WeatherDevSection.#wavesOn) — flat water without the automatic weather shows off (the switch and the «i»); it showed on unless held at 0.",

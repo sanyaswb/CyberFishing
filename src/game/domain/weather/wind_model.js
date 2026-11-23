@@ -118,35 +118,31 @@ export class WindModel {
     const stormLevel = clampUnit(finiteOr(storm, 0));
 
     if (this.#forcedStrength !== null) {
+      // Spec 187 D12, D14: a held strength is the wind's own base; the rain's and the storm's floors and the gusts (by
+      // their chances at this level) still act on top of it (only DEV holds the wind; the game never does).
       this.#baseStrength = this.#forcedStrength;
       this.#baseTarget = this.#forcedStrength;
-      this.#updateActiveGust(dtSec, settings);
-      const strength = this.#forcedStrength <= WIND_EPS && !this.#gustActive
-        ? 0
-        : clampUnit(this.#baseStrength + this.#gustCurrent);
-      this.#sync(strength, settings);
-      return this.#snapshot;
-    }
+    } else {
+      // TK-398: without automatic weather no episodes roll (the base stays where a hold or a direction left it).
+      if (this.#automatic) {
+        if (this.#episode === 0 || this.#episodeLeftSec <= dtSec) this.#nextEpisode(settings);
+        else this.#episodeLeftSec -= dtSec;
+      }
 
-    // TK-398: without automatic weather no episodes roll (the base stays where a hold or a direction left it).
-    if (this.#automatic) {
-      if (this.#episode === 0 || this.#episodeLeftSec <= dtSec) this.#nextEpisode(settings);
-      else this.#episodeLeftSec -= dtSec;
-    }
+      if ((this.#forcedDirection === -1 || this.#forcedDirection === 1) && this.#baseTarget <= WIND_EPS) {
+        this.#enterState("light", settings);
+      }
 
-    if ((this.#forcedDirection === -1 || this.#forcedDirection === 1) && this.#baseTarget <= WIND_EPS) {
-      this.#enterState("light", settings);
-    }
-
-    const fadeSec = Math.max(0, finiteOr(settings.fadeSec, DEFAULT_FADE_SEC));
-    if (fadeSec <= 0) {
-      this.#baseStrength = this.#baseTarget;
-    } else if (this.#baseStrength !== this.#baseTarget) {
-      const step = dtSec / fadeSec;
-      this.#baseStrength =
-        this.#baseTarget > this.#baseStrength
-          ? Math.min(this.#baseTarget, this.#baseStrength + step)
-          : Math.max(this.#baseTarget, this.#baseStrength - step);
+      const fadeSec = Math.max(0, finiteOr(settings.fadeSec, DEFAULT_FADE_SEC));
+      if (fadeSec <= 0) {
+        this.#baseStrength = this.#baseTarget;
+      } else if (this.#baseStrength !== this.#baseTarget) {
+        const step = dtSec / fadeSec;
+        this.#baseStrength =
+          this.#baseTarget > this.#baseStrength
+            ? Math.min(this.#baseTarget, this.#baseStrength + step)
+            : Math.max(this.#baseTarget, this.#baseStrength - step);
+      }
     }
 
     // Spec 180 D3: the rain's and the storm's effect on the wind are general (CONFIG.weather.wind.rain, .storm).
@@ -155,7 +151,7 @@ export class WindModel {
     const stormFloor = stormLevel > 0 ? stormLevel * Math.max(0, finiteOr(general?.storm?.windMinStrength, 0)) : 0;
     const rainBonus = rainLevel * Math.max(0, finiteOr(general?.wind?.rain?.bonus, 0));
     const dirFloor =
-      this.#forcedDirection === -1 || this.#forcedDirection === 1
+      this.#forcedStrength === null && (this.#forcedDirection === -1 || this.#forcedDirection === 1)
         ? Math.max(
             0.05,
             Number(pair(settings?.states?.light?.strength, DEFAULT_STATES.light.strength)[0]) || 0.15,
@@ -169,20 +165,21 @@ export class WindModel {
     return this.#snapshot;
   }
 
-  // TK-398: automatic weather on / off. Off: no episodes and no gusts of its own — the wind's own course fades to calm
-  // (a hold, a direction by hand and the rain's and storm's effect still work); on again: a new episode at once.
+  // TK-398: automatic weather on / off; on again: a new episode at once. Spec 187 D12–D14 (owner: «погода застигає»):
+  // off — no episodes; the wind's own strength and direction freeze where they are; the rain's and the storm's effect
+  // and the gusts (by their chances at this level) still act.
   setAutomatic(on) {
     if ((on !== false) === this.#automatic) return;
     this.#automatic = on !== false;
     if (this.#automatic) this.#episodeLeftSec = 0;
-    else if (this.#forcedStrength === null) this.#calmAutomatic();
+    else if (this.#forcedStrength === null) this.#freezeOwnCourse();
     this.#snapshot.automatic = this.#automatic;
   }
 
-  // The wind's own course without automatic weather: calm (its strength fades there over fadeSec).
-  #calmAutomatic() {
-    this.#episodeTarget = 0;
-    this.#baseTarget = 0;
+  // The wind's own course without automatic weather: it stays at its strength now (no fade anywhere).
+  #freezeOwnCourse() {
+    this.#episodeTarget = this.#baseStrength;
+    this.#baseTarget = this.#baseStrength;
     this.#episodeLeftSec = 0;
   }
 
@@ -191,7 +188,7 @@ export class WindModel {
     const next = direction === -1 || direction === 0 || direction === 1 ? direction : null;
     this.#forcedDirection = next;
     const settings = this.#getSettings() || DEFAULT_SETTINGS;
-    if (next === null && !this.#automatic && this.#forcedStrength === null) this.#calmAutomatic();
+    if (next === null && !this.#automatic && this.#forcedStrength === null) this.#freezeOwnCourse();
     if (next === 0) {
       this.#forcedStrength = null;
       this.#baseStrength = 0;
@@ -214,7 +211,7 @@ export class WindModel {
     if (strength === null || strength === undefined || !Number.isFinite(Number(strength))) {
       this.#forcedStrength = null;
       if (!this.#automatic) {
-        this.#calmAutomatic();
+        this.#freezeOwnCourse();
       } else if (this.#episode === 0) {
         this.#nextEpisode(settings);
       } else {
@@ -305,8 +302,8 @@ export class WindModel {
       this.#updateActiveGust(dtSec, settings);
       return;
     }
-    // TK-398: without automatic weather a gust rolls only from a rain or a storm (switched on by hand).
-    if (dtSec <= 0 || (boostedBase <= 0.02 && stormLevel <= 0) || (!this.#automatic && rainLevel <= 0 && stormLevel <= 0)) {
+    // Spec 187 D14: the gusts roll by their chances at the wind's level, with or without automatic weather.
+    if (dtSec <= 0 || (boostedBase <= 0.02 && stormLevel <= 0)) {
       this.#gustCurrent = 0;
       return;
     }

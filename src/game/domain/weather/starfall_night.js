@@ -107,6 +107,8 @@ export class StarfallNight {
     if ((on !== false) === this.#automatic) return;
     this.#automatic = on !== false;
     this.#wasInside = false;
+    // Spec 187 D12, D14: off — the starfall freezes at its strength now (held: the stars keep falling at that level).
+    if (!this.#automatic && this.#held === null && this.#snapshot.strength > 0) this.hold(this.#snapshot.strength);
     if (!this.#automatic) this.#plan(null, this.#snapshot.windowHours, false);
     this.#snapshot.automatic = this.#automatic;
   }

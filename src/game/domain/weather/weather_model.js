@@ -18,6 +18,8 @@ import { WeatherEventProcess } from "./weather_event_process.js";
 // object rewritten in place: rain, storm, fog, cloud (0…1), strike*, the processes' own snapshots, and compatibility
 // fields for the views (precipitation, fogState, frozen = any manual hold).
 const STRIKE_VARIANTS = 4;
+// Spec 187 D14: a frozen storm below this strength strikes no lightning.
+const FROZEN_STRIKE_MIN = 1e-3;
 const KINDS = Object.freeze(["rain", "storm", "fog"]);
 
 const pair = (value, fallback) => (Array.isArray(value) && value.length >= 2 &&
@@ -32,6 +34,8 @@ export class WeatherModel {
   #automatic = true;
   #stormSerial = 0;
   #lightning = { has: false, startSec: 0, endSec: 0, nextSec: 0 };
+  // Spec 187 D14: seconds to the next strike of a frozen storm (null: none counting).
+  #frozenStrikeInSec = null;
   #fogRainBoost = 1;
   #rainWasActive = false;
   #fogSerial = 0;
@@ -125,8 +129,9 @@ export class WeatherModel {
     return true;
   }
 
-  // TK-398: automatic weather on / off for every process — off: no checks, the running events end, no initial weather;
-  // a storm's lightning ends with its storm. start() and hold() still work.
+  // TK-398: automatic weather on / off for every process — off: no checks, no initial weather; spec 187 D12: every
+  // strength freezes where it is (WeatherEventProcess), a frozen storm strikes by its strength (D14). start() and hold()
+  // still work.
   setAutomatic(on) {
     this.#automatic = on !== false;
     for (const kind of KINDS) this.#processes[kind].setAutomatic(this.#automatic);
@@ -206,17 +211,41 @@ export class WeatherModel {
   }
 
   #updateLightning(config, storm, dtSec) {
+    if (!this.#automatic) {
+      this.#updateFrozenLightning(config, storm, dtSec);
+      return;
+    }
     const lightning = this.#lightning;
     const elapsed = storm.snapshot.elapsedSec;
     const live = storm.snapshot.active && lightning.has && elapsed >= lightning.startSec && elapsed <= lightning.endSec;
     this.#snapshot.lightningActive = live;
     if (!live || elapsed < lightning.nextSec) return;
     this.#emitStrike(config);
+    lightning.nextSec = elapsed + this.#strikeInterval(config, storm);
+  }
+
+  // Spec 187 D14 (owner: «шанси застивають на своїх коефіцієнтах і діють при поточному рівні»): without automatic
+  // weather a storm has no timeline — while it is above zero the strikes come at the interval its strength gives.
+  #updateFrozenLightning(config, storm, dtSec) {
+    const live = storm.snapshot.strength > FROZEN_STRIKE_MIN;
+    this.#snapshot.lightningActive = live;
+    if (!live) {
+      this.#frozenStrikeInSec = null;
+      return;
+    }
+    if (this.#frozenStrikeInSec === null) this.#frozenStrikeInSec = this.#strikeInterval(config, storm);
+    this.#frozenStrikeInSec -= dtSec;
+    if (this.#frozenStrikeInSec > 0) return;
+    this.#emitStrike(config);
+    this.#frozenStrikeInSec = this.#strikeInterval(config, storm);
+  }
+
+  // The time to the next strike: intervalSec [slow, fast] by the storm's strength, ± jitter.
+  #strikeInterval(config, storm) {
     const [slow, fast] = pair(config?.intervalSec, [25, 6]);
     const base = Number(slow) + (Number(fast) - Number(slow)) * storm.snapshot.strength;
     const jitter = clampUnit(finiteOr(config?.jitter, 0.5));
-    lightning.nextSec = elapsed + Math.max(0.5, base * (1 + jitter * (2 * this.#rng.next() - 1)));
-    void dtSec;
+    return Math.max(0.5, base * (1 + jitter * (2 * this.#rng.next() - 1)));
   }
 
   #emitStrike(config) {

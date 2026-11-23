@@ -13,7 +13,6 @@ const positive = (value, fallback) => Math.max(0, finiteOr(value, fallback));
 //   the amplitude goes down to nightAmplitude (nights are mostly calm);
 // - the storm event (settings.storm, TK-291): at full storm the amplitude, speed and length grow by its amplitude,
 //   speed and wavelength factors (a storm also counts as full wind, unless the wind is switched off by hand, TK-398);
-// - without automatic weather (TK-398) the calm sea is flat: the amplitude rises from 0 with the wind.
 // Every value moves toward its target with the time constant smoothingSec (real time), so the sea swells and calms down
 // instead of jumping. update() runs once a frame (the world's render model); readers take state. Allocation-free.
 export class SeaStateResolver {
@@ -104,8 +103,8 @@ export class SeaStateResolver {
       ? clampUnit(backgroundTimeBlend(Number(environment.time), this.#blend).night) : 0;
     const normal = settings.normal;
     const event = settings.storm;
-    // TK-398: without automatic weather the sea has no swell of its own — only the wind and the storm raise waves.
-    const calm = environment?.automaticWeather === false ? 0 : positive(normal?.calmAmplitude, 1);
+    // Spec 187 D12: the calm swell stays without automatic weather too (the weather freezes, it does not go out).
+    const calm = positive(normal?.calmAmplitude, 1);
     const windy = positive(normal?.windAmplitude, 1);
     const nightAmpTarget = positive(normal?.nightAmplitude, 1);
     const stormAmpTarget = positive(event?.amplitude, 1);

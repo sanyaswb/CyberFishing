@@ -126,10 +126,14 @@ export class EmissionModel {
   }
 
   // TK-398: automatic on / off — off: no rolls and the running emission ends; force() and holdIntensity() still work.
+  // Spec 187 D12, D13: off — the intensity freezes where it is (held, its phase then «peak»), no phases pass.
   setAutomatic(on) {
     this.#automatic = on !== false;
     const emission = this.#getSettings()?.emission;
     if (this.#cooldownLeftSec === null) this.#startIdle(emission);
+    if (!this.#automatic && this.#intensityHold === null && this.#snapshot.intensity > 0) {
+      this.#intensityHold = this.#snapshot.intensity;
+    }
     if (!this.#automatic && this.#active) this.#end(emission);
     this.#sync(this.#getSettings() || null);
   }

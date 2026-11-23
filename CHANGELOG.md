@@ -2,6 +2,10 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.52.70 - DevTools: the weather by hand only without the automatic weather; off freezes it (spec 187)
+
+- dev.html: with «Автоматична погода» on nothing is set by hand (the switches, the direction, the sliders and the actions are inactive and point at the switch). Turning it off freezes the weather where it is: no event starts or ends, the levels stay until you change them; the wind still gusts, a storm still strikes lightning and the stars still fall at the frozen level; the current and the calm swell stay. Turning it on releases everything.
+
 ## v0.52.69 - DevTools: the weather's strength sliders in their own sections (spec 187, stage A)
 
 - dev.html: «ПОГОДА» → «Керування» keeps only the switches, the wind's direction, «авто» and the actions. Each element's «Сила, %» slider is now on top of its own section (ДОЩ, ШТОРМ, ТУМАН, ВИКИД, ЗОРЕПАД, ПОПІЛ, ВІТЕР; ВОДА — the waves' height and the current's speed), for the location the game runs; it holds the element in the game and follows its live value.
@@ -37,7 +41,3 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 ## v0.52.61 - Overlay: a metric's explanation under its row (TK-396, spec 186)
 
 - dev.html: a tap on a highlighted metric name in an overlay window opens its explanation right under the row — what it is, the formula, the parameters with their values now and a button to open each parameter in DevTools; a second tap closes it (on a phone there is no console). The startup report without a clipboard now opens in the DevTools text window instead of the browser's prompt.
-
-## v0.52.60 - Overlay core without fallbacks (TK-395, spec 186)
-
-- No visible change: the DEV overlay's core takes everything it needs from its composition (no hidden global defaults or optional calls), so a missing part fails at once instead of silently doing nothing.
