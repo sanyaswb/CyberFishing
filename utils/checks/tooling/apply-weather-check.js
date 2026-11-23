@@ -74,6 +74,16 @@ const tick = () => new Promise((resolve) => setTimeout(resolve, 0));
   assert.deepEqual(format.validateWeatherFile(generalOnly, { generalTemplates: real }), []);
   assert.deepEqual(format.validateWeatherFile(JSON.parse(v1(real.rain, WEATHER)), { generalTemplates: real, locationWeatherTemplate: WEATHER }), [],
     "a v1 file (rain + location) is still valid");
+  // Spec 187 D8: a location's look holds its own [від, до] (the code's look is empty — such a file used to be refused
+  // as «unknown setting», so a location's override could never reach the code).
+  const lookWeather = JSON.parse(JSON.stringify(WEATHER));
+  lookWeather.look.rain.maxDrops = [120, 900];
+  lookWeather.look.ash.opacity = 0.5;
+  assert.deepEqual(format.validateWeatherFile(JSON.parse(v1(real.rain, lookWeather)), { generalTemplates: real, locationWeatherTemplate: WEATHER }),
+    [], "a location's [від, до] and an old plain override pass");
+  lookWeather.look.rain.color = [1, 2];
+  assert.ok(format.validateWeatherFile(JSON.parse(v1(real.rain, lookWeather)), { generalTemplates: real, locationWeatherTemplate: WEATHER })
+    .some((error) => /look\.rain\.color: not a strength value/u.test(error)), "a key that is no strength value is refused");
 
   // 1. CLI applier in a scratch dir.
   const scratch = fs.mkdtempSync(path.join(os.tmpdir(), "cyber-fishing-apply-weather-"));

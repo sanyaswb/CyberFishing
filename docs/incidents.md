@@ -45,8 +45,25 @@ rule as something the next change can follow.
 | R30 | A background write (a device's charge, a wear, a timer's state) touches only what reads it: an announcement builds no view model nobody reads, and a closed window renders nothing. A check counts the view-model builds of a background write. A guard that wraps actions in a transaction leaves out the ones that only change what is shown (a commit saves the whole inventory). | I-30 |
 | R29 | A module that takes a narrowed port is checked with that port, built by the same function production uses — never with the whole object behind it. A new call in the module then fails its check when the port lacks it. One DevTools section that throws never empties the panel: each module draws in isolation and shows its error in its page, and so does each section drawn on first need (TK-388: `DevToolsUI.showDrawError` in the section; a search or a link goes on with the others) and each DEV overlay module (TK-391: its window shows the error, the console gets each cause once, the other windows update). | I-29 |
 | R31 | A DOM part that is moved elsewhere and back, or that other parts join later, is found by reference (a map from its owner kept when it is made), never by its place among the owner's children; a node moved back goes to its own place. A check moves it there and back and then uses it again. | I-31 |
+| R32 | A block that holds only overrides (a location's `look`) is validated by what it may hold, never against the code's (empty) block; a check validates a file that carries such an override. | I-33 |
 
 <a id="i-25"></a>
+
+## I-33 · 2026-11-23 · spec 180 D16 … v0.52.71: a location's look override never passed the weather file check (spec 187 B)
+
+- **Seen:** the agent, while moving the location's «при силі 100» to «від / до» (spec 187 stage B); nobody had exported
+  such an override yet.
+- **Cause:** `validateWeatherFile` compared the location's weather with the code's module key by key
+  (`collectTemplateIssues`). The code's `look` is `{ rain: {}, ash: {} }` — it holds only what a location overrides —
+  so any override (`look.rain.maxDrops`) was «unknown setting» and the file was refused by DevTools' import and by
+  `npm run apply:weather`: an override edited in DevTools could never reach the code. Reproduced in Node on the real
+  `test.js`: `["locationWeather.look.rain.maxDrops: unknown setting"]`.
+- **Fix (v0.52.72):** the location's `look` is checked on its own — kinds `rain` / `ash`, keys of the general look's
+  `strength`, values `[від, до]` (a null end — the general one) or an old plain number; the rest still against the code.
+- **Rule R32:** a block that holds only overrides is validated by what it may hold, never against the code's (empty)
+  block. A check validates a file that carries such an override.
+- **Check:** `apply-weather` (a location's `[від, до]` and a plain override pass, a key that is no strength value is
+  refused) — fails on the old code.
 
 ## I-32 · 2026-11-23 · TK-306/TK-320 … v0.52.50: «i» multiplied, a drill-in kept the previous bone (TK-387)
 

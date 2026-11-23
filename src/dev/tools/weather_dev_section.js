@@ -12,6 +12,7 @@ import {
   validateWeatherFile,
   weatherFileName,
 } from "../weather/weather_export_format.js";
+import { VISIBLE_STRENGTH, lookOverrideEnds, strengthValue } from "../../game/presentation/weather/weather_look_resolver.js";
 
 // DevTools «ПОГОДА» (spec 172, 175, 179; spec 180 stage C, TK-327).
 // - On top: the selector «Загальні» | «Всі» | a location (spec 180 D4, D11; TK-333): «Загальні» — the general settings,
@@ -58,12 +59,7 @@ const WIND_CHOICES = Object.freeze([
 ]);
 const WIND_NAMES = Object.freeze({ "-1": "вліво", 0: "немає", 1: "вправо" });
 const WIND_STATE_LABELS = Object.freeze({ calm: "штиль", light: "слабкий", moderate: "середній", strong: "сильний" });
-// D16: the values that change with an element's strength — [min, max, step] of their sliders, and their names.
-const STRENGTH_LIMITS = Object.freeze({
-  rain: Object.freeze({ maxDrops: [0, 2000, 10], lengthPx: [0, 300, 1], widthPx: [0, 20, 0.1], speedPx: [100, 4000, 10],
-    minScale: [0, 1, 0.01], lengthJitter: [0, 1, 0.01], slantJitterDeg: [0, 20, 0.5] }),
-  ash: Object.freeze({ maxParticles: [0, 600, 5], opacity: [0, 1, 0.01], riseSpeedPx: [-100, 100, 1], wanderPx: [0, 200, 1] }),
-});
+// D16, spec 187 B: the names of the values that change with an element's strength (the look's [від, до] pairs).
 const STRENGTH_LABELS = Object.freeze({ maxDrops: "густота", lengthPx: "довжина краплі", widthPx: "ширина краплі",
   speedPx: "швидкість падіння", minScale: "глибина (далекі)", lengthJitter: "розкид довжини", slantJitterDeg: "розкид нахилу",
   maxParticles: "іскор на екрані", opacity: "непрозорість", riseSpeedPx: "підйом", wanderPx: "хаотичність" });
@@ -124,6 +120,8 @@ export class WeatherDevSection {
   #summary = [];
   // TK-401: the «Керування» sliders that follow the live value: { path, read: () => slider value, shown }.
   #liveSliders = [];
+  // Spec 187 B: per element, the strength slider's level now (0…1) — the look values in its section stand at it.
+  #levelReaders = new Map();
   #listening = false;
   // The levels a switch turns on with (the last live value above zero): %, the waves' % of the usual, the current px/s.
   #levels = { rain: 70, storm: 80, fog: 60, emission: 100, ash: 100, wind: 40, waves: 100, current: 10 };
@@ -239,6 +237,7 @@ export class WeatherDevSection {
     this.#marks = [];
     this.#summary.length = 0;
     this.#liveSliders.length = 0;
+    this.#levelReaders.clear();
     this.#content = null;
     this.#shownLive = -1;
   }
@@ -419,6 +418,7 @@ export class WeatherDevSection {
       this.#marks = [];
       this.#summary.length = 0;
       this.#liveSliders.length = 0;
+      this.#levelReaders.clear();
       this.#savingSection.clear();
       this.#renderSelector(content);
       const model = this.#weather.getModel();
@@ -539,7 +539,7 @@ export class WeatherDevSection {
       this.#chanceRow("rain", mode.location, section);
       this.#tree(weather?.rain, this.#group("Подія дощу (локація)", section, ["WEATHER", "rain", "event"]),
         this.#locationParts(mode.location, "rain"));
-      this.#renderAt100Numbers("rain", mode.location, this.#group("При силі 100 (локація)", section, ["WEATHER", "rain", "at100"]));
+      this.#renderLookValues("rain", mode.location, this.#group("Від сили: від (5 %) і до (100 %) (локація)", section, ["WEATHER", "rain", "lookValues"]));
     });
   }
 
@@ -719,7 +719,7 @@ export class WeatherDevSection {
       this.#renderStrength("ash", section, mode);
       if (mode.general) this.#tree(this.#general()?.ash ?? this.#ashConfig(), this.#group("Вигляд (загальний)", section,
         ["WEATHER", "ash", "look"]), ["canvas", "ash"]);
-      if (mode.location) this.#renderAt100Numbers("ash", mode.location, this.#group("При силі 100 (локація)", section, ["WEATHER", "ash", "at100"]));
+      if (mode.location) this.#renderLookValues("ash", mode.location, this.#group("Від сили: від (5 %) і до (100 %) (локація)", section, ["WEATHER", "ash", "lookValues"]));
     });
   }
 
@@ -759,41 +759,79 @@ export class WeatherDevSection {
       });
   }
 
-  // D16: the value at strength 100 — the location's override or the general end; with «Загальні», the general end.
-  #at100(kind, key) {
-    const range = (this.#general()?.[kind] ?? (kind === "rain" ? this.#rainConfig() : this.#ashConfig()))?.strength?.[key];
-    const generalEnd = Array.isArray(range) ? Number(range[1]) : NaN;
-    if (this.#view.selected === GENERAL) return generalEnd;
-    const override = this.#locationWeather(this.#locationId())?.look?.[kind]?.[key];
-    return Number.isFinite(Number(override)) ? Number(override) : generalEnd;
+  // Spec 187 D8: the general look of the rain or the ash (its `strength` holds the [від, до] pairs).
+  #generalLook(kind) {
+    return this.#general()?.[kind] ?? (kind === "rain" ? this.#rainConfig() : this.#ashConfig());
   }
 
-  #setAt100(kind, key, value) {
-    if (this.#view.selected === GENERAL) {
-      const look = this.#general()?.[kind] ?? (kind === "rain" ? this.#rainConfig() : this.#ashConfig());
-      const range = look?.strength?.[key];
-      if (!Array.isArray(range)) return;
-      this.#updateConfig?.(["CONFIG", "canvas", kind, "strength", key], [range[0], value]);
-      return;
-    }
-    const id = this.#locationId();
+  // Both ends of one strength value for a location: its own override, else the general end.
+  #lookEnds(kind, id, key) {
+    const range = this.#generalLook(kind)?.strength?.[key];
+    const own = lookOverrideEnds(this.#locationWeather(id)?.look?.[kind]?.[key]);
+    return { from: own.from ?? (Array.isArray(range) ? Number(range[0]) : NaN),
+      to: own.to ?? (Array.isArray(range) ? Number(range[1]) : NaN) };
+  }
+
+  // Writes one end of a location's [від, до]; the other end keeps what the location had (null — the general one).
+  #setLookEnd(kind, id, key, end, value) {
     const weather = this.#locationWeather(id);
     if (!weather) return;
     if (!weather.look) this.#updateConfig?.(["CONFIG", ...this.#locationParts(id, "look")], { rain: {}, ash: {} });
     if (!this.#locationWeather(id)?.look?.[kind]) this.#updateConfig?.(["CONFIG", ...this.#locationParts(id, "look", kind)], {});
-    this.#updateConfig?.(["CONFIG", ...this.#locationParts(id, "look", kind, key)], value);
+    const own = lookOverrideEnds(this.#locationWeather(id)?.look?.[kind]?.[key]);
+    this.#updateConfig?.(["CONFIG", ...this.#locationParts(id, "look", kind, key)],
+      end === "from" ? [value, own.to] : [own.from, value]);
   }
 
-  // The same values as numbers in the element's section (location overrides).
-  #renderAt100Numbers(kind, id, parent) {
-    for (const key of Object.keys(STRENGTH_LIMITS[kind])) {
-      const value = this.#at100(kind, key);
-      if (!Number.isFinite(value)) continue;
+  // Spec 187 stage B (owner: «коли я кручу повзунок то і відповідні числа в параметрах замінюються в реальному часі
+  // щоб я бачив які параметри при 0 і які значення при 100%»; D9, D15, D17). For the location the game runs: one field
+  // per strength value, standing at the value at the strength slider's level and following it; «від» is edited with the
+  // slider at 5 % or less, «до» at 100 %, between the field only shows (its prerequisite points at the slider); a value
+  // the slider moved since the section was drawn, or the location's own override, is marked like a changed parameter
+  // (a dot, «Змінені»), its reset drops the location's override. Another location (no slider): «від» and «до» as a pair.
+  #renderLookValues(kind, id, parent) {
+    const strength = this.#generalLook(kind)?.strength;
+    if (!strength || typeof strength !== "object") return;
+    const level = id === this.#weather.locationId ? this.#levelReaders.get(kind) ?? null : null;
+    for (const key of Object.keys(strength)) {
+      if (!Array.isArray(strength[key])) continue;
       const cfgPath = ["CONFIG", ...this.#locationParts(id, "look", kind, key)];
-      this.#ui.addParameter(parent, { control: "number", label: STRENGTH_LABELS[key] ?? key, value,
-        onCommit: (next) => { if (Number.isFinite(Number(next))) this.#setAt100(kind, key, Number(next)); },
-        path: ["WEATHER", kind, "at100", key], bindingPath: cfgPath,
-        ...this.#changeTracking(cfgPath, () => this.#ui.syncValue?.(cfgPath, this.#at100(kind, key))) });
+      const path = ["WEATHER", kind, "look", key];
+      const label = STRENGTH_LABELS[key] ?? key;
+      const overridden = () => this.#edits?.isOverridden?.(cfgPath) === true;
+      if (!level) {
+        const ends = this.#lookEnds(kind, id, key);
+        this.#ui.addParameter(parent, { control: "numberPair", label: `${label}: від / до`, value: [ends.from, ends.to], path,
+          configPath: cfgPath, onCommit: (next) => {
+            if (!Array.isArray(next) || next.length !== 2 || !next.every((end) => Number.isFinite(Number(end)))) return;
+            this.#setLookEnd(kind, id, key, "from", Number(next[0]));
+            this.#setLookEnd(kind, id, key, "to", Number(next[1]));
+          }, isChanged: overridden, onReset: () => this.#edits?.resetParameter?.(cfgPath) });
+        continue;
+      }
+      const valueNow = () => {
+        const ends = this.#lookEnds(kind, id, key);
+        return Math.round(strengthValue(ends.from, ends.to, level()) * 1000) / 1000;
+      };
+      const editableEnd = () => {
+        const now = level();
+        return now <= VISIBLE_STRENGTH + 1e-6 ? "from" : now >= 1 - 1e-6 ? "to" : null;
+      };
+      const drawn = valueNow();
+      this.#ui.addParameter(parent, { control: "number", label, value: drawn, path, configPath: cfgPath,
+        onCommit: (next) => {
+          const end = editableEnd();
+          if (!end || !Number.isFinite(Number(next))) return;
+          this.#setLookEnd(kind, id, key, end, Number(next));
+          this.#ui.showLiveValue(path, valueNow());
+        },
+        requires: [{ path: ["WEATHER", kind, "strength"], isEnabled: () => editableEnd() !== null }],
+        isChanged: () => valueNow() !== drawn || overridden(),
+        onReset: () => {
+          this.#edits?.resetParameter?.(cfgPath);
+          this.#ui.showLiveValue(path, valueNow());
+        } });
+      this.#liveSliders.push({ path, read: valueNow, shown: drawn });
     }
   }
 
@@ -1051,6 +1089,8 @@ export class WeatherDevSection {
           hold(this.#levels[kind] / 100);
         }, path, requires: this.#manualRequires() });
       this.#followLive(path, () => Math.round(Number(read()) * 100) || 0);
+      // Spec 187 B: the look values of this section stand at the slider's level (the live or held strength).
+      this.#levelReaders.set(kind, () => Number(read()) || 0);
     };
     if (kind === "rain" || kind === "storm" || kind === "fog") {
       const model = weather.getModel();

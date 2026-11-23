@@ -306,6 +306,34 @@ function validateGeneralPart(part, value, template, path, errors) {
   else errors.push(...generalWeatherRangeIssues(part, value, path));
 }
 
+const LOOK_KINDS = Object.freeze(["rain", "ash"]);
+
+function withoutLook(weather) {
+  if (!isRecord(weather)) return weather;
+  const { look: _look, ...rest } = weather;
+  return rest;
+}
+
+// Spec 187 D8: MAP_DB.<id>.weather.look.<rain|ash>.<key> — [від, до] (a number or null each; null — the general end) or
+// a plain number (the old override of «до»); a key must be a strength value of the general look when that is known.
+function validateLocationLook(look, generalTemplates, errors) {
+  if (look === undefined) return;
+  if (!isRecord(look)) { errors.push("locationWeather.look: expected object"); return; }
+  for (const kind of Object.keys(look)) {
+    const path = `locationWeather.look.${kind}`;
+    if (!LOOK_KINDS.includes(kind)) { errors.push(`${path}: unknown look`); continue; }
+    if (!isRecord(look[kind])) { errors.push(`${path}: expected object`); continue; }
+    const strengthKeys = generalTemplates?.[kind]?.strength ?? null;
+    for (const [key, value] of Object.entries(look[kind])) {
+      if (strengthKeys && !Object.hasOwn(strengthKeys, key)) { errors.push(`${path}.${key}: not a strength value of the look`); continue; }
+      const ends = Array.isArray(value) ? value : [null, value];
+      if (ends.length !== 2 || ends.some((end) => end !== null && !Number.isFinite(end)) || ends.every((end) => end === null)) {
+        errors.push(`${path}.${key}: expected [від, до] (numbers, a null end — the general one) or a number`);
+      }
+    }
+  }
+}
+
 // generalTemplates: { rain, ash, storm, wind } as in the code (unknown and missing keys are refused);
 // locations: CONFIG.locations (a location must exist in it).
 export function validateWeatherFile(file, { generalTemplates = null, locationWeatherTemplate = null, locations = null } = {}) {
@@ -344,7 +372,12 @@ export function validateWeatherFile(file, { generalTemplates = null, locationWea
     if (!HEX_HASH.test(String(read.locationWeatherBaseHash || ""))) errors.push("baseHashes.locationWeather: expected SHA-256 hex hash");
     if (!isRecord(read.locationWeather)) errors.push("locationWeather: expected object");
     else {
-      if (locationWeatherTemplate) collectTemplateIssues(locationWeatherTemplate, read.locationWeather, "locationWeather", errors);
+      // Spec 187 D8: the location's look holds only what it overrides, so it is checked on its own (against the general
+      // looks' strength values), not against the code's (usually empty) look.
+      if (locationWeatherTemplate) {
+        collectTemplateIssues(withoutLook(locationWeatherTemplate), withoutLook(read.locationWeather), "locationWeather", errors);
+      }
+      validateLocationLook(read.locationWeather.look, generalTemplates, errors);
       validateLocationWeatherDomain(read.locationWeather, errors);
     }
   }

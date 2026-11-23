@@ -2,6 +2,11 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.52.72 - Weather look: «від» at 5 %, a location's own «від / до» (spec 187, stage B)
+
+- The rain's and the ash's values that grow with their strength now start at the least visible strength (5 %) and reach their end at 100 %. A location can override either end.
+- dev.html: ДОЩ and ПОПІЛ show these values at the strength slider's level and follow it; at 5 % you edit «від», at 100 % «до»; values the slider changed are marked with a dot and kept by «Змінені». A location's override now passes the weather file check (it was always refused).
+
 ## v0.52.71 - DEV: time ×10 and ×20; «Автоматична погода» remembered (spec 187)
 
 - dev.html: a press on the time now goes on after ×5 to ×10 and ×20, then back to ×1. «Автоматична погода» left off stays off after a reload (the weather starts frozen); the game itself is not affected.
@@ -37,7 +42,3 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 ## v0.52.63 - DevTools: one switch for the whole automatic weather (TK-398)
 
 - dev.html: «ПОГОДА» → «Керування» has the switch «Автоматична погода» (instead of the button «Авто погода»). Off: no rain, storm, fog, emission, starfall or wind starts by itself, the water is flat and still; each element's own switch still turns it on, with its effects on the others (the emission's ash and rain, the rain's and the storm's wind). The rain or the storm switched off during an emission now stays off, a wind switched off leaves the waves without wind under a storm, and the water's picture drifts with the current the tackle feels.
-
-## v0.52.62 - Overlay windows with DevTools icons instead of emoji (TK-397, spec 186)
-
-- dev.html: overlay window headings that had emoji (ПРОДУКТИВНІСТЬ, ЗАВАНТАЖЕННЯ, ЕХОЛОТ, ДЕБАФИ, …) show the same line icons as DevTools, the same on every phone; emoji in the overlays' text are gone; the balance windows' reset button shows the reset icon.

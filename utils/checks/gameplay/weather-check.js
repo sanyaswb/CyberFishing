@@ -2301,14 +2301,23 @@ const step = (model, seconds, clock = null, dt = 0.1) => {
     getLooks: () => ({ rain: { color: "#ffffff", strength: { maxDrops: [80, 700], lengthPx: [70, 100] } } }),
     getOverrides: () => overrides,
   });
-  const half = looks.resolve("rain", 0.5);
+  // Spec 187 D15: «від» at the least visible strength (5 %), «до» at 100, linear between: half way is 52.5 %.
+  const half = looks.resolve("rain", 0.525);
   assert.deepEqual([half.color, half.maxDrops, half.lengthPx, half.maxDropsCap], ["#ffffff", 390, 85, 700],
     "plain values as they are, strength values mixed, a cap for the pool");
-  assert.equal(looks.resolve("rain", 0.5), half, "one reused object");
+  assert.equal(looks.resolve("rain", 0.525), half, "one reused object");
+  assert.deepEqual([looks.resolve("rain", 0.05).maxDrops, looks.resolve("rain", 0.02).maxDrops, looks.resolve("rain", 1).maxDrops],
+    [80, 80, 700], "«від» from 5 % down, «до» at 100 %");
   overrides = { rain: { maxDrops: 300 } };
   assert.deepEqual([looks.resolve("rain", 1).maxDrops, looks.resolve("rain", 0).maxDrops, looks.endAt100("rain", "maxDrops")],
-    [300, 80, 300], "the location overrides the end at 100 only");
+    [300, 80, 300], "an old plain override is the end at 100 only");
   assert.equal(looks.resolve("rain", 1).maxDropsCap, 300, "the cap follows the override");
+  // Spec 187 D8: a location's [від, до] — either end, a null end is the general one.
+  overrides = { rain: { maxDrops: [120, 300], lengthPx: [null, 90] } };
+  const own = [looks.resolve("rain", 0.05).maxDrops, looks.resolve("rain", 1).maxDrops, looks.resolve("rain", 0.05).lengthPx,
+    looks.resolve("rain", 1).lengthPx];
+  assert.deepEqual(own, [120, 300, 70, 90], "the location's own «від» and «до»; a null end falls back to the general one");
+  assert.deepEqual(looks.ends("rain", "lengthPx"), { from: 70, to: 90 }, "ends() tells both ends as they run");
   assert.equal(looks.resolve("snow", 1), null, "no look, nothing");
   assert.equal(GAME_CONFIG.weather.storm.rainChanceMult > 1 && GAME_CONFIG.weather.wind.gust.durationSec.length, 2,
     "CONFIG.weather holds the storm's and the wind's general settings");
@@ -3120,6 +3129,69 @@ const step = (model, seconds, clock = null, dt = 0.1) => {
   assert.ok(dev.env.automaticWeather && dev.weather.snapshot.events.rain.held === false && dev.emission.snapshot.intensityHeld === false &&
     freed.started, "«Автоматична погода» on: every hold released, the weather runs by itself");
   section.dispose();
+
+  // Spec 187 B (owner: «коли я кручу повзунок то і відповідні числа в параметрах замінюються в реальному часі щоб я бачив
+  // які параметри при 0 і які значення при 100%»; D9, D15, D17): ДОЩ's strength values stand at the slider's level;
+  // «до» is edited at 100 %, «від» at 5 %, between only shown; a value the slider moved is marked; the game reads them.
+  {
+    const { WeatherLookResolver } = require("../../../src/game/presentation/weather/weather_look_resolver.js");
+    const lookLocation = JSON.parse(JSON.stringify(MAP_DB.test));
+    const rows = new Map();
+    const shown = new Map();
+    const writes = [];
+    const lookSection = new WeatherDevSection({
+      view: { selected: "test" },
+      ui: { createInfoRow() {}, createTextRow() {}, createRangeRow() {}, createSelectRow() {}, createInputRow() {},
+        createSwitcherRow() {}, createButtonGrid: (parent) => parent, createButtonRow: () => ({ style: {} }),
+        addParameter: (parent, row) => { if (row.path) rows.set(row.path.join("."), row); },
+        redraw: devToolsRedraw, releaseValueBindings() {}, setSectionLabel() {},
+        showLiveValue: (path, value) => shown.set(path.join("."), value), syncValue() {} },
+      weather: { locationId: "test", getModel: () => dev.weather, getEmissionModel: () => dev.emission,
+        getStarfallModel: () => dev.starfall, isAutomatic: () => dev.env.automaticWeather,
+        setAutomatic: (on) => dev.env.setAutomaticWeather(on), getWind: () => dev.env.getSnapshot().wind },
+      config: () => lookLocation.weather, locationConfig: () => lookLocation.weather, locationsMap: () => ({ test: lookLocation }),
+      general: () => ({ rain: GAME_CONFIG.canvas.rain, ash: GAME_CONFIG.canvas.ash }),
+      updateConfig: (path, value) => {
+        writes.push([path.join("."), value]);
+        let at = { CONFIG: { locations: { map: { test: lookLocation } } } };
+        for (const key of path.slice(0, -1)) at = at[key];
+        at[path.at(-1)] = value;
+      },
+      edits: { hasOverrides: () => false, resetTree() {}, isOverridden: (path) => path.at(-1) in (lookLocation.weather.look?.rain ?? {}),
+        resetParameter: (path) => { delete lookLocation.weather.look.rain[path.at(-1)]; } },
+      createSection: () => node(), renderConfigTree() {},
+    });
+    dev.env.setAutomaticWeather(false);
+    dev.weather.hold("rain", 1, { fadeSec: 0 });
+    dev.run(1);
+    lookSection.render(node());
+    const density = () => rows.get("WEATHER.rain.look.maxDrops");
+    const [from, to] = GAME_CONFIG.canvas.rain.strength.maxDrops;
+    assert.ok(density() && density().value === to && density().requires[0].isEnabled() && !density().isChanged(),
+      `the rain held at 100 %: «густота» stands at «до» (${to}), editable, unmarked`);
+    density().onCommit(to + 200);
+    assert.deepEqual(writes.at(-1), ["CONFIG.locations.map.test.weather.look.rain.maxDrops", [null, to + 200]],
+      "at 100 % the edit writes the location's «до» (its «від» stays the general one)");
+    dev.weather.hold("rain", 0.525, { fadeSec: 0 });
+    dev.run(1);
+    lookSection.refreshLive();
+    assert.equal(shown.get("WEATHER.rain.look.maxDrops"), Math.round(from + (to + 200 - from) / 2),
+      "the slider half way (52.5 %): the field shows the value half way, live");
+    assert.ok(density().isChanged() && !density().requires[0].isEnabled(), "moved by the slider: marked; between the ends: only shown");
+    dev.weather.hold("rain", 0.05, { fadeSec: 0 });
+    dev.run(1);
+    lookSection.refreshLive();
+    assert.equal(shown.get("WEATHER.rain.look.maxDrops"), from, "at 5 %: «від»");
+    density().onCommit(from + 40);
+    assert.deepEqual(lookLocation.weather.look.rain.maxDrops, [from + 40, to + 200], "at 5 % the edit writes the location's «від»");
+    const game = new WeatherLookResolver({ getLooks: () => ({ rain: GAME_CONFIG.canvas.rain }), getOverrides: () => lookLocation.weather.look });
+    assert.deepEqual([game.resolve("rain", 0.05).maxDrops, game.resolve("rain", 1).maxDrops], [from + 40, to + 200],
+      "the game's rain uses the location's «від» and «до»");
+    density().onReset();
+    assert.equal(lookLocation.weather.look.rain.maxDrops, undefined, "reset drops the location's override");
+    lookSection.dispose();
+    dev.weather.hold("rain", null);
+  }
 }
 
 console.log(
