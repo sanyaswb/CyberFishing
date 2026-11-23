@@ -1,20 +1,36 @@
+// The DEV live snapshot (overlay windows, balance windows, open DevTools, console modules). TK-392 (spec 186 D2): every
+// consumer keeps only the latest snapshot and reads it at the overlay's cadence (CONFIG.debug.overlayUpdateMs), so it
+// is built at most that often, not every frame; the first frame after nothing asked for it builds one at once.
+const DEFAULT_INTERVAL_MS = 150;
+
 export class DebugService {
   #config;
   #debugModulesSource;
   #isLiveDataRequested;
+  #now;
+  #lastBuiltAt = -Infinity;
   #currentBaits = [];
   // TK-252: isLiveDataRequested (the open DevTools panel) needs the live data with Overlay and console modules off.
-  constructor(config, debugModulesSource, isLiveDataRequested = null) {
+  // now(): milliseconds of a monotonic clock (performance.now in the browser).
+  constructor(config, debugModulesSource, isLiveDataRequested, now) {
+    if (typeof now !== "function") throw new TypeError("DebugService requires now");
     this.#config = config;
     this.#debugModulesSource = debugModulesSource;
     this.#isLiveDataRequested = isLiveDataRequested;
+    this.#now = now;
   }
 
   update(context) {
     if (!this.#config.debug?.overlay && !this.#hasEnabledConsoleModules() &&
-      this.#isLiveDataRequested?.() !== true)
+      this.#isLiveDataRequested() !== true) {
+      this.#lastBuiltAt = -Infinity;
       return;
-    if (!context || typeof context.emitDebugEvent !== "function") return;
+    }
+    const now = this.#now();
+    const interval = Number(this.#config.debug?.overlayUpdateMs) > 0 ? Number(this.#config.debug.overlayUpdateMs)
+      : DEFAULT_INTERVAL_MS;
+    if (now - this.#lastBuiltAt < interval) return;
+    this.#lastBuiltAt = now;
     context.emitDebugEvent("debug-live-update", this.#buildPayload(context));
   }
 

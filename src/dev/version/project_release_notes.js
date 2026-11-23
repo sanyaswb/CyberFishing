@@ -1,6 +1,7 @@
 // Release notes, newest first (unshift with every patch). DEV only: no production code reads them, and in the start's
 // bundle they cost 13 KB gzip (spec 160). dev.html publishes them with the version: window.CYBER_FISHING_PROJECT_VERSION.notes.
 export const PROJECT_RELEASE_NOTES = Object.freeze([
+  "Spec 186 TK-392: DebugService builds debug-live-update at most every CONFIG.debug.overlayUpdateMs (injected now = performance.now); after a pause the first asked frame builds at once.",
   "Spec 186 TK-391 (R29): OverlayController renders each module in isolation (#renderModule): the error block (OverlayHtmlBuilder.errorBlock) in its window, the console once per cause; htmlBuilder injected.",
   "Review TK-389.1: DevSavingSection uses ui.createTextRow without a fallback (two weather-check doubles got it); SpineDevSection takes the controller as composed (no .controller unwrap).",
   "Review TK-387.1: DevToolsUI.redraw inside another redraw only clears and draws (#redrawing); the outer one puts the drill-in back and refreshes the filter once.",

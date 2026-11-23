@@ -401,7 +401,7 @@ async function startGame() {
       createHookedFishProfileSynchronizer: (options) =>
         new HookedFishProfileSynchronizer(options),
       createDebugService: (config) =>
-        new DebugService(config, debugModulesSource, isLiveDataRequested),
+        new DebugService(config, debugModulesSource, isLiveDataRequested, () => windowTarget.performance.now()),
       createFightDiagnosticsBuilder: () =>
         new FightDiagnosticsSnapshotBuilder(),
       createWorldDebugRenderer: (options) => new WorldDebugRenderer(options),

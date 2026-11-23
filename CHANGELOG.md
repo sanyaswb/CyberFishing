@@ -2,6 +2,10 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.52.58 - The DEV live snapshot at the overlay's cadence, not every frame (TK-392, spec 186)
+
+- dev.html: with the overlay, DevTools or console modules on, the game built the debug snapshot (bite chances of every species and more) every frame although everything reads it every 150 ms; now it builds it every 150 ms (60 → 6–7 times a second). Less DEV work in the frame, so «ПРОДУКТИВНІСТЬ» measures closer to the real game.
+
 ## v0.52.57 - An overlay window that fails to draw shows why; the others keep updating (TK-391, spec 186)
 
 - dev.html: if one DEV overlay window ever fails to draw, it shows a red notice with the cause, and the other overlay windows keep updating (before, every window after it froze without a sign).
@@ -37,7 +41,3 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 ## v0.52.49 - Review: the gas mask's per-frame check allocates nothing (TK-382.1)
 
 - No change in play: the gas mask's check every frame no longer creates temporary objects (less garbage collection while a mask is worn).
-
-## v0.52.48 - Review: browsing the inventory under radiation saves nothing (TK-385.1)
-
-- Under radiation with a gas mask on (and while the bait boat is on the water) opening the inventory, choosing a section, a filter or going back no longer writes the whole save each time; only real changes are saved.

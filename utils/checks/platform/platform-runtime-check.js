@@ -2154,11 +2154,30 @@ async function checkGameLoopAndAdapters() {
   const liveContext = { emitDebugEvent: (type) => liveContextEvents.push(type), getEnvSnapshot: () => ({}),
     getFloatPosition: () => ({ x: 0, y: 0 }), getBiteEnv: () => ({}), getEquipment: () => ({}), getGameStateName: () => "playing",
     getLiveChances: () => null, getChumZones: () => [], getActiveBoat: () => null, getStateDebugData: () => null };
-  const debugService = new runtime.context.DebugService({ debug: { overlay: false } }, () => ({}), () => liveRequested);
+  let clockMs = 0;
+  const debugConfig = { debug: { overlay: false, overlayUpdateMs: 150 } };
+  const debugService = new runtime.context.DebugService(debugConfig, () => ({}), () => liveRequested, () => clockMs);
+  liveRequested = false;
   debugService.update(liveContext);
   liveRequested = true;
   debugService.update(liveContext);
   assert.equal(json(liveContextEvents), json(["debug-live-update"]), "DebugService builds the live update for open DevTools");
+  // TK-392 (spec 186 D2): every consumer keeps only the latest snapshot and reads it every overlayUpdateMs, so one second
+  // of 60 frames builds it 6–7 times, not 60; after nobody asked for it, the first asked frame builds one at once.
+  liveContextEvents.length = 0;
+  for (let frame = 1; frame <= 60; frame++) {
+    clockMs = frame * (1000 / 60);
+    debugService.update(liveContext);
+  }
+  // The one at 0 ms came before; then at 150, 300, … 900 ms.
+  assert.equal(liveContextEvents.length, 6, "60 more frames in a second build the snapshot every 150 ms: 6 times");
+  liveRequested = false;
+  debugService.update(liveContext);
+  liveRequested = true;
+  clockMs += 1;
+  liveContextEvents.length = 0;
+  debugService.update(liveContext);
+  assert.equal(liveContextEvents.length, 1, "asked again, the next frame builds one at once");
   debug.clear();
   debug.emit("bite", { n: 4 });
   assert.equal(received.length, 1);
