@@ -2,9 +2,10 @@
 // The config schema (`ConfigSchemaValidator`) and the weather files of DevTools «ПОГОДА» / `npm run apply:weather` read
 // the same tables, so a file accepted for the code always passes the schema. Rows: [key, min, max]; pairs are
 // [key, min, max, ordered] — `ordered` pairs are [min, max] with min <= max, the others [at 0, at 100] / [start, peak].
+// Spec 187 D7: the storm's effects are [від, до] pairs (either may be larger).
 export const STORM_SETTINGS_RANGES = Object.freeze({
-  numbers: Object.freeze([["rainChanceMult", 1, 100], ["rainStrengthMult", 1, 10], ["rainDropsShare", 0, 3],
-    ["rainSlantDeg", 0, 60], ["windMinStrength", 0, 1], ["gustChanceMult", 0, 20]]),
+  pairs: Object.freeze([["rainChanceMult", 0, 100, false], ["rainStrengthMult", 0, 10, false], ["rainDropsShare", 0, 3, false],
+    ["rainSlantDeg", 0, 60, false], ["windMinStrength", 0, 1, false], ["gustChanceMult", 0, 21, false]]),
 });
 
 export const WIND_SETTINGS_RANGES = Object.freeze({

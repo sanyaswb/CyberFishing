@@ -118,19 +118,19 @@ const tick = () => new Promise((resolve) => setTimeout(resolve, 0));
 
     // Defect of format v1 (TK-332): the storm, wind and ash settings could not reach the code. A general file now
     // writes only the changed module — here the storm — and leaves the others and the location alone.
-    const storm = { ...clone(real), storm: { ...clone(real.storm), windMinStrength: 0.55 } };
+    const storm = { ...clone(real), storm: { ...clone(real.storm), windMinStrength: [0.035, 0.55] } };
     resetTargets();
     dirtySet.add(locTarget); // the location is not in the file: its uncommitted edits do not matter
     assert.equal(await applier.apply(v2(storm, null)), "applied");
     assert.equal(asked, 1);
     assert.equal(checks, 1);
     dirtySet.clear();
-    assert.equal((await written(target("storm"), "STORM_SETTINGS", "storm")).windMinStrength, 0.55);
+    assert.equal(JSON.stringify((await written(target("storm"), "STORM_SETTINGS", "storm")).windMinStrength), "[0.035,0.55]");
     for (const part of ["rain", "ash", "wind"]) assert.equal(text(part), realText[part], `unchanged ${part} module is not touched`);
     assert.equal(fs.readFileSync(locTarget, "utf8"), realLocation, "a general file never touches the location");
     assert.equal(fs.readdirSync(backups).length, 1, "only the changed module is backed up");
     assert(fs.readdirSync(backups)[0].endsWith("-storm_settings.js"));
-    assert(logs.some((line) => line.includes("windMinStrength: 0.7 -> 0.55")), "diff logs the changed field");
+    assert(logs.some((line) => line.includes("windMinStrength: [0.035,0.7] -> [0.035,0.55]")), "diff logs the changed field");
 
     // Wind and ash together; the location-only file; both levels in one file.
     const windAsh = clone(real);
@@ -203,7 +203,7 @@ const tick = () => new Promise((resolve) => setTimeout(resolve, 0));
       [JSON.stringify({ format: format.WEATHER_FILE_FORMAT, formatVersion: 2, baseHashes: {} }), "empty file"],
       [JSON.stringify(missingPart), "v2 general without a part"],
       [JSON.stringify(unknownPart), "unknown general part"],
-      [v2(change((g) => { g.storm.windMinStrength = 2; }), null), "storm windMinStrength > 1"],
+      [v2(change((g) => { g.storm.windMinStrength = [0.035, 2]; }), null), "storm windMinStrength > 1"],
       [v2(change((g) => { g.wind.gust.deltaRange = [0.3, 0.1]; }), null), "reversed wind gust deltaRange"],
       [v2(change((g) => { g.wind.secret = 1; }), null), "unknown wind key"],
       [v2(change((g) => { g.ash.coolColor = "red"; }), null), "invalid ash color"],
@@ -315,7 +315,7 @@ const tick = () => new Promise((resolve) => setTimeout(resolve, 0));
     assert.equal(status(), "Погода збігається з кодом.");
 
     // The defect (TK-332): a storm edit is a change not in the code — the old status said «збігається з кодом».
-    live.storm.windMinStrength = 0.5;
+    live.storm.windMinStrength = [0.035, 0.5];
     doc.fire("config-updated", { detail: { path: ["CONFIG", "weather", "storm", "windMinStrength"] } });
     assert.equal(status(), "Змінено (ще не в коді): Шторм. Загальні не ввійдуть в експорт: оберіть «Загальні» або «Всі».",
       "a storm edit shows, and the location view says the export leaves it out");
@@ -334,7 +334,7 @@ const tick = () => new Promise((resolve) => setTimeout(resolve, 0));
     file = await exportNow();
     assert.equal(downloads.at(-1).name, "weather-general-v0.51.23-20261116-1234.json");
     assert.equal(file.locationId, undefined);
-    assert.equal(file.general.storm.windMinStrength, 0.5);
+    assert.equal(JSON.stringify(file.general.storm.windMinStrength), "[0.035,0.5]");
     assert.equal(file.baseHashes.general.storm, baseHashes.storm, "base hash is the code's, not the edit's");
     assert.deepEqual(format.validateWeatherFile(file, { generalTemplates: base }), []);
 
@@ -345,7 +345,7 @@ const tick = () => new Promise((resolve) => setTimeout(resolve, 0));
     assert.equal(status(), "Змінено (ще не в коді): Шторм, Параметри локації test.");
     file = await exportNow();
     assert.equal(downloads.at(-1).name, "weather-general-test-v0.51.23-20261116-1234.json");
-    assert.equal(file.general.storm.windMinStrength, 0.5);
+    assert.equal(JSON.stringify(file.general.storm.windMinStrength), "[0.035,0.5]");
     assert.equal(file.locationWeather.fog.chancePerCheck, 0.5);
     const both = file;
 
@@ -362,7 +362,7 @@ const tick = () => new Promise((resolve) => setTimeout(resolve, 0));
     pickedText = JSON.stringify(both);
     await buttons.get("Імпорт погоди")();
     await tick();
-    assert.equal(live.storm.windMinStrength, 0.5);
+    assert.equal(JSON.stringify(live.storm.windMinStrength), "[0.035,0.5]");
     assert.equal(liveWeather.fog.chancePerCheck, 0.5);
     assert.equal(status(), "Змінено (ще не в коді): Шторм, Параметри локації test.");
     const legacy = JSON.parse(v1({ ...clone(real.rain), opacity: 0.7 }, WEATHER));

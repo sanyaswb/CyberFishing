@@ -589,9 +589,20 @@ export class WeatherDevSection {
       ["Шторм: пориви ×", ["weather", "storm", "gustChanceMult"], general?.storm?.gustChanceMult],
     ];
     for (const [label, parts, value] of rows) {
-      if (typeof value !== "number") continue;
       const cfgPath = ["CONFIG", ...parts];
-      this.#ui.addParameter(parent, { control: "number", label, value, path: ["WEATHER", "wind", "events", parts.at(-1), parts[1]],
+      const path = ["WEATHER", "wind", "events", parts.at(-1), parts[1]];
+      // Spec 187 D7: the storm's effects are [від, до] pairs (at 5 % and at 100 % of its strength).
+      if (Array.isArray(value) && value.length === 2) {
+        this.#ui.addParameter(parent, { control: "numberPair", label: `${label} (від / до)`, value, path, bindingPath: cfgPath,
+          onCommit: (next) => {
+            if (Array.isArray(next) && next.length === 2 && next.every((end) => Number.isFinite(Number(end)))) {
+              this.#updateConfig?.(cfgPath, [Number(next[0]), Number(next[1])]);
+            }
+          }, ...this.#changeTracking(cfgPath) });
+        continue;
+      }
+      if (typeof value !== "number") continue;
+      this.#ui.addParameter(parent, { control: "number", label, value, path,
         bindingPath: cfgPath, onCommit: (next) => { if (Number.isFinite(Number(next))) this.#updateConfig?.(cfgPath, Number(next)); },
         ...this.#changeTracking(cfgPath) });
     }

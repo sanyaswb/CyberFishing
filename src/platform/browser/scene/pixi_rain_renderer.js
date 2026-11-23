@@ -25,6 +25,7 @@
 // alpha) only when declared dynamic (ParticleBuffer.update), so they are. The scene presents a frame only while a drop
 // or a ring is alive.
 import { clampUnit, finiteOr } from "../../../engine/math/number_normalization.js";
+import { effectOfPair } from "../../../engine/math/strength_value.js";
 import { regionsBounds } from "../../../engine/math/rectangle_bounds.js";
 import { BackgroundPlacement } from "./background_placement.js";
 import { mixColor, SceneColor } from "./scene_color.js";
@@ -140,13 +141,16 @@ export class PixiRainRenderer {
     const windSettings = weatherSettings?.wind;
     const maxDrops = Math.max(0, Math.floor(finiteOr(settings?.maxDrops, 0)));
     const dropCap = Math.max(maxDrops, Math.floor(finiteOr(settings?.maxDropsCap, maxDrops)));
-    const stormShare = Math.max(0, finiteOr(stormSettings?.rainDropsShare, 0));
+    // Spec 187 D7: the storm's extra drops [від, до] by its strength (none with no storm); the pool holds the larger end.
+    const dropsShare = stormSettings?.rainDropsShare;
+    const stormShare = Math.max(0, effectOfPair(dropsShare, 0, storm));
+    const stormShareCap = Array.isArray(dropsShare) ? Math.max(0, finiteOr(dropsShare[0], 0), finiteOr(dropsShare[1], 0)) : 0;
     // Spec 180 D1: drops come only from rain; a storm thickens the rain that falls (a storm without rain has no drops).
-    const strength = rain > 0 ? 1 + storm * stormShare : 0;
+    const strength = rain > 0 ? 1 + stormShare : 0;
     if (strength <= 0 && this.#falling === 0 && this.#ringCount === 0) return this.#hide();
     const started = performance.now();
     const rings = settings?.rings;
-    this.#ensurePools(Math.floor(dropCap * (1 + stormShare)), Math.max(0, Math.floor(finiteOr(rings?.maxRings, 0))));
+    this.#ensurePools(Math.floor(dropCap * (1 + stormShareCap)), Math.max(0, Math.floor(finiteOr(rings?.maxRings, 0))));
     this.#rippleView.settings = rings?.ripple ?? null;
     // Spec 179 D4: an emission turns the rain red (its colours, mixed with the emission's intensity).
     const emission = clampUnit(finiteOr(weather?.emission, 0));
@@ -161,9 +165,9 @@ export class PixiRainRenderer {
       : Math.abs(windDir);
     const windGust = clampUnit(finiteOr(weather?.windGust, 0));
     const windSlant = Math.max(0, finiteOr(windSettings?.rainSlantDeg, 0));
-    const stormSlant = Math.max(0, finiteOr(stormSettings?.rainSlantDeg, 0));
+    const stormSlant = Math.max(0, effectOfPair(stormSettings?.rainSlantDeg, 0, storm));
     const gustShare = Math.max(0, finiteOr(windSettings?.gustSlantShare, 1.2));
-    const rawSlant = (windStrength + windGust * gustShare) * windSlant + storm * stormSlant;
+    const rawSlant = (windStrength + windGust * gustShare) * windSlant + stormSlant;
     const targetSlant = windDir * Math.min(MAX_SLANT_DEG, rawSlant);
     const followPerSec = Math.max(0, finiteOr(windSettings?.slantFollowPerSec, 2)) +
       Math.min(1, windGust * 3) * Math.max(0, finiteOr(windSettings?.gustFollowPerSec, 6));
@@ -174,7 +178,7 @@ export class PixiRainRenderer {
     // TK-271.2: the visible share of the whole rain area's drops (none on screen: no new drop; falling ones finish).
     const zones = this.#zones;
     const visibleShare = zones.wholeArea > 0 ? Math.min(1, zones.visibleArea / zones.wholeArea) : 0;
-    const spawning = Math.min(Math.floor(dropCap * (1 + stormShare)), Math.round(maxDrops * strength * visibleShare));
+    const spawning = Math.min(Math.floor(dropCap * (1 + stormShareCap)), Math.round(maxDrops * strength * visibleShare));
     // Drops first: the rings their impacts leave this frame are drawn in this frame.
     this.#updateDrops(elapsed, spawning, settings, world, area, viewWidth, viewHeight);
     this.#updateRings(elapsed, rings);

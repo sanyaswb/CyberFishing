@@ -2,6 +2,10 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.52.73 - The storm's effects as «від / до» (spec 187, stage C)
+
+- What a storm does to the rain, the drops and the wind is now set by two values — at 5 % and at 100 % of its strength — instead of multipliers. The game plays the same; a weak storm can now be tuned on its own.
+
 ## v0.52.72 - Weather look: «від» at 5 %, a location's own «від / до» (spec 187, stage B)
 
 - The rain's and the ash's values that grow with their strength now start at the least visible strength (5 %) and reach their end at 100 %. A location can override either end.
@@ -38,7 +42,3 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 ## v0.52.64 - The emission no longer brings rain (TK-399)
 
 - An emission brings its storm and ash, but no rain: a storm may now come without rain. Rain during an emission comes only by its own chance, raised by the storm as under any storm.
-
-## v0.52.63 - DevTools: one switch for the whole automatic weather (TK-398)
-
-- dev.html: «ПОГОДА» → «Керування» has the switch «Автоматична погода» (instead of the button «Авто погода»). Off: no rain, storm, fog, emission, starfall or wind starts by itself, the water is flat and still; each element's own switch still turns it on, with its effects on the others (the emission's ash and rain, the rain's and the storm's wind). The rain or the storm switched off during an emission now stays off, a wind switched off leaves the waves without wind under a storm, and the water's picture drifts with the current the tackle feels.

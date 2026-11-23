@@ -39,9 +39,11 @@ export const GENERAL_WEATHER_PARTS = Object.freeze({
     module: "src/game/config/raw/weather/storm_settings.js",
     exportName: "STORM_SETTINGS",
     configPath: Object.freeze(["weather", "storm"]),
-    header: "// What a storm does, the same on every location (spec 180 D3, TK-326): CONFIG.weather.storm. Every effect is scaled by\n"
-      + "// the storm's strength (0…1), so a weak storm changes little. A location sets only how often and how long its storms\n"
-      + "// are (MAP_DB.<id>.weather.storm). DevTools «ПОГОДА» → «ШТОРМ» edits them live.\n"
+    header: "// What a storm does, the same on every location (spec 180 D3, TK-326): CONFIG.weather.storm. Spec 187 D7: every effect\n"
+      + "// is a pair [від, до] — its value at the storm's least visible strength (5 %) and at full strength, linear between, and\n"
+      + "// no effect with no storm (engine/math/strength_value.js effectOfPair). gustChanceMult and the rain's multipliers are\n"
+      + "// the whole multiplier (×1 — no change); rainDropsShare, rainSlantDeg and windMinStrength add from 0. A location sets\n"
+      + "// only how often and how long its storms are (MAP_DB.<id>.weather.storm). DevTools «ПОГОДА» → «ШТОРМ» edits them live.\n"
       + "// `npm run apply:weather` rewrites this whole file in this form (spec 180 stage D).\n",
   }),
   wind: Object.freeze({

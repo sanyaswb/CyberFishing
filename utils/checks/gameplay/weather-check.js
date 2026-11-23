@@ -39,7 +39,8 @@ const settings = () => ({
   thresholds: { rain: 0.15, fog: 0.3 },
 });
 // Spec 180 D3: the storm's multipliers are general (CONFIG.weather.storm).
-const general = () => ({ storm: { rainChanceMult: 6, rainStrengthMult: 1.5 } });
+// Spec 187 D7: the storm's effects as [від, до] (×6 and ×1.5 at full strength, their old values at 5 %).
+const general = () => ({ storm: { rainChanceMult: [1.25, 6], rainStrengthMult: [1.025, 1.5] } });
 const { CONFIG: GAME_CONFIG } = require("../../../src/game/config/runtime/game_config.js");
 const near = (actual, expected, message, epsilon = 1e-9) =>
   assert.ok(Math.abs(actual - expected) < epsilon, `${message}: ${actual} ≠ ${expected}`);
@@ -707,7 +708,7 @@ const step = (model, seconds, clock = null, dt = 0.1) => {
   assert.equal(calmFirst.snapshot.direction, 0);
   calmFirst.update(1000, { rain: 0.8, storm: 1 });
   assert(
-    calmFirst.snapshot.strength >= GAME_CONFIG.weather.storm.windMinStrength,
+    calmFirst.snapshot.strength >= GAME_CONFIG.weather.storm.windMinStrength[1],
     "full storm lifts wind above calm immediately via stormMinStrength",
   );
   assert(
@@ -2319,7 +2320,7 @@ const step = (model, seconds, clock = null, dt = 0.1) => {
   assert.deepEqual(own, [120, 300, 70, 90], "the location's own «від» and «до»; a null end falls back to the general one");
   assert.deepEqual(looks.ends("rain", "lengthPx"), { from: 70, to: 90 }, "ends() tells both ends as they run");
   assert.equal(looks.resolve("snow", 1), null, "no look, nothing");
-  assert.equal(GAME_CONFIG.weather.storm.rainChanceMult > 1 && GAME_CONFIG.weather.wind.gust.durationSec.length, 2,
+  assert.equal(GAME_CONFIG.weather.storm.rainChanceMult[1] > 1 && GAME_CONFIG.weather.wind.gust.durationSec.length, 2,
     "CONFIG.weather holds the storm's and the wind's general settings");
   assert.equal(MAP_DB.test.weather.storm.rainChanceMult, undefined, "the storm's multipliers left the location");
   assert.equal(MAP_DB.test.weather.wind.weatherBoost, undefined, "the rain's and storm's effect on the wind left the location");
@@ -3191,6 +3192,21 @@ const step = (model, seconds, clock = null, dt = 0.1) => {
     assert.equal(lookLocation.weather.look.rain.maxDrops, undefined, "reset drops the location's override");
     lookSection.dispose();
     dev.weather.hold("rain", null);
+  }
+}
+
+// Spec 187 D7 (owner: «просто множник це якийсь хардкод»): the storm's effects are [від, до] pairs that act exactly as
+// the old multipliers did at every strength (від = the old value at 5 %), and not at all with no storm.
+{
+  const { effectOfPair } = require("../../../src/engine/math/strength_value.js");
+  const storm = GAME_CONFIG.weather.storm;
+  const old = { rainChanceMult: [1, (s) => 1 + 9 * s], rainStrengthMult: [1, (s) => 1 + 0.3 * s], rainDropsShare: [0, (s) => 0.6 * s],
+    rainSlantDeg: [0, (s) => 48 * s], windMinStrength: [0, (s) => 0.7 * s], gustChanceMult: [1, (s) => 1 + 2.5 * s] };
+  for (const [key, [neutral, was]] of Object.entries(old)) {
+    assert.ok(Array.isArray(storm[key]) && storm[key].length === 2, `CONFIG.weather.storm.${key} is [від, до]`);
+    for (const strength of [0, 0.02, 0.05, 0.3, 0.7, 1]) {
+      near(effectOfPair(storm[key], neutral, strength), was(strength), `${key} at ${strength * 100} % acts as before`, 1e-9);
+    }
   }
 }
 

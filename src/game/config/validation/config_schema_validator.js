@@ -1535,7 +1535,7 @@ export class ConfigSchemaValidator {
     if (!storm || typeof storm !== "object") this.#error("CONFIG.weather.storm", "missing storm settings");
     else {
       this.#requireParameterLabel("weather.storm");
-      this.#requireRangeNumbers("weather.storm", storm, STORM_SETTINGS_RANGES.numbers);
+      this.#requireRangePairs("weather.storm", storm, STORM_SETTINGS_RANGES.pairs);
     }
     const wind = weather.wind;
     if (!wind || typeof wind !== "object") { this.#error("CONFIG.weather.wind", "missing wind settings"); return; }
@@ -1556,12 +1556,13 @@ export class ConfigSchemaValidator {
     }
   }
 
-  // TK-332: [key, min, max, ordered] rows — a [min, max] pair (min <= max) within the range, with a label.
+  // TK-332: [key, min, max, ordered] rows — a pair within the range, with a label; an `ordered` pair is [min, max] with
+  // min <= max, the others (spec 187: [від, до]) either way round.
   #requireRangePairs(path, record, rows) {
-    for (const [key, min, max] of rows) {
+    for (const [key, min, max, ordered = true] of rows) {
       const pair = record?.[key];
-      if (!Array.isArray(pair) || pair.length !== 2 || pair[0] > pair[1]) {
-        this.#error(`CONFIG.${path}.${key}`, "must be [min, max] with min <= max");
+      if (!Array.isArray(pair) || pair.length !== 2 || (ordered && pair[0] > pair[1])) {
+        this.#error(`CONFIG.${path}.${key}`, ordered ? "must be [min, max] with min <= max" : "must be [від, до]");
         continue;
       }
       this.#requireFiniteNumber(`CONFIG.${path}.${key}[0]`, pair[0], { min, max });

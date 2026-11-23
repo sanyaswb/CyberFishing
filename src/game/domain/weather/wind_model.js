@@ -6,6 +6,7 @@
 // - Direction rule (owner Q4): strength === 0 <-> direction === 0; rising from 0 picks -1 or +1 at random and holds
 //   that direction until wind drops back to 0. Allocation-free: rewrites one snapshot object in place.
 import { clampUnit, finiteOr } from "../../../engine/math/number_normalization.js";
+import { effectOfPair } from "../../../engine/math/strength_value.js";
 const WIND_STATES = Object.freeze(["calm", "light", "moderate", "strong"]);
 const WIND_EPS = 1e-4;
 const DEFAULT_FADE_SEC = 14;
@@ -148,7 +149,8 @@ export class WindModel {
     // Spec 180 D3: the rain's and the storm's effect on the wind are general (CONFIG.weather.wind.rain, .storm).
     const general = this.#getGeneral();
     const rainFloor = rainLevel > 0 ? rainLevel * Math.max(0, finiteOr(general?.wind?.rain?.minStrength, 0)) : 0;
-    const stormFloor = stormLevel > 0 ? stormLevel * Math.max(0, finiteOr(general?.storm?.windMinStrength, 0)) : 0;
+    // Spec 187 D7: the storm's floor for the wind — [від, до] by the storm's strength, none with no storm.
+    const stormFloor = Math.max(0, effectOfPair(general?.storm?.windMinStrength, 0, stormLevel));
     const rainBonus = rainLevel * Math.max(0, finiteOr(general?.wind?.rain?.bonus, 0));
     const dirFloor =
       this.#forcedStrength === null && (this.#forcedDirection === -1 || this.#forcedDirection === 1)
@@ -311,7 +313,7 @@ export class WindModel {
     const general = this.#getGeneral();
     const baseChance = Math.max(0, finiteOr(gust?.chancePerSec, 0.14));
     const rainMult = 1 + rainLevel * Math.max(0, finiteOr(general?.wind?.rain?.gustChanceMult, 1.5));
-    const stormMult = 1 + stormLevel * Math.max(0, finiteOr(general?.storm?.gustChanceMult, 2.5));
+    const stormMult = Math.max(0, effectOfPair(general?.storm?.gustChanceMult, 1, stormLevel));
     const strengthWeight = 0.35 + 0.65 * Math.max(boostedBase, stormLevel);
     const probability = Math.min(1, baseChance * rainMult * stormMult * strengthWeight * dtSec);
     if (probability > 0 && this.#rng.chance(probability)) {

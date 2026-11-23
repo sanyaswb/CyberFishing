@@ -1,5 +1,6 @@
 import { clampUnit, finiteOr } from "../../../engine/math/number_normalization.js";
 import { WeatherEventProcess } from "./weather_event_process.js";
+import { effectOfPair } from "../../../engine/math/strength_value.js";
 
 // Spec 180 stage A (TK-325): the location's weather as independent processes — rain, storm and fog — each with its own
 // chance per check, its own timeline (duration, peak start, peak length, peak strength, rolled when it starts) and its
@@ -94,8 +95,9 @@ export class WeatherModel {
     }
     const stormStrength = storm.snapshot.strength;
     const general = this.#getGeneral()?.storm;
-    const rainChanceMult = 1 + (Math.max(1, finiteOr(general?.rainChanceMult, 1)) - 1) * stormStrength;
-    const rainStrengthMult = 1 + (Math.max(1, finiteOr(general?.rainStrengthMult, 1)) - 1) * stormStrength;
+    // Spec 187 D7: [від, до] by the storm's strength, ×1 with no storm.
+    const rainChanceMult = Math.max(0, effectOfPair(general?.rainChanceMult, 1, stormStrength));
+    const rainStrengthMult = Math.max(0, effectOfPair(general?.rainStrengthMult, 1, stormStrength));
     this.#processes.rain.update(dtSec, true, rainChanceMult, rainStrengthMult);
     this.#updateFog(settings?.fog, clock, dtSec);
     this.#updateLightning(settings?.storm?.lightning, storm, dtSec);

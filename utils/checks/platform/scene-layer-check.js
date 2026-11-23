@@ -1301,7 +1301,7 @@ async function checkRain() {
   const world = { weather: { rain: 1, storm: 0, fog: 0, cloud: 1, windDirection: 1 },
     clipRegions: { count: 1, getAt: () => water }, waterPlane: { metric, left: 0, right: 2560, top: 0, bottom: 640 } };
   // Spec 180: the rain's look as WeatherLookResolver hands it (already at the rain's strength) and CONFIG.weather.
-  const weatherSettings = { storm: { rainDropsShare: 0.5, rainSlantDeg: 14 },
+  const weatherSettings = { storm: { rainDropsShare: [0.025, 0.5], rainSlantDeg: [0.7, 14] },
     wind: { rainSlantDeg: 14, slantFollowPerSec: 2, gustSlantShare: 1.2, gustFollowPerSec: 6 } };
   const settings = { enabled: true, maxDrops: 200, fallPx: 500, speedPx: 1500, speedJitter: 0.15,
     lengthPx: 36, widthPx: 1.6, opacity: 0.4, color: "#c9d6e3", minScale: 0.3,

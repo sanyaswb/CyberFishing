@@ -6,17 +6,11 @@
 // off). resolve() writes one reused object per kind: every plain value as it is, every strength value mixed by the
 // strength (integer keys rounded), and <key>Cap — the largest the value can get, so the renderers size their pools once,
 // not per frame.
-import { clampUnit, finiteOr } from "../../../engine/math/number_normalization.js";
+import { finiteOr } from "../../../engine/math/number_normalization.js";
+import { VISIBLE_STRENGTH, strengthValue } from "../../../engine/math/strength_value.js";
 const INTEGER_KEYS = Object.freeze(new Set(["maxDrops", "maxParticles", "maxRings"]));
-// Spec 187 D15 (owner: «Погоджую»): the strength at which «від» applies — the least an element is seen at.
-export const VISIBLE_STRENGTH = 0.05;
-
-// The value between «від» and «до» at a strength 0…1 (spec 187 D15).
-export function strengthValue(from, to, strength) {
-  const level = clampUnit(finiteOr(strength, 0));
-  if (level <= VISIBLE_STRENGTH) return from;
-  return from + (to - from) * (level - VISIBLE_STRENGTH) / (1 - VISIBLE_STRENGTH);
-}
+// Spec 187 D15: the DEV section reads the same rule.
+export { VISIBLE_STRENGTH, strengthValue };
 
 // A location's override of one strength value → { from, to } (null: that end not overridden).
 export function lookOverrideEnds(override) {
