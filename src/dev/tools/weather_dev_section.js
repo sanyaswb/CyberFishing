@@ -24,8 +24,11 @@ import {
 //   settings collapsed under it — the rain's and the ash's look at strength 100 (D16), the others' config trees. The
 //   ash, waves, current and wind: on holds the slider's value, off holds 0 (the wind calm). The actions (emission parts,
 //   a gust, a strike) come last, «Болід» at the very end (on a phone it closes the panel, so the bolide is seen).
-//   TK-367.1 (owner): the buttons two to a line with short labels (DevToolsUI.createButtonGrid): «Оновити | Авто
-//   погода» on top; «Викид: пік | Викид: спад», «Порив вітру | Блискавка», «Болід» at the bottom.
+//   TK-367.1 (owner): the buttons two to a line with short labels (DevToolsUI.createButtonGrid): «Оновити» on top;
+//   «Викид: пік | Викид: спад», «Порив вітру | Блискавка», «Болід» at the bottom.
+//   TK-398 (owner): the switch «Автоматична погода» under «Оновити» (it replaced the button «Авто погода»): off — nothing
+//   starts by itself and everything goes out; every element's own switch still turns it on, with its links to the
+//   others (the emission's ash, rain and storm; the storm's wind and waves). An event's switch off holds it at 0.
 // - TK-360: the switches follow the live state. While the panel is open, refreshLive() (each live update) compares
 //   which elements are on — one integer — with what the section shows, and redraws it only when that changed: a fog
 //   that started by itself shows at once, not at the next redraw caused by another control.
@@ -130,7 +133,7 @@ export class WeatherDevSection {
     if (isGeneral || isLocation) this.#savingSection.refreshStatus();
   };
 
-  // weather: the DEV port { getModel(), getWindModel(), getEmissionModel(), getWind(), setWind(dir | null),
+  // weather: the DEV port { getModel(), isAutomatic(), setAutomatic(on), getWindModel(), getEmissionModel(), getWind(), setWind(dir | null),
   //   setWindStrength(0…1 | null), triggerWindGust(), holdAsh(0…1 | null), holdWaves(scale | null), requestImage(id),
   //   sessionSeed, locationId }; config: () => the active location's weather; locationConfig(id) / locationsMap();
   //   general: () => { rain, ash, water, storm, wind, screen } (the general settings); edits: { hasOverrides(parts),
@@ -249,8 +252,11 @@ export class WeatherDevSection {
     return state;
   }
 
+  // TK-398: on while it runs or heads above zero — an emission's floor shows it too, a hold at 0 (switched off) does not.
   #eventOn(event) {
-    return event?.active === true || event?.held === true;
+    if (!event) return false;
+    const rising = Number(event.target) > LIVE_EPSILON;
+    return event.held === true ? rising : event.active === true || rising;
   }
 
   // The location the selector names (or the game's, with «Загальні»): export, import and the location parts use it.
@@ -773,6 +779,7 @@ export class WeatherDevSection {
       return `${strength} · ${EVENT_PHASES[event.phase] ?? event.phase} ${seconds(event.elapsedSec)} з ${seconds(event.durationSec)}` +
         `, пік ${percent(event.peakStrength)} ${seconds(event.peakStartSec)}–${seconds(event.peakEndSec)}`;
     }
+    if (event.automatic === false) return `${strength} · сам не почнеться (авто вимкнено)`;
     return event.cooldownLeftSec > 0 ? `${strength} · пауза ще ${seconds(event.cooldownLeftSec)}`
       : `${strength} · шанс перевірки ${(event.chance * 100).toFixed(2)}%`;
   }
@@ -783,6 +790,7 @@ export class WeatherDevSection {
     const idle = snapshot.phase === "idle";
     const left = snapshot.frozen ? "заморожено"
       : !idle ? `ще ${seconds(snapshot.phaseLeftSec)}`
+        : snapshot.automatic === false ? "сам не почнеться (авто вимкнено)"
         : snapshot.cooldownLeftSec > 0 ? `пауза ще ${seconds(snapshot.cooldownLeftSec)}`
           : `шанс перевірки ${(snapshot.chance * 100).toFixed(2)}%`;
     return `${EMISSION_LABELS[snapshot.phase] ?? snapshot.phase} · ${percent(snapshot.intensity)} · ${left}`;
@@ -829,7 +837,7 @@ export class WeatherDevSection {
     }
   }
 
-  // TK-367 (owner): «Оновити» on top and «Автоматична погода» under it, then the state; then every element as a
+  // TK-367 (owner): «Оновити» on top and «Автоматична погода» (TK-398: a switch) under it, then the state; then every element as a
   // switch that follows its live state (R26) with its strength, «авто» and settings only while it is on; the actions
   // at the bottom, «Болід зараз» last.
   #renderControls(model, content) {
@@ -840,10 +848,16 @@ export class WeatherDevSection {
     const top = this.#ui.createButtonGrid(controls);
     this.#ui.createButtonRow("Оновити", top, () => this.#fill(), false, "", ["WEATHER", "controls", "refresh"],
       { icon: "refresh" });
-    this.#ui.createButtonRow("Авто погода", top, () => {
-      this.#automaticWeather(model);
-      this.#fill();
-    }, false, "", ["WEATHER", "controls", "auto"], { icon: "reset" });
+    // TK-398 (owner): one switch for the whole automatic weather (it replaced the button «Авто погода»). Either way every
+    // hold is released: on — everything back to its own course; off — everything goes out (what runs by itself ends, the
+    // holds are dropped) and nothing starts by itself; each element's own switch still turns it on.
+    if (this.#weather.setAutomatic) {
+      this.#ui.createSwitcherRow("Автоматична погода", this.#weather.isAutomatic?.() !== false, controls, (on) => {
+        this.#weather.setAutomatic(on === true);
+        this.#automaticWeather(model);
+        this.#fill();
+      }, ["WEATHER", "controls", "auto"]);
+    }
     this.#renderGenerated(weather, this.#weather.getEmissionModel?.()?.snapshot ?? null, controls);
     this.#renderStatus(weather, controls);
     for (const [kind, label] of EVENTS) this.#renderEventControl(model, kind, label, weather.events?.[kind], controls);
@@ -862,7 +876,7 @@ export class WeatherDevSection {
     this.#renderBolide(actions);
   }
 
-  // D10: every hold released — each element returns to its own course.
+  // D10: every hold released — each element returns to its own course (TK-398: without automatic weather, off).
   #automaticWeather(model) {
     model.releaseAll();
     this.#weather.setWind?.(null);
@@ -903,23 +917,28 @@ export class WeatherDevSection {
 
   #renderEventControl(model, kind, label, event, controls) {
     const shown = this.#eventOn(event);
-    // TK-327.1: on starts a random event (as the game would), off ends it and releases its slider's hold.
+    // TK-327.1: on starts a random event (as the game would), off ends it and releases its slider's hold. TK-398: when
+    // something else still holds it up (an emission's floor — it used to stay with its switch off), off holds it at 0;
+    // «авто» (below) returns it to its course.
     this.#ui.createSwitcherRow(label, shown, controls, (on) => {
+      model.hold(kind, null, { fadeSec: this.#fadeSec });
       if (on) model.start(kind);
       else {
-        model.hold(kind, null, { fadeSec: this.#fadeSec });
         model.stop(kind);
+        if (Number(model.snapshot?.events?.[kind]?.target) > LIVE_EPSILON) model.hold(kind, 0, { fadeSec: this.#fadeSec });
       }
       this.#fill();
     }, ["WEATHER", "controls", kind]);
     // TK-360 (owner): the strength appears once the element is on; TK-367: it stands at the live strength.
-    if (!shown) return;
-    const level = Math.round(this.#liveLevel(kind, event?.strength));
-    this.#ui.createRangeRow(this.#heldLabel(`${label}: сила, %`, event?.held === true), level, controls, (value) => {
-      this.#levels[kind] = clamp(value, 0, 100);
-      model.hold(kind, this.#levels[kind] / 100, { fadeSec: this.#fadeSec });
-    }, ["WEATHER", "controls", `${kind}Strength`]);
+    if (shown) {
+      const level = Math.round(this.#liveLevel(kind, event?.strength));
+      this.#ui.createRangeRow(this.#heldLabel(`${label}: сила, %`, event?.held === true), level, controls, (value) => {
+        this.#levels[kind] = clamp(value, 0, 100);
+        model.hold(kind, this.#levels[kind] / 100, { fadeSec: this.#fadeSec });
+      }, ["WEATHER", "controls", `${kind}Strength`]);
+    }
     this.#renderAutoButton(kind, event?.held === true, controls, () => model.hold(kind, null, { fadeSec: this.#fadeSec }));
+    if (!shown) return;
     const id = this.#weather.locationId;
     if (kind === "rain") this.#renderAt100Sliders("rain", this.#group("Дощ при силі 100", controls, ["WEATHER", "controls", "rainAt100"]));
     else if (kind === "storm") {

@@ -2819,6 +2819,7 @@ function choiceRow(options, value, path) {
   const liveUi = new DevToolsUI(() => {}, {}, null, null, null, document.body, createElement("div"));
   let reads = 0;
   let bolides = 0;
+  let automatic = true;
   const events = { rain: { active: false }, storm: { active: false }, fog: { active: false } };
   const weatherModel = { snapshot: { events, strikeSerial: 0, strikeVariant: 0, strikeDistance: 0 },
     hold() {}, start() {}, stop() {}, releaseAll() {}, strike() {} };
@@ -2830,7 +2831,7 @@ function choiceRow(options, value, path) {
     debugModulesSource: () => ({}),
     storageCache: { get: (key, fallback) => fallback, set() {}, remove() {} },
     weather: { locationId: "test", getModel: () => { reads += 1; return weatherModel; }, getWind: () => null,
-      getStarfallModel: () => starfall },
+      getStarfallModel: () => starfall, isAutomatic: () => automatic, setAutomatic: (on) => { automatic = on; } },
     createUI: () => ({ ui: liveUi, tooltipProvider: { ready: new Promise(() => {}) } }),
   });
   const fireLive = () => { for (const listener of document.listeners.get("debug-live-update") ?? []) listener({ detail: {} }); };
@@ -2850,8 +2851,14 @@ function choiceRow(options, value, path) {
   // its own row with its own devtools path (links, search and the reveal outline still find it).
   const gridPaths = byClass("devtools__button-grid", liveUi.body)
     .map((grid) => byClass("devtools__row", grid).map((row) => row.dataset.devtoolsPath));
-  assert.equal(JSON.stringify(gridPaths[0]), JSON.stringify(["WEATHER.controls.refresh", "WEATHER.controls.auto"]),
-    "«Оновити | Авто погода» share the first line");
+  // TK-398: «Автоматична погода» is a switch right under «Оновити» (a last odd button takes the whole line).
+  assert.equal(JSON.stringify(gridPaths[0]), JSON.stringify(["WEATHER.controls.refresh"]), "«Оновити» alone in the first grid");
+  const autoRow = () => byClass("devtools__row", liveUi.body).find((row) => row.dataset.devtoolsPath === "WEATHER.controls.auto");
+  const autoInput = () => byClass("devtools__switch-input", autoRow())[0];
+  assert.equal(autoInput().checked, true, "«Автоматична погода» is a switch, on");
+  autoInput().checked = false;
+  autoInput().fire("change", { target: autoInput() });
+  assert.deepEqual([automatic, autoInput().checked], [false, false], "off reaches the weather port and the redrawn switch shows it");
   assert.ok(gridPaths.at(-1).includes("WEATHER.controls.strike") && gridPaths.at(-1).at(-1) === "WEATHER.controls.bolide",
     "the actions share the last grid, «Болід» at its end");
   const gridCss = require("node:fs").readFileSync(require("node:path").resolve(__dirname,

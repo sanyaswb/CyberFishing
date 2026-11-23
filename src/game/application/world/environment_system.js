@@ -49,6 +49,8 @@ export class EnvironmentSystem {
     radiation: 0,
     // Spec 182: the starfall's night (strength 0…1, the plan, the bolide's serial).
     starfall: NO_STARFALL,
+    // TK-398: whether the weather runs by itself (false: only what is switched on by hand).
+    automaticWeather: true,
     wind: {
       direction: 0,
       strength: 0,
@@ -72,6 +74,7 @@ export class EnvironmentSystem {
   // current is one record rewritten from the location's (its direction and other fields kept), never the config.
   #currentHold = null;
   #heldCurrent = {};
+  #automatic = true;
   #physicsWind = {
     direction: 0,
     strength: 0,
@@ -135,6 +138,27 @@ export class EnvironmentSystem {
     this.#syncSnapshot();
   }
 
+  // TK-398: automatic weather on / off (DevTools «Керування» → «Автоматична погода»; on by default, not saved). This
+  // system owns the switch and passes it to every model: off — no chances are rolled and nothing starts by itself
+  // (rain, storm, fog, the emission, the starfall's night, the wind's episodes and gusts), the running events end; the
+  // location's own current is still water and the sea has no calm swell of its own (snapshot.automaticWeather, read by
+  // the sea state). What is switched on by hand runs as always, with its effect on the others.
+  setAutomaticWeather(on) {
+    const automatic = on !== false;
+    this.#automatic = automatic;
+    this.#weather?.setAutomatic(automatic);
+    this.#wind?.setAutomatic(automatic);
+    this.#emission?.setAutomatic(automatic);
+    this.#starfall?.setAutomatic(automatic);
+    if (!automatic) this.#windState.direction = 0;
+    this.#snapshot.automaticWeather = automatic;
+    this.#syncSnapshot();
+  }
+
+  get automaticWeather() {
+    return this.#automatic;
+  }
+
   // TK-367: holds the water current's speed (px/s, 0 — still water), or null for the location's own current.
   setCurrentSpeedOverride(speed) {
     this.#currentHold = speed === null || speed === undefined || !Number.isFinite(Number(speed))
@@ -147,11 +171,13 @@ export class EnvironmentSystem {
 
   // The water current the tackle, the fish and the boats feel: base (a location's current or null) as it is, or a copy
   // with the held speed. Reused; each reader passes its own base (the boats read the live location, GameWorld).
+  // TK-398: without automatic weather the location's own current is still (speed 0) unless held.
   resolveCurrent(base) {
-    if (!base || this.#currentHold === null) return base ?? null;
+    const speed = this.#currentHold ?? (this.#automatic ? null : 0);
+    if (!base || speed === null) return base ?? null;
     const held = this.#heldCurrent;
     for (const key in base) held[key] = base[key];
-    held.speedPxPerSec = this.#currentHold;
+    held.speedPxPerSec = speed;
     return held;
   }
 
@@ -252,6 +278,7 @@ export class EnvironmentSystem {
       return;
     }
     const environment = this.#config?.environment;
+    if (!this.#automatic) return;
     this.#windState.timer -= dt;
     if (this.#windState.timer <= 0) {
       const wind = environment?.wind;

@@ -27,6 +27,7 @@ export class EmissionModel {
   #checkLeftSec = 0;
   #failedChecks = 0;
   #frozen = false;
+  #automatic = true;
   #radiationOverride = null;
   #intensityHold = null;
   #snapshot = {
@@ -47,6 +48,7 @@ export class EmissionModel {
     frozen: false,
     radiationForced: false,
     intensityHeld: false,
+    automatic: true,
   };
 
   // rng: { next(), range(min, max) } (the emission's own seeded stream); getSettings: () => MAP_DB.<id>.weather (or null:
@@ -123,9 +125,18 @@ export class EmissionModel {
     this.#sync(this.#getSettings() || null);
   }
 
+  // TK-398: automatic on / off — off: no rolls and the running emission ends; force() and holdIntensity() still work.
+  setAutomatic(on) {
+    this.#automatic = on !== false;
+    const emission = this.#getSettings()?.emission;
+    if (this.#cooldownLeftSec === null) this.#startIdle(emission);
+    if (!this.#automatic && this.#active) this.#end(emission);
+    this.#sync(this.#getSettings() || null);
+  }
+
   // The rolls run only past the cooldown, one per checkIntervalSec of idle time; a disabled emission never rolls.
   #updateIdle(emission, dtSec) {
-    if (emission?.enabled === false) return;
+    if (emission?.enabled === false || !this.#automatic) return;
     let left = dtSec;
     if (this.#cooldownLeftSec > 0) {
       const spent = Math.min(left, this.#cooldownLeftSec);
@@ -187,7 +198,8 @@ export class EmissionModel {
     snapshot.peakStrength = this.#active ? timeline.peakStrength : 0;
     snapshot.intensity = intensity;
     snapshot.radiation = this.#radiationOverride ?? clampUnit(base + (peak - base) * intensity);
-    snapshot.chance = this.#active ? 0 : this.#chance(settings?.emission);
+    snapshot.chance = this.#active || !this.#automatic ? 0 : this.#chance(settings?.emission);
+    snapshot.automatic = this.#automatic;
     snapshot.failedChecks = this.#failedChecks;
     snapshot.cooldownLeftSec = Math.max(0, this.#cooldownLeftSec ?? 0);
     snapshot.frozen = this.#frozen;

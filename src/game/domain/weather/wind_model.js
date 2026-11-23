@@ -54,6 +54,7 @@ export class WindModel {
   #autoDirection = 0;
   #forcedDirection = null;
   #forcedStrength = null;
+  #automatic = true;
   #gustActive = false;
   #gustAgeSec = 0;
   #gustDurationSec = 0;
@@ -71,6 +72,7 @@ export class WindModel {
     isGusting: false,
     forcedDirection: null,
     forcedStrength: null,
+    automatic: true,
     float: DEFAULT_FLOAT,
   };
 
@@ -126,10 +128,10 @@ export class WindModel {
       return this.#snapshot;
     }
 
-    if (this.#episode === 0 || this.#episodeLeftSec <= dtSec) {
-      this.#nextEpisode(settings);
-    } else {
-      this.#episodeLeftSec -= dtSec;
+    // TK-398: without automatic weather no episodes roll (the base stays where a hold or a direction left it).
+    if (this.#automatic) {
+      if (this.#episode === 0 || this.#episodeLeftSec <= dtSec) this.#nextEpisode(settings);
+      else this.#episodeLeftSec -= dtSec;
     }
 
     if ((this.#forcedDirection === -1 || this.#forcedDirection === 1) && this.#baseTarget <= WIND_EPS) {
@@ -167,11 +169,29 @@ export class WindModel {
     return this.#snapshot;
   }
 
+  // TK-398: automatic weather on / off. Off: no episodes and no gusts of its own — the wind's own course fades to calm
+  // (a hold, a direction by hand and the rain's and storm's effect still work); on again: a new episode at once.
+  setAutomatic(on) {
+    if ((on !== false) === this.#automatic) return;
+    this.#automatic = on !== false;
+    if (this.#automatic) this.#episodeLeftSec = 0;
+    else if (this.#forcedStrength === null) this.#calmAutomatic();
+    this.#snapshot.automatic = this.#automatic;
+  }
+
+  // The wind's own course without automatic weather: calm (its strength fades there over fadeSec).
+  #calmAutomatic() {
+    this.#episodeTarget = 0;
+    this.#baseTarget = 0;
+    this.#episodeLeftSec = 0;
+  }
+
   // Forced direction: -1 (left), 0 (calm: disables wind), 1 (right), or null (automatic).
   setDirectionOverride(direction) {
     const next = direction === -1 || direction === 0 || direction === 1 ? direction : null;
     this.#forcedDirection = next;
     const settings = this.#getSettings() || DEFAULT_SETTINGS;
+    if (next === null && !this.#automatic && this.#forcedStrength === null) this.#calmAutomatic();
     if (next === 0) {
       this.#forcedStrength = null;
       this.#baseStrength = 0;
@@ -193,7 +213,9 @@ export class WindModel {
     const settings = this.#getSettings() || DEFAULT_SETTINGS;
     if (strength === null || strength === undefined || !Number.isFinite(Number(strength))) {
       this.#forcedStrength = null;
-      if (this.#episode === 0) {
+      if (!this.#automatic) {
+        this.#calmAutomatic();
+      } else if (this.#episode === 0) {
         this.#nextEpisode(settings);
       } else {
         this.#baseTarget = this.#episodeTarget;
@@ -283,7 +305,8 @@ export class WindModel {
       this.#updateActiveGust(dtSec, settings);
       return;
     }
-    if (dtSec <= 0 || (boostedBase <= 0.02 && stormLevel <= 0)) {
+    // TK-398: without automatic weather a gust rolls only from a rain or a storm (switched on by hand).
+    if (dtSec <= 0 || (boostedBase <= 0.02 && stormLevel <= 0) || (!this.#automatic && rainLevel <= 0 && stormLevel <= 0)) {
       this.#gustCurrent = 0;
       return;
     }

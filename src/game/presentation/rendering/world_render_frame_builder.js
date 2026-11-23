@@ -21,6 +21,7 @@ export class WorldRenderFrameBuilder {
   #weatherBuilder;
   #seaState;
   #getNowMs;
+  #resolveCurrent;
   // The rain zones' bounds in map pixels (not read by anyone; #zoneRects fills bounds as it goes).
   #rainBounds = { left: 0, right: 0, top: 0, bottom: 0, masked: false };
   #ashBounds = { left: 0, right: 0, top: 0, bottom: 0, masked: false };
@@ -44,6 +45,9 @@ export class WorldRenderFrameBuilder {
     // Spec 172 D7: SeaStateResolver (updated here once a frame, world.sea) and the frame's real clock, or null.
     seaState = null,
     getNowMs = () => 0,
+    // TK-398: (base) => the current the tackle feels (EnvironmentSystem.resolveCurrent: held by hand, still without
+    // automatic weather), so the water's picture drifts with the same current; without it the location's own.
+    resolveCurrent = (base) => base,
   }) {
     if (!map || typeof map.getBackgroundRenderData !== "function") {
       throw new TypeError("WorldRenderFrameBuilder requires map");
@@ -73,6 +77,7 @@ export class WorldRenderFrameBuilder {
     this.#weatherBuilder = weatherBuilder;
     this.#seaState = seaState;
     this.#getNowMs = getNowMs;
+    this.#resolveCurrent = resolveCurrent;
   }
 
   buildInto({ target, invalidCastMarker, debugEnabled }) {
@@ -194,7 +199,7 @@ export class WorldRenderFrameBuilder {
   // The location's current, the one physics applies to the tackle and the boat (virtual pixels are art pixels).
   #buildCurrent(target) {
     const locations = this.#config.locations || {};
-    const current = locations.map?.[locations.currentLocationId || this.#locationId]?.environment?.current;
+    const current = this.#resolveCurrent(locations.map?.[locations.currentLocationId || this.#locationId]?.environment?.current ?? null);
     const speed = Number(current?.speedPxPerSec) || 0;
     target.x = speed * (Number(current?.direction?.x) || 0);
     target.y = speed * (Number(current?.direction?.y) || 0);

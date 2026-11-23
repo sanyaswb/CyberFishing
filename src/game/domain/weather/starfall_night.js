@@ -22,6 +22,7 @@ export class StarfallNight {
   #rng;
   #getSettings;
   #wasInside = false;
+  #automatic = true;
   #held = null;
   #starts = new Float64Array(MAX_PERIODS + 1);
   #levels = new Float64Array(MAX_PERIODS);
@@ -42,6 +43,7 @@ export class StarfallNight {
     positionHours: 0,
     bolideAtHours: null,
     bolideSerial: 0,
+    automatic: true,
   };
 
   // rng: { next(), range(min, max), chance(p) } (the starfall's own seeded stream); getSettings: () =>
@@ -99,6 +101,16 @@ export class StarfallNight {
     this.#snapshot.held = this.#held !== null;
   }
 
+  // TK-398: automatic on / off. Off: the night's plan and its bolide are dropped and no night is checked (hold() and
+  // bolideNow() still work); on again: the night is checked at the next update inside the window.
+  setAutomatic(on) {
+    if ((on !== false) === this.#automatic) return;
+    this.#automatic = on !== false;
+    this.#wasInside = false;
+    if (!this.#automatic) this.#plan(null, this.#snapshot.windowHours, false);
+    this.#snapshot.automatic = this.#automatic;
+  }
+
   // DEV: a bolide now (whatever the night).
   bolideNow() {
     this.#snapshot.bolideSerial += 1;
@@ -106,7 +118,7 @@ export class StarfallNight {
 
   // The night's one check, and on success its timeline and the bolide's roll.
   #checkNight(settings, windowHours) {
-    this.#plan(settings, windowHours, this.#rng.chance(clampUnit(finiteOr(settings?.nightChance, 0))));
+    this.#plan(settings, windowHours, this.#automatic && this.#rng.chance(clampUnit(finiteOr(settings?.nightChance, 0))));
   }
 
   #plan(settings, windowHours, success) {

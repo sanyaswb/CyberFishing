@@ -12,7 +12,8 @@ const positive = (value, fallback) => Math.max(0, finiteOr(value, fallback));
 //   travel with the wind (a calm keeps the last direction); as the night background fades in (backgroundTimeBlend),
 //   the amplitude goes down to nightAmplitude (nights are mostly calm);
 // - the storm event (settings.storm, TK-291): at full storm the amplitude, speed and length grow by its amplitude,
-//   speed and wavelength factors (a storm also counts as full wind).
+//   speed and wavelength factors (a storm also counts as full wind, unless the wind is switched off by hand, TK-398);
+// - without automatic weather (TK-398) the calm sea is flat: the amplitude rises from 0 with the wind.
 // Every value moves toward its target with the time constant smoothingSec (real time), so the sea swells and calms down
 // instead of jumping. update() runs once a frame (the world's render model); readers take state. Allocation-free.
 export class SeaStateResolver {
@@ -93,7 +94,9 @@ export class SeaStateResolver {
     const direction = Math.max(-1, Math.min(1, finiteOr(environment?.wind?.direction, 0)));
     const rawStrength = environment?.wind?.strength;
     const hasStrength = rawStrength !== undefined && rawStrength !== null && Number.isFinite(Number(rawStrength));
-    const wind = hasStrength
+    // TK-398: a wind switched off by hand (a held calm) is no wind here either — the storm then no longer counts as one.
+    const windOff = environment?.wind?.forcedDirection === 0;
+    const wind = windOff ? 0 : hasStrength
       ? Math.max(direction === 0 && storm <= 0 ? 0 : clampUnit(Number(rawStrength)), storm)
       : Math.max(Math.abs(direction), storm);
     if (direction !== 0) this.#travelTarget = Math.sign(direction);
@@ -101,7 +104,8 @@ export class SeaStateResolver {
       ? clampUnit(backgroundTimeBlend(Number(environment.time), this.#blend).night) : 0;
     const normal = settings.normal;
     const event = settings.storm;
-    const calm = positive(normal?.calmAmplitude, 1);
+    // TK-398: without automatic weather the sea has no swell of its own — only the wind and the storm raise waves.
+    const calm = environment?.automaticWeather === false ? 0 : positive(normal?.calmAmplitude, 1);
     const windy = positive(normal?.windAmplitude, 1);
     const nightAmpTarget = positive(normal?.nightAmplitude, 1);
     const stormAmpTarget = positive(event?.amplitude, 1);

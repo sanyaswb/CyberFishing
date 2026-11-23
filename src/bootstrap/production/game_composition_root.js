@@ -1834,6 +1834,9 @@ export class GameCompositionRoot {
                     // DEV weather section (spec 172 stage A, spec 178): the environment's weather & wind models.
                     weather: {
                       getModel: () => systems.env?.weather ?? null,
+                      // TK-398: «Автоматична погода» — the environment owns the switch and passes it to every model.
+                      isAutomatic: () => systems.env?.automaticWeather ?? true,
+                      setAutomatic: (on) => systems.env?.setAutomaticWeather(on),
                       getWindModel: () => systems.env?.wind ?? null,
                       // Spec 179: the emission model (parts, intensity, radiation and its DEV override).
                       getEmissionModel: () => systems.env?.emission ?? null,

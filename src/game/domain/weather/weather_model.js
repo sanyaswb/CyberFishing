@@ -28,6 +28,7 @@ export class WeatherModel {
   #getGeneral;
   #processes;
   #started = false;
+  #automatic = true;
   #stormSerial = 0;
   #lightning = { has: false, startSec: 0, endSec: 0, nextSec: 0 };
   #fogRainBoost = 1;
@@ -123,6 +124,18 @@ export class WeatherModel {
     return true;
   }
 
+  // TK-398: automatic weather on / off for every process — off: no checks, the running events end, no initial weather;
+  // a storm's lightning ends with its storm. start() and hold() still work.
+  setAutomatic(on) {
+    this.#automatic = on !== false;
+    for (const kind of KINDS) this.#processes[kind].setAutomatic(this.#automatic);
+    this.#sync();
+  }
+
+  get automatic() {
+    return this.#automatic;
+  }
+
   // Every process back to its own course.
   releaseAll() {
     for (const kind of KINDS) this.#processes[kind].hold(null);
@@ -139,6 +152,7 @@ export class WeatherModel {
   // its peak with that strength (0 or absent: none).
   #startInitial(settings) {
     this.#started = true;
+    if (!this.#automatic) return;
     for (const kind of KINDS) {
       const strength = clampUnit(finiteOr(settings?.initial?.[kind], 0));
       if (strength > 0) this.start(kind, { peakStrength: strength, atPeak: true });

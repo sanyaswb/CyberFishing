@@ -14,6 +14,9 @@ import { WeatherEventTimeline } from "./weather_event_timeline.js";
 //   No other process is touched: there is no shared freeze (the cause of the storm switch defect, spec 180).
 // The shown strength moves toward its target at most 1 / smoothSec per second, so a hold, a release or an early end
 // never jumps. Settings are read live; nothing is allocated per update; snapshot is rewritten in place.
+// TK-398: automatic off — no checks are rolled (an event started by hand still runs its timeline); turning it off ends
+// the running event. snapshot.target is the strength the process heads for now (held, or its own and the floor), kept
+// true by hold() and stop() too, so a view knows at once that an element was switched off.
 const DEFAULT_SMOOTH_SEC = 6;
 
 export class WeatherEventProcess {
@@ -27,6 +30,10 @@ export class WeatherEventProcess {
   #failedChecks = 0;
   #held = null;
   #smoothSecOverride = null;
+  #automatic = true;
+  // The last update's floor and strength multiplier (the target between updates).
+  #floor = 0;
+  #strengthMult = 1;
   #snapshot = {
     active: false,
     phase: "idle",
@@ -41,6 +48,7 @@ export class WeatherEventProcess {
     failedChecks: 0,
     cooldownLeftSec: 0,
     held: false,
+    automatic: true,
     serial: 0,
   };
 
@@ -75,17 +83,17 @@ export class WeatherEventProcess {
     if (this.#active) {
       this.#elapsedSec += eventDt;
       if (this.#elapsedSec >= this.#timeline.durationSec || !allowed) this.#end(settings);
-    } else if (allowed && settings?.enabled !== false) {
+    } else if (allowed && this.#automatic && settings?.enabled !== false) {
       this.#rollIdle(settings, eventDt, chanceMult);
     }
-    const own = this.#active ? clampUnit(this.#timeline.strengthAt(this.#elapsedSec) * Math.max(0, finiteOr(strengthMult, 1))) : 0;
-    const target = this.#held ?? Math.max(own, clampUnit(finiteOr(floor, 0)));
+    this.#strengthMult = Math.max(0, finiteOr(strengthMult, 1));
+    this.#floor = clampUnit(finiteOr(floor, 0));
+    const target = this.#target();
     const snapshot = this.#snapshot;
     const smoothSec = this.#smoothSecOverride ?? Math.max(0, finiteOr(settings?.smoothSec, DEFAULT_SMOOTH_SEC));
     snapshot.strength = smoothSec <= 0 ? target
       : snapshot.strength < target ? Math.min(target, snapshot.strength + dt / smoothSec)
         : Math.max(target, snapshot.strength - dt / smoothSec);
-    snapshot.target = target;
     // TK-358: a hold's fade lasts while held and until the release has arrived; then the settings' smoothSec again.
     if (this.#held === null && this.#smoothSecOverride !== null && snapshot.strength === target) this.#smoothSecOverride = null;
     this.#sync(settings, chanceMult);
@@ -115,6 +123,19 @@ export class WeatherEventProcess {
     this.#held = strength === null || !Number.isFinite(Number(strength)) ? null : clampUnit(Number(strength));
     this.#smoothSecOverride = fadeSec === null || !Number.isFinite(Number(fadeSec)) ? null : Math.max(0, Number(fadeSec));
     this.#snapshot.held = this.#held !== null;
+    this.#snapshot.target = this.#target();
+  }
+
+  // TK-398: on — the checks roll as usual; off — none, and the running event ends (its strength fades).
+  setAutomatic(on) {
+    this.#automatic = on !== false;
+    if (!this.#automatic) this.stop();
+    this.#snapshot.automatic = this.#automatic;
+  }
+
+  #target() {
+    const own = this.#active ? clampUnit(this.#timeline.strengthAt(this.#elapsedSec) * this.#strengthMult) : 0;
+    return this.#held ?? Math.max(own, this.#floor);
   }
 
   #rollIdle(settings, dt, chanceMult) {
@@ -165,9 +186,11 @@ export class WeatherEventProcess {
     snapshot.peakStartSec = this.#active ? timeline.peakStartSec : 0;
     snapshot.peakEndSec = this.#active ? timeline.peakEndSec : 0;
     snapshot.peakStrength = this.#active ? timeline.peakStrength : 0;
-    snapshot.chance = this.#active ? 0 : this.#chance(settings, chanceMult);
+    snapshot.chance = this.#active || !this.#automatic ? 0 : this.#chance(settings, chanceMult);
     snapshot.failedChecks = this.#failedChecks;
     snapshot.cooldownLeftSec = Math.max(0, this.#cooldownLeftSec);
     snapshot.held = this.#held !== null;
+    snapshot.automatic = this.#automatic;
+    snapshot.target = this.#target();
   }
 }

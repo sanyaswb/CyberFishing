@@ -242,6 +242,8 @@ export class GameRenderComposition {
       // Spec 172 D7: the sea state (shared with the float's rocking), updated once a frame by the world's model.
       seaState: runtime.rendering.seaState ?? null,
       getNowMs: () => clock.realNow,
+      // TK-398: the water drifts with the current the tackle feels (held by hand, still without automatic weather).
+      resolveCurrent: (base) => runtime.env.resolveCurrent(base),
       boatChumBuilder: new BoatChumRenderFrameBuilder({
         chum: runtime.chum,
         getWaterMetric: appPorts.getWaterMetric,
