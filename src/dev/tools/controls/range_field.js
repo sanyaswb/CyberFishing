@@ -1,5 +1,7 @@
 // DEV slider with its value beside it (spec 174 B1; spec 129 Revision 2: grid and depth opacity). onInput(value)
 // receives the whole number while the slider moves.
+const INPUT_HOLD_MS = 1000;
+
 export class RangeField {
   #root;
   #range;
@@ -7,9 +9,14 @@ export class RangeField {
   #onInput;
   #decimals = 0;
   #disposers = [];
+  // TK-401: when the person last moved the slider (ms of `now`); a value from outside does not move it for INPUT_HOLD_MS
+  // after that, so a live value never pulls the thumb from under the finger.
+  #lastInputAt = -Infinity;
+  #now;
 
-  constructor({ value, onInput, min = 0, max = 100, step = 1, ariaLabel = "", documentRef = document }) {
+  constructor({ value, onInput, min = 0, max = 100, step = 1, ariaLabel = "", documentRef = document, now = () => Date.now() }) {
     this.#onInput = onInput;
+    this.#now = now;
     // Spec 180 D16: a fractional step shows its decimals (0.01 → 2), so a real value reads as itself.
     const stepText = String(step);
     this.#decimals = stepText.includes(".") ? Math.min(4, stepText.split(".")[1].length) : 0;
@@ -27,6 +34,7 @@ export class RangeField {
     this.#root.append(this.#range, this.#output);
     this.setValue(value);
     const onRangeInput = (event) => {
+      this.#lastInputAt = this.#now();
       const next = Number(event.target.value);
       this.#output.textContent = next.toFixed(this.#decimals);
       this.#onInput?.(next);
@@ -40,6 +48,7 @@ export class RangeField {
   }
 
   setValue(value) {
+    if (this.#now() - this.#lastInputAt < INPUT_HOLD_MS) return;
     const shown = (Number(value) || 0).toFixed(this.#decimals);
     this.#range.value = shown;
     this.#output.textContent = shown;

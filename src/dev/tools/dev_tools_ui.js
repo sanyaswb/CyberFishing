@@ -171,6 +171,12 @@ export class DevToolsUI {
     this.#pathSections.clear();
   }
 
+  // TK-401: a live value (not a config edit) shown in the controls bound to path — no change marks, no dependencies;
+  // a slider the person moved within the last second keeps their value (RangeField).
+  showLiveValue(path, value) {
+    this.#controlBindings.sync(path, value);
+  }
+
   syncValue(path, value) {
     this.#controlBindings.sync(path, value);
     // An import or a reset of everything changes marks of paths that were not synced one by one.

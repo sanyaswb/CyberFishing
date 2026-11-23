@@ -126,6 +126,8 @@ export class WeatherDevSection {
   #marks = [];
   // TK-400: the «i» rows that follow the live state: { kind, element } (the value element).
   #summary = [];
+  // TK-401: the «Керування» sliders that follow the live value: { path, read: () => slider value, shown }.
+  #liveSliders = [];
   #listening = false;
   // The levels a switch turns on with (the last live value above zero): %, the waves' % of the usual, the current px/s.
   #levels = { rain: 70, storm: 80, fog: 60, emission: 100, ash: 100, wind: 40, waves: 100, current: 10 };
@@ -240,6 +242,7 @@ export class WeatherDevSection {
     this.#savingSection.clear();
     this.#marks = [];
     this.#summary.length = 0;
+    this.#liveSliders.length = 0;
     this.#content = null;
     this.#shownLive = -1;
   }
@@ -249,7 +252,26 @@ export class WeatherDevSection {
   refreshLive() {
     if (!this.#content || this.#shownLive < 0) return;
     if (this.#liveState() !== this.#shownLive) this.#fill();
-    else this.#refreshSummary();
+    else {
+      this.#refreshSummary();
+      this.#refreshSliders();
+    }
+  }
+
+  // TK-401 (owner: «повзунок в керуванні теж плавно рухається в залежності від %»): a slider shown in «Керування»
+  // follows its element's live value (the wind with its gusts); a value held by hand shows that value.
+  #followLive(path, read) {
+    this.#liveSliders.push({ path, read, shown: read() });
+  }
+
+  // Moves the sliders whose live value changed (DevToolsUI.showLiveValue: a slider the person is moving keeps theirs).
+  #refreshSliders() {
+    for (const slider of this.#liveSliders) {
+      const value = slider.read();
+      if (value === slider.shown) continue;
+      slider.shown = value;
+      this.#ui.showLiveValue(slider.path, value);
+    }
   }
 
   // TK-400 (owner: «актуальну інформацію які стани активні і параметри коротко»): the section's «i» — the automatic
@@ -400,6 +422,7 @@ export class WeatherDevSection {
     this.#ui.redraw(content, () => {
       this.#marks = [];
       this.#summary.length = 0;
+      this.#liveSliders.length = 0;
       this.#savingSection.clear();
       this.#renderSelector(content);
       const model = this.#weather.getModel();
@@ -1046,6 +1069,10 @@ export class WeatherDevSection {
         this.#levels[kind] = clamp(value, 0, 100);
         model.hold(kind, this.#levels[kind] / 100, { fadeSec: this.#fadeSec });
       }, ["WEATHER", "controls", `${kind}Strength`]);
+      this.#followLive(["WEATHER", "controls", `${kind}Strength`], () => {
+        const live = model.snapshot?.events?.[kind];
+        return Math.round(Number(live?.held ? live.target : live?.strength) * 100) || 0;
+      });
     }
     this.#renderAutoButton(kind, event?.held === true, controls, () => model.hold(kind, null, { fadeSec: this.#fadeSec }));
     if (!shown) return;
@@ -1076,6 +1103,7 @@ export class WeatherDevSection {
       this.#levels.emission = clamp(value, 0, 100);
       emission.holdIntensity(this.#levels.emission / 100);
     }, ["WEATHER", "controls", "emissionStrength"]);
+    this.#followLive(["WEATHER", "controls", "emissionStrength"], () => Math.round(Number(emission.snapshot.intensity) * 100) || 0);
     this.#renderAutoButton("emission", snapshot.intensityHeld === true, controls, () => emission.holdIntensity(null));
     this.#renderSettings("Викид: затемнення й розмиття (загальне)", "emission", this.#general()?.screen, ["emission", "screen"],
       controls);
@@ -1121,6 +1149,8 @@ export class WeatherDevSection {
         this.#levels.ash = clamp(value, 0, 100);
         weather.holdAsh(this.#levels.ash / 100);
       }, ["WEATHER", "controls", "ashStrength"]);
+      this.#followLive(["WEATHER", "controls", "ashStrength"],
+        () => Math.round(Number(weather.getAshHold?.() ?? weather.getAshStrength?.() ?? 0) * 100) || 0);
     }
     this.#renderAutoButton("ash", hold !== null, controls, () => weather.holdAsh(null));
     if (shown) this.#renderAt100Sliders("ash", this.#group("Попіл при силі 100", controls, ["WEATHER", "controls", "ashAt100"]));
@@ -1155,6 +1185,11 @@ export class WeatherDevSection {
           this.#levels.wind = clamp(value, 0, 100);
           weather.setWindStrength(this.#levels.wind / 100);
         }, ["WEATHER", "controls", "windStrength"]);
+        // TK-401 (owner): the wind's own strength with its gusts; a strength held by hand stays where it was put.
+        this.#followLive(["WEATHER", "controls", "windStrength"], () => {
+          const live = weather.getWind?.() ?? null;
+          return Math.round(Number(live?.forcedStrength ?? live?.strength) * 100) || 0;
+        });
       }
     }
     this.#renderAutoButton("wind", held || forcedDirection === 0, controls, () => {
@@ -1185,6 +1220,8 @@ export class WeatherDevSection {
           this.#levels.waves = clamp(value, 0, 300);
           weather.holdWaves(this.#levels.waves / 100);
         }, path: ["WEATHER", "controls", "waves"] });
+      this.#followLive(["WEATHER", "controls", "waves"], () =>
+        clamp(Math.round(Number(weather.getWavesHold?.() ?? weather.getWavesScale?.() ?? 1) * 100 / 5) * 5, 0, 300));
     }
     this.#renderAutoButton("waves", hold !== null, controls, () => weather.holdWaves(null));
     if (shown) this.#renderSettings("Хвилі: стан моря (загальне)", "waves", this.#general()?.water?.seaState,
@@ -1211,6 +1248,8 @@ export class WeatherDevSection {
           this.#levels.current = clamp(value, 0, 60);
           weather.holdCurrent(this.#levels.current);
         }, path: ["WEATHER", "controls", "current"] });
+      this.#followLive(["WEATHER", "controls", "current"], () =>
+        clamp(Math.round(Number(weather.getCurrentHold?.() ?? weather.getCurrentSpeed?.() ?? 0) * 2) / 2, 0, 60));
     }
     this.#renderAutoButton("current", hold !== null, controls, () => weather.holdCurrent(null));
     const id = this.#weather.locationId;

@@ -2865,6 +2865,18 @@ function choiceRow(options, value, path) {
   events.fog.elapsedSec = 340;
   fireLive();
   assert.equal(summaryValue("fog"), "40% · пік · ще 4:20", "the next live update rewrites it without a redraw");
+  // TK-401 (owner): a «Керування» slider follows its element's live strength; the person's own move is not overridden.
+  const fogRange = () => byClass("devtools__range", byClass("devtools__row", liveUi.body)
+    .find((row) => row.dataset.devtoolsPath === "WEATHER.controls.fogStrength"))[0];
+  assert.equal(String(fogRange().value), "40", "the fog's slider stands at its live strength");
+  events.fog.strength = 0.55;
+  fireLive();
+  assert.equal(String(fogRange().value), "55", "the next live update moves it");
+  fogRange().value = "70";
+  fogRange().fire("input", { target: fogRange() });
+  events.fog.strength = 0.6;
+  fireLive();
+  assert.equal(String(fogRange().value), "70", "a slider just moved by the person keeps their value");
   // TK-367.1 (owner: «по 2 кнопки в ряду», short labels): «Керування»'s buttons sit in two-column grids, each button in
   // its own row with its own devtools path (links, search and the reveal outline still find it).
   const gridPaths = byClass("devtools__button-grid", liveUi.body)

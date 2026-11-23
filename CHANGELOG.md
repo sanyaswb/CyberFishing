@@ -2,6 +2,10 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.52.68 - DevTools: the weather's sliders follow the live value (TK-401)
+
+- dev.html: in «ПОГОДА» → «Керування» the strength sliders (rain, storm, fog, emission, ash, the wind with its gusts, the waves, the current) move with the live value; one held by hand shows its value, and one the person is moving is not pulled away.
+
 ## v0.52.67 - DevTools: «Хвилі» off when the water is flat (TK-398.1)
 
 - dev.html: with the automatic weather off and no wind the water was flat, but «Хвилі» in «Керування» (and the «i» of «ПОГОДА») still showed the waves on. Now they are on only while held by hand or while the waves really show; a wind that raises waves turns the switch on by itself.
@@ -37,7 +41,3 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 ## v0.52.59 - «ПРОДУКТИВНІСТЬ» draws its frame bar with three shapes (TK-393, spec 186)
 
 - dev.html: the frame bar of the «ПРОДУКТИВНІСТЬ» overlay looks the same but is three shapes instead of up to 240, so the overlay itself costs the phone less while it measures.
-
-## v0.52.58 - The DEV live snapshot at the overlay's cadence, not every frame (TK-392, spec 186)
-
-- dev.html: with the overlay, DevTools or console modules on, the game built the debug snapshot (bite chances of every species and more) every frame although everything reads it every 150 ms; now it builds it every 150 ms (60 → 6–7 times a second). Less DEV work in the frame, so «ПРОДУКТИВНІСТЬ» measures closer to the real game.
