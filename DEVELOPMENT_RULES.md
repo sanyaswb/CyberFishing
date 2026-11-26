@@ -73,6 +73,19 @@ Performance:
 - hot-loop read models (for example the fight frame) are reused objects written in place; diagnostics snapshots are built only when DEV composes them;
 - normalized configuration is computed once per runtime config revision, not per frame.
 
+**Weather export — mandatory when the weather changes (owner, 2026-11-26, spec 189: «погода буде ще змінюватись …
+додай помітку щоб ураховувати це при написанні в логіці експорту»).** The owner tunes the weather in DevTools «ПОГОДА»,
+exports a file and moves it into the code with `npm run apply:weather`; the file carries only the changed parameters
+(format v3), so it must keep applying while the code evolves:
+- a weather parameter lives in the data module of its part (`WEATHER_EXPORT_PARTS` in
+  `src/dev/weather/weather_export_format.js`: `raw/weather/<part>_settings.js`, `raw/locations/weather|current/<id>.js`),
+  never inline in `game_config.js` or a location's database; a new kind of weather is a new part (its module in the form
+  `generalModuleSource` writes, its registry entry, CONFIG reading the module). The devtools-controls check fails while
+  «ПОГОДА» shows a parameter no part exports;
+- renaming or moving a key: an entry in `KEY_RENAMES`; a changed meaning of a value: a reader upgrade (as
+  `upgradeLegacyEffects`); never tie a file to a part's whole content (no whole-part hashes, no «missing key» refusals);
+- DEV switches (`CONFIG.debug.*`, «Автоматична погода», holds in «Керування») are not part of the weather file.
+
 Rendering — **mandatory reading before any rendering work**: [docs/rendering.md](docs/rendering.md). That covers
 renderers, render passes, the canvas or its size, image assets and their sizes, Spine, the HUD over the canvas and the
 frame loop. It holds the incidents (blurred canvas and pixelated art, spec 100; portrait phones at 10–17 FPS from

@@ -2,6 +2,10 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.52.88 - Weather export: a rule and a check that it stays complete (spec 189, stage C)
+
+- Checks only: a new weather setting that DevTools «ПОГОДА» can edit but the export would leave out now fails the checks; DEVELOPMENT_RULES «Weather export» says how to add or rename weather settings.
+
 ## v0.52.87 - Weather export: every weather setting, only the changes (spec 189, stage B)
 
 - dev.html: «ПОГОДА» → «Експорт погоди» now carries every part the section edits — the lightning, starfall, water, emission screen, radiation hiss, Geiger counter and the location's current too — and only the changed parameters (was → is). `npm run apply:weather` applies just those, so a file still applies after the code changed elsewhere; a parameter changed in the code since the export is the only conflict. Old files still apply.
@@ -37,7 +41,3 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 ## v0.52.79 - Check: a weather link opens its field the way the game does (TK-403.1)
 
 - Checks only: the DevTools link check now goes through the same reveal feedback as the game and asserts the field is visible, not only highlighted. No change in the game or dev.html.
-
-## v0.52.78 - DevTools: what one weather element does to another is edited in one place (spec 187 D16)
-
-- dev.html: «ПОГОДА» → ДОЩ holds what the rain does to the wind; ВІТЕР shows it as a link. A link shows the value now and opens the parameter where it is edited (storm → ШТОРМ, rain → ДОЩ, emission → ВИКИД; ДОЩ and ПОПІЛ link to what the storm and the wind do to them).

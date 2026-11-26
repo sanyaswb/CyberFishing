@@ -4315,6 +4315,89 @@ function choiceRow(options, value, path) {
     linkUi.dispose();
   }
 
+  // --- TK-409 (spec 189 D4, owner: «погода буде ще змінюватись … додай помітку»): every CONFIG parameter DevTools
+  // «ПОГОДА» lets the owner change belongs to a part of the weather export — so a new weather parameter can never be
+  // edited and then silently left out of the file (as the lightning's look was). The real section over the real CONFIG,
+  // «Всі» (every general part and the running location): every row with a CONFIG path, and every CONFIG write made by
+  // pressing «+» on each number field and flipping each switch; DEV switches (CONFIG.debug.*) are not weather. ---
+  {
+    const { WeatherDevSection } = runtime.importModule("src/dev/tools/weather_dev_section.js");
+    const { ConfigTreeRenderer } = runtime.importModule("src/dev/tools/config/config_tree_renderer.js");
+    const { DevConfigEditService } = runtime.importModule("src/dev/tools/config/dev_config_edit_service.js");
+    const { DevToolsParameterAliasRegistry } = runtime.importModule("src/dev/services/dev_tools_parameter_alias_registry.js");
+    const format = runtime.importModule("src/dev/weather/weather_export_format.js");
+    const { CONFIG: gameConfig } = runtime.importModule("src/game/config/runtime/game_config.js");
+    const config = JSON.parse(JSON.stringify(gameConfig));
+    const written = new Set();
+    const readKey = (obj, parts) => parts.reduce((cur, key) => cur?.[key], obj);
+    const configRuntime = {
+      overrideStore: { has: () => false },
+      exportOverrides: () => ({}),
+      set(path, value) {
+        written.add(path.slice(1).join("."));
+        const parent = readKey(config, path.slice(1, -1));
+        if (parent && typeof parent === "object") parent[path.at(-1)] = value;
+      },
+      reset() {},
+    };
+    const fullUi = new DevToolsUI(() => {}, config, null, null, null, document.body, createElement("div"));
+    const pages = fullUi.createPages([{ id: "scene", title: "Сцена", icon: "map" }], "scene", () => {});
+    const scenePage = pages.get("scene");
+    const aliases = new DevToolsParameterAliasRegistry();
+    const edits = new DevConfigEditService({
+      config, catalogs: {}, configRuntime, getHookedFish: () => null, hookedFishSync: { afterEdit() {} },
+      itemStatSync: { afterEdit() {} }, debugModulesSource: () => ({}), syncValue: (path, value) => fullUi.syncValue(path, value),
+      eventTarget: { dispatchEvent() {} }, logger: { log() {} }, parameterAliases: aliases,
+    });
+    const createSection = (label, parent, path, options = {}) => fullUi.createSection(label, parent, false, () => {}, path, options);
+    const tree = new ConfigTreeRenderer({ ui: fullUi, edits, aliases, schema: { describe: () => null, prerequisitesOf: () => [] },
+      createSection });
+    const model = { snapshot: { events: {}, strikeSerial: 0, strikeVariant: 0, strikeDistance: 0 },
+      start() {}, stop() {}, hold() {}, releaseAll() {}, strike() {} };
+    const locationId = Object.keys(config.locations.map)[0];
+    // The section composed as SceneModule composes it (src/dev/tools/modules/scene_module.js).
+    const section = new WeatherDevSection({
+      ui: fullUi,
+      weather: { locationId, getModel: () => model, getEmissionModel: () => null, getWind: () => null },
+      config: () => config.locations.map[locationId].weather,
+      locationConfig: (id) => config.locations.map[id]?.weather ?? null,
+      locationsMap: () => config.locations.map,
+      rainConfig: () => config.canvas.rain,
+      ashConfig: () => config.canvas.ash,
+      general: () => ({ rain: config.canvas.rain, ash: config.canvas.ash, water: config.canvas.water, storm: config.weather.storm,
+        wind: config.weather.wind, screen: config.emission.screen, grain: config.canvas.radiationGrain,
+        geiger: config.ui.audio.geiger, starfall: config.canvas.starfall, lightning: config.canvas.lightning, debug: config.debug }),
+      createSection,
+      renderConfigTree: (value, parent, path, options) => tree.render(value, parent, path, options),
+      updateConfig: (path, value) => edits.update(path, value),
+      readConfig: (parts) => readKey(config, parts) ?? null,
+      readBaseConfig: (parts) => readKey(gameConfig, parts) ?? null,
+      view: { selected: "Всі" },
+    });
+    section.render(createSection("СЦЕНА WebGL", scenePage, ["SCENE_LAYER"]));
+    fullUi.materializeAll();
+    const rowPaths = byClass("devtools__row", scenePage).map((row) => row.dataset.devtoolsPath || "")
+      .filter((path) => path.startsWith("CONFIG.")).map((path) => path.slice("CONFIG.".length));
+    for (const row of byClass("devtools__row", scenePage)) byClass("devtools__number", row)[0]?.children?.[2]?.click();
+    for (const input of byClass("devtools__switch-input", scenePage)) {
+      input.checked = !input.checked;
+      input.fire("change", { target: input });
+    }
+    const parts = [
+      ...format.GENERAL_WEATHER_PART_IDS.map((id) => format.GENERAL_WEATHER_PARTS[id].configPath.join(".")),
+      ...format.LOCATION_WEATHER_PART_IDS.map((id) => format.LOCATION_WEATHER_PARTS[id].configPath(locationId).join(".")),
+    ];
+    const exported = (path) => path.startsWith("debug.") || parts.some((part) => path === part || path.startsWith(`${part}.`));
+    const edited = [...new Set([...rowPaths, ...written])];
+    assert.ok(edited.length > 150 && written.size > 50, `the section was exercised (${edited.length} parameters, ${written.size} written)`);
+    assert.ok(edited.some((path) => path.startsWith("canvas.lightning.")) && edited.some((path) => path.includes("environment.current")),
+      "the lightning's look and the location's current are among them");
+    assert.deepEqual(edited.filter((path) => !exported(path)), [],
+      "every parameter «ПОГОДА» edits is in a part of the weather export (spec 189 D4: a new one needs its part's module)");
+    section.dispose();
+    fullUi.dispose();
+  }
+
   // --- TK-347: from-to numeric pairs render two NumberField controls with - / + step buttons ---
   {
     const { ConfigTreeRenderer } = runtime.importModule("src/dev/tools/config/config_tree_renderer.js");
