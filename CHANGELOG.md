@@ -2,6 +2,10 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.52.81 - DevTools: the water's settings in three groups (spec 187, stage D)
+
+- dev.html: «ПОГОДА» → ВОДА splits the one long list into «Вигляд хвиль», «Стан моря — як погода міняє хвилі» and «Покачування поплавка»; the parameters and what they do are the same.
+
 ## v0.52.80 - DevTools: a weather link reads like the parameter's own row (TK-403.2)
 
 - dev.html: a link in «ПОГОДА» shows the parameter's key as in the code with its «i» (name and description) and the key's copy button, like the row it opens.
@@ -39,7 +43,3 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 
 - The rain's and the ash's values that grow with their strength now start at the least visible strength (5 %) and reach their end at 100 %. A location can override either end.
 - dev.html: ДОЩ and ПОПІЛ show these values at the strength slider's level and follow it; at 5 % you edit «від», at 100 % «до»; values the slider changed are marked with a dot and kept by «Змінені». A location's override now passes the weather file check (it was always refused).
-
-## v0.52.71 - DEV: time ×10 and ×20; «Автоматична погода» remembered (spec 187)
-
-- dev.html: a press on the time now goes on after ×5 to ×10 and ×20, then back to ×1. «Автоматична погода» left off stays off after a reload (the weather starts frozen); the game itself is not affected.

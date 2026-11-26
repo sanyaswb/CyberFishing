@@ -4102,8 +4102,11 @@ function choiceRow(options, value, path) {
     const { WIND_SETTINGS } = runtime.importModule("src/game/config/raw/weather/wind_settings.js");
     const copy = (value) => JSON.parse(JSON.stringify(value));
     // The real storm and wind settings; the location's emission storm as the ВИКИД link's target.
+    const { CONFIG: realConfig } = runtime.importModule("src/game/config/runtime/game_config.js");
     const baseConfig = {
       weather: { storm: copy(STORM_SETTINGS), wind: copy(WIND_SETTINGS) },
+      // TK-404: the real scene water (ВОДА's groups).
+      canvas: { water: copy(realConfig.canvas.water) },
       locations: { map: { test: { weather: { emission: { storm: { storm: 0.9 } } } } } },
     };
     const config = copy(baseConfig);
@@ -4169,7 +4172,7 @@ function choiceRow(options, value, path) {
       config: () => config.locations.map.test.weather,
       locationConfig: (id) => config.locations.map[id]?.weather ?? null,
       locationsMap: () => config.locations.map,
-      general: () => ({ storm: config.weather.storm, wind: config.weather.wind }),
+      general: () => ({ storm: config.weather.storm, wind: config.weather.wind, water: config.canvas.water }),
       edits: { hasOverrides: (parts) => edits.hasOverridesUnder(parts), resetTree: () => {},
         isOverridden: (path) => edits.isOverridden(path), resetParameter: (path) => edits.resetParameter(path) },
       createSection,
@@ -4221,6 +4224,30 @@ function choiceRow(options, value, path) {
       assert.equal(JSON.stringify(editedIn.get(key) ?? []), JSON.stringify([owner]),
         `${key} is edited in ПОГОДА in exactly one place — ${owner} (D16)`);
     }
+
+    // TK-404 (spec 187 D4): ВОДА — «Вигляд хвиль», «Стан моря», «Покачування поплавка» in this order; every value of
+    // canvas.water is exactly one row, in its own group (seaState.*, floatRocking.*, the rest — the waves' look).
+    const sectionAt = (path) => byClass("devtools__section", scenePage).find((el) => el.dataset.devtoolsPath === path);
+    const waterGroups = byClass("devtools__section", sectionAt("WEATHER.water"))
+      .map((el) => el.dataset.devtoolsPath).filter((path) => /^WEATHER\.water\.[A-Za-z]+$/u.test(path));
+    assert.equal(JSON.stringify(waterGroups), JSON.stringify(["WEATHER.water.waves", "WEATHER.water.seaState",
+      "WEATHER.water.floatRocking", "WEATHER.water.current"]), "ВОДА: the waves' look, the sea state, the float's rocking, then the location's current");
+    const groupOf = (row) => {
+      for (let node = row.parentNode; node; node = node.parentNode) {
+        if (/^WEATHER\.water\.[A-Za-z]+$/u.test(node.dataset?.devtoolsPath || "")) return node.dataset.devtoolsPath;
+      }
+      return null;
+    };
+    const waterRows = byClass("devtools__row", scenePage)
+      .filter((row) => (row.dataset.devtoolsPath || "").startsWith("CONFIG.canvas.water."));
+    const waterKeys = [...flat(baseConfig.canvas.water).keys()].map((key) => `CONFIG.canvas.water.${key}`);
+    for (const key of waterKeys) {
+      const rows = waterRows.filter((row) => row.dataset.devtoolsPath === key);
+      const group = key.startsWith("CONFIG.canvas.water.seaState.") ? "WEATHER.water.seaState"
+        : key.startsWith("CONFIG.canvas.water.floatRocking.") ? "WEATHER.water.floatRocking" : "WEATHER.water.waves";
+      assert.equal(JSON.stringify(rows.map(groupOf)), JSON.stringify([group]), `${key}: one row, in ${group}`);
+    }
+    assert.equal(waterRows.length, waterKeys.length, "ВОДА shows no other canvas.water rows");
 
     // The links: the value now, the place named, a press reveals the parameter's own row (not a section's title, R20).
     const places = { "ДОЩ": "WEATHER.rain", "ШТОРМ": "WEATHER.storm", "ВІТЕР": "WEATHER.wind", "ВИКИД": "WEATHER.emission" };

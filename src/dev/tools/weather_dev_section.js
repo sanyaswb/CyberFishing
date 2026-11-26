@@ -800,7 +800,14 @@ export class WeatherDevSection {
             if (on && id) this.#weather.requestImage?.(id);
             this.#updateConfig?.(waveTestPath, on === true);
           }, path: ["WEATHER", "water", "testBackground"], bindingPath: waveTestPath, ...this.#changeTracking(waveTestPath) });
-        this.#tree(water, this.#group("Хвилі й стан моря (загальне)", section, ["WEATHER", "water", "waves"]), ["canvas", "water"]);
+        // Spec 187 D4 (TK-404): the waves' look, how the weather changes them, and the float's rocking — three groups of
+        // the same parameters (their paths unchanged).
+        const { seaState, floatRocking, ...waves } = water ?? {};
+        this.#tree(waves, this.#group("Вигляд хвиль (загальне)", section, ["WEATHER", "water", "waves"]), ["canvas", "water"]);
+        this.#tree(seaState, this.#group("Стан моря — як погода міняє хвилі (загальне)", section, ["WEATHER", "water", "seaState"]),
+          ["canvas", "water", "seaState"]);
+        this.#tree(floatRocking, this.#group("Покачування поплавка (загальне)", section, ["WEATHER", "water", "floatRocking"]),
+          ["canvas", "water", "floatRocking"]);
       }
       if (!mode.location) return;
       const current = this.#locationsMap?.()?.[mode.location]?.environment?.current;
