@@ -562,7 +562,9 @@ async function checkSceneBlur() {
   const stage = new pixi.Container();
   const blur = new PixiSceneBlur({ pixi, stage });
   const settings = { ...CONFIG.emission.screen.blur.scene };
-  assert.equal(JSON.stringify(settings), JSON.stringify({ resolution: 0.5, quality: 2 }), "half resolution, two passes per axis");
+  // By value, in any key order (spec 189: the data modules hold their keys sorted, as apply:weather writes them).
+  assert.deepEqual([settings.resolution, settings.quality, Object.keys(settings).length], [0.5, 2, 2],
+    "half resolution, two passes per axis");
   assert.equal(blur.update(0.2, settings, 400, 800), false, "under a quarter pixel: nothing to do");
   assert.equal(stage.filters, null, "no filter, no pass");
   assert.equal(blur.update(3, settings, 400, 800), true, "the blur starts: a new frame");

@@ -2,6 +2,10 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.52.86 - Weather settings in their own data files (spec 189, stage A)
+
+- No change in the game: the lightning, starfall, water, emission screen, radiation hiss, Geiger counter and the location's current now live in their own data files, so the weather export can carry them (next step).
+
 ## v0.52.85 - Lightning: the owner's time seen and branch angle (TK-406.2)
 
 - A strike is now seen 0.9–2.1 s and its branches leave the channel at 18–63° (the owner's values from DevTools).
@@ -38,7 +42,3 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 
 - The rain's and the ash's look no longer make a new object per value every frame on a location with its own values.
 - Turning the automatic weather on releases every frozen or hand-set level by itself, whoever turns it.
-
-## v0.52.76 - Old weather files with multipliers still apply (spec 187)
-
-- `npm run apply:weather` and the DevTools import read a weather file exported before the storm's and the wind's «від / до» as the pairs that act the same (such a file still reports a conflict with the changed code: apply it with --force or export again).

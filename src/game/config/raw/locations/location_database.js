@@ -42,10 +42,7 @@ export const MAP_DB = {
     // Погода: weather/test.js (spec 172, spec 175), joined by game/config/databases/location_catalog.js.
 
     environment: {
-      current: {
-        speedPxPerSec: 5, // Сила течії
-        direction: { x: 1, y: 0.1 }, // Вектор (зносить вправо і трохи вниз)
-      },
+      // Течія: current/test.js (spec 189), joined by game/config/databases/location_catalog.js.
       wind: {
         // Вітер впливає на поплавок і легкі снасті
         changesPerDay: [4, 12],

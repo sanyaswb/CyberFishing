@@ -536,6 +536,8 @@
 │  │  │  │  ├── live_bait
 │  │  │  │  │  └── live_bait_config.js
 │  │  │  │  ├── locations
+│  │  │  │  │  ├── current
+│  │  │  │  │  │  └── test.js
 │  │  │  │  │  ├── location_database.js
 │  │  │  │  │  ├── weather
 │  │  │  │  │  │  └── test.js
@@ -557,8 +559,14 @@
 │  │  │  │  │  └── game_time_config.js
 │  │  │  │  └── weather
 │  │  │  │     ├── ash_settings.js
+│  │  │  │     ├── emission_screen_settings.js
+│  │  │  │     ├── geiger_settings.js
+│  │  │  │     ├── lightning_settings.js
+│  │  │  │     ├── radiation_grain_settings.js
 │  │  │  │     ├── rain_settings.js
+│  │  │  │     ├── starfall_settings.js
 │  │  │  │     ├── storm_settings.js
+│  │  │  │     ├── water_settings.js
 │  │  │  │     └── wind_settings.js
 │  │  │  ├── runtime
 │  │  │  │  ├── config_override_store.js
