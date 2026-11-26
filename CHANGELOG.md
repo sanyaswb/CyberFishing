@@ -2,6 +2,10 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.52.79 - Check: a weather link opens its field the way the game does (TK-403.1)
+
+- Checks only: the DevTools link check now goes through the same reveal feedback as the game and asserts the field is visible, not only highlighted. No change in the game or dev.html.
+
 ## v0.52.78 - DevTools: what one weather element does to another is edited in one place (spec 187 D16)
 
 - dev.html: «ПОГОДА» → ДОЩ holds what the rain does to the wind; ВІТЕР shows it as a link. A link shows the value now and opens the parameter where it is edited (storm → ШТОРМ, rain → ДОЩ, emission → ВИКИД; ДОЩ and ПОПІЛ link to what the storm and the wind do to them).
@@ -39,7 +43,3 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 ## v0.52.70 - DevTools: the weather by hand only without the automatic weather; off freezes it (spec 187)
 
 - dev.html: with «Автоматична погода» on nothing is set by hand (the switches, the direction, the sliders and the actions are inactive and point at the switch). Turning it off freezes the weather where it is: no event starts or ends, the levels stay until you change them; the wind still gusts, a storm still strikes lightning and the stars still fall at the frozen level; the current and the calm swell stay. Turning it on releases everything.
-
-## v0.52.69 - DevTools: the weather's strength sliders in their own sections (spec 187, stage A)
-
-- dev.html: «ПОГОДА» → «Керування» keeps only the switches, the wind's direction, «авто» and the actions. Each element's «Сила, %» slider is now on top of its own section (ДОЩ, ШТОРМ, ТУМАН, ВИКИД, ЗОРЕПАД, ПОПІЛ, ВІТЕР; ВОДА — the waves' height and the current's speed), for the location the game runs; it holds the element in the game and follows its live value.

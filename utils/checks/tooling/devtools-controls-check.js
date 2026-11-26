@@ -4125,7 +4125,10 @@ function choiceRow(options, value, path) {
         writeKey(config, path.slice(1), copy(readKey(baseConfig, path.slice(1))));
       },
     };
-    const linkUi = new DevToolsUI(() => {}, config, null, null, null, document.body, createElement("div"));
+    // TK-403.1: the reveal feedback the game composes (development_game_startup) — revealPath goes through showRevealed.
+    const { DevToolsDependencyFeedback: LinkFeedback } = runtime.importModule("src/dev/services/dev_tools_dependency_feedback.js");
+    const linkUi = new DevToolsUI(() => {}, config, null, null, null, document.body, createElement("div"),
+      new LinkFeedback({ scheduler: { setTimeout: () => 1, clearTimeout() {} }, durationMs: 3000 }));
     const pages = linkUi.createPages([{ id: "scene", title: "Сцена", icon: "map" }], "scene", () => {});
     const scenePage = pages.get("scene");
     const aliases = new DevToolsParameterAliasRegistry();
@@ -4235,11 +4238,17 @@ function choiceRow(options, value, path) {
       const value = readKey(config, target.split(".").slice(1));
       assert.equal(byClass("devtools__link-value", button)[0].innerText,
         Array.isArray(value) ? value.join(" / ") : String(value), `${target}: the link shows the value now`);
-      for (const old of byClass("devtools__row--revealed", scenePage)) old.classList.remove("devtools__row--revealed");
       button.click();
       const revealed = byClass("devtools__row--revealed", scenePage);
       assert.equal(revealed.length, 1, `${target}: a press reveals one row`);
       assert.equal(revealed[0].dataset.devtoolsPath, target, `${target}: the revealed row is the parameter itself`);
+      // TK-403.1: and it can be seen — on the page, under no hidden (collapsed) section.
+      let node = revealed[0];
+      while (node && node !== scenePage) {
+        assert.notEqual(node.style?.display, "none", `${target}: no hidden section above the revealed row`);
+        node = node.parentNode;
+      }
+      assert.equal(node, scenePage, `${target}: the revealed row is on the page`);
       assert.equal(elementOf.get(revealed[0]), places[byClass("devtools__link-place", button)[0].innerText],
         `${target}: the row is in the section the link names`);
     }
