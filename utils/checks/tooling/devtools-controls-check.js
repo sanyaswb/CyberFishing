@@ -4127,7 +4127,15 @@ function choiceRow(options, value, path) {
     };
     // TK-403.1: the reveal feedback the game composes (development_game_startup) — revealPath goes through showRevealed.
     const { DevToolsDependencyFeedback: LinkFeedback } = runtime.importModule("src/dev/services/dev_tools_dependency_feedback.js");
-    const linkUi = new DevToolsUI(() => {}, config, null, null, null, document.body, createElement("div"),
+    // TK-403.2: the names the game's tooltip provider reads by path (parameter_labels.json; the provider itself fetches
+    // them, this double reads the same file and normalises paths the same way for these rows).
+    const labels = JSON.parse(require("node:fs").readFileSync(
+      require("node:path").join(__dirname, "../../../src/dev/metadata/parameter_labels.json"), "utf8"));
+    const tooltips = { describe: (path) => {
+      const entry = labels[String(path).replace(/^CONFIG\./u, "").replace(/^locations\.map\.[^.]+\./u, "MAP_DB.")];
+      return entry ? { name: entry.label, description: entry.description || "" } : null;
+    }, dispose() {} };
+    const linkUi = new DevToolsUI(() => {}, config, tooltips, null, null, document.body, createElement("div"),
       new LinkFeedback({ scheduler: { setTimeout: () => 1, clearTimeout() {} }, durationMs: 3000 }));
     const pages = linkUi.createPages([{ id: "scene", title: "Сцена", icon: "map" }], "scene", () => {});
     const scenePage = pages.get("scene");
@@ -4249,6 +4257,20 @@ function choiceRow(options, value, path) {
         node = node.parentNode;
       }
       assert.equal(node, scenePage, `${target}: the revealed row is on the page`);
+      // TK-403.2: the link reads as the parameter's own row — the key as in the code, the same «i», the key's copy.
+      const key = target.split(".").at(-1);
+      assert.equal(row.children[0].dataset.devtoolsKey, key, `${target}: the link shows the key as in the code`);
+      assert.equal(revealed[0].children[0].dataset.devtoolsKey, key, `${target}: the same key as the field's row`);
+      const hintName = (owner) => {
+        const info = byClass("devtools__info", owner)[0];
+        if (!info) return null;
+        if (info.getAttribute("aria-expanded") !== "true") info.click();
+        return byClass("devtools__description-name", owner)[0]?.innerText ?? null;
+      };
+      const fieldName = hintName(revealed[0]);
+      assert.ok(fieldName, `${target}: the field has a name in its «i»`);
+      assert.equal(hintName(row), fieldName, `${target}: the link's «i» names the same parameter`);
+      assert.ok(byClass("devtools__copy-key", row)[0]?.title.includes(`«${key}»`), `${target}: the link copies the key`);
       assert.equal(elementOf.get(revealed[0]), places[byClass("devtools__link-place", button)[0].innerText],
         `${target}: the row is in the section the link names`);
     }

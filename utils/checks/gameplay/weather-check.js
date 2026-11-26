@@ -907,7 +907,7 @@ const step = (model, seconds, clock = null, dt = 0.1) => {
       },
       createInfoRow() {},
       // DevToolsUI's contract (TK-403): a link row returns its value element (the section writes it after an edit).
-      createLinkRow: (label, value) => ({ innerText: value }),
+      createLinkRow: (value) => ({ innerText: value }),
       // DevToolsUI's contract (TK-367.1): the container the button rows of a two-column grid go into.
       createButtonGrid(parent) {
         const grid = fakeNode();
@@ -2426,7 +2426,7 @@ const step = (model, seconds, clock = null, dt = 0.1) => {
   const node = () => ({ replaceChildren() {}, appendChild() {} });
   const ui = {
     createInfoRow() {}, createTextRow() {}, createRangeRow() {}, createSelectRow() {}, createInputRow() {}, createSwitcherRow() {},
-    createLinkRow: (label, value) => ({ innerText: value }),
+    createLinkRow: (value) => ({ innerText: value }),
     addParameter() {}, redraw: devToolsRedraw, releaseValueBindings() {}, showLiveValue() {}, createButtonGrid: (parent) => parent,
     createButtonRow(label, parent, onClick, navigation, icon, path) {
       const row = { style: {} };

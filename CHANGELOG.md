@@ -2,6 +2,10 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.52.80 - DevTools: a weather link reads like the parameter's own row (TK-403.2)
+
+- dev.html: a link in «ПОГОДА» shows the parameter's key as in the code with its «i» (name and description) and the key's copy button, like the row it opens.
+
 ## v0.52.79 - Check: a weather link opens its field the way the game does (TK-403.1)
 
 - Checks only: the DevTools link check now goes through the same reveal feedback as the game and asserts the field is visible, not only highlighted. No change in the game or dev.html.
@@ -39,7 +43,3 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 ## v0.52.71 - DEV: time ×10 and ×20; «Автоматична погода» remembered (spec 187)
 
 - dev.html: a press on the time now goes on after ×5 to ×10 and ×20, then back to ×1. «Автоматична погода» left off stays off after a reload (the weather starts frozen); the game itself is not affected.
-
-## v0.52.70 - DevTools: the weather by hand only without the automatic weather; off freezes it (spec 187)
-
-- dev.html: with «Автоматична погода» on nothing is set by hand (the switches, the direction, the sliders and the actions are inactive and point at the switch). Turning it off freezes the weather where it is: no event starts or ends, the levels stay until you change them; the wind still gusts, a storm still strikes lightning and the stars still fall at the frozen level; the current and the calm swell stay. Turning it on releases everything.

@@ -277,7 +277,7 @@ const tick = () => new Promise((resolve) => setTimeout(resolve, 0));
         return el;
       },
       // DevToolsUI's contract (TK-403): a link row returns its value element.
-      createLinkRow(label, value, parent) {
+      createLinkRow(value, parent) {
         const el = doc.createElement("div");
         el.innerText = value;
         parent.appendChild(el);

@@ -772,16 +772,20 @@ export class DevToolsUI {
 
   // Spec 187 D16 (TK-403): a parameter edited in another section — its key, its value now (read only) and a button with
   // the place it lives in; the button reveals that parameter's own row there (revealPath: open, scroll, highlight).
+  // TK-403.2: the label is the parameter's own (the key as in the code, its «i» and the key's copy button, TK-314/315);
+  // only the row carries the link's path, so a reveal of the parameter finds its own row, never the link.
   // Returns the value element: the owner writes the value again after an edit (config-updated).
-  createLinkRow(labelStr, valueText, parentElement, { path = null, target, place }) {
+  createLinkRow(valueText, parentElement, { path = null, target, place }) {
+    const targetPath = this.#normalizeDevToolsPath(target);
+    const key = targetPath.split(".").at(-1);
     const row = document.createElement("div");
     row.className = "devtools__row devtools__row--link";
     this.#assignDevToolsPath(row, path);
-    row.appendChild(this.#createLabelElement(labelStr, path));
+    row.appendChild(this.#createLabelElement(key, targetPath));
     const btn = document.createElement("button");
     btn.type = "button";
     btn.className = "devtools__action devtools__action--link";
-    btn.dataset.devtoolsTarget = this.#normalizeDevToolsPath(target);
+    btn.dataset.devtoolsTarget = targetPath;
     const value = document.createElement("span");
     value.className = "devtools__link-value";
     value.innerText = valueText;
@@ -789,8 +793,10 @@ export class DevToolsUI {
     where.className = "devtools__link-place";
     where.innerText = place;
     btn.append(value, createDevIcon(document, "chevron", "devtools__link-icon"), where);
-    btn.addEventListener("click", () => this.revealPath(target));
+    btn.addEventListener("click", () => this.revealPath(targetPath));
     row.appendChild(btn);
+    this.#addDescription(row);
+    this.#addCopyKey(row, targetPath, key);
     this.#insertTreeNode(parentElement, row, 0);
     return value;
   }

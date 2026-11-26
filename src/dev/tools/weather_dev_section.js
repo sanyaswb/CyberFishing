@@ -72,23 +72,24 @@ const CHANCES = Object.freeze({
   fog: Object.freeze(["Туман: шанс перевірки", "fogChance", ["fog", "chancePerCheck"]]),
 });
 // Spec 187 D16 (TK-403): a parameter of one element that acts on another is edited in the section of the element whose
-// strength drives it; the other section shows a link (its value now and a button to it): [label, CONFIG path, section].
+// strength drives it; the other section shows a link (its key and «i» as the parameter's own row — TK-403.2 — its value
+// now and a button to it): [CONFIG path, section].
 const WIND_LINKS = Object.freeze([
-  Object.freeze(["Дощ: вітер не слабший", Object.freeze(["weather", "wind", "rain", "minStrength"]), "ДОЩ"]),
-  Object.freeze(["Дощ: додаток до вітру", Object.freeze(["weather", "wind", "rain", "bonus"]), "ДОЩ"]),
-  Object.freeze(["Дощ: пориви ×", Object.freeze(["weather", "wind", "rain", "gustChanceMult"]), "ДОЩ"]),
-  Object.freeze(["Шторм: вітер не слабший", Object.freeze(["weather", "storm", "windMinStrength"]), "ШТОРМ"]),
-  Object.freeze(["Шторм: пориви ×", Object.freeze(["weather", "storm", "gustChanceMult"]), "ШТОРМ"]),
+  Object.freeze([Object.freeze(["weather", "wind", "rain", "minStrength"]), "ДОЩ"]),
+  Object.freeze([Object.freeze(["weather", "wind", "rain", "bonus"]), "ДОЩ"]),
+  Object.freeze([Object.freeze(["weather", "wind", "rain", "gustChanceMult"]), "ДОЩ"]),
+  Object.freeze([Object.freeze(["weather", "storm", "windMinStrength"]), "ШТОРМ"]),
+  Object.freeze([Object.freeze(["weather", "storm", "gustChanceMult"]), "ШТОРМ"]),
 ]);
 const RAIN_LINKS = Object.freeze([
-  Object.freeze(["Шторм: шанс дощу ×", Object.freeze(["weather", "storm", "rainChanceMult"]), "ШТОРМ"]),
-  Object.freeze(["Шторм: сила дощу ×", Object.freeze(["weather", "storm", "rainStrengthMult"]), "ШТОРМ"]),
-  Object.freeze(["Шторм: частка крапель", Object.freeze(["weather", "storm", "rainDropsShare"]), "ШТОРМ"]),
-  Object.freeze(["Шторм: нахил дощу", Object.freeze(["weather", "storm", "rainSlantDeg"]), "ШТОРМ"]),
-  Object.freeze(["Вітер: нахил дощу", Object.freeze(["weather", "wind", "rainSlantDeg"]), "ВІТЕР"]),
+  Object.freeze([Object.freeze(["weather", "storm", "rainChanceMult"]), "ШТОРМ"]),
+  Object.freeze([Object.freeze(["weather", "storm", "rainStrengthMult"]), "ШТОРМ"]),
+  Object.freeze([Object.freeze(["weather", "storm", "rainDropsShare"]), "ШТОРМ"]),
+  Object.freeze([Object.freeze(["weather", "storm", "rainSlantDeg"]), "ШТОРМ"]),
+  Object.freeze([Object.freeze(["weather", "wind", "rainSlantDeg"]), "ВІТЕР"]),
 ]);
 const ASH_LINKS = Object.freeze([
-  Object.freeze(["Вітер: знос попелу", Object.freeze(["weather", "wind", "ashDriftPx"]), "ВІТЕР"]),
+  Object.freeze([Object.freeze(["weather", "wind", "ashDriftPx"]), "ВІТЕР"]),
 ]);
 // A pair [від, до] as «від / до»; a number as it is.
 const linkText = (value) => (Array.isArray(value) ? value.join(" / ") : value == null ? "—" : String(value));
@@ -611,7 +612,7 @@ export class WeatherDevSection {
         this.#renderLinks(WIND_LINKS, events, ["WEATHER", "wind", "events"]);
         // The emission acts through its storm, set by the location (ВИКИД → «Подія викиду» → storm).
         if (mode.location) {
-          this.#renderLinks([["Викид: сила шторму", this.#locationParts(mode.location, "emission", "storm", "storm"), "ВИКИД"]],
+          this.#renderLinks([[this.#locationParts(mode.location, "emission", "storm", "storm"), "ВИКИД"]],
             events, ["WEATHER", "wind", "events"]);
         } else {
           this.#ui.createInfoRow("Викид", "діє на вітер через шторм локації (ВИКИД → «Подія викиду» → storm)", events);
@@ -625,11 +626,11 @@ export class WeatherDevSection {
 
   // Spec 187 D16 (TK-403): parameters of another element that act on this one — a row each with the value now (read
   // only, follows config-updated: #refreshLinks) and a button that reveals the parameter in the section it is edited in.
-  // links: [label, CONFIG path parts, the section's title]; the row's path: [...path, the parameter's key, its owner].
+  // links: [CONFIG path parts, the section's title]; the row's path: [...path, the parameter's key, its owner].
   #renderLinks(links, parent, path) {
-    for (const [label, parts, place] of links) {
+    for (const [parts, place] of links) {
       const read = () => this.#configValue(parts);
-      const value = this.#ui.createLinkRow(label, linkText(read()), parent,
+      const value = this.#ui.createLinkRow(linkText(read()), parent,
         { path: [...path, parts.at(-1), parts.at(-2)], target: ["CONFIG", ...parts], place });
       this.#links.push({ value, read });
     }
