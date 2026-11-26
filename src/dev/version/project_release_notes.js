@@ -1,6 +1,7 @@
 // Release notes, newest first (unshift with every patch). DEV only: no production code reads them, and in the start's
 // bundle they cost 13 KB gzip (spec 160). dev.html publishes them with the version: window.CYBER_FISHING_PROJECT_VERSION.notes.
 export const PROJECT_RELEASE_NOTES = Object.freeze([
+  "Spec 189 B (TK-408): weather file v3 — GENERAL_WEATHER_PARTS (10) + LOCATION_WEATHER_PARTS (weather, current), changes [{part, path, from, to}], applyLeafChanges (applied / already / conflicts / missing), KEY_RENAMES, validateChangesFile (kind as in the code), weatherPartIssues; apply-weather #prepareChanges (per-parameter conflicts, --force) and #prepareWhole (v2/v1); WeatherDevSection readConfig/readBaseConfig, status/export/import over every part, location reset includes its current.",
   "Spec 189 A (TK-407): canvas.lightning/starfall/water/radiationGrain, emission.screen, ui.audio.geiger moved from game_config.js to raw/weather/<part>_settings.js; MAP_DB.test.environment.current to raw/locations/current/test.js joined by location_catalog; CONFIG byte-identical (snapshot compare).",
   "TK-406.2: CONFIG.canvas.lightning.durationSec [0.9, 2.1], branchAngleDeg [18, 63] (owner); scene-layer reads the duration's bounds from the settings.",
   "TK-406.1: CONFIG.canvas.lightning.durationSec [від, до] — the strike's life (random within); strokes spread over its first strokesShare (each in its slot ±40 %), the afterglow fades to the end; strokeGapSec and afterglowSec removed (derived).",

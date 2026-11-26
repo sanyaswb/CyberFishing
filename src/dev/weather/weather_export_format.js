@@ -10,13 +10,32 @@ import { VISIBLE_STRENGTH } from "../../engine/math/strength_value.js";
 
 // Canonical form of weather settings (spec 175, spec 176, spec 180 D7): DevTools «ПОГОДА» export/import and
 // `npm run apply:weather` read and write through this module so hashes and written modules never depend on key order.
-// Format v2 (spec 180 stage D, TK-332): a file holds the level the selector shows — `general` (the rain, ash, storm and
-// wind settings, the same on every location) and/or one location's weather. Format v1 (rain + location) still reads.
+// Format v3 (spec 189 D2, TK-408): a file holds the levels the selector shows (`general` parts and / or one location's
+// parts, in full, for reading and for the DevTools import) and `changes` — every parameter that differs from the code,
+// as { part, path, from, to }. apply:weather and the import apply only those changes (applyLeafChanges), so a file
+// survives later changes of the code: new keys, other values, new parts. Format v2 (spec 180 stage D: whole parts with
+// the code's hashes) and v1 (rain + location) still read and apply as before.
+//
+// !!! Spec 189 D4 (owner: «погода буде ще змінюватись … додай помітку щоб ураховувати це при написанні в логіці
+// експорту») — when the weather changes:
+// - a new parameter of DevTools «ПОГОДА» goes into the data module of its part (WEATHER_EXPORT_PARTS) — never inline in
+//   game_config.js or a location's database; a new kind of weather is a new part: its own data module (the form
+//   generalModuleSource writes), an entry in GENERAL_WEATHER_PARTS or LOCATION_WEATHER_PARTS and CONFIG reading the module;
+//   the devtools-controls check fails while «ПОГОДА» shows a parameter no part exports;
+// - renaming or moving a key: an entry in KEY_RENAMES ("<part>:<old path>" → "<new path>"), so older files still apply;
+// - a changed meaning of a value (a multiplier became a pair): a reader upgrade like upgradeLegacyEffects;
+// - never make a file depend on a part's whole content again (no whole-part hashes, no «missing key» refusals).
 export const WEATHER_FILE_FORMAT = "cyber-fishing/weather";
-export const WEATHER_FILE_VERSION = 2;
+export const WEATHER_FILE_VERSION = 3;
+const V2_FILE_VERSION = 2;
 const LEGACY_FILE_VERSION = 1;
+// The general parts a v2 file holds (v2 predates the others).
+const V2_GENERAL_PARTS = Object.freeze(["rain", "ash", "storm", "wind"]);
+const SPEC_189_TAIL = "// `npm run apply:weather` rewrites this whole file in this form (spec 189); names and descriptions of the keys:\n"
+  + "// src/dev/metadata/parameter_labels.json. Hand edits are fine.\n";
 
-// The general weather data modules: where each lives, its export name, the CONFIG path it feeds and its file header.
+// The general weather data modules: where each lives, its export name, the CONFIG path it feeds, its file header and
+// its name in the «Збереження» status.
 export const GENERAL_WEATHER_PARTS = Object.freeze({
   rain: Object.freeze({
     module: "src/game/config/raw/weather/rain_settings.js",
@@ -59,8 +78,82 @@ export const GENERAL_WEATHER_PARTS = Object.freeze({
       + "// rain's (rain.*), none without them.\n"
       + "// `npm run apply:weather` rewrites this whole file in this form (spec 180 stage D).\n",
   }),
+  // Spec 189 D1 (TK-407, TK-408): everything else DevTools «ПОГОДА» edits.
+  lightning: Object.freeze({
+    module: "src/game/config/raw/weather/lightning_settings.js",
+    exportName: "LIGHTNING_SETTINGS",
+    configPath: Object.freeze(["canvas", "lightning"]),
+    header: "// The procedural lightning's look (spec 188): CONFIG.canvas.lightning. DevTools «ПОГОДА» → «ШТОРМ» → «Блискавка — вигляд».\n"
+      + SPEC_189_TAIL,
+  }),
+  starfall: Object.freeze({
+    module: "src/game/config/raw/weather/starfall_settings.js",
+    exportName: "STARFALL_SETTINGS",
+    configPath: Object.freeze(["canvas", "starfall"]),
+    header: "// The starfall's stars and bolide (spec 182): CONFIG.canvas.starfall; how often a starfall night comes is the\n"
+      + "// location's (MAP_DB.<id>.weather.starfall). DevTools «ПОГОДА» → «ЗОРЕПАД».\n" + SPEC_189_TAIL,
+  }),
+  water: Object.freeze({
+    module: "src/game/config/raw/weather/water_settings.js",
+    exportName: "WATER_SETTINGS",
+    configPath: Object.freeze(["canvas", "water"]),
+    header: "// The water's waves, the sea state and the float's rocking on the WebGL scene (spec 106, 128, 172 D7, 187 C):\n"
+      + "// CONFIG.canvas.water. Lengths are art pixels. DevTools «ПОГОДА» → «ВОДА».\n" + SPEC_189_TAIL,
+  }),
+  emissionScreen: Object.freeze({
+    module: "src/game/config/raw/weather/emission_screen_settings.js",
+    exportName: "EMISSION_SCREEN_SETTINGS",
+    configPath: Object.freeze(["emission", "screen"]),
+    header: "// What an emission does to the player's screen (spec 179 stages E, J; TK-324): darkening, blur, shake —\n"
+      + "// CONFIG.emission.screen. DevTools «ПОГОДА» → «ВИКИД».\n" + SPEC_189_TAIL,
+  }),
+  radiationGrain: Object.freeze({
+    module: "src/game/config/raw/weather/radiation_grain_settings.js",
+    exportName: "RADIATION_GRAIN_SETTINGS",
+    configPath: Object.freeze(["canvas", "radiationGrain"]),
+    header: "// The radiation's hiss over the scene (spec 179 stage D, TK-338): CONFIG.canvas.radiationGrain. DevTools «ПОГОДА» →\n"
+      + "// «РАДІАЦІЯ» → «Шипіння».\n" + SPEC_189_TAIL,
+  }),
+  geiger: Object.freeze({
+    module: "src/game/config/raw/weather/geiger_settings.js",
+    exportName: "GEIGER_SETTINGS",
+    configPath: Object.freeze(["ui", "audio", "geiger"]),
+    header: "// The Geiger counter's clicks (spec 179 stage D, TK-339): CONFIG.ui.audio.geiger. DevTools «ПОГОДА» → «РАДІАЦІЯ» →\n"
+      + "// «Звук лічильника».\n" + SPEC_189_TAIL,
+  }),
 });
 export const GENERAL_WEATHER_PART_IDS = Object.freeze(Object.keys(GENERAL_WEATHER_PARTS));
+
+// Spec 189 D1: a location's parts — its weather and its water's current; module, CONFIG path and header by location id.
+export const LOCATION_WEATHER_PARTS = Object.freeze({
+  weather: Object.freeze({
+    module: (id) => locationWeatherModulePath(id),
+    exportName: "WEATHER",
+    configPath: (id) => ["locations", "map", id, "weather"],
+    header: (id) => `// Weather of the location "${id}" (spec 172, 175, 180): independent events rain, storm (with its lightning) and fog,\n`
+      + "// each a check + chance and a timeline rolled at its start. `npm run apply:weather` rewrites this whole file in this form.\n",
+  }),
+  current: Object.freeze({
+    module: (id) => `src/game/config/raw/locations/current/${id}.js`,
+    exportName: "CURRENT",
+    configPath: (id) => ["locations", "map", id, "environment", "current"],
+    header: (id) => `// The water's current of the location "${id}" (MAP_DB.${id}.environment.current): speed (px/s) and direction. DevTools\n`
+      + "// «ПОГОДА» → «ВОДА» → «Течія (локація)». `npm run apply:weather` rewrites this whole file in this form (spec 189).\n",
+  }),
+});
+export const LOCATION_WEATHER_PART_IDS = Object.freeze(Object.keys(LOCATION_WEATHER_PARTS));
+
+// Spec 189 D4: "<part>:<old path>" → "<new path>" for keys renamed or moved since a file could have been exported
+// (part: general.<id> | location.<id>). Empty until the first rename.
+export const KEY_RENAMES = Object.freeze({});
+
+// Spec 189: every part of the file as "general.<id>" / "location.<id>", with its spec.
+export function weatherPartSpec(partKey) {
+  const [level, id] = String(partKey).split(".");
+  if (level === "general" && Object.hasOwn(GENERAL_WEATHER_PARTS, id)) return { level, id, spec: GENERAL_WEATHER_PARTS[id] };
+  if (level === "location" && Object.hasOwn(LOCATION_WEATHER_PARTS, id)) return { level, id, spec: LOCATION_WEATHER_PARTS[id] };
+  return null;
+}
 
 const LOCATION_ID = /^[A-Za-z0-9_-]+$/u;
 const HEX_COLOR = /^#[0-9a-f]{6}$/iu;
@@ -110,27 +203,82 @@ export function weatherFileName({ general = false, locationId = null }, version,
   return formatExportFileName(name, version, date);
 }
 
-// general: { rain, ash, storm, wind } (every part) or null; generalBaseHashes: the same keys → the code's hashes at
-// export time; locationId + locationWeather + locationWeatherBaseHash, or a null locationId for a general-only file.
+// The changes of one part against the code: [{ part, path, from, to }] (path — dotted inside the part).
+function partChanges(partKey, base, live) {
+  if (!isRecord(base) || !isRecord(live)) return [];
+  return diffCanonicalObjects(canonicalGeneralPart(base), canonicalGeneralPart(live))
+    .map(({ path, from, to }) => ({ part: partKey, path, from, to }));
+}
+
+// Format v3 (spec 189 D2). general: { <part id>: live value } (the parts the file holds) or null, generalBase: the same
+// parts as in the code; locationId with location: { weather, current } (live) and locationBase (the code's), or a null
+// locationId for a general-only file.
 export function buildWeatherFile({
-  general = null, generalBaseHashes = null, locationId = null, locationWeather = null, locationWeatherBaseHash = null,
-  gameVersion, exportedAt,
+  general = null, generalBase = null, locationId = null, location = null, locationBase = null, gameVersion, exportedAt,
 }) {
-  const file = { format: WEATHER_FILE_FORMAT, formatVersion: WEATHER_FILE_VERSION, gameVersion, exportedAt, baseHashes: {} };
+  const file = { format: WEATHER_FILE_FORMAT, formatVersion: WEATHER_FILE_VERSION, gameVersion, exportedAt };
+  const changes = [];
   if (general) {
     file.general = {};
-    file.baseHashes.general = {};
-    for (const part of GENERAL_WEATHER_PART_IDS) {
-      file.general[part] = canonicalGeneralPart(general[part]);
-      file.baseHashes.general[part] = generalBaseHashes?.[part];
+    for (const id of GENERAL_WEATHER_PART_IDS) {
+      if (!isRecord(general[id])) continue;
+      file.general[id] = canonicalGeneralPart(general[id]);
+      changes.push(...partChanges(`general.${id}`, generalBase?.[id], general[id]));
     }
   }
   if (locationId) {
     file.locationId = locationId;
-    file.locationWeather = canonicalLocationWeather(locationWeather);
-    file.baseHashes.locationWeather = locationWeatherBaseHash;
+    file.location = {};
+    for (const id of LOCATION_WEATHER_PART_IDS) {
+      if (!isRecord(location?.[id])) continue;
+      file.location[id] = canonicalGeneralPart(location[id]);
+      changes.push(...partChanges(`location.${id}`, locationBase?.[id], location[id]));
+    }
   }
+  file.changes = changes;
   return file;
+}
+
+// Spec 189 D2: a part's changes applied to its value in the code, one parameter at a time. The code's value is `from`
+// → it becomes `to` (applied); it is already `to` → nothing (already); it is something else — changed in the code since
+// the export → conflicts (with the code's value; `next` holds `to`, written only with --force); the parameter is not in
+// the code (removed; a renamed one is found through KEY_RENAMES) → missing, skipped. Keys the file does not name are
+// left as they are. Returns { next, applied, already, conflicts, missing }; `current` is not changed.
+export function applyLeafChanges(partKey, current, changes) {
+  const next = canonicalGeneralPart(isRecord(current) ? current : {});
+  const result = { next, applied: [], already: [], conflicts: [], missing: [] };
+  const same = (a, b) => JSON.stringify(a) === JSON.stringify(b);
+  for (const change of changes) {
+    if (change?.part !== partKey) continue;
+    const path = KEY_RENAMES[`${partKey}:${change.path}`] ?? change.path;
+    const keys = String(path).split(".");
+    let parent = next;
+    for (const key of keys.slice(0, -1)) parent = isRecord(parent) ? parent[key] : undefined;
+    const last = keys.at(-1);
+    const entry = { ...change, path };
+    if (!isRecord(parent) || !Object.hasOwn(parent, last)) { result.missing.push(entry); continue; }
+    const now = parent[last];
+    if (same(now, change.to)) { result.already.push(entry); continue; }
+    if (same(now, change.from)) result.applied.push(entry);
+    else result.conflicts.push({ ...entry, code: now });
+    parent[last] = JSON.parse(JSON.stringify(change.to));
+  }
+  return result;
+}
+
+// The domain checks a part's value must pass (its ranges, colours, pairs); the config schema check runs after a write.
+export function weatherPartIssues(partKey, value) {
+  const part = weatherPartSpec(partKey);
+  if (!part || !isRecord(value)) return [`${partKey}: expected object`];
+  const errors = [];
+  if (part.level === "general" && part.id === "rain") validateRainDomain(value, partKey, errors);
+  else if (part.level === "general" && ["storm", "wind", "ash"].includes(part.id)) {
+    errors.push(...generalWeatherRangeIssues(part.id, value, partKey));
+  } else if (part.level === "location" && part.id === "weather") {
+    validateLocationLook(value.look, null, errors);
+    validateLocationWeatherDomain(value, errors);
+  }
+  return errors;
 }
 
 // One shape for both versions: { version, general: { part: value } | null, generalBaseHashes, locationId | null,
@@ -170,8 +318,19 @@ export function upgradeLegacyEffects(general) {
   return next;
 }
 
+// v3: { version: 3, general, locationId, location, changes }; v2 / v1: { version, general, generalBaseHashes,
+// locationId, locationWeather, locationWeatherBaseHash } (whole parts, applied as before).
 export function readWeatherFile(file) {
   if (!isRecord(file)) return null;
+  if (file.formatVersion === WEATHER_FILE_VERSION) {
+    return {
+      version: WEATHER_FILE_VERSION,
+      general: isRecord(file.general) ? file.general : null,
+      locationId: "locationId" in file ? file.locationId : null,
+      location: isRecord(file.location) ? file.location : null,
+      changes: Array.isArray(file.changes) ? file.changes : [],
+    };
+  }
   const hashes = isRecord(file.baseHashes) ? file.baseHashes : {};
   if (file.formatVersion === LEGACY_FILE_VERSION) {
     return {
@@ -375,16 +534,82 @@ function validateLocationLook(look, generalTemplates, errors) {
   }
 }
 
-// generalTemplates: { rain, ash, storm, wind } as in the code (unknown and missing keys are refused);
-// locations: CONFIG.locations (a location must exist in it).
-export function validateWeatherFile(file, { generalTemplates = null, locationWeatherTemplate = null, locations = null } = {}) {
+// The kind of a value a change may write over the code's value: the same kind (a number, a pair of numbers, a colour, a
+// switch, an object), never a whole other shape.
+function changeKindIssue(code, next, path) {
+  if (code === undefined) return null;
+  if (typeof code === "number") return finite(next) ? null : `${path}: expected finite number`;
+  if (typeof code === "boolean") return typeof next === "boolean" ? null : `${path}: expected boolean`;
+  if (typeof code === "string") {
+    if (typeof next !== "string") return `${path}: expected string`;
+    return HEX_COLOR.test(code) && !HEX_COLOR.test(next) ? `${path}: must be #rrggbb` : null;
+  }
+  if (Array.isArray(code)) {
+    if (!Array.isArray(next)) return `${path}: expected array`;
+    if (code.length && typeof code[0] === "number") {
+      if (next.length !== code.length) return `${path}: expected ${code.length} items`;
+      if (!next.every(finite)) return `${path}: expected finite numbers`;
+    }
+    return null;
+  }
+  if (isRecord(code)) return isRecord(next) ? null : `${path}: expected object`;
+  return null;
+}
+
+// Spec 189 D2: a v3 file — its levels and every change: a known part (a location part needs the file's location), a
+// path, a value of the kind the code holds there (currentValue(partKey) → the part as in the code; a parameter the code
+// no longer has is not an error — apply skips it and says so).
+function validateChangesFile(file, { locations = null, currentValue = null }) {
+  const errors = [];
+  const read = readWeatherFile(file);
+  if ("general" in file && !isRecord(file.general)) errors.push("general: expected object");
+  if ("location" in file && !isRecord(file.location)) errors.push("location: expected object");
+  for (const id of Object.keys(read.general ?? {})) {
+    if (!Object.hasOwn(GENERAL_WEATHER_PARTS, id)) errors.push(`general.${id}: unknown general weather part`);
+  }
+  for (const id of Object.keys(read.location ?? {})) {
+    if (!Object.hasOwn(LOCATION_WEATHER_PARTS, id)) errors.push(`location.${id}: unknown location weather part`);
+  }
+  const hasLocation = read.locationId !== null || read.location !== null;
+  if (hasLocation) {
+    if (typeof read.locationId !== "string" || !LOCATION_ID.test(read.locationId)) errors.push("locationId: expected valid location id");
+    else if (locations?.map && !Object.hasOwn(locations.map, read.locationId)) errors.push(`locationId: unknown location "${read.locationId}"`);
+  }
+  if (!Array.isArray(file.changes)) { errors.push("changes: expected array"); return errors; }
+  if (!read.general && !hasLocation) errors.push("file: expected general settings and/or a location's weather");
+  const values = new Map();
+  file.changes.forEach((change, index) => {
+    const at = `changes[${index}]`;
+    if (!isRecord(change)) { errors.push(`${at}: expected object`); return; }
+    const part = weatherPartSpec(change.part);
+    if (!part) { errors.push(`${at}.part: unknown weather part "${change.part}"`); return; }
+    if (part.level === "location" && !hasLocation) { errors.push(`${at}.part: a location part needs the file's location`); return; }
+    if (typeof change.path !== "string" || !change.path) { errors.push(`${at}.path: expected dotted path`); return; }
+    if (!("to" in change)) { errors.push(`${at}.to: missing value`); return; }
+    if (!currentValue) return;
+    if (!values.has(change.part)) values.set(change.part, currentValue(change.part));
+    const path = KEY_RENAMES[`${change.part}:${change.path}`] ?? change.path;
+    const code = path.split(".").reduce((node, key) => (isRecord(node) ? node[key] : undefined), values.get(change.part));
+    const issue = changeKindIssue(code, change.to, `${change.part}.${path}`);
+    if (issue) errors.push(issue);
+  });
+  return errors;
+}
+
+// v3: locations (a location must exist in it) and currentValue(partKey) → the part as in the code (the kind of every
+// change is checked against it). v2 / v1: generalTemplates { rain, ash, storm, wind } and locationWeatherTemplate as in
+// the code (unknown and missing keys are refused, as before).
+export function validateWeatherFile(file, {
+  generalTemplates = null, locationWeatherTemplate = null, locations = null, currentValue = null,
+} = {}) {
   if (!isRecord(file)) return ["file: expected JSON object"];
   const errors = [];
   if (file.format !== WEATHER_FILE_FORMAT) errors.push(`format: expected "${WEATHER_FILE_FORMAT}"`);
-  if (file.formatVersion !== WEATHER_FILE_VERSION && file.formatVersion !== LEGACY_FILE_VERSION) {
-    errors.push(`formatVersion: expected ${WEATHER_FILE_VERSION} (or ${LEGACY_FILE_VERSION})`);
+  if (![WEATHER_FILE_VERSION, V2_FILE_VERSION, LEGACY_FILE_VERSION].includes(file.formatVersion)) {
+    errors.push(`formatVersion: expected ${WEATHER_FILE_VERSION} (or ${V2_FILE_VERSION}, ${LEGACY_FILE_VERSION})`);
     return errors;
   }
+  if (file.formatVersion === WEATHER_FILE_VERSION) return [...errors, ...validateChangesFile(file, { locations, currentValue })];
   const read = readWeatherFile(file);
   const legacy = read.version === LEGACY_FILE_VERSION;
   if (!read.general && read.locationId === null) errors.push("file: expected general settings and/or a location's weather");
@@ -392,13 +617,13 @@ export function validateWeatherFile(file, { generalTemplates = null, locationWea
     if (!isRecord(read.general)) errors.push("general: expected object");
     else {
       for (const part of Object.keys(read.general)) {
-        if (!Object.hasOwn(GENERAL_WEATHER_PARTS, part)) { errors.push(`general.${part}: unknown general weather part`); continue; }
+        if (!V2_GENERAL_PARTS.includes(part)) { errors.push(`general.${part}: unknown general weather part`); continue; }
         const hash = read.generalBaseHashes?.[part];
         if (!HEX_HASH.test(String(hash || ""))) errors.push(`baseHashes.${legacy ? "" : "general."}${part}: expected SHA-256 hex hash`);
         validateGeneralPart(part, read.general[part], generalTemplates?.[part], legacy ? part : `general.${part}`, errors);
       }
       if (!legacy) {
-        for (const part of GENERAL_WEATHER_PART_IDS) {
+        for (const part of V2_GENERAL_PARTS) {
           if (!Object.hasOwn(read.general, part)) errors.push(`general.${part}: missing general weather part`);
         }
       }
@@ -433,16 +658,17 @@ export function diffLocationWeather(base, next) {
   return diffCanonicalObjects(canonicalLocationWeather(base), canonicalLocationWeather(next));
 }
 
-// The parts that differ from the code: general part ids ("rain", "ash", "storm", "wind") and "locationWeather".
-// baseGeneral / liveGeneral: { part: value } (parts missing in either are skipped); location pair: null to skip.
-export function changedWeatherParts({ baseGeneral = null, liveGeneral = null, baseLocationWeather = null, liveLocationWeather = null }) {
+// The parts that differ from the code, as "general.<id>" / "location.<id>". baseGeneral / liveGeneral: { id: value },
+// baseLocation / liveLocation: { weather, current } (parts missing in either are skipped).
+export function changedWeatherParts({ baseGeneral = null, liveGeneral = null, baseLocation = null, liveLocation = null }) {
   const changed = [];
-  for (const part of GENERAL_WEATHER_PART_IDS) {
-    const base = baseGeneral?.[part], live = liveGeneral?.[part];
-    if (base && live && diffGeneralPart(base, live).length) changed.push(part);
+  for (const id of GENERAL_WEATHER_PART_IDS) {
+    const base = baseGeneral?.[id], live = liveGeneral?.[id];
+    if (base && live && diffGeneralPart(base, live).length) changed.push(`general.${id}`);
   }
-  if (baseLocationWeather && liveLocationWeather && diffLocationWeather(baseLocationWeather, liveLocationWeather).length) {
-    changed.push("locationWeather");
+  for (const id of LOCATION_WEATHER_PART_IDS) {
+    const base = baseLocation?.[id], live = liveLocation?.[id];
+    if (base && live && diffGeneralPart(base, live).length) changed.push(`location.${id}`);
   }
   return changed;
 }
@@ -453,8 +679,13 @@ export function generalModuleSource(part, value) {
   return `${spec.header}export const ${spec.exportName} = ${JSON.stringify(canonicalGeneralPart(value), null, 2)};\n`;
 }
 
+// Spec 189: a location part's data module (its weather, its current).
+export function locationPartModuleSource(part, locationId, value) {
+  const spec = LOCATION_WEATHER_PARTS[part];
+  if (!spec) throw new Error(`unknown location weather part ${part}`);
+  return `${spec.header(locationId)}export const ${spec.exportName} = ${JSON.stringify(canonicalGeneralPart(value), null, 2)};\n`;
+}
+
 export function locationWeatherModuleSource(locationId, weather) {
-  return `// Weather of the location "${locationId}" (spec 172, 175, 180): independent events rain, storm (with its lightning) and fog,\n`
-    + "// each a check + chance and a timeline rolled at its start. `npm run apply:weather` rewrites this whole file in this form.\n"
-    + `export const WEATHER = ${JSON.stringify(canonicalLocationWeather(weather), null, 2)};\n`;
+  return locationPartModuleSource("weather", locationId, weather);
 }

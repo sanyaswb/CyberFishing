@@ -2,6 +2,10 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.52.87 - Weather export: every weather setting, only the changes (spec 189, stage B)
+
+- dev.html: «ПОГОДА» → «Експорт погоди» now carries every part the section edits — the lightning, starfall, water, emission screen, radiation hiss, Geiger counter and the location's current too — and only the changed parameters (was → is). `npm run apply:weather` applies just those, so a file still applies after the code changed elsewhere; a parameter changed in the code since the export is the only conflict. Old files still apply.
+
 ## v0.52.86 - Weather settings in their own data files (spec 189, stage A)
 
 - No change in the game: the lightning, starfall, water, emission screen, radiation hiss, Geiger counter and the location's current now live in their own data files, so the weather export can carry them (next step).
@@ -37,8 +41,3 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 ## v0.52.78 - DevTools: what one weather element does to another is edited in one place (spec 187 D16)
 
 - dev.html: «ПОГОДА» → ДОЩ holds what the rain does to the wind; ВІТЕР shows it as a link. A link shows the value now and opens the parameter where it is edited (storm → ШТОРМ, rain → ДОЩ, emission → ВИКИД; ДОЩ and ПОПІЛ link to what the storm and the wind do to them).
-
-## v0.52.77 - Review before the push: no per-frame objects for the weather's look, a symmetric automatic switch (TK-402)
-
-- The rain's and the ash's look no longer make a new object per value every frame on a location with its own values.
-- Turning the automatic weather on releases every frozen or hand-set level by itself, whoever turns it.

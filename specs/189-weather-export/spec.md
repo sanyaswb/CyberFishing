@@ -79,4 +79,27 @@
 
 ## Реалізація
 
-(заповнюється)
+- **Етап A, TK-407 (v0.52.86).** `canvas.lightning|starfall|water|radiationGrain`, `emission.screen`, `ui.audio.geiger` — з
+  `game_config.js` у `raw/weather/<part>_settings.js` (ключі відсортовані, як пише `apply:weather`); течія
+  `MAP_DB.test.environment.current` — у `raw/locations/current/test.js`, `location_catalog.js` підключає. Знімок CONFIG
+  до й після збігся байт у байт; scene-layer порівнює налаштування розмиття за значенням.
+- **Етап B, TK-408 (v0.52.87).** `weather_export_format.js`: `GENERAL_WEATHER_PARTS` — 10 частин (заголовок модуля, шлях
+  CONFIG), `LOCATION_WEATHER_PARTS` (`weather`, `current`), `weatherPartSpec`, `KEY_RENAMES`; v3: `buildWeatherFile`
+  (повні частини + `changes` = `diffCanonicalObjects` коду й живого), `readWeatherFile`, `validateWeatherFile` (v3 —
+  `validateChangesFile`: частина, шлях, вид значення як у коді — число, пара тієї ж довжини, колір, перемикач;
+  відсутній у коді параметр — не помилка), `applyLeafChanges` (застосовано / вже / конфлікт / немає),
+  `weatherPartIssues` (межі частини після злиття), `changedWeatherParts` по ключах частин, `locationPartModuleSource`;
+  v2 — лише свої чотири частини, як було. `utils/apply-weather.js`: `modulePath(partKey, id)` / `readPart`; v3 —
+  `#prepareChanges` (злиття в модуль як він зараз; конфлікт — лише параметри, змінені в коді після експорту, з
+  переліком; `--force` пише значення файлу; пропущені названо); v2 / v1 — `#prepareWhole`, як було. DevTools
+  `WeatherDevSection`: порти `readConfig` / `readBaseConfig` (SceneModule) замість `getBaseGeneral` /
+  `getBaseLocationWeather`; статус, експорт v3 і імпорт (зміни по параметрах; пропущені — у статусі) — усі частини;
+  скидання локації скидає й течію; опис «Збереження» оновлено. Перевірка apply-weather (переписано): кожна частина
+  канонічна у своєму модулі; v3 — лише змінене, пізніша зміна коду поруч і новий ключ не заважають, конфлікт лише
+  параметра (перелік, `--force`), прибраний параметр пропущено й названо, течія — у свій модуль, двічі — «нічого»;
+  відмови v3 (без змін, невідома частина, інший вид, колір, довжина пари, частина локації без локації, межі); v2 / v1
+  як були; DevTools: блискавка й течія в статусі, експорті й імпорті — падає на старому коді.
+- **Етап C, TK-409 (v0.52.88).** DEVELOPMENT_RULES «Weather export» (помітка власника) і коментар над реєстром.
+  Перевірка devtools-controls: справжній розділ «ПОГОДА» на справжньому CONFIG у «Всі» — кожен рядок зі шляхом CONFIG і
+  кожен запис у CONFIG від «+» кожного числа й кожного перемикача належить частині реєстру (крім `debug.*`); без
+  частини `lightning` у реєстрі падає, називаючи її параметри.
