@@ -2,6 +2,11 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.52.89 - Review before the push: lightning draws no hidden quads, one way to read weather values (TK-406.3, TK-405.1, TK-408.1)
+
+- The lightning no longer makes the GPU draw hundreds of invisible quads during a strike.
+- dev.html «ПОГОДА»: the fields at a slider's level and the links read their values without building a record on every live update; the weather import applies a file exactly as apply:weather does; apply:weather names a broken file's own reason first.
+
 ## v0.52.88 - Weather export: a rule and a check that it stays complete (spec 189, stage C)
 
 - Checks only: a new weather setting that DevTools «ПОГОДА» can edit but the export would leave out now fails the checks; DEVELOPMENT_RULES «Weather export» says how to add or rename weather settings.
@@ -37,7 +42,3 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 ## v0.52.80 - DevTools: a weather link reads like the parameter's own row (TK-403.2)
 
 - dev.html: a link in «ПОГОДА» shows the parameter's key as in the code with its «i» (name and description) and the key's copy button, like the row it opens.
-
-## v0.52.79 - Check: a weather link opens its field the way the game does (TK-403.1)
-
-- Checks only: the DevTools link check now goes through the same reveal feedback as the game and asserts the field is visible, not only highlighted. No change in the game or dev.html.

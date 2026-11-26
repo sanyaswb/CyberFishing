@@ -3246,6 +3246,7 @@ const step = (model, seconds, clock = null, dt = 0.1) => {
     const general = { storm: copy(GAME_CONFIG.weather.storm), wind: copy(GAME_CONFIG.weather.wind),
       water: copy(GAME_CONFIG.canvas.water) };
     const roots = { weather: { storm: general.storm, wind: general.wind }, canvas: { water: general.water } };
+    const staleStorm = copy(general.storm);
     const rows = new Map();
     const shown = new Map();
     const view = { selected: "Всі" };
@@ -3261,7 +3262,10 @@ const step = (model, seconds, clock = null, dt = 0.1) => {
         getStarfallModel: () => dev.starfall, isAutomatic: () => dev.env.automaticWeather,
         setAutomatic: (on) => dev.env.setAutomaticWeather(on), getWind: () => dev.env.getSnapshot().wind },
       config: () => MAP_DB.test.weather, locationConfig: () => MAP_DB.test.weather, locationsMap: () => ({ test: MAP_DB.test }),
-      general: () => general,
+      // TK-405.1: the fields read by path through readConfig, as SceneModule composes it — not through general() (here a
+      // copy of the storm that edits never reach, so a field read that way would show the old value).
+      general: () => ({ ...general, storm: staleStorm }),
+      readConfig: (parts) => parts.reduce((node, key) => node?.[key], roots) ?? null,
       updateConfig: (path, value) => {
         let at = roots;
         for (const key of path.slice(1, -1)) at = at[key];

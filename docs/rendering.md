@@ -228,7 +228,8 @@ gameplay zones or their enable flags; hiding background also hides its displaced
     thin core, additive, and one cloud-glow sprite; no filter. The shape is written once per strike as the particles'
     static properties (Pixi 8 uploads them only after `update()`), each frame writes only the alpha (dynamic colour); 2–4
     flashes and an afterglow over `durationSec` (TK-406.1; 0.5–0.9 s by default) of frames, none between strikes. While it lasts the layer moves with the
-    background (R19). Its cost is two small batches and a stencil pass during a strike: measure on a phone with
+    background (R19). TK-406.3: a pool particle the bolt does not use is sized 0 (an alpha of 0 alone still rasterizes
+    its quad — hundreds of invisible quads a frame). Its cost is two small batches and a stencil pass during a strike: measure on a phone with
     «ПРОДУКТИВНІСТЬ» in a storm. The sky's light from the owner's art is spec 188 stage B.
     TK-358: the weather renderers share their parts instead of copies — `ScreenZoneSet` (a zone list's visible parts on
     screen, areas, a point picked by area, the point test; or one fallback rectangle), `ZoneRectMask` (one container's

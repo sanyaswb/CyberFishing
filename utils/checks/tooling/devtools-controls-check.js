@@ -4173,6 +4173,8 @@ function choiceRow(options, value, path) {
       locationConfig: (id) => config.locations.map[id]?.weather ?? null,
       locationsMap: () => config.locations.map,
       general: () => ({ storm: config.weather.storm, wind: config.weather.wind, water: config.canvas.water }),
+      // As SceneModule composes it: values by path (the links, the fields at a slider's level).
+      readConfig: (parts) => readKey(config, parts) ?? null,
       edits: { hasOverrides: (parts) => edits.hasOverridesUnder(parts), resetTree: () => {},
         isOverridden: (path) => edits.isOverridden(path), resetParameter: (path) => edits.resetParameter(path) },
       createSection,

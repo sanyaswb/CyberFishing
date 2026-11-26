@@ -1072,6 +1072,17 @@ async function checkLightning() {
   serial += 1;
   assert.equal(frame(world(), { ...settings, enabled: false }), false, "switched off: nothing");
   assert.equal(lightning.status.strikes, strikes, "neither counted");
+  // TK-406.3: after a big bolt a small one — every particle the small one does not use has no area (an alpha of 0
+  // alone still rasterizes its quad on the GPU).
+  strike(0, { ...settings, generations: 7, branches: [8, 8] });
+  serial += 1;
+  frame(world(), { ...settings, generations: 3, branches: [0, 0] });
+  for (const container of [glow, core]) {
+    const unused = container.gpuView().slice(2 ** 3);
+    assert.ok(unused.length > 300 && unused.every((particle) => particle.scaleX * particle.scaleY === 0),
+      "the particles a bolt does not use draw nothing");
+  }
+  while (frame(world(), { ...settings, generations: 3, branches: [0, 0] })) { /* the strike ends */ }
   // R19: a camera move during the strike carries the bolt with the background.
   background = { assetId: "day", alpha: 1, x: 0, y: 0, width: 1200, height: 700 };
   frame(world());

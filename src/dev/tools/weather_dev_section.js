@@ -2,10 +2,10 @@ import { DevSavingSection } from "./export/dev_saving_section.js";
 import {
   GENERAL_WEATHER_PART_IDS,
   GENERAL_WEATHER_PARTS,
-  KEY_RENAMES,
   LOCATION_WEATHER_PART_IDS,
   LOCATION_WEATHER_PARTS,
   WEATHER_FILE_VERSION,
+  applyLeafChanges,
   buildWeatherFile,
   canonicalGeneralPart,
   canonicalLocationWeather,
@@ -652,7 +652,7 @@ export class WeatherDevSection {
   // links: [CONFIG path parts, the section's title]; the row's path: [...path, the parameter's key, its owner].
   #renderLinks(links, parent, path) {
     for (const [parts, place] of links) {
-      const read = () => this.#configValue(parts);
+      const read = () => this.#readConfig?.(parts);
       const value = this.#ui.createLinkRow(linkText(read()), parent,
         { path: [...path, parts.at(-1), parts.at(-2)], target: ["CONFIG", ...parts], place });
       this.#links.push({ value, read });
@@ -664,20 +664,6 @@ export class WeatherDevSection {
       const text = linkText(link.read());
       if (link.value.innerText !== text) link.value.innerText = text;
     }
-  }
-
-  // A parameter's value through the section's own sources: weather.* and canvas.water.* — the general settings,
-  // locations.map.* — the locations.
-  #configValue(parts) {
-    let node, from = 2;
-    if (parts[0] === "weather") node = this.#general()?.[parts[1]];
-    else if (parts[0] === "canvas" && parts[1] === "water") node = this.#general()?.water;
-    else if (parts[0] === "locations" && parts[1] === "map") {
-      node = this.#locationsMap?.()?.[parts[2]];
-      from = 3;
-    } else return undefined;
-    for (let index = from; index < parts.length && node != null; index++) node = node[parts[index]];
-    return node;
   }
 
   // Spec 187 D16 (TK-405; stage B for the effects): a general part (node at CONFIG.<parts>) whose effect pairs have their
@@ -721,7 +707,8 @@ export class WeatherDevSection {
     const bindingPath = ["WEATHER", "effects", ...parts];
     const level = this.#levelReaders.get(driver);
     const ends = () => {
-      const pair = this.#configValue(parts);
+      // TK-405.1: by path through readConfig (no record built per live refresh).
+      const pair = this.#readConfig?.(parts);
       return [Number(pair?.[0]), Number(pair?.[1])];
     };
     const valueNow = () => {
@@ -1091,15 +1078,17 @@ export class WeatherDevSection {
       setStatus(`Файл не прийнято: ${errors.slice(0, 3).join("; ")}`);
       return;
     }
+    // TK-408.1: the same merge as apply:weather (renames, a parameter the code no longer has); each parameter is written
+    // on its own path, so its «змінено» mark and reset work as for an edit by hand.
     const skipped = [];
-    for (const change of read.changes) {
-      const part = weatherPartSpec(change.part);
-      const path = KEY_RENAMES[`${change.part}:${change.path}`] ?? change.path;
-      const keys = path.split(".");
-      const holder = keys.slice(0, -1).reduce((node, key) => (node && typeof node === "object" ? node[key] : undefined), partValue(change.part));
-      if (!holder || typeof holder !== "object" || !Object.hasOwn(holder, keys.at(-1))) { skipped.push(`${change.part}.${path}`); continue; }
+    for (const key of new Set(read.changes.map((change) => change.part))) {
+      const part = weatherPartSpec(key);
+      const merge = applyLeafChanges(key, partValue(key), read.changes);
+      for (const missing of merge.missing) skipped.push(`${key}.${missing.path}`);
       const root = part.level === "general" ? part.spec.configPath : part.spec.configPath(id);
-      this.#updateConfig?.(["CONFIG", ...root, ...keys], JSON.parse(JSON.stringify(change.to)));
+      for (const change of [...merge.applied, ...merge.conflicts]) {
+        this.#updateConfig?.(["CONFIG", ...root, ...change.path.split(".")], JSON.parse(JSON.stringify(change.to)));
+      }
     }
     this.#fill();
     if (skipped.length) setStatus(`Імпортовано; пропущено (немає в коді): ${skipped.join(", ")}`);

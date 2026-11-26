@@ -291,6 +291,11 @@ const writePath = (object, parts, value) => { readPath(object, parts.slice(0, -1
       assert.equal(await applier.apply(fileText, { yes: true }), "refused", reason);
       untouched();
     }
+    // TK-408.1: a broken file is refused for what it is, before any module is looked for.
+    logs.length = 0;
+    await applier.apply(v3With([{ part: "location.current", path: "speedPxPerSec", from: 5, to: 9 }]), { yes: true });
+    assert.ok(logs.some((line) => line.includes("a location part needs the file's location")) && !logs.some((line) => line.includes("немає модуля")),
+      "a location part without its location: the file's own reason");
   } finally {
     fs.rmSync(scratch, { recursive: true, force: true });
   }

@@ -167,7 +167,8 @@ export class PixiLightningRenderer {
     const branchWidth = clampUnit(finiteOr(settings.branchWidthShare, 0.55));
     for (let index = 0; index < BRANCHING_BOLT_MAX_SEGMENTS; index += 1) {
       const glow = this.#glowParticles[index], core = this.#coreParticles[index];
-      if (index >= bolt.count) { glow.alpha = 0; core.alpha = 0; continue; }
+      // TK-406.3: a particle the bolt does not use has no area — an alpha of 0 alone still rasterizes its quad.
+      if (index >= bolt.count) { PixiLightningRenderer.#empty(glow); PixiLightningRenderer.#empty(core); continue; }
       const ax = bolt.ax[index], ay = bolt.ay[index], bx = bolt.bx[index], by = bolt.by[index];
       const segment = Math.hypot(bx - ax, by - ay);
       const rotation = Math.atan2(by - ay, bx - ax);
@@ -268,12 +269,18 @@ export class PixiLightningRenderer {
     const container = new this.#pixi.ParticleContainer({ texture, dynamicProperties: STATIC });
     container.blendMode = "add";
     for (let index = 0; index < BRANCHING_BOLT_MAX_SEGMENTS; index += 1) {
-      const particle = new this.#pixi.Particle({ texture, anchorX: 0.5, anchorY: 0.5, alpha: 0 });
+      const particle = new this.#pixi.Particle({ texture, anchorX: 0.5, anchorY: 0.5, alpha: 0, scaleX: 0, scaleY: 0 });
       particles.push(particle);
       container.addParticle(particle);
     }
     container.update();
     return container;
+  }
+
+  static #empty(particle) {
+    particle.alpha = 0;
+    particle.scaleX = 0;
+    particle.scaleY = 0;
   }
 
   // A segment as a round texture stretched along it: centred on its middle, its length plus its width (the ends overlap

@@ -83,6 +83,10 @@ class WeatherFileApplier {
   // Spec 189 D2: v3 — each part the changes name, merged parameter by parameter into its module as it is now.
   async #prepareChanges(file, read, refuse) {
     const format = this.#format;
+    // TK-408.1: the file's structure first (parts, the location), so a broken file is refused for what it is, before
+    // any module is looked for.
+    const structure = format.validateWeatherFile(file, { locations: this.#locations });
+    if (structure.length) { refuse(`файл не пройшов перевірку:\n  ${structure.join("\n  ")}`); return null; }
     const keys = [...new Set(read.changes.map((change) => change?.part).filter((key) => format.weatherPartSpec(key)))];
     const current = new Map(), targets = new Map();
     for (const key of keys) {
