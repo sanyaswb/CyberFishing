@@ -2492,7 +2492,9 @@ const step = (model, seconds, clock = null, dt = 0.1) => {
   sections.length = 0;
   general.choose("Всі");
   const all = trees();
-  for (const path of ["CONFIG.canvas.rain", "CONFIG.locations.map.test.weather.rain", "CONFIG.weather.storm",
+  // TK-405: with the storm's slider (the running location) its effects are fields at the slider's level, not a tree.
+  assert.ok(parameterPaths.has("CONFIG.weather.storm.rainChanceMult"), "«Всі» shows the storm's effects as fields");
+  for (const path of ["CONFIG.canvas.rain", "CONFIG.locations.map.test.weather.rain",
     "CONFIG.locations.map.test.weather.storm", "CONFIG.weather.wind", "CONFIG.locations.map.test.weather.wind",
     "CONFIG.locations.map.test.weather.fog", "CONFIG.emission.screen.vignette", "CONFIG.emission.screen.blur",
     "CONFIG.locations.map.test.weather.emission",
@@ -3224,6 +3226,77 @@ const step = (model, seconds, clock = null, dt = 0.1) => {
     assert.equal(lookLocation.weather.look.rain.maxDrops, undefined, "reset drops the location's override");
     lookSection.dispose();
     dev.weather.hold("rain", null);
+  }
+
+  // Spec 187 D16, TK-405 (stage B for the effects): a general effect pair of an element whose slider is shown is one
+  // field at that slider's level — ШТОРМ and ВОДА «Стан моря» follow the storm; «до» edited at 100 %, «від» at 5 %,
+  // between only shown and marked; the game reads the new ends; «Загальні» (no slider) keeps the pairs.
+  {
+    const { effectOfPair } = require("../../../src/engine/math/strength_value.js");
+    const copy = (value) => JSON.parse(JSON.stringify(value));
+    const general = { storm: copy(GAME_CONFIG.weather.storm), wind: copy(GAME_CONFIG.weather.wind),
+      water: copy(GAME_CONFIG.canvas.water) };
+    const roots = { weather: { storm: general.storm, wind: general.wind }, canvas: { water: general.water } };
+    const rows = new Map();
+    const shown = new Map();
+    const view = { selected: "Всі" };
+    const effectsSection = new WeatherDevSection({
+      view,
+      ui: { createInfoRow() {}, createTextRow() {}, createRangeRow() {}, createSelectRow() {}, createInputRow() {},
+        createSwitcherRow() {}, createButtonGrid: (parent) => parent, createButtonRow: () => ({ style: {} }),
+        createLinkRow: (value) => ({ innerText: value }),
+        addParameter: (parent, row) => { if (row.path) rows.set(row.path.join("."), row); },
+        redraw: devToolsRedraw, releaseValueBindings() {}, setSectionLabel() {},
+        showLiveValue: (path, value) => shown.set(path.join("."), value), syncValue() {} },
+      weather: { locationId: "test", getModel: () => dev.weather, getEmissionModel: () => dev.emission,
+        getStarfallModel: () => dev.starfall, isAutomatic: () => dev.env.automaticWeather,
+        setAutomatic: (on) => dev.env.setAutomaticWeather(on), getWind: () => dev.env.getSnapshot().wind },
+      config: () => MAP_DB.test.weather, locationConfig: () => MAP_DB.test.weather, locationsMap: () => ({ test: MAP_DB.test }),
+      general: () => general,
+      updateConfig: (path, value) => {
+        let at = roots;
+        for (const key of path.slice(1, -1)) at = at[key];
+        at[path.at(-1)] = value;
+      },
+      edits: { hasOverrides: () => false, resetTree() {}, isOverridden: () => false, resetParameter() {} },
+      createSection: () => node(), renderConfigTree() {},
+    });
+    dev.env.setAutomaticWeather(false);
+    dev.weather.hold("storm", 1, { fadeSec: 0 });
+    dev.run(1);
+    effectsSection.render(node());
+    const chance = () => rows.get("CONFIG.weather.storm.rainChanceMult");
+    const waves = () => rows.get("CONFIG.canvas.water.seaState.storm.amplitude");
+    const [from, to] = GAME_CONFIG.weather.storm.rainChanceMult;
+    assert.ok(chance() && chance().control === "number" && chance().value === to && chance().requires[0].isEnabled()
+      && !chance().isChanged(), `the storm held at 100 %: the rain's chance stands at «до» (${to}), editable, unmarked`);
+    assert.equal(waves()?.value, GAME_CONFIG.canvas.water.seaState.storm.amplitude[1], "ВОДА «Стан моря» follows the storm too");
+    chance().onCommit(to + 2);
+    assert.deepEqual(general.storm.rainChanceMult, [from, to + 2], "at 100 % the edit writes «до»");
+    dev.weather.hold("storm", 0.525, { fadeSec: 0 });
+    dev.run(1);
+    effectsSection.refreshLive();
+    const halfWay = Math.round((from + (to + 2 - from) / 2) * 1e4) / 1e4;
+    assert.equal(shown.get("WEATHER.effects.weather.storm.rainChanceMult"), halfWay,
+      "the slider half way (52.5 %): the field shows the value half way, live");
+    assert.ok(chance().isChanged() && !chance().requires[0].isEnabled(), "moved by the slider: marked; between the ends: only shown");
+    chance().onCommit(99);
+    assert.deepEqual(general.storm.rainChanceMult, [from, to + 2], "between the ends an edit writes nothing");
+    dev.weather.hold("storm", 0.05, { fadeSec: 0 });
+    dev.run(1);
+    effectsSection.refreshLive();
+    assert.equal(shown.get("WEATHER.effects.weather.storm.rainChanceMult"), from, "at 5 %: «від»");
+    chance().onCommit(from + 0.5);
+    assert.deepEqual(general.storm.rainChanceMult, [from + 0.5, to + 2], "at 5 % the edit writes «від»");
+    assert.deepEqual([effectOfPair(general.storm.rainChanceMult, 1, 0.05), effectOfPair(general.storm.rainChanceMult, 1, 1)],
+      [from + 0.5, to + 2], "the game's storm uses the new «від» and «до»");
+    // «Загальні»: no slider, so the pairs stay the config tree (no field).
+    rows.clear();
+    view.selected = "Загальні";
+    effectsSection.render(node());
+    assert.ok(!rows.has("CONFIG.weather.storm.rainChanceMult"), "«Загальні»: the storm's pairs stay pairs");
+    effectsSection.dispose();
+    dev.weather.hold("storm", null);
   }
 }
 

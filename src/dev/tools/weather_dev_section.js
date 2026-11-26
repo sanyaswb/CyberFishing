@@ -91,6 +91,17 @@ const RAIN_LINKS = Object.freeze([
 const ASH_LINKS = Object.freeze([
   Object.freeze([Object.freeze(["weather", "wind", "ashDriftPx"]), "ВІТЕР"]),
 ]);
+// Spec 187 D16 (TK-405): the general effect pairs [від, до] and the element whose strength drives each (CONFIG path →
+// kind); with that element's slider shown, the pair is one field at the slider's level (#renderEffects).
+const EFFECT_DRIVERS = Object.freeze({
+  "weather.storm.gustChanceMult": "storm", "weather.storm.rainChanceMult": "storm", "weather.storm.rainDropsShare": "storm",
+  "weather.storm.rainSlantDeg": "storm", "weather.storm.rainStrengthMult": "storm", "weather.storm.windMinStrength": "storm",
+  "weather.wind.rainSlantDeg": "wind", "weather.wind.ashDriftPx": "wind",
+  "weather.wind.rain.minStrength": "rain", "weather.wind.rain.bonus": "rain", "weather.wind.rain.gustChanceMult": "rain",
+  "canvas.water.seaState.normal.windAmplitude": "wind", "canvas.water.seaState.normal.windSpeed": "wind",
+  "canvas.water.seaState.storm.amplitude": "storm", "canvas.water.seaState.storm.speed": "storm",
+  "canvas.water.seaState.storm.wavelength": "storm",
+});
 // A pair [від, до] as «від / до»; a number as it is.
 const linkText = (value) => (Array.isArray(value) ? value.join(" / ") : value == null ? "—" : String(value));
 const PART_LABELS = Object.freeze({ rain: "Дощ", ash: "Попіл", storm: "Шторм", wind: "Вітер", locationWeather: "Параметри локації" });
@@ -565,8 +576,8 @@ export class WeatherDevSection {
       this.#renderStrength("rain", section, mode);
       if (mode.general) {
         this.#tree(general, this.#group("Вигляд (загальний)", section, ["WEATHER", "rain", "look"]), ["canvas", "rain"]);
-        this.#tree(this.#general()?.wind?.rain, this.#group("Що робить дощ з вітром (загальне)", section, ["WEATHER", "rain", "wind"]),
-          ["weather", "wind", "rain"]);
+        this.#renderEffects(this.#general()?.wind?.rain, ["weather", "wind", "rain"],
+          this.#group("Що робить дощ з вітром (загальне)", section, ["WEATHER", "rain", "wind"]));
         this.#renderLinks(RAIN_LINKS, this.#group("Що робить з дощем шторм і вітер (загальне)", section,
           ["WEATHER", "rain", "byOthers"]), ["WEATHER", "rain", "byOthers"]);
       }
@@ -586,8 +597,8 @@ export class WeatherDevSection {
     this.#elementSection("ШТОРМ", "storm", content, parts, (section) => {
       this.#renderStrength("storm", section, mode);
       if (mode.general) {
-        this.#tree(this.#general()?.storm, this.#group("Що робить шторм (загальне)", section, ["WEATHER", "storm", "effects"]),
-          ["weather", "storm"]);
+        this.#renderEffects(this.#general()?.storm, ["weather", "storm"],
+          this.#group("Що робить шторм (загальне)", section, ["WEATHER", "storm", "effects"]));
       }
       if (!mode.location) return;
       this.#chanceRow("storm", mode.location, section);
@@ -606,8 +617,8 @@ export class WeatherDevSection {
     this.#elementSection("ВІТЕР", "wind", content, parts, (section) => {
       this.#renderStrength("wind", section, mode);
       if (mode.general) {
-        this.#tree(windOwn, this.#group("Як діє вітер і порив (загальне)", section, ["WEATHER", "wind", "effects"]),
-          ["weather", "wind"]);
+        this.#renderEffects(windOwn, ["weather", "wind"],
+          this.#group("Як діє вітер і порив (загальне)", section, ["WEATHER", "wind", "effects"]));
         const events = this.#group("Вплив подій на вітер (загальне)", section, ["WEATHER", "wind", "events"]);
         this.#renderLinks(WIND_LINKS, events, ["WEATHER", "wind", "events"]);
         // The emission acts through its storm, set by the location (ВИКИД → «Подія викиду» → storm).
@@ -643,15 +654,90 @@ export class WeatherDevSection {
     }
   }
 
-  // A linked parameter's value through the section's own sources: weather.* — the general settings, locations.map.* — the
-  // locations.
+  // A parameter's value through the section's own sources: weather.* and canvas.water.* — the general settings,
+  // locations.map.* — the locations.
   #configValue(parts) {
-    let node;
+    let node, from = 2;
     if (parts[0] === "weather") node = this.#general()?.[parts[1]];
-    else if (parts[0] === "locations" && parts[1] === "map") node = this.#locationsMap?.()?.[parts[2]];
-    else return undefined;
-    for (let index = 2 + (parts[0] === "locations" ? 1 : 0); index < parts.length && node != null; index++) node = node[parts[index]];
+    else if (parts[0] === "canvas" && parts[1] === "water") node = this.#general()?.water;
+    else if (parts[0] === "locations" && parts[1] === "map") {
+      node = this.#locationsMap?.()?.[parts[2]];
+      from = 3;
+    } else return undefined;
+    for (let index = from; index < parts.length && node != null; index++) node = node[parts[index]];
     return node;
+  }
+
+  // Spec 187 D16 (TK-405; stage B for the effects): a general part (node at CONFIG.<parts>) whose effect pairs have their
+  // element's strength slider shown (the running location): each such pair is one field (#effectField); a nested object
+  // holding one is drawn here as its own group; everything else — and every pair without a slider («Загальні», another
+  // location) — stays the config tree, as before.
+  #renderEffects(node, parts, parent) {
+    if (!node || typeof node !== "object") return;
+    const handled = new Set();
+    for (const key of Object.keys(node)) {
+      const child = node[key];
+      const at = [...parts, key];
+      const driver = EFFECT_DRIVERS[at.join(".")];
+      if (Array.isArray(child) && child.length === 2 && driver && this.#levelReaders.has(driver)) {
+        this.#effectField(parent, at, driver);
+        handled.add(key);
+      } else if (child && typeof child === "object" && !Array.isArray(child) && this.#holdsEffectField(at)) {
+        this.#renderEffects(child, at, this.#createSection(key, parent, ["CONFIG", ...at], { inline: true }));
+        handled.add(key);
+      }
+    }
+    if (handled.size === Object.keys(node).length) return;
+    // The tree's entry paths are ["CONFIG", ...parts, key]: hide the keys drawn above.
+    const visibilityPolicy = handled.size
+      ? { isVisible: (path) => path.length !== parts.length + 2 || !handled.has(path.at(-1)) } : undefined;
+    this.#renderConfigTree(node, parent, ["CONFIG", ...parts], { inlineSections: true, visibilityPolicy });
+  }
+
+  #holdsEffectField(parts) {
+    const prefix = `${parts.join(".")}.`;
+    return Object.keys(EFFECT_DRIVERS).some((path) => path.startsWith(prefix) && this.#levelReaders.has(EFFECT_DRIVERS[path]));
+  }
+
+  // One effect pair at its element's slider level (spec 187 B's rule, D15): the field shows the value there and follows
+  // the slider live; at 5 % or less it edits «від», at 100 % «до», between it only shows (its prerequisite points at the
+  // slider); moved by the slider since drawn, or changed from the code — marked, its reset returns the code's pair. Its
+  // row has the parameter's own path (links and the overlay reveal it; the key and «i» as in the tree); the value is
+  // bound to a path of its own, so an edit of the pair never writes a pair into the number field.
+  #effectField(parent, parts, driver) {
+    const cfgPath = ["CONFIG", ...parts];
+    const bindingPath = ["WEATHER", "effects", ...parts];
+    const level = this.#levelReaders.get(driver);
+    const ends = () => {
+      const pair = this.#configValue(parts);
+      return [Number(pair?.[0]), Number(pair?.[1])];
+    };
+    const valueNow = () => {
+      const [from, to] = ends();
+      return Math.round(strengthValue(from, to, level()) * 1e4) / 1e4;
+    };
+    const editableEnd = () => {
+      const now = level();
+      return now <= VISIBLE_STRENGTH + 1e-6 ? 0 : now >= 1 - 1e-6 ? 1 : null;
+    };
+    const drawn = valueNow();
+    const overridden = () => this.#edits?.isOverridden?.(cfgPath) === true;
+    this.#ui.addParameter(parent, { control: "number", label: parts.at(-1), value: drawn, path: cfgPath, bindingPath,
+      configPath: cfgPath, onCommit: (next) => {
+        const end = editableEnd();
+        if (end === null || !Number.isFinite(Number(next))) return;
+        const pair = ends();
+        pair[end] = Number(next);
+        this.#updateConfig?.(cfgPath, pair);
+        this.#ui.showLiveValue(bindingPath, valueNow());
+      },
+      requires: [{ path: ["WEATHER", driver, "strength"], isEnabled: () => editableEnd() !== null }],
+      isChanged: () => valueNow() !== drawn || overridden(),
+      onReset: () => {
+        this.#edits?.resetParameter?.(cfgPath);
+        this.#ui.showLiveValue(bindingPath, valueNow());
+      } });
+    this.#liveSliders.push({ path: bindingPath, read: valueNow, shown: drawn });
   }
 
   #renderFog(content, mode) {
@@ -804,8 +890,8 @@ export class WeatherDevSection {
         // the same parameters (their paths unchanged).
         const { seaState, floatRocking, ...waves } = water ?? {};
         this.#tree(waves, this.#group("Вигляд хвиль (загальне)", section, ["WEATHER", "water", "waves"]), ["canvas", "water"]);
-        this.#tree(seaState, this.#group("Стан моря — як погода міняє хвилі (загальне)", section, ["WEATHER", "water", "seaState"]),
-          ["canvas", "water", "seaState"]);
+        this.#renderEffects(seaState, ["canvas", "water", "seaState"],
+          this.#group("Стан моря — як погода міняє хвилі (загальне)", section, ["WEATHER", "water", "seaState"]));
         this.#tree(floatRocking, this.#group("Покачування поплавка (загальне)", section, ["WEATHER", "water", "floatRocking"]),
           ["canvas", "water", "floatRocking"]);
       }

@@ -2,6 +2,10 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.52.82 - DevTools: the storm's, wind's and waves' «від / до» follow the strength slider (spec 187 D16)
+
+- dev.html: in «ПОГОДА» the storm's effects, the wind's slant and drift, the rain's effect on the wind and the sea state show one number at the strength slider's level, live; «від» is edited at 5 %, «до» at 100 % — as the rain and the ash already do. «Загальні» keeps the pairs.
+
 ## v0.52.81 - DevTools: the water's settings in three groups (spec 187, stage D)
 
 - dev.html: «ПОГОДА» → ВОДА splits the one long list into «Вигляд хвиль», «Стан моря — як погода міняє хвилі» and «Покачування поплавка»; the parameters and what they do are the same.
@@ -38,8 +42,3 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 ## v0.52.73 - The storm's effects as «від / до» (spec 187, stage C)
 
 - What a storm does to the rain, the drops and the wind is now set by two values — at 5 % and at 100 % of its strength — instead of multipliers. The game plays the same; a weak storm can now be tuned on its own.
-
-## v0.52.72 - Weather look: «від» at 5 %, a location's own «від / до» (spec 187, stage B)
-
-- The rain's and the ash's values that grow with their strength now start at the least visible strength (5 %) and reach their end at 100 %. A location can override either end.
-- dev.html: ДОЩ and ПОПІЛ show these values at the strength slider's level and follow it; at 5 % you edit «від», at 100 % «до»; values the slider changed are marked with a dot and kept by «Змінені». A location's override now passes the weather file check (it was always refused).
