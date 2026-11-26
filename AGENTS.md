@@ -67,7 +67,8 @@ Before any work affecting design, UI markup, CSS, SVG, HUD, screens or DEV inter
   note in `src/dev/version/project_release_notes.js` (DEV only, spec 160), then `package.json`/`package-lock.json` and
   the `?v=` links of `index.html` and `dev.html`; change all of them together.
 - **Minor: only after the owner's explicit approval**, also for a new or changed mechanic. Until then increment only
-  the patch. Never bump the major.
+  the patch. Never bump the major. A minor (or major) bump also regenerates `project-structure.txt` (`npm run struct`,
+  see «Commits»); a patch does not.
 - Keep the version, `CHANGELOG.md` and its archive consistent: the latest 10 entries in `CHANGELOG.md`, the oldest
   moved to the archive with every bump, no duplicate or missing versions. Work from another session may have bumped the
   version meanwhile: read the current version and `git log` before bumping and continue from the real latest number.
@@ -82,7 +83,10 @@ Before any work affecting design, UI markup, CSS, SVG, HUD, screens or DEV inter
   commit `CLAUDE.md`, `CODEX.md`, `.claude/` or agent memory.
 - A factual message: what changed, why (the cause for a fix), how it was checked, and whether the game-cycle report
   changed. Tracked text stays LF.
-- Stage new files before `npm run struct` and commit the regenerated `project-structure.txt` when it changes.
+- **`project-structure.txt` only with a minor or major version** (owner, 2026-11-26: «project structure оновлювати
+  тільки під час minor та major версіях проєкту»). A patch never runs `npm run struct` and never commits the file, even
+  when it adds, moves or removes production files; the structure catches up in the commit of the next minor (or major)
+  bump: stage the new files first, then `npm run struct`, and commit the regenerated file with that bump.
 - Never `git stash`, `git reset --hard`, `git checkout -- <file>` or force pushes. To compare against an older version
   of a file, save the current file, write `git show HEAD:<file>` into place, run the check, then restore the saved file
   byte for byte (`cmp`).

@@ -40,6 +40,7 @@ Keep check IDs stable. Register every check exactly once in `testing/suites/chec
 `npm run struct` describes only the production release rooted at `index.html`: reachable modules, linked styles,
 shipped assets and vendor licences. Reuse release selection; development pages, tools, tests and documentation do
 not belong in `project-structure.txt`. It reads current Git-tracked working files; stage new production files first.
+Run it only with a minor or major version bump, never with a patch (owner, 2026-11-26; AGENTS.md «Commits»).
 Prefer `node utils/run-checks.js --check ID` over a hard-coded test path. Reuse existing helpers; no compatibility
 wrappers, duplicate runners or general testing framework for one scenario. Production must never import utils.
 
