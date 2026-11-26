@@ -2,6 +2,10 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.52.84 - Lightning: how long a strike is seen (TK-406.1)
+
+- dev.html: ШТОРМ → «Блискавка — вигляд» → «Час видимості, с [від, до]» sets how long a strike is seen (0.5–0.9 s by default, random within); its flashes fill the first part («Спалахи: частка часу»), then it glows out by the end.
+
 ## v0.52.83 - Procedural lightning in the sky (spec 188, stage A)
 
 - The storm's lightning strikes now show on the WebGL scene: a jagged branching bolt in the sky zones (where the stars fall), new every time, flickering 2–4 times; far strikes are shorter and dimmer. dev.html: «ПОГОДА» → «Блискавка» strikes now (and closes the panel on a phone); ШТОРМ → «Блискавка — вигляд» edits its look live.
@@ -38,7 +42,3 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 ## v0.52.75 - The waves' response to wind and storm as «від / до» (spec 187, stage C)
 
 - How high and fast the waves get with the wind, and how a storm raises, speeds up and lengthens them, are now set by two values — at 5 % and at 100 % — instead of multipliers. The game plays the same.
-
-## v0.52.74 - The wind's effects as «від / до» (spec 187, stage C)
-
-- The drops' slant and the ash's drift from the wind, and the rain's effect on the wind, are now set by two values — at 5 % and at 100 % — instead of multipliers. The game plays the same.

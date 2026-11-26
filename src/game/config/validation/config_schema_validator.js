@@ -1678,10 +1678,10 @@ export class ConfigSchemaValidator {
     this.#requireBooleanWithLabel(`${path}.enabled`, cfg.enabled);
     this.#requireRangeNumbers(path, cfg, [["generations", 1, 7], ["roughness", 0, 1], ["branchWidthShare", 0, 1],
       ["branchFadeSec", 0.01, 5], ["coreWidthPx", 0.5, 20], ["glowWidthPx", 0.5, 120], ["coreOpacity", 0, 1],
-      ["glowOpacity", 0, 1], ["strokeDecaySec", 0.01, 2], ["afterglow", 0, 1], ["afterglowSec", 0.01, 5],
+      ["glowOpacity", 0, 1], ["strokeDecaySec", 0.01, 2], ["afterglow", 0, 1], ["strokesShare", 0.05, 1],
       ["cloudGlowPx", 1, 1000], ["cloudGlowOpacity", 0, 1]]);
-    this.#requireRangePairs(path, cfg, [["driftShare", 0, 2, true], ["branches", 0, 8, true], ["branchLengthShare", 0, 2, true],
-      ["branchAngleDeg", 0, 90, true], ["strokes", 1, 6, true], ["strokeGapSec", 0.01, 2, true], ["strokeLevel", 0, 1, true]]);
+    this.#requireRangePairs(path, cfg, [["durationSec", 0.05, 10, true], ["driftShare", 0, 2, true], ["branches", 0, 8, true],
+      ["branchLengthShare", 0, 2, true], ["branchAngleDeg", 0, 90, true], ["strokes", 1, 6, true], ["strokeLevel", 0, 1, true]]);
     for (const key of ["coreColor", "glowColor"]) {
       this.#requirePattern(`CONFIG.${path}.${key}`, cfg[key], /^#[0-9a-f]{6}$/iu, "must be #rrggbb");
       this.#requireParameterLabel(`${path}.${key}`);

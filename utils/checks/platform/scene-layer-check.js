@@ -1011,17 +1011,18 @@ async function checkLightning() {
   for (let step = 0; step < 10; step += 1) assert.equal(frame(world()), false, "no strike: no frames");
   assert.equal(frame(null), false, "off the scene: nothing");
   // A strike: count frames and flashes, read what the GPU draws.
-  const strike = (distance) => {
+  const strike = (distance, options = settings) => {
     serial += 1;
     let frames = 0, peaks = 0, last = 0, falling = false, maxAlpha = 0, maxWidth = 0, top = Infinity, bottom = -Infinity, outside = 0;
-    let positionsFixed = true, firstView = null;
-    while (frame(world(distance))) {
+    let positionsFixed = true, firstView = null, lastPeakFrame = 0, endAlpha = 0;
+    while (frame(world(distance), options)) {
       frames += 1;
       const view = core.gpuView();
       firstView ??= view.map((particle) => [particle.x, particle.y]);
       const alive = view.filter((particle) => particle.alpha > 0);
       const alpha = Math.max(0, ...alive.map((particle) => particle.alpha));
-      if (alpha > last + 1e-6 && (falling || frames === 1)) peaks += 1;
+      endAlpha = alpha;
+      if (alpha > last + 1e-6 && (falling || frames === 1)) { peaks += 1; lastPeakFrame = frames; }
       falling = alpha < last - 1e-6 ? true : alpha > last + 1e-6 ? false : falling;
       last = alpha;
       maxAlpha = Math.max(maxAlpha, alpha);
@@ -1038,9 +1039,16 @@ async function checkLightning() {
       if (view.some((particle, index) => particle.x !== firstView[index][0] || particle.y !== firstView[index][1])) positionsFixed = false;
       if (frames > 600) break;
     }
-    return { frames, peaks, maxAlpha, maxWidth, top, bottom, outside, positionsFixed, segments: lightning.status.segments };
+    return { frames, peaks, maxAlpha, maxWidth, top, bottom, outside, positionsFixed, lastPeakFrame, endAlpha,
+      segments: lightning.status.segments };
   };
   const near = strike(0);
+  // TK-406.1: the time it is seen is durationSec; the flashes fill its first strokesShare, the afterglow ends at its end.
+  const long = strike(0, { ...settings, durationSec: [1.5, 1.5], strokes: [4, 4] });
+  assert.ok(Math.abs(long.frames - 1.5 * 60) <= 2, `seen for durationSec (${long.frames} frames of 90)`);
+  assert.ok(long.peaks === 4 && long.lastPeakFrame <= 1.5 * 60 * settings.strokesShare + 2,
+    `the flashes in its first ${settings.strokesShare} (${long.peaks}, the last at frame ${long.lastPeakFrame})`);
+  assert.ok(long.endAlpha < settings.coreOpacity * settings.afterglow * 0.1, "the afterglow is out by the end");
   const [lowStrokes, highStrokes] = settings.strokes;
   assert.ok(near.frames > 10 && near.frames < 60 * 1.5, `a strike lasts a moment (${near.frames} frames), then no frames`);
   assert.ok(near.peaks >= Math.min(2, lowStrokes) && near.peaks <= highStrokes, `it flickers: ${near.peaks} flashes`);

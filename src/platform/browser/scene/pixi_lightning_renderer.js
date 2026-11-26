@@ -9,9 +9,9 @@
 //   leaves. Additive, no filter. The particles' position, rotation and size are static properties written once per
 //   strike (Pixi 8 uploads a ParticleContainer's static properties only after update()); each frame writes only the
 //   alpha (the color property, dynamic).
-// - Time: 2–4 return strokes (settings.strokes), each a flash that dies fast (strokeDecaySec); after the last one the
-//   channel glows faintly (afterglow) and goes out over afterglowSec; branches fade sooner (branchFadeSec). Frames only
-//   while a strike lasts.
+// - Time (TK-406.1): a strike is seen for durationSec; 2–4 return strokes (settings.strokes) in its first strokesShare,
+//   each a flash that dies fast (strokeDecaySec); after the last one the channel glows faintly (afterglow) and goes out
+//   by the end; branches fade sooner (branchFadeSec). Frames only while a strike lasts.
 // - Drawing (docs/rendering.md 16, 19, 22, 23): two 32 px textures drawn once in code, fixed pools of the largest bolt
 //   the generator makes, its own masked layer (TK-356.1: one mask per layer).
 // - R19: the bolt belongs to the sky, not to the screen — while it lasts its layer moves with the background (a camera
@@ -31,6 +31,8 @@ const TOP_INSET = 0.04;
 const BOTTOM_SHARE = 0.75;
 // How far the jagged channel reaches sideways from its straight line, a share of its length (roughness 0.28, 6 passes).
 const EDGE_REACH = 0.12;
+// The shortest strike, s (a few frames).
+const MIN_LIFE_SEC = 0.05;
 const STATIC = Object.freeze({ position: false, vertex: false, rotation: false, color: true, uvs: false });
 
 export class PixiLightningRenderer {
@@ -190,23 +192,26 @@ export class PixiLightningRenderer {
     return true;
   }
 
-  // The return strokes: the first at once at full brightness, the others after gaps, each at its own level.
+  // TK-406.1: the strike is seen for durationSec (random within it). The return strokes fill its first strokesShare —
+  // the first at once at full brightness, the others at random moments spread over that part, each at its own level —
+  // and the afterglow fades from the last one to the very end.
   #planStrokes(settings) {
     const random = this.#random;
     const low = Math.max(1, Math.round(pairValue(settings.strokes, 0, 2)));
     const high = Math.max(low, Math.round(pairValue(settings.strokes, 1, 4)));
     this.#strokes = Math.min(MAX_STROKES, low + Math.floor(random() * (high - low + 1)));
-    let at = 0;
+    this.#life = Math.max(MIN_LIFE_SEC, pairBetween(settings.durationSec, 0.5, 0.9, random()));
+    const window = this.#life * Math.max(0.05, clampUnit(finiteOr(settings.strokesShare, 0.6)));
+    const slot = this.#strokes > 1 ? window / (this.#strokes - 1) : 0;
     for (let index = 0; index < this.#strokes; index += 1) {
-      if (index > 0) at += pairBetween(settings.strokeGapSec, 0.05, 0.14, random());
-      this.#strokeAt[index] = at;
+      // Each later stroke lands within its own slot of the window (±40 % of a slot), so they stay in order.
+      const jitter = index === 0 ? 0 : (random() - 0.5) * 0.8 * slot;
+      this.#strokeAt[index] = index === 0 ? 0 : Math.min(window, slot * index + jitter);
       this.#strokeLevel[index] = index === 0 ? 1 : clampUnit(pairBetween(settings.strokeLevel, 0.55, 1, random()));
     }
-    const decay = Math.max(0.01, finiteOr(settings.strokeDecaySec, 0.06));
-    this.#life = at + Math.max(5 * decay, Math.max(0.01, finiteOr(settings.afterglowSec, 0.35)));
   }
 
-  // The brightness now (0…1): the strongest stroke's flash, and after the last one the fading afterglow.
+  // The brightness now (0…1): the strongest stroke's flash, and after the last one the afterglow fading to the end.
   #intensity(settings) {
     const age = this.#age;
     const decay = Math.max(0.01, finiteOr(settings.strokeDecaySec, 0.06));
@@ -218,8 +223,8 @@ export class PixiLightningRenderer {
     }
     const last = this.#strokeAt[this.#strokes - 1];
     if (age >= last) {
-      const afterSec = Math.max(0.01, finiteOr(settings.afterglowSec, 0.35));
-      const glow = clampUnit(finiteOr(settings.afterglow, 0.15)) * (1 - clampUnit((age - last) / afterSec));
+      const left = Math.max(1e-3, this.#life - last);
+      const glow = clampUnit(finiteOr(settings.afterglow, 0.15)) * (1 - clampUnit((age - last) / left));
       level = Math.max(level, glow);
     }
     return level;
