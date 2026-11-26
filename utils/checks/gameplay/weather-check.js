@@ -1309,12 +1309,15 @@ const step = (model, seconds, clock = null, dt = 0.1) => {
   let grainShare = 1;
   const gustBuilder = new WeatherRenderModelBuilder({
     getEnvironment: () => ({
-      weather: { rain: 0.8, storm: 0, fog: 0, cloud: 0.8 },
+      weather: { rain: 0.8, storm: 0, fog: 0, cloud: 0.8, strikeSerial: 3, strikeDistance: 0.4 },
       wind: { direction: -1, strength: 0.85, gustStrength: 0.26 },
     }),
     getGrainShare: () => grainShare,
   });
   gustBuilder.buildInto(gustRenderTarget);
+  // Spec 188 (TK-406): the storm's strikes reach the scene (a change of the count strikes, the distance shapes it).
+  assert.deepEqual([gustRenderTarget.strikeSerial, gustRenderTarget.strikeDistance], [3, 0.4],
+    "the lightning's strike count and distance reach the frame");
   assert(
     Math.abs(gustRenderTarget.windGust - 0.26) < 1e-6,
     `WeatherRenderModelBuilder copies wind.gustStrength into target.windGust (got ${gustRenderTarget.windGust})`,
@@ -2447,7 +2450,8 @@ const step = (model, seconds, clock = null, dt = 0.1) => {
     ui, weather: { locationId: "test", getModel: () => model, getWind: () => null },
     config: () => locations.test.weather, locationConfig: (id) => locations[id]?.weather ?? null, locationsMap: () => locations,
     general: () => ({ rain: GAME_CONFIG.canvas.rain, ash: GAME_CONFIG.canvas.ash, water: GAME_CONFIG.canvas.water,
-      storm: GAME_CONFIG.weather.storm, wind: GAME_CONFIG.weather.wind, screen: GAME_CONFIG.emission.screen, debug: {} }),
+      storm: GAME_CONFIG.weather.storm, wind: GAME_CONFIG.weather.wind, screen: GAME_CONFIG.emission.screen,
+      lightning: GAME_CONFIG.canvas.lightning, debug: {} }),
     createSection: (label, parent, path) => { sections.push([label, path?.join(".") ?? ""]); return node(); },
     renderConfigTree: (value, parent, path, options) => { sections.push(["tree", path.join(".")]); inlineTrees.push(options?.inlineSections === true); },
     edits: { hasOverrides: (parts) => changed.has(parts.join(".")), resetTree: (parts) => { resets.push(parts.join(".")); changed.clear(); } },
@@ -2471,7 +2475,8 @@ const step = (model, seconds, clock = null, dt = 0.1) => {
     weather: { locationId: "test", getModel: () => model, getWind: () => null },
     config: () => locations.test.weather, locationConfig: (id) => locations[id]?.weather ?? null, locationsMap: () => locations,
     general: () => ({ rain: GAME_CONFIG.canvas.rain, ash: GAME_CONFIG.canvas.ash, water: GAME_CONFIG.canvas.water,
-      storm: GAME_CONFIG.weather.storm, wind: GAME_CONFIG.weather.wind, screen: GAME_CONFIG.emission.screen, debug: {} }),
+      storm: GAME_CONFIG.weather.storm, wind: GAME_CONFIG.weather.wind, screen: GAME_CONFIG.emission.screen,
+      lightning: GAME_CONFIG.canvas.lightning, debug: {} }),
     createSection: (text, parent, path) => { sections.push([text, path?.join(".") ?? ""]); return node(); },
     renderConfigTree: (value, parent, path) => sections.push(["tree", path.join(".")]),
     edits: { hasOverrides: (parts) => changed.has(parts.join(".")), resetTree: (parts) => { resets.push(parts.join(".")); changed.clear(); } },
@@ -2498,7 +2503,7 @@ const step = (model, seconds, clock = null, dt = 0.1) => {
     "CONFIG.locations.map.test.weather.storm", "CONFIG.weather.wind", "CONFIG.locations.map.test.weather.wind",
     "CONFIG.locations.map.test.weather.fog", "CONFIG.emission.screen.vignette", "CONFIG.emission.screen.blur",
     "CONFIG.locations.map.test.weather.emission",
-    "CONFIG.canvas.ash", "CONFIG.canvas.water"]) {
+    "CONFIG.canvas.ash", "CONFIG.canvas.water", "CONFIG.canvas.lightning"]) {
     assert.ok(all.includes(path), `«Всі» shows ${path}`);
   }
   assert.ok(sections.some(([, at]) => at === "WEATHER.start"), "«Всі» shows the location's start and thresholds");
@@ -2696,6 +2701,10 @@ const step = (model, seconds, clock = null, dt = 0.1) => {
     const bolides = star.snapshot.bolideSerial;
     buttons360.get("WEATHER.controls.bolide")();
     assert.deepEqual([star.snapshot.bolideSerial, closed], [bolides + 1, 1], "a bolide falls and the panel closes on a phone");
+    // Spec 188 D9: «Блискавка» strikes and closes the panel on a phone too, so the strike is seen.
+    const strikes = weather.snapshot.strikeSerial;
+    buttons360.get("WEATHER.controls.strike")();
+    assert.deepEqual([weather.snapshot.strikeSerial, closed], [strikes + 1, 2], "a strike and the panel closes on a phone");
     section360.dispose();
   }
 

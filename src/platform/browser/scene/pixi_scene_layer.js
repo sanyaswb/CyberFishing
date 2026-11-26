@@ -10,6 +10,7 @@ import { PixiRainRenderer } from "./pixi_rain_renderer.js";
 import { PixiAshRenderer } from "./pixi_ash_renderer.js";
 import { PixiRadiationGrainRenderer } from "./pixi_radiation_grain_renderer.js";
 import { PixiStarfallRenderer } from "./pixi_starfall_renderer.js";
+import { PixiLightningRenderer } from "./pixi_lightning_renderer.js";
 import { PixiSceneBlur } from "./pixi_scene_blur.js";
 import { SceneCanvasMotion } from "./scene_canvas_motion.js";
 import { PixiWorldEntitiesRenderer } from "./pixi_world_entities_renderer.js";
@@ -65,6 +66,8 @@ export class PixiSceneLayer {
   #getGrainSettings;
   #starfall = null;
   #getStarfallSettings;
+  #lightning = null;
+  #getLightningSettings;
   #blur = null;
   #motion;
   #getSceneBlurPx;
@@ -110,7 +113,8 @@ export class PixiSceneLayer {
   constructor({ pixi, documentTarget, gameCanvas, canvasMetrics, background, images, router, clock, getWaterSettings,
     fightAreaStyles, probe, logger, getWakeSettings = () => null, getImageSize = null, prepareRenderer = null,
     getRainSettings = () => null, getAshSettings = () => null, getWeatherSettings = () => null,
-    getRadiationGrainSettings = () => null, getStarfallSettings = () => null, getSceneBlurPx = () => 0,
+    getRadiationGrainSettings = () => null, getStarfallSettings = () => null, getLightningSettings = () => null,
+    getSceneBlurPx = () => 0,
     getSceneBlurSettings = () => null }) {
     if (typeof pixi?.Application !== "function") throw new TypeError("PixiSceneLayer requires the Pixi namespace");
     if (typeof gameCanvas?.before !== "function") throw new TypeError("PixiSceneLayer requires the game canvas");
@@ -139,6 +143,8 @@ export class PixiSceneLayer {
     this.#getGrainSettings = getRadiationGrainSettings;
     // Spec 182 stage C (TK-352): CONFIG.canvas.starfall, the falling stars' look.
     this.#getStarfallSettings = getStarfallSettings;
+    // Spec 188 (TK-406): CONFIG.canvas.lightning, the procedural lightning's look.
+    this.#getLightningSettings = getLightningSettings;
     // TK-324.3: the emission's blur of the world alone (px now, 0 — none) and CONFIG.emission.screen.blur.scene.
     this.#getSceneBlurPx = getSceneBlurPx;
     this.#getSceneBlurSettings = getSceneBlurSettings;
@@ -167,6 +173,9 @@ export class PixiSceneLayer {
     const world = router.drawsOnScene("background") ? frame.world : null;
     let changed = this.#background.update(world);
     if (this.#starfall.update(world, this.#metrics.width, this.#metrics.height, this.#clock.now, this.#getStarfallSettings())) {
+      changed = true;
+    }
+    if (this.#lightning.update(world, this.#metrics.width, this.#metrics.height, this.#clock.now, this.#getLightningSettings())) {
       changed = true;
     }
     // TK-271.2: the rain first, so the water's ripples read where its rings are this frame (the draw order is the stage's).
@@ -235,7 +244,7 @@ export class PixiSceneLayer {
     return { state, webglVersion: this.#app.renderer.context?.webGLVersion ?? null, width: this.#width,
       height: this.#height, pixelRatio: this.#pixelRatio, textures: this.#textures.size, textureBytes: this.#textures.bytes,
       water: this.#water.status, rain: this.#rain.status, ash: this.#ash.status, grain: this.#grain.status,
-      starfall: this.#starfall.status, blur: this.#blur.status, motion: this.#motion.status };
+      starfall: this.#starfall.status, lightning: this.#lightning.status, blur: this.#blur.status, motion: this.#motion.status };
   }
 
   // DEV fallback test (DevTools "СЦЕНА WebGL"): lose the context through WEBGL_lose_context until restoreContext().
@@ -262,6 +271,7 @@ export class PixiSceneLayer {
     this.#ash?.dispose();
     this.#grain?.dispose();
     this.#starfall?.dispose();
+    this.#lightning?.dispose();
     this.#blur?.dispose();
     this.#rod?.dispose();
     this.#float?.dispose();
@@ -295,6 +305,9 @@ export class PixiSceneLayer {
       // Spec 182 stage C: the falling stars right over the background's sky, under the water and the whole world.
       this.#starfall = new PixiStarfallRenderer({ pixi: this.#pixi, documentTarget: this.#documentTarget });
       this.#starfall.mount(app.stage);
+      // Spec 188 D8: the lightning right after the stars, in the same sky.
+      this.#lightning = new PixiLightningRenderer({ pixi: this.#pixi, documentTarget: this.#documentTarget });
+      this.#lightning.mount(app.stage);
       // Spec 172 D4: rain; its rings sit on the water and bend it like the boat's wake, its drops fall in front of the
       // tackle (mounted after the rod).
       const rain = new PixiRainRenderer({ pixi: this.#pixi, documentTarget: this.#documentTarget });

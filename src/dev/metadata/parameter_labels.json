@@ -2966,5 +2966,117 @@
   "canvas.starfall.bolide.burst.color": {
     "label": "Колір спалаху",
     "description": "Колір спалаху й іскор."
+  },
+  "canvas.lightning": {
+    "label": "Блискавка — вигляд (загальне)",
+    "description": "Процедурна блискавка (spec 188): удари шторму в зонах неба, як зорі, — від верху зони до обрію; нова форма щоразу; далека коротша, тонша й тьмяніша."
+  },
+  "canvas.lightning.enabled": {
+    "label": "Блискавка",
+    "description": "Малювати блискавку на сцені WebGL (удари йдуть і без неї: модель погоди, грім)."
+  },
+  "canvas.lightning.generations": {
+    "label": "Поділів каналу",
+    "description": "Скільки разів канал ділиться навпіл: 2^n відрізків (6 — 64). Більше — дрібніші злами."
+  },
+  "canvas.lightning.roughness": {
+    "label": "Зламаність",
+    "description": "Наскільки середина кожного відрізка зсувається вбік — частка його довжини. 0 — пряма."
+  },
+  "canvas.lightning.driftShare": {
+    "label": "Знос убік [від, до]",
+    "description": "Наскільки низ блискавки зміщений убік від верху — частка її довжини (вліво чи вправо — випадково)."
+  },
+  "canvas.lightning.branches": {
+    "label": "Гілок [від, до]",
+    "description": "Скільки гілок відходить від каналу (з верхніх ~70 %)."
+  },
+  "canvas.lightning.branchLengthShare": {
+    "label": "Довжина гілки [від, до]",
+    "description": "Довжина гілки — частка довжини каналу."
+  },
+  "canvas.lightning.branchAngleDeg": {
+    "label": "Кут гілки, ° [від, до]",
+    "description": "На скільки градусів гілка відхиляється від напрямку каналу."
+  },
+  "canvas.lightning.branchWidthShare": {
+    "label": "Товщина гілки",
+    "description": "Товщина гілки — частка товщини каналу."
+  },
+  "canvas.lightning.branchFadeSec": {
+    "label": "Гілки гаснуть, с",
+    "description": "Стала часу згасання гілок: вони гаснуть раніше за канал."
+  },
+  "canvas.lightning.coreWidthPx": {
+    "label": "Ядро: товщина, px",
+    "description": "Товщина яскравого ядра близької блискавки, логічні пікселі."
+  },
+  "canvas.lightning.glowWidthPx": {
+    "label": "Сяйво: ширина, px",
+    "description": "Ширина м'якого сяйва навколо ядра."
+  },
+  "canvas.lightning.coreColor": {
+    "label": "Ядро: колір",
+    "description": "Колір яскравого ядра."
+  },
+  "canvas.lightning.glowColor": {
+    "label": "Сяйво: колір",
+    "description": "Колір сяйва навколо ядра й сяйва хмари."
+  },
+  "canvas.lightning.coreOpacity": {
+    "label": "Ядро: непрозорість",
+    "description": "Непрозорість ядра на повній яскравості."
+  },
+  "canvas.lightning.glowOpacity": {
+    "label": "Сяйво: непрозорість",
+    "description": "Непрозорість сяйва на повній яскравості."
+  },
+  "canvas.lightning.strokes": {
+    "label": "Спалахів [від, до]",
+    "description": "Скільки спалахів (зворотних розрядів) за один удар — блискавка мерехтить."
+  },
+  "canvas.lightning.strokeGapSec": {
+    "label": "Між спалахами, с [від, до]",
+    "description": "Проміжок між спалахами одного удару."
+  },
+  "canvas.lightning.strokeLevel": {
+    "label": "Повторні спалахи [від, до]",
+    "description": "Яскравість другого й наступних спалахів (перший — повна)."
+  },
+  "canvas.lightning.strokeDecaySec": {
+    "label": "Спалах гасне, с",
+    "description": "Стала часу згасання кожного спалаху."
+  },
+  "canvas.lightning.afterglow": {
+    "label": "Жевріння",
+    "description": "Після останнього спалаху канал ледь жевріє — частка повної яскравості."
+  },
+  "canvas.lightning.afterglowSec": {
+    "label": "Жевріння гасне, с",
+    "description": "За скільки секунд згасає жевріння після останнього спалаху."
+  },
+  "canvas.lightning.cloudGlowPx": {
+    "label": "Сяйво хмари, px",
+    "description": "Розмір сяйва хмари там, де виходить блискавка."
+  },
+  "canvas.lightning.cloudGlowOpacity": {
+    "label": "Сяйво хмари: непрозорість",
+    "description": "Непрозорість сяйва хмари на повній яскравості."
+  },
+  "canvas.lightning.far": {
+    "label": "Далекий удар",
+    "description": "Яка частка довжини, товщини й яскравості близької блискавки лишається в найдальшої (відстань удару 1)."
+  },
+  "canvas.lightning.far.lengthShare": {
+    "label": "Довжина",
+    "description": "Частка довжини: низ — обрій, верх далекої блискавки нижче."
+  },
+  "canvas.lightning.far.widthShare": {
+    "label": "Товщина",
+    "description": "Частка товщини ядра, сяйва й сяйва хмари."
+  },
+  "canvas.lightning.far.opacityShare": {
+    "label": "Яскравість",
+    "description": "Частка яскравості."
   }
 }

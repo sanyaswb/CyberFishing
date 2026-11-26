@@ -58,6 +58,9 @@ export class WeatherRenderModelBuilder {
     // the bolides that fell.
     target.starfall = share(environment?.starfall?.strength);
     target.bolideSerial = Number(environment?.starfall?.bolideSerial) || 0;
+    // Spec 188 (TK-406): the storm's lightning strikes (WeatherModel) — the scene strikes when the count changes.
+    target.strikeSerial = Number(weather?.strikeSerial) || 0;
+    target.strikeDistance = share(weather?.strikeDistance);
     const direction = Number(environment?.wind?.direction);
     target.windDirection = Number.isFinite(direction) ? Math.max(-1, Math.min(1, direction)) : 0;
     const rawStrength = environment?.wind?.strength;

@@ -311,11 +311,13 @@
 │  │  ├── events
 │  │  │  └── event_lifecycle.js
 │  │  ├── geometry
+│  │  │  ├── branching_bolt.js
 │  │  │  └── grid_mask.js
 │  │  ├── math
 │  │  │  ├── normalize_distance.js
 │  │  │  ├── number_normalization.js
 │  │  │  ├── rectangle_bounds.js
+│  │  │  ├── strength_value.js
 │  │  │  └── vector2.js
 │  │  ├── navigation
 │  │  │  ├── grid_path_smoother.js
@@ -1142,6 +1144,7 @@
 │        │  ├── pixi_dashed_line.js
 │        │  ├── pixi_fight_area_renderer.js
 │        │  ├── pixi_float_renderer.js
+│        │  ├── pixi_lightning_renderer.js
 │        │  ├── pixi_line_renderer.js
 │        │  ├── pixi_radiation_grain_renderer.js
 │        │  ├── pixi_rain_renderer.js
@@ -1160,6 +1163,7 @@
 │        │  ├── scene_text_textures.js
 │        │  ├── scene_texture_cache.js
 │        │  ├── screen_zone_set.js
+│        │  ├── sky_scene_zones.js
 │        │  ├── water_wave_field.js
 │        │  └── zone_rect_mask.js
 │        ├── storage

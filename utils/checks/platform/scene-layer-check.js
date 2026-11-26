@@ -712,9 +712,10 @@ async function checkPixiSceneLayer() {
     rain: { active: false, drops: 0, rings: 0, dropPool: 0, ringPool: 0, slantDeg: 0, stepMs: 0 },
     ash: { active: false, embers: 0, pool: 0, stepMs: 0 }, grain: { active: false, opacity: 0, cells: 0 },
     starfall: { active: false, stars: 0, pool: 0, bolide: false, burst: false, sparks: 0 },
+    lightning: { active: false, segments: 0, strikes: 0 },
     blur: { on: false, strength: 0, resolution: 0.5, quality: 2 }, motion: { moving: false, x: 0, y: 0, scaleX: 1, scaleY: 1, skewX: 0, skewY: 0 } },
   "no castable zones in this frame: still water; no emission: no ash; no radiation: no hiss; no starfall night: no stars; " +
-  "no blur after the warm-up");
+  "no strike: no lightning; no blur after the warm-up");
   base.x = -20;
   layer.render(frame);
   assert.equal(app.renders, 3, "a camera move presents one frame");
@@ -945,6 +946,133 @@ async function checkSharedWeatherParts() {
   const view = new BackgroundPlacement().place({ backgroundLayers: list([{ x: -400, y: 0, width: 1200, height: 700 }]) }, 400, 700);
   assert.deepEqual([view.area, view.visibleArea(400, 700), view.screenX(0.5), view.shareX(200)], [840000, 280000, 200, 0.5],
     "the background on screen, its visible part, shares and points");
+}
+
+// Spec 188 (TK-406): the procedural lightning — BranchingBolt's shape, and PixiLightningRenderer: a strike when the
+// serial changes, in a visible sky zone from its top to its bottom, 2+ flashes, then nothing; a far strike shorter,
+// thinner and dimmer; no sky on screen or switched off — nothing; its own mask; it moves with the background; the
+// shape goes to the GPU once per strike (static properties after update()), only the alpha each frame; fixed pools.
+async function checkLightning() {
+  const { BranchingBolt, BRANCHING_BOLT_MAX_SEGMENTS } = await importSource("src/engine/geometry/branching_bolt.js");
+  const { PixiLightningRenderer } = await importSource("src/platform/browser/scene/pixi_lightning_renderer.js");
+  const { CONFIG } = await importSource("src/game/config/runtime/game_config.js");
+  let seed = 11;
+  const random = () => { seed = (Math.imul(seed, 1664525) + 1013904223) >>> 0; return seed / 4294967296; };
+  // The shape: a connected channel from start to end in 2^g segments, branches leaving it, a straight line at roughness 0.
+  const bolt = new BranchingBolt();
+  const arrays = [bolt.ax, bolt.ay, bolt.bx, bolt.by, bolt.branch];
+  const shape = { generations: 6, roughness: 0.3, branches: [3, 3], branchLengthShare: [0.2, 0.4], branchAngleDeg: [20, 40] };
+  bolt.build(random, 100, 0, 160, 300, shape);
+  const main = [], branchStarts = [];
+  for (let index = 0; index < bolt.count; index += 1) {
+    if (bolt.branch[index] === 0) main.push(index);
+    else if (index === 0 || bolt.branch[index - 1] === 0 || bolt.bx[index - 1] !== bolt.ax[index] || bolt.by[index - 1] !== bolt.ay[index]) {
+      branchStarts.push(index);
+    }
+  }
+  assert.deepEqual([main.length, branchStarts.length, bolt.count], [64, 3, 64 + 3 * 16], "64 channel segments and 3 branches of 16");
+  assert.deepEqual([bolt.ax[main[0]], bolt.ay[main[0]], bolt.bx[main.at(-1)], bolt.by[main.at(-1)]], [100, 0, 160, 300],
+    "the channel runs from its start to its end");
+  assert.ok(main.every((index, at) => at === 0 || (bolt.ax[index] === bolt.bx[main[at - 1]] && bolt.ay[index] === bolt.by[main[at - 1]])),
+    "the channel is one connected line");
+  assert.ok(branchStarts.every((start) => main.some((index) => bolt.ax[index] === bolt.ax[start] && bolt.ay[index] === bolt.ay[start])),
+    "every branch leaves from a point of the channel");
+  assert.ok(main.some((index) => Math.abs((bolt.ax[index] - 100) * 300 - bolt.ay[index] * 60) > 300), "roughness breaks the line");
+  bolt.build(random, 100, 0, 160, 300, { ...shape, roughness: 0, branches: [0, 0] });
+  assert.ok(bolt.count === 64 && main.every((index) => Math.abs((bolt.ax[index] - 100) * 300 - bolt.ay[index] * 60) < 1e-3),
+    "roughness 0: a straight line, no branches");
+  assert.ok([bolt.ax, bolt.ay, bolt.bx, bolt.by, bolt.branch].every((array, index) => array === arrays[index]),
+    "the arrays are made once (no allocation per strike)");
+
+  const { pixi, canvasTextures } = fakePixi();
+  const { documentTarget } = fakeDom();
+  const lightning = new PixiLightningRenderer({ pixi, documentTarget, random });
+  assert.equal(canvasTextures.length, 2, "a soft glow and a firmer core, drawn once in code");
+  const stage = new pixi.Container();
+  lightning.mount(stage);
+  const [layer, mask] = stage.children;
+  const [cloud, glow, core] = layer.children;
+  assert.ok(glow instanceof pixi.ParticleContainer && core instanceof pixi.ParticleContainer && glow.blendMode === "add"
+    && core.blendMode === "add" && cloud.blendMode === "add", "an additive glow under an additive core, a cloud glow sprite");
+  assert.deepEqual([glow.particleChildren.length, core.particleChildren.length], [BRANCHING_BOLT_MAX_SEGMENTS, BRANCHING_BOLT_MAX_SEGMENTS],
+    "fixed pools of the largest bolt");
+  assert.equal(JSON.stringify(core.dynamicProperties), JSON.stringify({ vertex: false, position: false, rotation: false, uvs: false, color: true }),
+    "only the colour (alpha) is dynamic: the shape is static");
+  const settings = JSON.parse(JSON.stringify(CONFIG.canvas.lightning));
+  const sky = { x: 0, y: 0, width: 1200, height: 250 };
+  const zones = (items) => ({ count: items.length, getAt: (index) => items[index] });
+  let serial = 0;
+  let background = null;
+  const world = (distance = 0, skyZones = [sky]) => ({ weather: { strikeSerial: serial, strikeDistance: distance }, skyZoned: true,
+    skyRegions: zones(skyZones), backgroundLayers: background ? zones([background]) : { count: 0 } });
+  let now = 1000;
+  const frame = (model, options = settings) => { now += 1000 / 60; return lightning.update(model, 1200, 700, now, options); };
+  assert.equal(frame(world()), false, "the first frame only takes the serial: nothing");
+  for (let step = 0; step < 10; step += 1) assert.equal(frame(world()), false, "no strike: no frames");
+  assert.equal(frame(null), false, "off the scene: nothing");
+  // A strike: count frames and flashes, read what the GPU draws.
+  const strike = (distance) => {
+    serial += 1;
+    let frames = 0, peaks = 0, last = 0, falling = false, maxAlpha = 0, maxWidth = 0, top = Infinity, bottom = -Infinity, outside = 0;
+    let positionsFixed = true, firstView = null;
+    while (frame(world(distance))) {
+      frames += 1;
+      const view = core.gpuView();
+      firstView ??= view.map((particle) => [particle.x, particle.y]);
+      const alive = view.filter((particle) => particle.alpha > 0);
+      const alpha = Math.max(0, ...alive.map((particle) => particle.alpha));
+      if (alpha > last + 1e-6 && (falling || frames === 1)) peaks += 1;
+      falling = alpha < last - 1e-6 ? true : alpha > last + 1e-6 ? false : falling;
+      last = alpha;
+      maxAlpha = Math.max(maxAlpha, alpha);
+      for (const particle of alive) {
+        maxWidth = Math.max(maxWidth, particle.scaleY * 32);
+        top = Math.min(top, particle.y);
+        bottom = Math.max(bottom, particle.y);
+      }
+      // The channel (the first 2^generations segments; branches may reach the mask) stays in the zone's width.
+      for (let index = 0; index < 2 ** settings.generations; index += 1) {
+        const particle = view[index];
+        if (particle.alpha > 0 && (particle.x < sky.x - 1 || particle.x > sky.x + sky.width + 1)) outside += 1;
+      }
+      if (view.some((particle, index) => particle.x !== firstView[index][0] || particle.y !== firstView[index][1])) positionsFixed = false;
+      if (frames > 600) break;
+    }
+    return { frames, peaks, maxAlpha, maxWidth, top, bottom, outside, positionsFixed, segments: lightning.status.segments };
+  };
+  const near = strike(0);
+  const [lowStrokes, highStrokes] = settings.strokes;
+  assert.ok(near.frames > 10 && near.frames < 60 * 1.5, `a strike lasts a moment (${near.frames} frames), then no frames`);
+  assert.ok(near.peaks >= Math.min(2, lowStrokes) && near.peaks <= highStrokes, `it flickers: ${near.peaks} flashes`);
+  assert.equal(near.outside, 0, "the bolt stays in the sky zone's width");
+  assert.ok(near.top >= sky.y && near.top < sky.y + sky.height * 0.15 && near.bottom <= sky.y + sky.height + 1
+    && near.bottom > sky.y + sky.height * 0.85, `from near the zone's top to its bottom (${near.top.toFixed(1)} … ${near.bottom.toFixed(1)})`);
+  assert.ok(near.positionsFixed, "the shape is uploaded once; each frame changes only the alpha");
+  assert.deepEqual([lightning.status.active, layer.visible, frame(world())], [false, false, false], "then nothing");
+  assert(layer.mask === mask && mask.includeInBuild === false, "its own mask, drawn only into the stencil");
+  assert.deepEqual(mask.ops, [["rect", sky.x, sky.y, sky.width, sky.height], ["fill", 0xffffff]], "the mask outlines the sky zones");
+  const far = strike(1);
+  assert.ok(far.maxWidth < near.maxWidth * (settings.far.widthShare + 0.05) && far.maxAlpha < near.maxAlpha * (settings.far.opacityShare + 0.05)
+    && far.bottom - far.top < (near.bottom - near.top) * (settings.far.lengthShare + 0.1),
+    `a far strike: thinner (${far.maxWidth.toFixed(2)} vs ${near.maxWidth.toFixed(2)}), dimmer, shorter`);
+  const strikes = lightning.status.strikes;
+  serial += 1;
+  assert.equal(frame(world(0, [{ x: 0, y: 900, width: 100, height: 100 }])), false, "no sky on screen: no strike");
+  serial += 1;
+  assert.equal(frame(world(), { ...settings, enabled: false }), false, "switched off: nothing");
+  assert.equal(lightning.status.strikes, strikes, "neither counted");
+  // R19: a camera move during the strike carries the bolt with the background.
+  background = { assetId: "day", alpha: 1, x: 0, y: 0, width: 1200, height: 700 };
+  frame(world());
+  serial += 1;
+  assert.equal(frame(world()), true);
+  background.x = -30;
+  frame(world());
+  assert.equal(layer.x, -30, "the bolt moves with the background, not with the screen");
+  while (frame(world())) { /* the strike ends */ }
+  assert.deepEqual([glow.particleChildren.length, core.particleChildren.length], [BRANCHING_BOLT_MAX_SEGMENTS, BRANCHING_BOLT_MAX_SEGMENTS],
+    "the pools never grew");
+  lightning.dispose();
 }
 
 // Spec 182 stage C (TK-352): the starfall's ordinary stars — only in the sky zones, as many a minute as the night's
@@ -1718,10 +1846,13 @@ async function checkSceneWater(compose, clock, water, metrics) {
   app.initCall.resolve();
   assert.equal(await wet.layer.whenReady(), true);
   // Spec 172 D4: the rain's rings sit right after the water's mask, its drops after the rod. Spec 182: the falling stars
-  // (and their sky mask) right over the background, under the water.
-  const [, starLayer, starMask, waterContainer, mapSprite, waterMask, rings] = app.stage.children;
+  // (and their sky mask) right over the background, under the water. Spec 188 D8: the lightning (and its own mask) right
+  // after the stars.
+  const [, starLayer, starMask, lightningLayer, lightningMask, waterContainer, mapSprite, waterMask, rings] = app.stage.children;
   const [stars, bolide] = starLayer.children;
   assert(bolide.children?.length === 2 && starMask.ops !== undefined, "the bolide in the stars' layer, then its mask");
+  assert(lightningLayer.children.length === 3 && lightningMask.ops !== undefined && lightningMask !== starMask,
+    "the lightning's layer (cloud glow, glow, core) after the stars, with a mask of its own");
   assert(stars instanceof wet.pixi.ParticleContainer && stars.blendMode === "add", "the starfall lies right over the background");
   assert(waterMask.ops !== undefined && rings instanceof wet.pixi.ParticleContainer,
     "the rain's rings are mounted right after the water's mask");
@@ -1763,7 +1894,8 @@ async function checkSceneWater(compose, clock, water, metrics) {
   const lowTexture = lowWet.textures.find((tex) => tex.resource.id === "day");
   if (lowTexture) lowTexture.width = 640;
   lowWet.layer.render(frame);
-  const lowFilter = lowWet.apps[0].stage.children[3].filters[0];
+  // The water's container is the first after the sky's layers (stars, lightning and their masks).
+  const lowFilter = lowWet.apps[0].stage.children[app.stage.children.indexOf(waterContainer)].filters[0];
   assert(Math.abs(lowFilter.scale.x - 2 * 8 * artScale) < 1e-9, "TK-183: low background copy does not stretch waves");
 
   assert.equal(map.updates, 1, "each step uploads the map once");
@@ -1806,7 +1938,7 @@ async function checkSceneWater(compose, clock, water, metrics) {
   regions[0].y = 300;
   // TK-066: two zones with a gap. A mask of the zones clips the filtered copy, and the waves stop in the gap, so the art
   // between the zones stays still; a camera move only redraws the mask; one zone again drops the mask.
-  const zoneMask = app.stage.children[5];
+  const zoneMask = waterMask;
   const two = [{ x: -100, y: 100, width: 1600, height: 200 }, { x: -100, y: 500, width: 1600, height: 200 }];
   frame.world.clipRegions = list(two);
   clock.now += 40;
@@ -2421,6 +2553,7 @@ async function main() {
   await checkRadiationGrain();
   await checkSceneBlur();
   await checkStarfall();
+  await checkLightning();
   await checkSceneWorldKinds();
   await checkSceneTackle();
   await checkPixiSceneLayer();

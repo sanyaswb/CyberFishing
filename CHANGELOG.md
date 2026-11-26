@@ -2,6 +2,10 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.52.83 - Procedural lightning in the sky (spec 188, stage A)
+
+- The storm's lightning strikes now show on the WebGL scene: a jagged branching bolt in the sky zones (where the stars fall), new every time, flickering 2–4 times; far strikes are shorter and dimmer. dev.html: «ПОГОДА» → «Блискавка» strikes now (and closes the panel on a phone); ШТОРМ → «Блискавка — вигляд» edits its look live.
+
 ## v0.52.82 - DevTools: the storm's, wind's and waves' «від / до» follow the strength slider (spec 187 D16)
 
 - dev.html: in «ПОГОДА» the storm's effects, the wind's slant and drift, the rain's effect on the wind and the sea state show one number at the strength slider's level, live; «від» is edited at 5 %, «до» at 100 % — as the rain and the ash already do. «Загальні» keeps the pairs.
@@ -38,7 +42,3 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 ## v0.52.74 - The wind's effects as «від / до» (spec 187, stage C)
 
 - The drops' slant and the ash's drift from the wind, and the rain's effect on the wind, are now set by two values — at 5 % and at 100 % — instead of multipliers. The game plays the same.
-
-## v0.52.73 - The storm's effects as «від / до» (spec 187, stage C)
-
-- What a storm does to the rain, the drops and the wind is now set by two values — at 5 % and at 100 % of its strength — instead of multipliers. The game plays the same; a weak storm can now be tuned on its own.

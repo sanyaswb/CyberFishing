@@ -244,7 +244,7 @@ export class WeatherDevSection {
         importLabel: "Імпорт погоди",
         resetLabel: "Скинути зміни погоди до коду",
         description:
-          "Експорт погоди завантажує файл того, що показує вибір нагорі: «Загальні» — дощ, попіл, шторм і вітер для всіх локацій; локація — її погода; «Всі» — обидва. У код зміни переносить команда npm run apply:weather -- <файл> (перевірка, конфлікти, підтвердження, бекап); після неї перезавантажте сторінку або скиньте зміни погоди до коду. Імпорт погоди відкриває такий файл тут, щоб продовжити редагування; скидання скидає те саме, що йде в експорт. Вода й екран викиду в експорт не входять. Без експорту зміни зникають при перезавантаженні.",
+          "Експорт погоди завантажує файл того, що показує вибір нагорі: «Загальні» — дощ, попіл, шторм і вітер для всіх локацій; локація — її погода; «Всі» — обидва. У код зміни переносить команда npm run apply:weather -- <файл> (перевірка, конфлікти, підтвердження, бекап); після неї перезавантажте сторінку або скиньте зміни погоди до коду. Імпорт погоди відкриває такий файл тут, щоб продовжити редагування; скидання скидає те саме, що йде в експорт. Вода, вигляд блискавки й екран викиду в експорт не входять. Без експорту зміни зникають при перезавантаженні.",
       },
       readStatus: () => this.#readSavingStatus(),
       buildExport: (hashText) => this.#buildExport(hashText),
@@ -592,13 +592,16 @@ export class WeatherDevSection {
 
   #renderStorm(content, mode) {
     const parts = [];
-    if (mode.general) parts.push(["weather", "storm"]);
+    if (mode.general) parts.push(["weather", "storm"], ["canvas", "lightning"]);
     if (mode.location) parts.push(this.#locationParts(mode.location, "storm"));
     this.#elementSection("ШТОРМ", "storm", content, parts, (section) => {
       this.#renderStrength("storm", section, mode);
       if (mode.general) {
         this.#renderEffects(this.#general()?.storm, ["weather", "storm"],
           this.#group("Що робить шторм (загальне)", section, ["WEATHER", "storm", "effects"]));
+        // Spec 188 D9: the procedural lightning's look, edited live (its strikes: the location's «Подія шторму й блискавки»).
+        this.#tree(this.#general()?.lightning, this.#group("Блискавка — вигляд (загальне)", section,
+          ["WEATHER", "storm", "lightning"]), ["canvas", "lightning"]);
       }
       if (!mode.location) return;
       this.#chanceRow("storm", mode.location, section);
@@ -1425,9 +1428,11 @@ export class WeatherDevSection {
         this.#fill();
       }, false, "", ["WEATHER", "controls", "gust"], { requires });
     }
+    // Spec 188 D9: on a phone the panel closes, so the strike is seen (like «Болід»).
     this.#ui.createButtonRow("Блискавка", controls, () => {
       model.strike();
       this.#fill();
+      this.#closeOnPhone();
     }, false, "", ["WEATHER", "controls", "strike"], { requires });
   }
 }

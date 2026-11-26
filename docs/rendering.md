@@ -221,6 +221,15 @@ gameplay zones or their enable flags; hiding background also hides its displaced
     `includeInBuild` back on when any of them drops it, so it would be drawn as content; mask the common parent. The
     stencil is the starfall's only extra GPU cost (two small batches inside it): measure on a phone with
     «ПРОДУКТИВНІСТЬ» on a strong starfall over rain.
+    Spec 188 (TK-406): the lightning (`PixiLightningRenderer`) is mounted right after the starfall, in the same sky
+    (`SkySceneZones`, shared with the starfall: the sky zones, or the background's top third; its own mask on its own
+    layer). One strike per change of `world.weather.strikeSerial`: a `BranchingBolt` (engine/geometry, midpoint
+    displacement, arrays made once) drawn as particles of two 32 px round textures made once — a wide soft glow under a
+    thin core, additive, and one cloud-glow sprite; no filter. The shape is written once per strike as the particles'
+    static properties (Pixi 8 uploads them only after `update()`), each frame writes only the alpha (dynamic colour); 2–4
+    flashes and an afterglow, ~0.4–0.8 s of frames, none between strikes. While it lasts the layer moves with the
+    background (R19). Its cost is two small batches and a stencil pass during a strike: measure on a phone with
+    «ПРОДУКТИВНІСТЬ» in a storm. The sky's light from the owner's art is spec 188 stage B.
     TK-358: the weather renderers share their parts instead of copies — `ScreenZoneSet` (a zone list's visible parts on
     screen, areas, a point picked by area, the point test; or one fallback rectangle), `ZoneRectMask` (one container's
     stencil of zone rectangles, redrawn only on a change, released empty), `BackgroundPlacement` (the background's

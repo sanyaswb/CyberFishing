@@ -537,6 +537,7 @@ export class ConfigSchemaValidator {
     this.#validateRadiationGrainConfig();
     this.#validateIntoxicationConfig();
     this.#validateStarfallConfig();
+    this.#validateLightningConfig();
     this.#validateGeigerConfig();
     this.#validateGeneralWeatherConfig();
     this.#validateEmissionScreenConfig();
@@ -1666,6 +1667,29 @@ export class ConfigSchemaValidator {
       ["particleSpeedPx", 0, 2000, true], ["particleLifeSec", 0.05, 5, true], ["particleSizePx", 0.5, 40, true]]);
     this.#requirePattern(`CONFIG.${burstPath}.color`, burst.color, /^#[0-9a-f]{6}$/iu, "must be #rrggbb");
     this.#requireParameterLabel(`${burstPath}.color`);
+  }
+
+  // Spec 188 (TK-406): the procedural lightning's look (CONFIG.canvas.lightning).
+  #validateLightningConfig() {
+    const path = "canvas.lightning";
+    const cfg = this.config.canvas?.lightning;
+    if (!cfg || typeof cfg !== "object") { this.#error(`CONFIG.${path}`, "missing lightning config"); return; }
+    this.#requireParameterLabel(path);
+    this.#requireBooleanWithLabel(`${path}.enabled`, cfg.enabled);
+    this.#requireRangeNumbers(path, cfg, [["generations", 1, 7], ["roughness", 0, 1], ["branchWidthShare", 0, 1],
+      ["branchFadeSec", 0.01, 5], ["coreWidthPx", 0.5, 20], ["glowWidthPx", 0.5, 120], ["coreOpacity", 0, 1],
+      ["glowOpacity", 0, 1], ["strokeDecaySec", 0.01, 2], ["afterglow", 0, 1], ["afterglowSec", 0.01, 5],
+      ["cloudGlowPx", 1, 1000], ["cloudGlowOpacity", 0, 1]]);
+    this.#requireRangePairs(path, cfg, [["driftShare", 0, 2, true], ["branches", 0, 8, true], ["branchLengthShare", 0, 2, true],
+      ["branchAngleDeg", 0, 90, true], ["strokes", 1, 6, true], ["strokeGapSec", 0.01, 2, true], ["strokeLevel", 0, 1, true]]);
+    for (const key of ["coreColor", "glowColor"]) {
+      this.#requirePattern(`CONFIG.${path}.${key}`, cfg[key], /^#[0-9a-f]{6}$/iu, "must be #rrggbb");
+      this.#requireParameterLabel(`${path}.${key}`);
+    }
+    const far = cfg.far;
+    if (!far || typeof far !== "object") { this.#error(`CONFIG.${path}.far`, "missing far lightning config"); return; }
+    this.#requireParameterLabel(`${path}.far`);
+    this.#requireRangeNumbers(`${path}.far`, far, [["lengthShare", 0, 1], ["widthShare", 0, 1], ["opacityShare", 0, 1]]);
   }
 
   // Spec 179 stage D, TK-339: the Geiger counter's clicks (CONFIG.ui.audio.geiger).

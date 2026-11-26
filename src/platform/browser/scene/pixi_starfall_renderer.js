@@ -27,10 +27,8 @@
 // Drawing (docs/rendering.md 16, 22, 23): one ParticleContainer, one texture, additive blend, no filter; a fixed pool
 // sized by the settings (it grows only when they grow); unused particles have alpha 0. Frames only while a star flies.
 import { clampUnit, finiteOr, pairBetween, pairValue } from "../../../engine/math/number_normalization.js";
-import { BackgroundPlacement } from "./background_placement.js";
 import { SceneColor } from "./scene_color.js";
-import { ScreenZoneSet } from "./screen_zone_set.js";
-import { ZoneRectMask } from "./zone_rect_mask.js";
+import { SkySceneZones } from "./sky_scene_zones.js";
 
 const STREAK_W = 64;
 const GLOW = 32;
@@ -42,8 +40,6 @@ const MAX_SPARKS = 32;
 const SPARK_DRAG_PER_SEC = 2.2;
 const SPARK_GRAVITY_PX = 60;
 const DYNAMIC = Object.freeze({ position: true, vertex: true, rotation: true, color: true, uvs: false });
-
-const NO_REGIONS = Object.freeze({ count: 0, getAt: () => null });
 
 export class PixiStarfallRenderer {
   #pixi;
@@ -88,11 +84,10 @@ export class PixiStarfallRenderer {
   #visible = false;
   #color = new SceneColor();
   #colorValue = 0xffffff;
-  // TK-358: the sky on screen (its zones, or the background's top third) and its mask on the stars' layer.
-  #zones = new ScreenZoneSet();
-  #background = new BackgroundPlacement();
+  // TK-358, spec 188 D8: the sky on screen (its zones, or the background's top third) and its mask on the stars' layer.
+  #sky;
+  #zones;
   #point = { x: 0, y: 0 };
-  #mask;
 
   // documentTarget: makes the streak's canvas; random: () => 0…1 (visual only).
   constructor({ pixi, documentTarget, random = Math.random }) {
@@ -126,14 +121,14 @@ export class PixiStarfallRenderer {
     this.#sparks.update();
     this.#layer = new pixi.Container();
     this.#layer.addChild(this.#container, this.#bolideContainer, this.#sparks);
-    this.#mask = new ZoneRectMask({ pixi, target: this.#layer });
+    this.#sky = new SkySceneZones({ pixi, target: this.#layer });
+    this.#zones = this.#sky.zones;
   }
 
   // Right over the background's sky, under the water and everything in the world (rendering.md 14).
   mount(stage) {
     stage.addChild(this.#layer);
-    // The mask lives in the scene for its transform (Pixi does not draw a mask itself).
-    this.#mask.mount(stage);
+    this.#sky.mount(stage);
   }
 
   get status() {
@@ -156,7 +151,7 @@ export class PixiStarfallRenderer {
       this.#spawnDebt = 0;
       return this.#hide();
     }
-    this.#prepareZones(world, viewWidth, viewHeight);
+    this.#sky.prepare(world, viewWidth, viewHeight);
     if (bolideDue && this.#zones.count > 0) this.#spawnBolide(settings);
     const bolideFlying = this.#updateBolide(elapsed, settings);
     const lifeMax = Math.max(0.1, pairValue(settings.lifeSec, 1, 0.9));
@@ -387,19 +382,6 @@ export class PixiStarfallRenderer {
       this.#sparks.visible = false;
     }
     return true;
-  }
-
-  // The sky zones' visible parts (masked; redrawn only when they change), or without zones the background's top third.
-  #prepareZones(world, viewWidth, viewHeight) {
-    const zoned = world.skyZoned === true;
-    const regions = world.skyRegions ?? NO_REGIONS;
-    if (!zoned) {
-      const view = this.#background.place(world, viewWidth, viewHeight), fallback = this.#zones.fallback;
-      fallback.x = view.x; fallback.y = view.y; fallback.width = view.width; fallback.height = view.height / 3;
-    }
-    this.#zones.prepare(zoned ? regions : null, viewWidth, viewHeight);
-    if (zoned) this.#mask.clipTo(regions);
-    else this.#mask.release();
   }
 
   #ensurePool(size) {

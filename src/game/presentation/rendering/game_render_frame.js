@@ -37,7 +37,9 @@ export class GameRenderFrame {
       // Spec 172, spec 178: the weather the scene's effects show (rain, storm, fog, cloud 0…1; wind direction −1 … 1, strength & gust 0…1).
       weather: { rain: 0, storm: 0, fog: 0, cloud: 0, windDirection: 0, windStrength: 0, windGust: 0, emission: 0, ash: 0, radiation: 0,
         // Spec 182: the starfall's strength 0…1 now and the count of bolides that fell (stage D starts one on a change).
-        starfall: 0, bolideSerial: 0 },
+        starfall: 0, bolideSerial: 0,
+        // Spec 188: the lightning strikes (a change of the count strikes) and the last one's distance 0 (near) … 1.
+        strikeSerial: 0, strikeDistance: 0 },
       // Spec 172 D7: the sea state the water's waves follow (multipliers of amplitude, speed, length; travel −1 … 1).
       sea: { amplitudeScale: 1, speedScale: 1, wavelengthScale: 1, travel: 1 },
       // Spec 172 D4 (TK-273): the rain zones on screen (zones.rain, masks as rectangles); rainZoned false: the switch

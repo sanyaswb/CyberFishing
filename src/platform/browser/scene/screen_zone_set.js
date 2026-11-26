@@ -58,6 +58,21 @@ export class ScreenZoneSet {
     return true;
   }
 
+  // Spec 188: the visible rectangle of the zone that holds (x, y), written into out ({ x, y, width, height }); false
+  // when no visible zone holds it (the lightning runs from that zone's top to its bottom).
+  boundsAt(x, y, out) {
+    for (let zone = 0; zone < this.#count; zone += 1) {
+      const offset = zone * 4;
+      const left = this.#rects[offset], top = this.#rects[offset + 1];
+      const width = this.#rects[offset + 2], height = this.#rects[offset + 3];
+      if (x >= left && y >= top && x <= left + width && y <= top + height) {
+        out.x = left; out.y = top; out.width = width; out.height = height;
+        return true;
+      }
+    }
+    return false;
+  }
+
   contains(x, y) {
     for (let zone = 0; zone < this.#count; zone += 1) {
       const offset = zone * 4;
