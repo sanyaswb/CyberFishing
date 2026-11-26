@@ -906,6 +906,8 @@ const step = (model, seconds, clock = null, dt = 0.1) => {
         return body;
       },
       createInfoRow() {},
+      // DevToolsUI's contract (TK-403): a link row returns its value element (the section writes it after an edit).
+      createLinkRow: (label, value) => ({ innerText: value }),
       // DevToolsUI's contract (TK-367.1): the container the button rows of a two-column grid go into.
       createButtonGrid(parent) {
         const grid = fakeNode();
@@ -2424,6 +2426,7 @@ const step = (model, seconds, clock = null, dt = 0.1) => {
   const node = () => ({ replaceChildren() {}, appendChild() {} });
   const ui = {
     createInfoRow() {}, createTextRow() {}, createRangeRow() {}, createSelectRow() {}, createInputRow() {}, createSwitcherRow() {},
+    createLinkRow: (label, value) => ({ innerText: value }),
     addParameter() {}, redraw: devToolsRedraw, releaseValueBindings() {}, showLiveValue() {}, createButtonGrid: (parent) => parent,
     createButtonRow(label, parent, onClick, navigation, icon, path) {
       const row = { style: {} };
@@ -2481,7 +2484,8 @@ const step = (model, seconds, clock = null, dt = 0.1) => {
   assert.ok(!trees().some((path) => path.startsWith("CONFIG.locations.map.test.weather")), "and no location part");
   assert.equal(label("WEATHER.rain"), "ДОЩ · змінено", "a section with edits not in the code is marked");
   buttons.get("WEATHER.rain.reset")();
-  assert.deepEqual(resets, ["canvas.rain"], "its reset drops that section's overrides");
+  // TK-403 (spec 187 D16): the rain's effect on the wind is the rain's section's too.
+  assert.deepEqual(resets, ["canvas.rain", "weather.wind.rain"], "its reset drops that section's overrides");
   assert.equal(label("WEATHER.rain"), "ДОЩ", "then the mark is gone");
 
   // TK-333 (owner): «Всі» — every section shows its general and its location parts together.

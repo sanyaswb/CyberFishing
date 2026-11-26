@@ -37,6 +37,8 @@ import { VISIBLE_STRENGTH, lookOverrideEnds, strengthValue } from "../../game/pr
 //   phase, time left), the radiation; its texts follow the live updates while it is open.
 // - Sections by element: ДОЩ, ШТОРМ, ВІТЕР, ТУМАН, ВИКИД, РАДІАЦІЯ (TK-337), ПОПІЛ, ВОДА, ПОЧАТОК І ПОРОГИ — general and location parts by
 //   the selector; a section with edits not in the code is marked «· змінено» and has «Скинути розділ до коду» (D8).
+//   Spec 187 D16 (TK-403): a parameter of one element that acts on another is edited in the section of the element whose
+//   strength drives it (the rain's effect on the wind — ДОЩ); the other section shows a link with its value now.
 // - «Збереження» (spec 175, spec 180 stage D, TK-332): the file holds the level the selector shows — «Загальні»: the
 //   general rain, ash, storm and wind settings; a location: its weather; «Всі»: both.
 //   The status names every part of both levels that differs from the code, and what an export would leave out.
@@ -69,6 +71,27 @@ const CHANCES = Object.freeze({
   storm: Object.freeze(["Шторм: шанс перевірки", "stormChance", ["storm", "chancePerCheck"]]),
   fog: Object.freeze(["Туман: шанс перевірки", "fogChance", ["fog", "chancePerCheck"]]),
 });
+// Spec 187 D16 (TK-403): a parameter of one element that acts on another is edited in the section of the element whose
+// strength drives it; the other section shows a link (its value now and a button to it): [label, CONFIG path, section].
+const WIND_LINKS = Object.freeze([
+  Object.freeze(["Дощ: вітер не слабший", Object.freeze(["weather", "wind", "rain", "minStrength"]), "ДОЩ"]),
+  Object.freeze(["Дощ: додаток до вітру", Object.freeze(["weather", "wind", "rain", "bonus"]), "ДОЩ"]),
+  Object.freeze(["Дощ: пориви ×", Object.freeze(["weather", "wind", "rain", "gustChanceMult"]), "ДОЩ"]),
+  Object.freeze(["Шторм: вітер не слабший", Object.freeze(["weather", "storm", "windMinStrength"]), "ШТОРМ"]),
+  Object.freeze(["Шторм: пориви ×", Object.freeze(["weather", "storm", "gustChanceMult"]), "ШТОРМ"]),
+]);
+const RAIN_LINKS = Object.freeze([
+  Object.freeze(["Шторм: шанс дощу ×", Object.freeze(["weather", "storm", "rainChanceMult"]), "ШТОРМ"]),
+  Object.freeze(["Шторм: сила дощу ×", Object.freeze(["weather", "storm", "rainStrengthMult"]), "ШТОРМ"]),
+  Object.freeze(["Шторм: частка крапель", Object.freeze(["weather", "storm", "rainDropsShare"]), "ШТОРМ"]),
+  Object.freeze(["Шторм: нахил дощу", Object.freeze(["weather", "storm", "rainSlantDeg"]), "ШТОРМ"]),
+  Object.freeze(["Вітер: нахил дощу", Object.freeze(["weather", "wind", "rainSlantDeg"]), "ВІТЕР"]),
+]);
+const ASH_LINKS = Object.freeze([
+  Object.freeze(["Вітер: знос попелу", Object.freeze(["weather", "wind", "ashDriftPx"]), "ВІТЕР"]),
+]);
+// A pair [від, до] as «від / до»; a number as it is.
+const linkText = (value) => (Array.isArray(value) ? value.join(" / ") : value == null ? "—" : String(value));
 const PART_LABELS = Object.freeze({ rain: "Дощ", ash: "Попіл", storm: "Шторм", wind: "Вітер", locationWeather: "Параметри локації" });
 const samePath = (path, prefix) => prefix.every((key, index) => path[index] === key);
 
@@ -122,6 +145,8 @@ export class WeatherDevSection {
   #liveSliders = [];
   // Spec 187 B: per element, the strength slider's level now (0…1) — the look values in its section stand at it.
   #levelReaders = new Map();
+  // Spec 187 D16 (TK-403): the link rows' values: { value (element), read: () => the parameter now }.
+  #links = [];
   #listening = false;
   // The levels a switch turns on with (the last live value above zero): %, the waves' % of the usual, the current px/s.
   #levels = { rain: 70, storm: 80, fog: 60, emission: 100, ash: 100, wind: 40, waves: 100, current: 10 };
@@ -136,6 +161,7 @@ export class WeatherDevSection {
     const path = event?.detail?.path;
     if (!Array.isArray(path) || path[0] !== "CONFIG") return;
     this.#refreshMarks();
+    this.#refreshLinks();
     if (!this.#savingSection.hasStatusElement) return;
     const rest = path.slice(1);
     const isGeneral = GENERAL_WEATHER_PART_IDS.some((part) => samePath(rest, GENERAL_WEATHER_PARTS[part].configPath));
@@ -235,6 +261,7 @@ export class WeatherDevSection {
     this.#listening = false;
     this.#savingSection.clear();
     this.#marks = [];
+    this.#links.length = 0;
     this.#summary.length = 0;
     this.#liveSliders.length = 0;
     this.#levelReaders.clear();
@@ -416,6 +443,7 @@ export class WeatherDevSection {
     // TK-387: the one redraw path (R23: an open drill-in is reopened; bindings and the section's «i» released).
     this.#ui.redraw(content, () => {
       this.#marks = [];
+      this.#links.length = 0;
       this.#summary.length = 0;
       this.#liveSliders.length = 0;
       this.#levelReaders.clear();
@@ -529,11 +557,18 @@ export class WeatherDevSection {
   #renderRain(content, mode) {
     const general = this.#general()?.rain ?? this.#rainConfig();
     const parts = [];
-    if (mode.general) parts.push(["canvas", "rain"]);
+    // Spec 187 D16 (TK-403): the rain's effect on the wind (weather.wind.rain) belongs to the rain — its strength drives it.
+    if (mode.general) parts.push(["canvas", "rain"], ["weather", "wind", "rain"]);
     if (mode.location) parts.push(this.#locationParts(mode.location, "rain"), this.#locationParts(mode.location, "look", "rain"));
     this.#elementSection("ДОЩ", "rain", content, parts, (section) => {
       this.#renderStrength("rain", section, mode);
-      if (mode.general) this.#tree(general, this.#group("Вигляд (загальний)", section, ["WEATHER", "rain", "look"]), ["canvas", "rain"]);
+      if (mode.general) {
+        this.#tree(general, this.#group("Вигляд (загальний)", section, ["WEATHER", "rain", "look"]), ["canvas", "rain"]);
+        this.#tree(this.#general()?.wind?.rain, this.#group("Що робить дощ з вітром (загальне)", section, ["WEATHER", "rain", "wind"]),
+          ["weather", "wind", "rain"]);
+        this.#renderLinks(RAIN_LINKS, this.#group("Що робить з дощем шторм і вітер (загальне)", section,
+          ["WEATHER", "rain", "byOthers"]), ["WEATHER", "rain", "byOthers"]);
+      }
       if (!mode.location) return;
       const weather = this.#locationWeather(mode.location);
       this.#chanceRow("rain", mode.location, section);
@@ -561,15 +596,26 @@ export class WeatherDevSection {
   }
 
   #renderWind(content, mode) {
+    // Spec 187 D16 (TK-403): the rain's effect on the wind (weather.wind.rain) is edited in ДОЩ — the wind's mark and
+    // reset cover the wind's own keys only.
+    const { rain: _rainEffects, ...windOwn } = this.#general()?.wind ?? {};
     const parts = [];
-    if (mode.general) parts.push(["weather", "wind"]);
+    if (mode.general) parts.push(...Object.keys(windOwn).map((key) => ["weather", "wind", key]));
     if (mode.location) parts.push(this.#locationParts(mode.location, "wind"));
     this.#elementSection("ВІТЕР", "wind", content, parts, (section) => {
       this.#renderStrength("wind", section, mode);
       if (mode.general) {
-        this.#tree(this.#general()?.wind, this.#group("Як діє вітер і порив (загальне)", section, ["WEATHER", "wind", "effects"]),
+        this.#tree(windOwn, this.#group("Як діє вітер і порив (загальне)", section, ["WEATHER", "wind", "effects"]),
           ["weather", "wind"]);
-        this.#renderWindByEvents(this.#group("Вплив подій на вітер (загальне)", section, ["WEATHER", "wind", "events"]));
+        const events = this.#group("Вплив подій на вітер (загальне)", section, ["WEATHER", "wind", "events"]);
+        this.#renderLinks(WIND_LINKS, events, ["WEATHER", "wind", "events"]);
+        // The emission acts through its storm, set by the location (ВИКИД → «Подія викиду» → storm).
+        if (mode.location) {
+          this.#renderLinks([["Викид: сила шторму", this.#locationParts(mode.location, "emission", "storm", "storm"), "ВИКИД"]],
+            events, ["WEATHER", "wind", "events"]);
+        } else {
+          this.#ui.createInfoRow("Викид", "діє на вітер через шторм локації (ВИКИД → «Подія викиду» → storm)", events);
+        }
       }
       if (!mode.location) return;
       this.#tree(this.#locationWeather(mode.location)?.wind, this.#group("Стани вітру й частота поривів (локація)", section,
@@ -577,36 +623,34 @@ export class WeatherDevSection {
     });
   }
 
-  // TK-327.1: what each event does to the wind, in one place (the storm's keys are the same as in ШТОРМ, the rain's as in
-  // «Як діє вітер»; the emission acts through its storm).
-  #renderWindByEvents(parent) {
-    const general = this.#general();
-    const rows = [
-      ["Дощ: вітер не слабший", ["weather", "wind", "rain", "minStrength"], general?.wind?.rain?.minStrength],
-      ["Дощ: додаток до вітру", ["weather", "wind", "rain", "bonus"], general?.wind?.rain?.bonus],
-      ["Дощ: пориви ×", ["weather", "wind", "rain", "gustChanceMult"], general?.wind?.rain?.gustChanceMult],
-      ["Шторм: вітер не слабший", ["weather", "storm", "windMinStrength"], general?.storm?.windMinStrength],
-      ["Шторм: пориви ×", ["weather", "storm", "gustChanceMult"], general?.storm?.gustChanceMult],
-    ];
-    for (const [label, parts, value] of rows) {
-      const cfgPath = ["CONFIG", ...parts];
-      const path = ["WEATHER", "wind", "events", parts.at(-1), parts[1]];
-      // Spec 187 D7: the storm's effects are [від, до] pairs (at 5 % and at 100 % of its strength).
-      if (Array.isArray(value) && value.length === 2) {
-        this.#ui.addParameter(parent, { control: "numberPair", label: `${label} (від / до)`, value, path, bindingPath: cfgPath,
-          onCommit: (next) => {
-            if (Array.isArray(next) && next.length === 2 && next.every((end) => Number.isFinite(Number(end)))) {
-              this.#updateConfig?.(cfgPath, [Number(next[0]), Number(next[1])]);
-            }
-          }, ...this.#changeTracking(cfgPath) });
-        continue;
-      }
-      if (typeof value !== "number") continue;
-      this.#ui.addParameter(parent, { control: "number", label, value, path,
-        bindingPath: cfgPath, onCommit: (next) => { if (Number.isFinite(Number(next))) this.#updateConfig?.(cfgPath, Number(next)); },
-        ...this.#changeTracking(cfgPath) });
+  // Spec 187 D16 (TK-403): parameters of another element that act on this one — a row each with the value now (read
+  // only, follows config-updated: #refreshLinks) and a button that reveals the parameter in the section it is edited in.
+  // links: [label, CONFIG path parts, the section's title]; the row's path: [...path, the parameter's key, its owner].
+  #renderLinks(links, parent, path) {
+    for (const [label, parts, place] of links) {
+      const read = () => this.#configValue(parts);
+      const value = this.#ui.createLinkRow(label, linkText(read()), parent,
+        { path: [...path, parts.at(-1), parts.at(-2)], target: ["CONFIG", ...parts], place });
+      this.#links.push({ value, read });
     }
-    this.#ui.createInfoRow("Викид", "діє на вітер через свій шторм (ВИКИД → «Подія викиду» → storm)", parent);
+  }
+
+  #refreshLinks() {
+    for (const link of this.#links) {
+      const text = linkText(link.read());
+      if (link.value.innerText !== text) link.value.innerText = text;
+    }
+  }
+
+  // A linked parameter's value through the section's own sources: weather.* — the general settings, locations.map.* — the
+  // locations.
+  #configValue(parts) {
+    let node;
+    if (parts[0] === "weather") node = this.#general()?.[parts[1]];
+    else if (parts[0] === "locations" && parts[1] === "map") node = this.#locationsMap?.()?.[parts[2]];
+    else return undefined;
+    for (let index = 2 + (parts[0] === "locations" ? 1 : 0); index < parts.length && node != null; index++) node = node[parts[index]];
+    return node;
   }
 
   #renderFog(content, mode) {
@@ -728,8 +772,13 @@ export class WeatherDevSection {
     if (mode.location) parts.push(this.#locationParts(mode.location, "look", "ash"));
     this.#elementSection("ПОПІЛ", "ash", content, parts, (section) => {
       this.#renderStrength("ash", section, mode);
-      if (mode.general) this.#tree(this.#general()?.ash ?? this.#ashConfig(), this.#group("Вигляд (загальний)", section,
-        ["WEATHER", "ash", "look"]), ["canvas", "ash"]);
+      if (mode.general) {
+        this.#tree(this.#general()?.ash ?? this.#ashConfig(), this.#group("Вигляд (загальний)", section,
+          ["WEATHER", "ash", "look"]), ["canvas", "ash"]);
+        // Spec 187 D16 (TK-403): the wind's drift of the ash is the wind's (ВІТЕР).
+        this.#renderLinks(ASH_LINKS, this.#group("Що робить з попелом вітер (загальне)", section, ["WEATHER", "ash", "byOthers"]),
+          ["WEATHER", "ash", "byOthers"]);
+      }
       if (mode.location) this.#renderLookValues("ash", mode.location, this.#group("Від сили: від (5 %) і до (100 %) (локація)", section, ["WEATHER", "ash", "lookValues"]));
     });
   }

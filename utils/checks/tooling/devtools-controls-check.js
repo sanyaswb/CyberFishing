@@ -4091,6 +4091,172 @@ function choiceRow(options, value, path) {
     ui.dispose();
   }
 
+  // --- TK-403 (spec 187 D16): a parameter of one element that acts on another is edited in ONE place — the section of
+  // the element whose strength drives it; the other section links to it: its value now, a press reveals its own row ---
+  {
+    const { WeatherDevSection } = runtime.importModule("src/dev/tools/weather_dev_section.js");
+    const { ConfigTreeRenderer } = runtime.importModule("src/dev/tools/config/config_tree_renderer.js");
+    const { DevConfigEditService } = runtime.importModule("src/dev/tools/config/dev_config_edit_service.js");
+    const { DevToolsParameterAliasRegistry } = runtime.importModule("src/dev/services/dev_tools_parameter_alias_registry.js");
+    const { STORM_SETTINGS } = runtime.importModule("src/game/config/raw/weather/storm_settings.js");
+    const { WIND_SETTINGS } = runtime.importModule("src/game/config/raw/weather/wind_settings.js");
+    const copy = (value) => JSON.parse(JSON.stringify(value));
+    // The real storm and wind settings; the location's emission storm as the ВИКИД link's target.
+    const baseConfig = {
+      weather: { storm: copy(STORM_SETTINGS), wind: copy(WIND_SETTINGS) },
+      locations: { map: { test: { weather: { emission: { storm: { storm: 0.9 } } } } } },
+    };
+    const config = copy(baseConfig);
+    const overrides = new Map();
+    const readKey = (obj, parts) => parts.reduce((cur, key) => cur?.[key], obj);
+    const writeKey = (obj, parts, val) => {
+      const parent = readKey(obj, parts.slice(0, -1));
+      parent[parts.at(-1)] = val;
+    };
+    const configRuntime = {
+      overrideStore: { has: (key) => overrides.has(key) },
+      exportOverrides: () => Object.fromEntries(overrides),
+      set(path, value) {
+        overrides.set(path.slice(1).join("."), value);
+        writeKey(config, path.slice(1), value);
+      },
+      reset(path) {
+        overrides.delete(path.slice(1).join("."));
+        writeKey(config, path.slice(1), copy(readKey(baseConfig, path.slice(1))));
+      },
+    };
+    const linkUi = new DevToolsUI(() => {}, config, null, null, null, document.body, createElement("div"));
+    const pages = linkUi.createPages([{ id: "scene", title: "Сцена", icon: "map" }], "scene", () => {});
+    const scenePage = pages.get("scene");
+    const aliases = new DevToolsParameterAliasRegistry();
+    const edits = new DevConfigEditService({
+      config,
+      catalogs: {},
+      configRuntime,
+      getHookedFish: () => null,
+      hookedFishSync: { afterEdit() {} },
+      itemStatSync: { afterEdit() {} },
+      debugModulesSource: () => ({}),
+      syncValue: (path, value) => linkUi.syncValue(path, value),
+      // The section hears config-updated on the document, as in the game.
+      eventTarget: { dispatchEvent: (event) => document.fire(event.type, { detail: event.detail }) },
+      logger: { log() {} },
+      parameterAliases: aliases,
+    });
+    const createSection = (label, parent, path, options = {}) =>
+      linkUi.createSection(label, parent, false, () => {}, path, options);
+    const tree = new ConfigTreeRenderer({
+      ui: linkUi, edits, aliases, schema: { describe: () => null, prerequisitesOf: () => [] }, createSection,
+    });
+    const weatherModel = { snapshot: { events: {}, strikeSerial: 0, strikeVariant: 0, strikeDistance: 0 },
+      start() {}, stop() {}, hold() {}, releaseAll() {}, strike() {} };
+    // The real depth (R23): СЦЕНА WebGL → ПОГОДА → an element's section (drill-in) → its groups.
+    const sceneLayer = createSection("СЦЕНА WebGL", scenePage, ["SCENE_LAYER"]);
+    const section = new WeatherDevSection({
+      ui: linkUi,
+      weather: { locationId: "test", getModel: () => weatherModel, getEmissionModel: () => null, getWind: () => null },
+      config: () => config.locations.map.test.weather,
+      locationConfig: (id) => config.locations.map[id]?.weather ?? null,
+      locationsMap: () => config.locations.map,
+      general: () => ({ storm: config.weather.storm, wind: config.weather.wind }),
+      edits: { hasOverrides: (parts) => edits.hasOverridesUnder(parts), resetTree: () => {},
+        isOverridden: (path) => edits.isOverridden(path), resetParameter: (path) => edits.resetParameter(path) },
+      createSection,
+      renderConfigTree: (value, parent, path, options) => tree.render(value, parent, path, options),
+      updateConfig: (path, value) => edits.update(path, value),
+    });
+    section.render(sceneLayer);
+    linkUi.materializeAll();
+
+    // Each element's section and the rows in it, found before anything is revealed (a drill-in moves the content).
+    const elementOf = new Map();
+    for (const element of byClass("devtools__section", scenePage)) {
+      if (!/^WEATHER\.[a-z]+$/u.test(element.dataset.devtoolsPath || "")) continue;
+      for (const row of byClass("devtools__row", element)) if (!elementOf.has(row)) elementOf.set(row, element.dataset.devtoolsPath);
+    }
+    const flat = (value, prefix = "", out = new Map()) => {
+      if (value && typeof value === "object" && !Array.isArray(value)) {
+        for (const key of Object.keys(value)) flat(value[key], prefix ? `${prefix}.${key}` : key, out);
+      } else out.set(prefix, JSON.stringify(value));
+      return out;
+    };
+    // Where a parameter is edited: press «+» of every number field in ПОГОДА and see which value it changes.
+    const editedIn = new Map();
+    for (const row of byClass("devtools__row", scenePage)) {
+      const box = byClass("devtools__number", row)[0];
+      const up = box?.children?.[2];
+      if (!up) continue;
+      const before = flat(config);
+      up.click();
+      const after = flat(config);
+      for (const [key, value] of after) {
+        if (before.get(key) === value) continue;
+        const list = editedIn.get(key) ?? [];
+        list.push(elementOf.get(row));
+        editedIn.set(key, list);
+        edits.resetParameter(["CONFIG", ...key.split(".")]);
+      }
+    }
+    const linked = {
+      "weather.wind.rain.minStrength": "WEATHER.rain", "weather.wind.rain.bonus": "WEATHER.rain",
+      "weather.wind.rain.gustChanceMult": "WEATHER.rain",
+      "weather.storm.rainChanceMult": "WEATHER.storm", "weather.storm.rainStrengthMult": "WEATHER.storm",
+      "weather.storm.rainDropsShare": "WEATHER.storm", "weather.storm.rainSlantDeg": "WEATHER.storm",
+      "weather.storm.windMinStrength": "WEATHER.storm", "weather.storm.gustChanceMult": "WEATHER.storm",
+      "weather.wind.rainSlantDeg": "WEATHER.wind", "weather.wind.ashDriftPx": "WEATHER.wind",
+      "locations.map.test.weather.emission.storm.storm": "WEATHER.emission",
+    };
+    for (const [key, owner] of Object.entries(linked)) {
+      assert.equal(JSON.stringify(editedIn.get(key) ?? []), JSON.stringify([owner]),
+        `${key} is edited in ПОГОДА in exactly one place — ${owner} (D16)`);
+    }
+
+    // The links: the value now, the place named, a press reveals the parameter's own row (not a section's title, R20).
+    const places = { "ДОЩ": "WEATHER.rain", "ШТОРМ": "WEATHER.storm", "ВІТЕР": "WEATHER.wind", "ВИКИД": "WEATHER.emission" };
+    const links = byClass("devtools__row--link", scenePage);
+    const targets = links.map((row) => `${elementOf.get(row)} → ${byClass("devtools__action--link", row)[0].dataset.devtoolsTarget}`);
+    assert.equal(JSON.stringify(targets.sort()), JSON.stringify([
+      "WEATHER.ash → CONFIG.weather.wind.ashDriftPx",
+      "WEATHER.rain → CONFIG.weather.storm.rainChanceMult",
+      "WEATHER.rain → CONFIG.weather.storm.rainDropsShare",
+      "WEATHER.rain → CONFIG.weather.storm.rainSlantDeg",
+      "WEATHER.rain → CONFIG.weather.storm.rainStrengthMult",
+      "WEATHER.rain → CONFIG.weather.wind.rainSlantDeg",
+      "WEATHER.wind → CONFIG.locations.map.test.weather.emission.storm.storm",
+      "WEATHER.wind → CONFIG.weather.storm.gustChanceMult",
+      "WEATHER.wind → CONFIG.weather.storm.windMinStrength",
+      "WEATHER.wind → CONFIG.weather.wind.rain.bonus",
+      "WEATHER.wind → CONFIG.weather.wind.rain.gustChanceMult",
+      "WEATHER.wind → CONFIG.weather.wind.rain.minStrength",
+    ]), "ДОЩ, ПОПІЛ and ВІТЕР link to what other elements do to them");
+    for (const row of links) {
+      const button = byClass("devtools__action--link", row)[0];
+      const target = button.dataset.devtoolsTarget;
+      const value = readKey(config, target.split(".").slice(1));
+      assert.equal(byClass("devtools__link-value", button)[0].innerText,
+        Array.isArray(value) ? value.join(" / ") : String(value), `${target}: the link shows the value now`);
+      for (const old of byClass("devtools__row--revealed", scenePage)) old.classList.remove("devtools__row--revealed");
+      button.click();
+      const revealed = byClass("devtools__row--revealed", scenePage);
+      assert.equal(revealed.length, 1, `${target}: a press reveals one row`);
+      assert.equal(revealed[0].dataset.devtoolsPath, target, `${target}: the revealed row is the parameter itself`);
+      assert.equal(elementOf.get(revealed[0]), places[byClass("devtools__link-place", button)[0].innerText],
+        `${target}: the row is in the section the link names`);
+    }
+
+    // An edit in ДОЩ: the link in ВІТЕР follows at once; ДОЩ is «змінено», ВІТЕР is not (its parts leave wind.rain out).
+    edits.update(["CONFIG", "weather", "wind", "rain", "minStrength"], [0.02, 0.3]);
+    const windLink = links.find((row) =>
+      byClass("devtools__action--link", row)[0].dataset.devtoolsTarget === "CONFIG.weather.wind.rain.minStrength");
+    assert.equal(byClass("devtools__link-value", windLink)[0].innerText, "0.02 / 0.3", "the link follows an edit in place");
+    const titleOf = (path) => byClass("devtools__section", scenePage).find((el) => el.dataset.devtoolsPath === path)
+      .children[0].textContent;
+    assert.ok(titleOf("WEATHER.rain").includes("змінено"), "the rain's effect on the wind marks ДОЩ");
+    assert.ok(!titleOf("WEATHER.wind").includes("змінено"), "and not ВІТЕР");
+    section.dispose();
+    linkUi.dispose();
+  }
+
   // --- TK-347: from-to numeric pairs render two NumberField controls with - / + step buttons ---
   {
     const { ConfigTreeRenderer } = runtime.importModule("src/dev/tools/config/config_tree_renderer.js");

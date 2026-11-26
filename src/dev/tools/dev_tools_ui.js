@@ -770,6 +770,31 @@ export class DevToolsUI {
     return row;
   }
 
+  // Spec 187 D16 (TK-403): a parameter edited in another section — its key, its value now (read only) and a button with
+  // the place it lives in; the button reveals that parameter's own row there (revealPath: open, scroll, highlight).
+  // Returns the value element: the owner writes the value again after an edit (config-updated).
+  createLinkRow(labelStr, valueText, parentElement, { path = null, target, place }) {
+    const row = document.createElement("div");
+    row.className = "devtools__row devtools__row--link";
+    this.#assignDevToolsPath(row, path);
+    row.appendChild(this.#createLabelElement(labelStr, path));
+    const btn = document.createElement("button");
+    btn.type = "button";
+    btn.className = "devtools__action devtools__action--link";
+    btn.dataset.devtoolsTarget = this.#normalizeDevToolsPath(target);
+    const value = document.createElement("span");
+    value.className = "devtools__link-value";
+    value.innerText = valueText;
+    const where = document.createElement("span");
+    where.className = "devtools__link-place";
+    where.innerText = place;
+    btn.append(value, createDevIcon(document, "chevron", "devtools__link-icon"), where);
+    btn.addEventListener("click", () => this.revealPath(target));
+    row.appendChild(btn);
+    this.#insertTreeNode(parentElement, row, 0);
+    return value;
+  }
+
   // swatch: an optional "#rrggbb" colour square before the label (spec 129: zone category colours).
   createSwitcherRow(labelStr, initialValue, parentElement, onChangeCallback, path = null, bindingPath = path,
     { swatch = null, requires = [], configPath = null, isChanged = null, onReset = null } = {}) {

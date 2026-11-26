@@ -561,6 +561,25 @@
   gap: 8px;
   font-weight: 700;
 }
+/* Spec 187 D16 (TK-403): a parameter of another section — its value and where it is edited; a press reveals it there. */
+.devtools__action--link {
+  display: flex;
+  flex: 2 1 0;
+  align-items: center;
+  gap: 6px;
+  width: auto;
+  min-width: 0;
+}
+.devtools__link-value {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.devtools__link-icon { flex: 0 0 auto; }
+.devtools__link-place {
+  flex: 0 0 auto;
+  font-weight: 700;
+}
 .ui-surface--desktop-hover .devtools__section-title:hover,
 .ui-surface:not(.ui-surface--desktop-hover) .devtools__section-title:active {
   background: rgba(var(--ui-accent-rgb), 0.2);

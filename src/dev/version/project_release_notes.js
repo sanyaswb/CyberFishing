@@ -1,6 +1,7 @@
 // Release notes, newest first (unshift with every patch). DEV only: no production code reads them, and in the start's
 // bundle they cost 13 KB gzip (spec 160). dev.html publishes them with the version: window.CYBER_FISHING_PROJECT_VERSION.notes.
 export const PROJECT_RELEASE_NOTES = Object.freeze([
+  "TK-403 (spec 187 D16): DevToolsUI.createLinkRow (key, value now read-only, a button with the section's name → revealPath of the parameter's own row); WeatherDevSection: weather.wind.rain.* edited in ДОЩ («Що робить дощ з вітром», ДОЩ's parts cover it), ВІТЕР's tree without rain and its mark/reset on its own keys, «Вплив подій на вітер» only links (rain → ДОЩ, storm → ШТОРМ, emission → ВИКИД), ДОЩ links to the storm's four rain effects and the wind's slant, ПОПІЛ to the wind's drift; link values follow config-updated.",
   "TK-402 (review): WeatherLookResolver.resolve() reads a location's override ends without an object per value per frame and makes the <key>Cap names once; EnvironmentSystem.setAutomaticWeather(true) releases the models' holds itself (R22), DevTools only its views' own.",
   "Spec 187 D18: readWeatherFile upgrades an old file's storm and wind multipliers to the [від, до] pairs that act the same (upgradeLegacyEffects; a copy), so validation, apply:weather and the DevTools import see pairs.",
   "Spec 187 C (waves): CONFIG.canvas.water.seaState normal.windAmplitude / windSpeed and storm.amplitude / speed / wavelength are [від, до] pairs read by SeaStateResolver (no wind — the calm swell, no storm — ×1) — the same game.",
