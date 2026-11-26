@@ -2,6 +2,10 @@
 
 Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/CHANGELOG_ARCHIVE.md>).
 
+## v0.52.85 - Lightning: the owner's time seen and branch angle (TK-406.2)
+
+- A strike is now seen 0.9–2.1 s and its branches leave the channel at 18–63° (the owner's values from DevTools).
+
 ## v0.52.84 - Lightning: how long a strike is seen (TK-406.1)
 
 - dev.html: ШТОРМ → «Блискавка — вигляд» → «Час видимості, с [від, до]» sets how long a strike is seen (0.5–0.9 s by default, random within); its flashes fill the first part («Спалахи: частка часу»), then it glows out by the end.
@@ -38,7 +42,3 @@ Latest 10 releases. Older entries: [CHANGELOG_ARCHIVE.md](<D:/dev/cyber fishing/
 ## v0.52.76 - Old weather files with multipliers still apply (spec 187)
 
 - `npm run apply:weather` and the DevTools import read a weather file exported before the storm's and the wind's «від / до» as the pairs that act the same (such a file still reports a conflict with the changed code: apply it with --force or export again).
-
-## v0.52.75 - The waves' response to wind and storm as «від / до» (spec 187, stage C)
-
-- How high and fast the waves get with the wind, and how a storm raises, speeds up and lengthens them, are now set by two values — at 5 % and at 100 % — instead of multipliers. The game plays the same.

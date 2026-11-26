@@ -1050,7 +1050,8 @@ async function checkLightning() {
     `the flashes in its first ${settings.strokesShare} (${long.peaks}, the last at frame ${long.lastPeakFrame})`);
   assert.ok(long.endAlpha < settings.coreOpacity * settings.afterglow * 0.1, "the afterglow is out by the end");
   const [lowStrokes, highStrokes] = settings.strokes;
-  assert.ok(near.frames > 10 && near.frames < 60 * 1.5, `a strike lasts a moment (${near.frames} frames), then no frames`);
+  assert.ok(near.frames >= settings.durationSec[0] * 60 - 2 && near.frames <= settings.durationSec[1] * 60 + 2,
+    `a strike lasts within durationSec (${near.frames} frames), then no frames`);
   assert.ok(near.peaks >= Math.min(2, lowStrokes) && near.peaks <= highStrokes, `it flickers: ${near.peaks} flashes`);
   assert.equal(near.outside, 0, "the bolt stays in the sky zone's width");
   assert.ok(near.top >= sky.y && near.top < sky.y + sky.height * 0.15 && near.bottom <= sky.y + sky.height + 1
